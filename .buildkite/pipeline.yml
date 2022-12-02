@@ -27,7 +27,6 @@ steps:
           environment:
             - "GOPRIVATE"
             - "GITHUB_TOKEN"
-          entrypoint: ./scripts/ci_entrypoint.sh
           command: ["go", "test", "-cover" ,"-race", "./..."]
 
   - label: ":golang: build"
@@ -44,7 +43,6 @@ steps:
             - GITHUB_TOKEN
             - CGO_ENABLED=0
             - GOOS=linux
-          entrypoint: ./scripts/ci_entrypoint.sh
           command: ["go", "build", "-mod=mod", "-a", "-o", "bin/$APP_NAME"]
 
   - label: ":docker: docker build and publish"
