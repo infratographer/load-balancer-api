@@ -1,7 +1,7 @@
 all: lint test
 PHONY: test coverage lint golint clean vendor docker-up docker-down unit-test
 GOOS=linux
-DB_STRING=host=localhost port=26257 user=root sslmode=disable
+DB_STRING=host=crdb port=26257 user=root sslmode=disable
 DB=load_balancer_api
 DEV_DB=${DB}_dev
 TEST_DB=${DB}_test
@@ -30,20 +30,21 @@ clean:
 	@rm -rf coverage.out
 	@go clean -testcache
 
+models: dev-database
+	@sqlboiler crdb --add-soft-deletes --config sqlboilder.toml
+	@go mod tidy
+
 vendor:
 	@go mod tidy
 	@go mod download
 
-db-recreate:
+dev-database: | vendor
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
+	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
 
-
-dev-database: | vendor db-recreate
-	@DNSCONTROLLER_DB_URI="${DEV_URI}" go run main.go migrate up
-
-test-database: | vendor db-recreate
+test-database: | vendor
 	@cockroach sql -e "drop database if exists ${TEST_DB}"
 	@cockroach sql -e "create database ${TEST_DB}"
-	@DNSCONTROLLER_DB_URI="${TEST_URI}" go run main.go migrate up
+	@LOADBALANCERAPI_DB_URI="${TEST_URI}" go run main.go migrate up
 	@cockroach sql -e "use ${TEST_DB};"

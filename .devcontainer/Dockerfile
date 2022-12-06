@@ -15,8 +15,10 @@ COPY --from=CRDB /usr/local/lib/cockroach/libgeos.so /usr/local/lib/cockroach/
 COPY --from=CRDB /usr/local/lib/cockroach/libgeos_c.so /usr/local/lib/cockroach/
 
 # [Optional] Uncomment the next lines to use go get to install anything else you need
-# USER vscode
-# RUN go get -x <your-dependency-or-tool>
+USER vscode
+RUN go install github.com/volatiletech/sqlboiler/v4@latest \
+    && go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest \
+    && go install github.com/glerchundi/sqlboiler-crdb/v4@latest
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
