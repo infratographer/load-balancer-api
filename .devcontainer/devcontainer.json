@@ -1,11 +1,10 @@
+// Config reference, https://containers.dev/implementors/json_reference/
 {
 	"name": "loadbalancerapi",
 	"dockerComposeFile":"docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspace",
 	"shutdownAction": "stopCompose",
-
-
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.

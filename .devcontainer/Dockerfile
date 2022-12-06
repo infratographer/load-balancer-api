@@ -1,12 +1,18 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/go/.devcontainer/base.Dockerfile
+# Used to install CRDB into the devcontainer
+FROM cockroachdb/cockroach:latest-v22.2 as CRDB
 
-# [Choice] Go version (use -bullseye variants on local arm64/Apple Silicon): 1, 1.19, 1.18, 1-bullseye, 1.19-bullseye, 1.18-bullseye, 1-buster, 1.19-buster, 1.18-buster
-ARG VARIANT="1.19-bullseye"
-FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
+
+FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.19-bullseye
 
 # [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends bash-completion
+
+# Set up crdb
+RUN mkdir /usr/local/lib/cockroach
+COPY --from=CRDB /cockroach/cockroach /usr/local/bin
+COPY --from=CRDB /usr/local/lib/cockroach/libgeos.so /usr/local/lib/cockroach/
+COPY --from=CRDB /usr/local/lib/cockroach/libgeos_c.so /usr/local/lib/cockroach/
 
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 # USER vscode
