@@ -66,14 +66,13 @@ func initConfig() {
 		home, err := homedir.Dir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".TODO" (without extension).
+		// load the config file
 		viper.AddConfigPath(home)
 		viper.SetConfigName("." + appName)
 	}
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	// TODO: This needs to match [a-z]+, this may not be true for your app name
-	viper.SetEnvPrefix("appname")
+	viper.SetEnvPrefix("loadbalancerapi")
 
 	viper.AutomaticEnv() // read in environment variables that match
 
