@@ -60,4 +60,4 @@ services:
 
   nats:
     image: 'nats:2'
-    network_mode: service:app
+    network_mode: infradev
