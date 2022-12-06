@@ -1,6 +1,12 @@
 all: lint test
 PHONY: test coverage lint golint clean vendor docker-up docker-down unit-test
 GOOS=linux
+DB_STRING=host=crdb port=26257 user=root sslmode=disable
+DB=load_balancer_api
+DEV_DB=${DB}_dev
+TEST_DB=${DB}_test
+DEV_URI=dbname=${DEV_DB} ${DB_STRING}
+TEST_URI=dbname=${TEST_DB} ${DB_STRING}
 # use the working dir as the app name, this should be the repo name
 APP_NAME=$(shell basename $(CURDIR))
 
@@ -18,31 +24,27 @@ coverage:
 
 lint: golint
 
-golint: | vendor
-	@echo Linting Go files...
-	@golangci-lint run --build-tags "-tags testtools"
-
-build:
-	@go mod download
-	@CGO_ENABLED=0 GOOS=linux go build -mod=readonly -v -o bin/${APP_NAME}
-
-clean: docker-clean
+clean:
 	@echo Cleaning...
-	@rm -f app
 	@rm -rf ./dist/
 	@rm -rf coverage.out
 	@go clean -testcache
 
-vendor:
-	@go mod download
+models: dev-database
+	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml
 	@go mod tidy
 
-docker-up: | build
-	@docker-compose build --no-cache --build-arg NAME=${APP_NAME}
-	@docker-compose  -f docker-compose.yml up -d app
+vendor:
+	@go mod tidy
+	@go mod download
 
-docker-down:
-	@docker-compose -f docker-compose.yml down
+dev-database: | vendor
+	@cockroach sql -e "drop database if exists ${DEV_DB}"
+	@cockroach sql -e "create database ${DEV_DB}"
+	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
 
-docker-clean:
-	@docker-compose -f docker-compose.yml down --volumes
+test-database: | vendor
+	@cockroach sql -e "drop database if exists ${TEST_DB}"
+	@cockroach sql -e "create database ${TEST_DB}"
+	@LOADBALANCERAPI_DB_URI="${TEST_URI}" go run main.go migrate up
+	@cockroach sql -e "use ${TEST_DB};"
