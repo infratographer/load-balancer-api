@@ -1,6 +1,20 @@
 -- +goose Up
 -- +goose StatementBegin
 
+
+CREATE TABLE locations (
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    location_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL,
+    display_name STRING NOT NULL,
+    INDEX idx_location_tenant_id (tenant_id),
+    INDEX idx_location_created_at (created_at),
+    INDEX idx_location_updated_at (updated_at),
+    INDEX idx_location_deleted_at (deleted_at)
+);
+
 CREATE TABLE load_balancers (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -19,18 +33,6 @@ CREATE TABLE load_balancers (
     INDEX idx_load_balancer_deleted_at (deleted_at)
 );
 
-CREATE TABLE locations (
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ,
-    location_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
-    display_name STRING NOT NULL,
-    INDEX idx_location_tenant_id (tenant_id),
-    INDEX idx_location_created_at (created_at),
-    INDEX idx_location_updated_at (updated_at),
-    INDEX idx_location_deleted_at (deleted_at)
-);
 
 CREATE TABLE frontends (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -50,21 +52,6 @@ CREATE TABLE frontends (
 );
 
 
-CREATE TABLE assignments (
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ,
-    assignment_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-    pool_id UUID REFERENCES pools(pool_id) ON UPDATE CASCADE,
-    frontend_id UUID REFERENCES frontends(frontend_id) ON UPDATE CASCADE,
-    load_balancer_id UUID REFERENCES load_balancers(load_balancer_id) ON UPDATE CASCADE,
-    tenant_id UUID NOT NULL,
-    UNIQUE INDEX idx_pool_frontend_assocs_pool_id_frontend_id (pool_id, frontend_id) WHERE deleted_at is NULL,
-    INDEX idx_assocs_tenant_id (tenant_id),
-    INDEX idx_assocs_created_at (created_at),
-    INDEX idx_assocs_updated_at (updated_at),
-    INDEX idx_assocs_deleted_at (deleted_at)
-)
 
 CREATE TABLE pools (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -91,14 +78,31 @@ CREATE TABLE origins (
     pool_id UUID NOT NULL REFERENCES pools(pool_id) ON UPDATE CASCADE,
     origin_target INET NOT NULL,
     port INT NOT NULL,
-    tenant_id UUID NOT NULL REFERENCES pools(tenant_id) ON UPDATE CASCADE,
+    tenant_id UUID NOT NULL,
     display_name STRING NOT NULL,
     origin_disabled BOOL NOT NULL DEFAULT TRUE,
-    UNIQUE INDEX idx_origins_tenant_id_pool_id_ip_addr_port (pool_id, ip_addr, port),
+    UNIQUE INDEX idx_origins_pool_id_origin_target_port (pool_id, origin_target, port) WHERE deleted_at is NULL,
     INDEX idx_origin_tenant_id (tenant_id),
     INDEX idx_origins_created_at (created_at),
     INDEX idx_origins_updated_at (updated_at),
     INDEX idx_origins_deleted_at (deleted_at)
+);
+
+
+CREATE TABLE assignments (
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    assignment_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+    pool_id UUID REFERENCES pools(pool_id) ON UPDATE CASCADE,
+    frontend_id UUID REFERENCES frontends(frontend_id) ON UPDATE CASCADE,
+    load_balancer_id UUID REFERENCES load_balancers(load_balancer_id) ON UPDATE CASCADE,
+    tenant_id UUID NOT NULL,
+    UNIQUE INDEX idx_pool_frontend_assocs_pool_id_frontend_id (pool_id, frontend_id) WHERE deleted_at is NULL,
+    INDEX idx_assocs_tenant_id (tenant_id),
+    INDEX idx_assocs_created_at (created_at),
+    INDEX idx_assocs_updated_at (updated_at),
+    INDEX idx_assocs_deleted_at (deleted_at)
 );
 
 -- +goose StatementEnd
@@ -106,10 +110,11 @@ CREATE TABLE origins (
 -- +goose Down
 -- +goose StatementBegin
 
-DROP TABLE load_balancers;
-DROP TABLE frontends;
-DROP TABLE pools;
-DROP TABLE origins;
 DROP TABLE assignments;
+DROP TABLE origins;
+DROP TABLE pools;
+DROP TABLE frontends;
+DROP TABLE load_balancers;
+DROP TABLE locations;
 
 -- +goose StatementEnd

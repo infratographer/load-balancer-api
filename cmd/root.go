@@ -2,6 +2,8 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -34,6 +36,8 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	viper.WriteConfigAs("debugConfig.yaml")
+
 	cobra.CheckErr(rootCmd.Execute())
 }
 
@@ -76,7 +80,10 @@ func initConfig() {
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	setupLogging()
+	setupAppConfig()
+
+	// setupLogging()
+	logger = loggingx.InitLogger(appName, config.AppConfig.Logging)
 
 	// If a config file is found, read it in.
 	err := viper.ReadInConfig()
@@ -87,23 +94,13 @@ func initConfig() {
 	}
 }
 
-func setupLogging() {
-	cfg := zap.NewProductionConfig()
-	if viper.GetBool("logging.pretty") {
-		cfg = zap.NewDevelopmentConfig()
-	}
-
-	if viper.GetBool("logging.debug") {
-		cfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	} else {
-		cfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
-	}
-
-	l, err := cfg.Build()
+// setupAppConfig loads our config.AppConfig struct with the values bound by
+// viper. Then, anywhere we need these values, we can just return to AppConfig
+// instead of performing viper.GetString(...), viper.GetBool(...), etc.
+func setupAppConfig() {
+	err := viper.Unmarshal(&config.AppConfig)
 	if err != nil {
-		panic(err)
+		fmt.Printf("unable to decode app config: %s", err)
+		os.Exit(1)
 	}
-
-	logger = l.Sugar().With("app", appName)
-	defer logger.Sync() //nolint:errcheck
 }
