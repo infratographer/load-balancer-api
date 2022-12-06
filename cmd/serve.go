@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/jmoiron/sqlx"
 	audithelpers "github.com/metal-toolbox/auditevent/helpers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,7 +14,7 @@ import (
 	"go.infratographer.com/x/viperx"
 
 	"go.infratographer.sh/loadbalancerapi/internal/config"
-	"go.infratographer.sh/loadbalancerapi/srv"
+	"go.infratographer.sh/loadbalancerapi/internal/srv"
 )
 
 // serveCmd starts the TODO service
@@ -47,7 +48,7 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 		logger.Fatalw("unable to initialize tracing system", "error", err)
 	}
 
-	// db := initDB()
+	//db := initDB()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -74,9 +75,13 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 	defer auf.Close()
 
 	server := &srv.Server{
+		DB: srv.DB{
+			Driver: initDB(),
+			Debug:  config.AppConfig.Logging.Debug,
+		},
 		Debug:           viper.GetBool("logging.debug"),
 		Listen:          viper.GetString("listen"),
-		Logger:          logger.Desugar(),
+		Logger:          logger,
 		AuditFileWriter: auf,
 	}
 
@@ -91,15 +96,15 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 	return nil
 }
 
-// func initDB() *sqlx.DB {
-// 	dbDriverName := "postgres"
+func initDB() *sqlx.DB {
+	dbDriverName := "postgres"
 
-// 	sqldb, err := crdbx.NewDB(config.AppConfig.CRDB, config.AppConfig.Tracing.Enabled)
-// 	if err != nil {
-// 		logger.Fatalw("failed to initialize database connection", "error", err)
-// 	}
+	sqldb, err := crdbx.NewDB(config.AppConfig.CRDB, config.AppConfig.Tracing.Enabled)
+	if err != nil {
+		logger.Fatalw("failed to initialize database connection", "error", err)
+	}
 
-// 	db := sqlx.NewDb(sqldb, dbDriverName)
+	db := sqlx.NewDb(sqldb, dbDriverName)
 
-// 	return db
-// }
+	return db
+}

@@ -362,9 +362,6 @@ func (q originQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Origi
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for origins")
 	}
 
@@ -633,9 +630,6 @@ func FindOrigin(ctx context.Context, exec boil.ContextExecutor, originID string,
 
 	err := q.Bind(ctx, exec, originObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from origins")
 	}
 

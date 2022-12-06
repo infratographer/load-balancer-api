@@ -31,7 +31,7 @@ clean:
 	@go clean -testcache
 
 models: dev-database
-	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml
+	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models
 	@go mod tidy
 
 vendor:

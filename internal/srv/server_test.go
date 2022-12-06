@@ -13,7 +13,7 @@ import (
 
 func TestUnknownRoute(t *testing.T) {
 	hs := Server{
-		Logger:          zap.NewNop(),
+		Logger:          zap.NewNop().Sugar(),
 		AuditFileWriter: &strings.Builder{},
 	}
 	s := hs.NewServer()
@@ -29,7 +29,7 @@ func TestUnknownRoute(t *testing.T) {
 
 func TestHealthzRoute(t *testing.T) {
 	hs := Server{
-		Logger:          zap.NewNop(),
+		Logger:          zap.NewNop().Sugar(),
 		AuditFileWriter: &strings.Builder{},
 	}
 	s := hs.NewServer()
@@ -45,7 +45,7 @@ func TestHealthzRoute(t *testing.T) {
 
 func TestLivenessRoute(t *testing.T) {
 	hs := Server{
-		Logger:          zap.NewNop(),
+		Logger:          zap.NewNop().Sugar(),
 		AuditFileWriter: &strings.Builder{},
 	}
 	s := hs.NewServer()
@@ -61,7 +61,7 @@ func TestLivenessRoute(t *testing.T) {
 
 func TestReadinessRouteUp(t *testing.T) {
 	hs := Server{
-		Logger:          zap.NewNop(),
+		Logger:          zap.NewNop().Sugar(),
 		AuditFileWriter: &strings.Builder{},
 	}
 	s := hs.NewServer()

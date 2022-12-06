@@ -392,9 +392,6 @@ func (q loadBalancerQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for load_balancers")
 	}
 
@@ -1283,9 +1280,6 @@ func FindLoadBalancer(ctx context.Context, exec boil.ContextExecutor, loadBalanc
 
 	err := q.Bind(ctx, exec, loadBalancerObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from load_balancers")
 	}
 

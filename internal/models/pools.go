@@ -375,9 +375,6 @@ func (q poolQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Pool, e
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for pools")
 	}
 
@@ -1084,9 +1081,6 @@ func FindPool(ctx context.Context, exec boil.ContextExecutor, poolID string, sel
 
 	err := q.Bind(ctx, exec, poolObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from pools")
 	}
 

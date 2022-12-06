@@ -11,17 +11,31 @@ import (
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	gindump "github.com/tpkeeper/gin-dump"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
+	"go.hollow.sh/toolbox/ginjwt"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
+	v1router "go.infratographer.sh/loadbalancerapi/pkg/api/v1/router"
 )
+
+// DB is a wrapper around sqlx.DB
+type DB struct {
+	Driver *sqlx.DB
+	Debug  bool
+}
 
 // Server implements the HTTP Server
 type Server struct {
-	Logger          *zap.Logger
+	Logger          *zap.SugaredLogger
 	Listen          string
 	Debug           bool
+	DB              DB
+	AuthConfig      ginjwt.AuthConfig
 	AuditFileWriter io.Writer
 }
 
@@ -33,6 +47,16 @@ var (
 )
 
 func (s *Server) setup() *gin.Engine {
+	var (
+		authMW *ginjwt.Middleware
+		err    error
+	)
+
+	authMW, err = ginjwt.NewAuthMiddleware(s.AuthConfig)
+	if err != nil {
+		s.Logger.Fatal("failed to initialize auth middleware", "error", err)
+	}
+
 	// Setup default gin router
 	r := gin.New()
 
@@ -53,16 +77,20 @@ func (s *Server) setup() *gin.Engine {
 
 	p.Use(r)
 
-	customLogger := s.Logger.With(zap.String("component", "httpsrv"))
-	r.Use(
-		ginzap.GinzapWithConfig(customLogger, &ginzap.Config{
-			TimeFormat: time.RFC3339,
-			SkipPaths:  []string{"/healthz", "/healthz/readiness", "/healthz/liveness"},
-			UTC:        true,
-		}),
-	)
-
-	r.Use(ginzap.RecoveryWithZap(s.Logger.With(zap.String("component", "httpsrv")), true))
+	logF := func(c *gin.Context) []zapcore.Field {
+		return []zapcore.Field{
+			zap.String("jwt_subject", ginjwt.GetSubject(c)),
+			zap.String("jwt_user", ginjwt.GetUser(c)),
+		}
+	}
+	loggerWithContext := s.Logger.With(zap.String("component", "httpsrv"))
+	r.Use(ginzap.GinzapWithConfig(loggerWithContext.Desugar(), &ginzap.Config{
+		TimeFormat: time.RFC3339,
+		UTC:        true,
+		TraceID:    true,
+		Context:    logF,
+	}))
+	r.Use(ginzap.RecoveryWithZap(loggerWithContext.Desugar(), true))
 
 	tp := otel.GetTracerProvider()
 	if tp != nil {
@@ -78,6 +106,22 @@ func (s *Server) setup() *gin.Engine {
 	r.GET("/healthz", s.livenessCheck)
 	r.GET("/healthz/liveness", s.livenessCheck)
 	r.GET("/healthz/readiness", s.readinessCheck)
+
+	v1Rtr := v1router.New(authMW, s.DB.Driver, s.Logger)
+
+	// Host our latest version of the API under / in addition to /api/v*
+	latest := r.Group("/")
+	{
+		v1Rtr.Routes(latest)
+		if s.Debug {
+			r.Use(gindump.Dump())
+		}
+	}
+
+	v1 := r.Group(v1router.V1URI)
+	{
+		v1Rtr.Routes(v1)
+	}
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "invalid request - route not found"})
