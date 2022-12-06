@@ -1,6 +1,12 @@
 all: lint test
 PHONY: test coverage lint golint clean vendor docker-up docker-down unit-test
 GOOS=linux
+DB_STRING=host=localhost port=26257 user=root sslmode=disable
+DB=dns_controller
+DEV_DB=${DB}
+TEST_DB=${DB}_test
+DEV_URI=dbname=${DEV_DB} ${DB_STRING}
+TEST_URI=dbname=${TEST_DB} ${DB_STRING}
 # use the working dir as the app name, this should be the repo name
 APP_NAME=$(shell basename $(CURDIR))
 
@@ -18,17 +24,8 @@ coverage:
 
 lint: golint
 
-golint: | vendor
-	@echo Linting Go files...
-	@golangci-lint run --build-tags "-tags testtools"
-
-build:
-	@go mod download
-	@CGO_ENABLED=0 GOOS=linux go build -mod=readonly -v -o bin/${APP_NAME}
-
 clean: docker-clean
 	@echo Cleaning...
-	@rm -f app
 	@rm -rf ./dist/
 	@rm -rf coverage.out
 	@go clean -testcache
@@ -37,12 +34,13 @@ vendor:
 	@go mod download
 	@go mod tidy
 
-docker-up: | build
-	@docker-compose build --no-cache --build-arg NAME=${APP_NAME}
-	@docker-compose  -f docker-compose.yml up -d app
+dev-database: | vendor
+	@cockroach sql --insecure -e "drop database if exists ${DEV_DB}"
+	@cockroach sql --insecure -e "create database ${DEV_DB}"
+	@DNSCONTROLLER_DB_URI="${DEV_URI}" go run main.go migrate up
 
-docker-down:
-	@docker-compose -f docker-compose.yml down
-
-docker-clean:
-	@docker-compose -f docker-compose.yml down --volumes
+test-database: | vendor
+	@cockroach sql --insecure -e "drop database if exists ${TEST_DB}"
+	@cockroach sql --insecure -e "create database ${TEST_DB}"
+	@DNSCONTROLLER_DB_URI="${TEST_URI}" go run main.go migrate up
+	@cockroach sql --insecure -e "use ${TEST_DB};"
