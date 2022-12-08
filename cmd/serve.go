@@ -37,9 +37,6 @@ func init() {
 	// App specific flags
 	// TODO - add your app specific flags here
 
-	otelx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
-	crdbx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
-
 	serveCmd.Flags().String("audit-log-path", "/app-audit/audit.log", "file path to write audit logs to.")
 	viperx.MustBindFlag(viper.GetViper(), "audit.log-path", serveCmd.Flags().Lookup("audit-log-path"))
 	serveCmd.Flags().Bool("audit-log-disabled", false, "disable audit logging")

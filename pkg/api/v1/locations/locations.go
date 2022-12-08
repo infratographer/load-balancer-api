@@ -87,17 +87,20 @@ func (l *Location) Find(ctx context.Context, db *sqlx.DB) error {
 		return err
 	}
 
-	return l.FromDBModel(ctx, db, dbm)
+	if err := l.FromDBModel(ctx, db, dbm); err != nil {
+		return err
+	}
+
+	if l.ID.String() == uuid.Nil.String() {
+		return ErrNullUUID
+	}
+
+	return nil
 }
 
 // Delete removes a location from the database
 func (l *Location) Delete(ctx context.Context, db *sqlx.DB) error {
-	err := l.validate()
-	if err != nil {
-		return err
-	}
-
-	err = l.Find(ctx, db)
+	err := l.Find(ctx, db)
 	if err != nil {
 		return err
 	}
@@ -107,8 +110,12 @@ func (l *Location) Delete(ctx context.Context, db *sqlx.DB) error {
 		return err
 	}
 
+	if dbm.LocationID == "" {
+		return ErrNullUUID
+	}
+
 	// soft delete
-	_, err = dbm.Delete(ctx, db, true)
+	_, err = dbm.Delete(ctx, db, false)
 	if err != nil {
 		return err
 	}
@@ -140,8 +147,8 @@ func (l *Location) FromDBModel(ctx context.Context, db *sqlx.DB, dbm *models.Loc
 		return err
 	}
 
-	if err := l.validate(); err != nil {
-		return err
+	if l.ID.String() == uuid.Nil.String() {
+		return ErrNullUUID
 	}
 
 	logger.Debugw("location from db model", "api-model", l, "db-model", dbm)
@@ -160,8 +167,8 @@ func (l *Location) ToDBModel() (*models.Location, error) {
 		TenantID:    l.TenantID.String(),
 	}
 
-	if err := l.validate(); err != nil {
-		return nil, err
+	if l.ID.String() != uuid.Nil.String() {
+		dbm.LocationID = l.ID.String()
 	}
 
 	return dbm, nil
@@ -171,7 +178,7 @@ func (l *Location) ToDBModel() (*models.Location, error) {
 func NewLocation(c *gin.Context) (*Location, error) {
 	l := &Location{}
 
-	if err := c.BindJSON(l); err != nil {
+	if err := c.ShouldBindJSON(l); err != nil {
 		return nil, err
 	}
 

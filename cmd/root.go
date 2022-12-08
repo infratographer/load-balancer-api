@@ -9,8 +9,10 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/goosex"
 	"go.infratographer.com/x/loggingx"
+	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
 
@@ -53,6 +55,8 @@ func init() {
 
 	// Register version command
 	versionx.RegisterCobraCommand(rootCmd, func() { versionx.PrintVersion(logger) })
+	otelx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
+	crdbx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 
 	// Setup migrate command
 	goosex.RegisterCobraCommand(rootCmd, func() {

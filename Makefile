@@ -5,9 +5,9 @@ DB_STRING=host=crdb port=26257 user=root sslmode=disable
 DB=load_balancer_api
 DEV_DB=${DB}_dev
 TEST_DB=${DB}_test
-DEV_URI=dbname=${DEV_DB} ${DB_STRING}
-TEST_URI=dbname=${TEST_DB} ${DB_STRING}
-# use the working dir as the app name, this should be the repo name
+DEV_URI="postgresql://root@crdb:26257/${dev_DB}?sslmode=disable"
+TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
+
 APP_NAME=loadbalancer-api
 
 test: | unit-test
@@ -52,8 +52,6 @@ dev-database: | vendor
 
 test-database: | vendor
 	@echo Creating test database...
-	@cockroach sql -e "drop database if exists ${TEST_DB}"
-	@cockroach sql -e "create database ${TEST_DB}"
-	@LOADBALANCERAPI_DB_URI="${TEST_URI}" go run main.go migrate up
-	@cockroach sql -e "use ${TEST_DB};"
-
+	@COCKROACH_URL="${TEST_URI}" cockroach sql -e "drop database if exists ${TEST_DB}"
+	@COCKROACH_URL="${TEST_URI}" cockroach sql -e "create database ${TEST_DB}"
+	@LOADBALANCERAPI_CRDB_URI="${TEST_URI}" go run main.go migrate up
