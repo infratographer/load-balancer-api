@@ -5,7 +5,11 @@ FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.19-bullseye
 
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends bash-completion
+    && apt-get -y install --no-install-recommends \
+        bash-completion \
+        uuid-runtime \
+        postgresql-client
+
 
 # Set up crdb
 RUN mkdir /usr/local/lib/cockroach

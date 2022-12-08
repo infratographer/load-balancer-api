@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/jmoiron/sqlx"
-	audithelpers "github.com/metal-toolbox/auditevent/helpers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
@@ -16,6 +16,8 @@ import (
 	"go.infratographer.sh/loadbalancerapi/internal/config"
 	"go.infratographer.sh/loadbalancerapi/internal/srv"
 )
+
+const auditLogMode = os.FileMode(0644)
 
 // serveCmd starts the TODO service
 var serveCmd = &cobra.Command{
@@ -40,6 +42,8 @@ func init() {
 
 	serveCmd.Flags().String("audit-log-path", "/app-audit/audit.log", "file path to write audit logs to.")
 	viperx.MustBindFlag(viper.GetViper(), "audit.log-path", serveCmd.Flags().Lookup("audit-log-path"))
+	serveCmd.Flags().Bool("audit-log-disabled", false, "disable audit logging")
+	viperx.MustBindFlag(viper.GetViper(), "audit.disabled", serveCmd.Flags().Lookup("audit-log-disabled"))
 }
 
 func serve(cmdCtx context.Context, v *viper.Viper) error {
@@ -48,10 +52,8 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 		logger.Fatalw("unable to initialize tracing system", "error", err)
 	}
 
-	//db := initDB()
-
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	ctx, cancel := context.WithCancel(cmdCtx)
 
@@ -60,19 +62,16 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 		cancel()
 	}()
 
-	auditpath := viper.GetString("audit.log-path")
+	var auf *os.File
 
-	if auditpath == "" {
-		logger.Fatal("failed starting server. Audit log file path can't be empty")
-	}
+	if !viper.GetBool("audit.disabled") {
+		auf, err = openAuditFile()
+		if err != nil {
+			return err
+		}
 
-	// WARNING: This will block until the file is available;
-	// make sure an initContainer creates the file
-	auf, auerr := audithelpers.OpenAuditLogFileUntilSuccess(auditpath)
-	if auerr != nil {
-		logger.Fatalw("couldn't open audit file.", "error", auerr)
+		defer auf.Close()
 	}
-	defer auf.Close()
 
 	server := &srv.Server{
 		DB: srv.DB{
@@ -94,6 +93,21 @@ func serve(cmdCtx context.Context, v *viper.Viper) error {
 	}
 
 	return nil
+}
+
+func openAuditFile() (*os.File, error) {
+	path := viper.GetString("audit.log-path")
+
+	if path == "" {
+		return nil, ErrAuditFilePathRequired
+	}
+
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, auditLogMode)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
 
 func initDB() *sqlx.DB {
