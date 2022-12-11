@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -19,37 +18,32 @@ func (r *Router) locationsList(c echo.Context) error {
 
 	span.SetAttributes(attribute.String("route", "locationsList"))
 
-	mods := []qm.QueryMod{models.LocationWhere.TenantID.EQ(c.Param("tenant_id"))}
+	tenantID, err := parseTenantID(c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+	}
+
+	mods := []qm.QueryMod{models.LocationWhere.TenantID.EQ(tenantID)}
+
+	name := c.Param("name")
+	if name != "" {
+		mods = append(mods, models.LocationWhere.DisplayName.EQ(name))
+	}
 
 	ls, err := models.Locations(mods...).All(ctx, r.db)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, v1LocationSlice(ls))
-}
-
-// locationGet returns a location for a tenant by ID
-func (r *Router) locationGet(c echo.Context) error {
-	tenantID := c.Param("tenant_id")
-	name := c.Param("name")
-
-	ctx, span := tracer.Start(c.Request().Context(), "locationGet")
-	defer span.End()
-
-	if _, err := uuid.Parse(tenantID); err != nil {
-		return err
+	switch len(ls) {
+	case 0:
+		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
+	case 1:
+		return c.JSON(http.StatusOK, v1Location(ls[0]))
+	default:
+		return c.JSON(http.StatusOK, v1LocationSlice(ls))
 	}
 
-	l, err := models.Locations(
-		models.LocationWhere.TenantID.EQ(tenantID),
-		models.LocationWhere.DisplayName.EQ(name),
-	).One(ctx, r.db)
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, v1Location(l))
 }
 
 // locationCreate creates a new location for a tenant
@@ -83,7 +77,7 @@ func (r *Router) locationCreate(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, v1CreatedResponse())
+	return c.JSON(http.StatusCreated, v1CreatedResponse())
 }
 
 // locationDelete soft deletes a location
@@ -93,14 +87,24 @@ func (r *Router) locationDelete(c echo.Context) error {
 
 	span.SetAttributes(attribute.String("route", "locationDelete"))
 
-	l, err := models.FindLocation(ctx, r.db, c.Param("location_id"))
+	tenantID, err := parseTenantID(c)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+	}
+
+	mods := []qm.QueryMod{
+		models.LocationWhere.TenantID.EQ(tenantID),
+		models.LocationWhere.DisplayName.EQ(c.Param("name")),
+	}
+
+	l, err := models.Locations(mods...).One(ctx, r.db)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
 	}
 
 	_, err = l.Delete(ctx, r.db, false)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
 	}
 
 	return c.JSON(http.StatusOK, v1DeletedResponse())
@@ -163,6 +167,6 @@ func v1LocationSlice(ls models.LocationSlice) any {
 func (r *Router) addLocationRoutes(g *echo.Group) {
 	g.GET("/tenant/:tenant_id/locations", r.locationsList)
 	g.POST("/tenant/:tenant_id/locations", r.locationCreate)
-	g.GET("/tenant/:tenant_id/locations/:name", r.locationGet)
+	g.GET("/tenant/:tenant_id/locations/:name", r.locationsList)
 	g.DELETE("/tenant/:tenant_id/locations/:name", r.locationDelete)
 }

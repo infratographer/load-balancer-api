@@ -10,7 +10,6 @@ import (
 	"go.infratographer.com/loadbalancerapi/pkg/api/v1"
 	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/otelx"
-	"go.infratographer.com/x/versionx"
 	"go.infratographer.com/x/viperx"
 )
 
@@ -45,7 +44,7 @@ func serve(ctx context.Context) {
 		logger.Fatalw("failed to connect to database", "error", err)
 	}
 
-	e := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
+	e := echox.NewServer()
 	r := api.NewRouter(db, logger)
 
 	e.Debug = true

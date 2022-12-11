@@ -18,13 +18,10 @@ import (
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.uber.org/zap"
-
-	"go.infratographer.com/x/versionx"
 )
 
 // NewServer will return an opinionated gin server for processing API requests.
-func NewServer(lgr *zap.Logger, cfg Config, version *versionx.Details) *echo.Echo {
+func NewServer() *echo.Echo {
 	e := echo.New()
 
 	// Middleware
