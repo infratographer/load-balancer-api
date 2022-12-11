@@ -16,8 +16,8 @@ import (
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
 
-	dbm "go.infratographer.sh/loadbalancerapi/db"
-	"go.infratographer.sh/loadbalancerapi/internal/config"
+	dbm "go.infratographer.com/loadbalancerapi/db"
+	"go.infratographer.com/loadbalancerapi/internal/config"
 )
 
 // TODO: update app name
@@ -55,8 +55,8 @@ func init() {
 
 	// Register version command
 	versionx.RegisterCobraCommand(rootCmd, func() { versionx.PrintVersion(logger) })
-	otelx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
-	crdbx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
+	otelx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
+	crdbx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
 
 	// Setup migrate command
 	goosex.RegisterCobraCommand(rootCmd, func() {

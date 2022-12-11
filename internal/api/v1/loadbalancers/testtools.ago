@@ -1,0 +1,59 @@
+package loadbalancers
+
+import (
+	"context"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/stretchr/testify/assert"
+
+	"go.infratographer.com/loadbalancerapi/internal/dbtools"
+	"go.infratographer.com/loadbalancerapi/pkg/api/v1/types"
+)
+
+// CreateTestLocation creates a test location in the database, and returns a cleanup function to remove it.
+func CreateTestLocation(t *testing.T, db *sqlx.DB) (*Location, func()) {
+	tenantID := uuid.New()
+
+	loc := &Location{
+		Object: &types.Location{
+			Name:     "Nemo",
+			TenantID: tenantID,
+		},
+	}
+
+	err := loc.Create(context.Background(), db)
+	assert.Nil(t, err)
+
+	cleanUp := func() {
+		dbtools.CleanUpTables(t, tenantID, "locations")
+	}
+
+	return loc, cleanUp
+}
+
+// CreateTestLoadBalancer creates a test location in the database, and returns a cleanup function to remove it.
+func CreateTestLoadBalancer(t *testing.T, db *sqlx.DB, locationID uuid.UUID) (*LoadBalancer, func()) {
+	tenantID := uuid.New()
+
+	lb := &LoadBalancer{
+		Object: &types.LoadBalancer{
+			LocationID: locationID,
+			Name:       "Nemo",
+			TenantID:   tenantID,
+			IPAddress:  "1.1.1.1",
+			Size:       "small",
+			Type:       "layer-3",
+		},
+	}
+
+	err := lb.Create(context.Background(), db)
+	assert.Nil(t, err)
+
+	cleanUp := func() {
+		dbtools.CleanUpTables(t, tenantID, "load_balancers")
+	}
+
+	return lb, cleanUp
+}

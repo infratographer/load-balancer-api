@@ -1,11 +1,9 @@
 // Package locations provides a the CRUD operations for locations
-package locations
+package loadbalancers
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -16,16 +14,15 @@ import (
 	"github.com/volatiletech/null/v8"
 	"go.uber.org/zap"
 
-	"go.infratographer.sh/loadbalancerapi/internal/dbtools"
-	"go.infratographer.sh/loadbalancerapi/internal/models"
+	"go.infratographer.com/loadbalancerapi/internal/dbtools"
+	"go.infratographer.com/loadbalancerapi/internal/httptools"
+	"go.infratographer.com/loadbalancerapi/internal/models"
+	errorsx "go.infratographer.com/loadbalancerapi/pkg/api/v1/errors"
+	"go.infratographer.com/loadbalancerapi/pkg/api/v1/types"
 )
 
 func init() {
-	logger = zap.NewNop().Sugar()
-}
-
-func fakeBody(payload string) io.ReadCloser {
-	return io.NopCloser(bytes.NewBufferString(payload))
+	SetLogger(zap.NewNop().Sugar())
 }
 
 var (
@@ -38,6 +35,7 @@ func TestNewLocation(t *testing.T) {
 	missingTenantIDBody := `{"display_name": "Nemo"}`
 	missingDisplayNameBody := `{"tenant_id": "` + tenantID.String() + `"}`
 	invalidUUIDBody := `{"display_name": "Nemo", "tenant_id": "1234567"}`
+	badBody := "bad body"
 
 	type args struct {
 		c *gin.Context
@@ -56,14 +54,16 @@ func TestNewLocation(t *testing.T) {
 				c: &[]gin.Context{
 					{
 						Request: &http.Request{
-							Body: fakeBody(happyPathBody),
+							Body: httptools.FakeBody(happyPathBody),
 						},
 					},
 				}[0],
 			},
 			want: &Location{
-				TenantID: tenantID,
-				Name:     "Nemo",
+				Object: &types.Location{
+					TenantID: tenantID,
+					Name:     "Nemo",
+				},
 			},
 			wantErr: false,
 		},
@@ -73,13 +73,13 @@ func TestNewLocation(t *testing.T) {
 				c: &[]gin.Context{
 					{
 						Request: &http.Request{
-							Body: fakeBody(missingTenantIDBody),
+							Body: httptools.FakeBody(missingTenantIDBody),
 						},
 					},
 				}[0],
 			},
 			wantErr: true,
-			err:     ErrTenantIDRequired,
+			err:     errorsx.ErrTenantIDRequired,
 		},
 		{
 			name: "Missing display name",
@@ -87,13 +87,13 @@ func TestNewLocation(t *testing.T) {
 				c: &[]gin.Context{
 					{
 						Request: &http.Request{
-							Body: fakeBody(missingDisplayNameBody),
+							Body: httptools.FakeBody(missingDisplayNameBody),
 						},
 					},
 				}[0],
 			},
 			wantErr: true,
-			err:     ErrNameRequired,
+			err:     errorsx.ErrNameRequired,
 		},
 		{
 			name: "Invalid tenant ID",
@@ -101,13 +101,28 @@ func TestNewLocation(t *testing.T) {
 				c: &[]gin.Context{
 					{
 						Request: &http.Request{
-							Body: fakeBody(invalidUUIDBody),
+							Body: httptools.FakeBody(invalidUUIDBody),
 						},
 					},
 				}[0],
 			},
 			wantErr: true,
 			err:     errInvalidUUID,
+		},
+		{
+			name: "Bad body",
+			args: args{
+				c: &[]gin.Context{
+					{
+						Request: &http.Request{
+							Body: httptools.FakeBody(badBody),
+						},
+					},
+				}[0],
+			},
+			// encoding/json implements its own SyntaxError type, so we can't use it here.
+			err:     errors.New("invalid character 'b' looking for beginning of value"), //nolint:goerr113
+			wantErr: true,
 		},
 	}
 
@@ -118,8 +133,7 @@ func TestNewLocation(t *testing.T) {
 			assert.ErrorContains(t, err, tt.err.Error())
 		} else {
 			assert.Nil(t, err)
-			assert.Equal(t, tt.want.TenantID, got.TenantID)
-			assert.Equal(t, tt.want.Name, got.Name)
+			assert.Equal(t, tt.want, got)
 		}
 	}
 }
@@ -164,15 +178,33 @@ func TestLocation_ToDBModel(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Missing tenant ID",
+			fields: fields{
+				Name: "Nemo",
+			},
+			wantErr: true,
+			err:     errorsx.ErrTenantIDRequired,
+		},
+		{
+			name: "Missing display name",
+			fields: fields{
+				TenantID: tenantID,
+			},
+			wantErr: true,
+			err:     errorsx.ErrNameRequired,
+		},
 	}
 	for _, tt := range tests {
 		l := &Location{
-			CreatedAt: tt.fields.CreatedAt,
-			UpdatedAt: tt.fields.UpdatedAt,
-			DeletedAt: tt.fields.DeletedAt,
-			ID:        tt.fields.ID,
-			TenantID:  tt.fields.TenantID,
-			Name:      tt.fields.Name,
+			&types.Location{
+				CreatedAt: tt.fields.CreatedAt,
+				UpdatedAt: tt.fields.UpdatedAt,
+				DeletedAt: tt.fields.DeletedAt,
+				ID:        tt.fields.ID,
+				TenantID:  tt.fields.TenantID,
+				Name:      tt.fields.Name,
+			},
 		}
 
 		got, err := l.ToDBModel()
@@ -191,29 +223,20 @@ func TestLocation_DB(t *testing.T) {
 	ctx := context.Background()
 	db := dbtools.DatabaseTest(t)
 
-	tenantID := uuid.New()
+	loc1, loc1CleanUp := CreateTestLocation(t, db)
+	defer loc1CleanUp()
 
-	SetLogger(zap.NewNop().Sugar())
-
-	loc1 := &Location{
-		Name:     "Nemo",
-		TenantID: tenantID,
-	}
-
-	err := loc1.Create(ctx, db)
+	err := loc1.Find(ctx, db)
 	assert.Nil(t, err)
 
-	uuid1, err := uuid.Parse(loc1.ID.String())
+	uuid1, err := uuid.Parse(loc1.Object.ID.String())
 	assert.Nil(t, err)
-
 	assert.Len(t, uuid1.String(), 36)
 
-	locArray, err := GetLocations(ctx, db, tenantID)
+	locArray, err := GetLocations(ctx, db, loc1.Object.TenantID)
 	assert.Nil(t, err)
 	assert.Len(t, locArray, 1)
 
 	err = loc1.Delete(ctx, db)
 	assert.Nil(t, err)
-
-	dbtools.CleanUpTables(t, tenantID, "locations")
 }

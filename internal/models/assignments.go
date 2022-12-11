@@ -24,17 +24,17 @@ import (
 
 // Assignment is an object representing the database table.
 type Assignment struct {
-	CreatedAt      time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt      null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	AssignmentID   string      `boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
-	PoolID         null.String `boil:"pool_id" json:"pool_id,omitempty" toml:"pool_id" yaml:"pool_id,omitempty"`
-	FrontendID     null.String `boil:"frontend_id" json:"frontend_id,omitempty" toml:"frontend_id" yaml:"frontend_id,omitempty"`
-	LoadBalancerID null.String `boil:"load_balancer_id" json:"load_balancer_id,omitempty" toml:"load_balancer_id" yaml:"load_balancer_id,omitempty"`
-	TenantID       string      `boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	CreatedAt      time.Time   `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time   `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time   `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	AssignmentID   string      `query:"assignment_id" param:"assignment_id" boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
+	PoolID         null.String `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id,omitempty" toml:"pool_id" yaml:"pool_id,omitempty"`
+	FrontendID     null.String `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id,omitempty" toml:"frontend_id" yaml:"frontend_id,omitempty"`
+	LoadBalancerID null.String `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id,omitempty" toml:"load_balancer_id" yaml:"load_balancer_id,omitempty"`
+	TenantID       string      `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
 
-	R *assignmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L assignmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *assignmentR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L assignmentL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AssignmentColumns = struct {
@@ -218,9 +218,9 @@ var AssignmentRels = struct {
 
 // assignmentR is where relationships are stored.
 type assignmentR struct {
-	Pool         *Pool         `boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
-	LoadBalancer *LoadBalancer `boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
-	Frontend     *Frontend     `boil:"Frontend" json:"Frontend" toml:"Frontend" yaml:"Frontend"`
+	Pool         *Pool         `query:"Pool" param:"Pool" boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
+	LoadBalancer *LoadBalancer `query:"LoadBalancer" param:"LoadBalancer" boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
+	Frontend     *Frontend     `query:"Frontend" param:"Frontend" boil:"Frontend" json:"Frontend" toml:"Frontend" yaml:"Frontend"`
 }
 
 // NewStruct creates a new relationship struct

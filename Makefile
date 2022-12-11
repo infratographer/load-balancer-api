@@ -14,7 +14,7 @@ test: | unit-test
 
 unit-test: | lint
 	@echo Running unit tests...
-	@go test -cover -short -tags testtools ./...
+	@go test -cover ./...
 
 coverage:
 	@echo Generating coverage report...
@@ -24,6 +24,10 @@ coverage:
 
 lint: golint
 
+golint:
+	@echo Running golint...
+	@golangci-lint run
+
 clean:
 	@echo Cleaning...
 	@rm -rf ./dist/
@@ -32,7 +36,7 @@ clean:
 
 models: dev-database
 	@echo Generating models...
-	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models
+	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models --no-tests --tag query,param
 	@go mod tidy
 
 binary: | models

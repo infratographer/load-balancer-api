@@ -1,3 +1,4 @@
+// Package dbtools helps test code that interacts with the database
 package dbtools
 
 import (
@@ -50,6 +51,7 @@ func DatabaseTest(t *testing.T) *sqlx.DB {
 	return testDB
 }
 
+// CleanUpTables deletes all rows from the specified tables for the specified tenant, this should be run per test that uses DatabaseTest
 func CleanUpTables(t *testing.T, tenantID uuid.UUID, tables ...string) {
 	for _, table := range tables {
 		res, err := testDB.Exec("DELETE FROM "+table+" WHERE tenant_id = $1", tenantID.String())

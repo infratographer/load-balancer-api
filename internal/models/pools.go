@@ -24,18 +24,18 @@ import (
 
 // Pool is an object representing the database table.
 type Pool struct {
-	CreatedAt        time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt        time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt        null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	PoolID           string    `boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
-	LoadBalancerID   string    `boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
-	TenantID         string    `boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	Protocol         string    `boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
-	UseProxyProtocol bool      `boil:"use_proxy_protocol" json:"use_proxy_protocol" toml:"use_proxy_protocol" yaml:"use_proxy_protocol"`
-	DisplayName      string    `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	CreatedAt        time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt        time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt        null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	PoolID           string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
+	LoadBalancerID   string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
+	TenantID         string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	Protocol         string    `query:"protocol" param:"protocol" boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
+	UseProxyProtocol bool      `query:"use_proxy_protocol" param:"use_proxy_protocol" boil:"use_proxy_protocol" json:"use_proxy_protocol" toml:"use_proxy_protocol" yaml:"use_proxy_protocol"`
+	DisplayName      string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
 
-	R *poolR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L poolL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *poolR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L poolL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PoolColumns = struct {
@@ -119,9 +119,9 @@ var PoolRels = struct {
 
 // poolR is where relationships are stored.
 type poolR struct {
-	LoadBalancer *LoadBalancer   `boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
-	Assignments  AssignmentSlice `boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
-	Origins      OriginSlice     `boil:"Origins" json:"Origins" toml:"Origins" yaml:"Origins"`
+	LoadBalancer *LoadBalancer   `query:"LoadBalancer" param:"LoadBalancer" boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
+	Assignments  AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
+	Origins      OriginSlice     `query:"Origins" param:"Origins" boil:"Origins" json:"Origins" toml:"Origins" yaml:"Origins"`
 }
 
 // NewStruct creates a new relationship struct
