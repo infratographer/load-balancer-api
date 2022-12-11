@@ -57,6 +57,12 @@ func TestLocationRoutes(t *testing.T) {
 			displayName: "shell",
 		},
 		{
+			name:        "make a shell, again",
+			body:        `{"display_name": "shell", "tenant_id": "` + tenantID.String() + `"}`,
+			status:      http.StatusInternalServerError,
+			displayName: "shell",
+		},
+		{
 			name:   "missing display_name",
 			body:   `{"tenant_id": "` + tenantID.String() + `"}`,
 			status: 500,

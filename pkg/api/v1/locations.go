@@ -74,7 +74,7 @@ func (r *Router) locationCreate(c echo.Context) error {
 	}
 
 	if err := l.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
 	}
 
 	return c.JSON(http.StatusCreated, v1CreatedResponse())
