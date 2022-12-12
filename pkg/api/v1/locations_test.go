@@ -163,7 +163,7 @@ func TestLocationRoutes(t *testing.T) {
 func createAnenmoes(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/locations"
-	happyPath := `{"display_name": "anemones", "tenant_id": "` + tenantID + `"}`
+	happyPath := `{"display_name": "anemones"}`
 
 	t.Run("POST anemones", func(t *testing.T) {
 		res, err := srv.Client().Post(baseURL, "application/json", httptools.FakeBody(happyPath)) //nolint:noctx

@@ -54,7 +54,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	qpb := echo.QueryParamsBinder(c)
 
 	for _, qp := range queryParams {
-		mods = queryParamsToQueryMods(qpb, models.TableNames.LoadBalancers, qp, mods)
+		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
 			r.logger.Debugw("query param", "query_param", qp, "param_vale", c.QueryParam(qp))

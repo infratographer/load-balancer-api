@@ -43,6 +43,7 @@ type response struct {
 }
 
 func v1DeletedResponse() any {
+	//
 	return struct {
 		DeletedAt time.Time `json:"deleted_at"`
 		Message   string    `json:"message"`

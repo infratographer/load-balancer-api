@@ -203,13 +203,12 @@ func createNemoLB(t *testing.T, srv *httptest.Server) (*response, func(t *testin
 	t.Run("create nemo", func(t *testing.T) {
 
 		nemoBody := fmt.Sprintf(`[{
-		"tenant_id": "%s",
 		"location_id": "%s",
 		"load_balancer_size": "small",
 		"load_balancer_type": "layer-3",
 		"ip_addr": "2.2.2.2",
 		"display_name": "Nemo",
-	}]`, tenantID, locationID)
+	}]`, locationID)
 
 		resp, err := http.Post(baseURL, "application/json", httptools.FakeBody(nemoBody)) //nolint
 		assert.NoError(t, err)

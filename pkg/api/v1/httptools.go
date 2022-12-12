@@ -27,7 +27,7 @@ func parseTenantID(c echo.Context) (string, error) {
 
 // queryParamsToQueryMods is a helper function that takes a echo.ValueBinder, table name,
 // and column name to a append a slice of query mods.
-func queryParamsToQueryMods(qpb *echo.ValueBinder, table, column string, mods []qm.QueryMod) []qm.QueryMod {
+func queryParamsToQueryMods(qpb *echo.ValueBinder, column string, mods []qm.QueryMod) []qm.QueryMod {
 	var value string
 
 	_ = qpb.String(column, &value)
