@@ -15,6 +15,7 @@ steps:
           config: .devcontainer/docker-compose.yml
           command: ["make", "ci"]
           workdir: /workspace
+          propagate-uid-gid: true
 
   - label: ":golang: build"
     key: "gobuild"
