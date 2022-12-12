@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,9 +34,6 @@ func TestLocationRoutes(t *testing.T) {
 
 	tenantID := uuid.New()
 	baseURL := srv.URL + "/v1/tenant/" + tenantID.String() + "/locations"
-
-	cleanupAnemones := createAnenmoes(t, srv)
-	defer cleanupAnemones(t)
 
 	var payloadTests = []struct {
 		name        string
@@ -78,11 +76,10 @@ func TestLocationRoutes(t *testing.T) {
 	for _, tt := range payloadTests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := srv.Client().Post(baseURL, "application/json", httptools.FakeBody(tt.body)) //nolint:noctx
-			defer res.Body.Close()
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.status, res.StatusCode)
-
+			res.Body.Close()
 		})
 	}
 
@@ -163,10 +160,10 @@ func TestLocationRoutes(t *testing.T) {
 	}
 }
 
-func createAnenmoes(t *testing.T, srv *httptest.Server) func(t *testing.T) {
-	tenantID := uuid.New()
-	baseURL := srv.URL + "/v1/tenant/" + tenantID.String() + "/locations"
-	happyPath := `{"display_name": "anemones", "tenant_id": "` + tenantID.String() + `"}`
+func createAnenmoes(t *testing.T, srv *httptest.Server) (*locationResp, func(t *testing.T)) {
+	tenantID := uuid.New().String()
+	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/locations"
+	happyPath := `{"display_name": "anemones", "tenant_id": "` + tenantID + `"}`
 
 	t.Run("POST anemones", func(t *testing.T) {
 		res, err := srv.Client().Post(baseURL, "application/json", httptools.FakeBody(happyPath)) //nolint:noctx
@@ -175,14 +172,19 @@ func createAnenmoes(t *testing.T, srv *httptest.Server) func(t *testing.T) {
 		res.Body.Close()
 	})
 
+	loc := locationResp{}
+
 	t.Run("GET anemones", func(t *testing.T) {
 		res, err := srv.Client().Get(baseURL + "/anemones") //nolint:noctx
 		assert.NoError(t, err)
 		assert.Equal(t, 200, res.StatusCode)
+
+		err = json.NewDecoder(res.Body).Decode(&loc)
+		assert.NoError(t, err)
 		res.Body.Close()
 	})
 
-	return func(t *testing.T) {
+	return &loc, func(t *testing.T) {
 		t.Run("DELETE anemones", func(t *testing.T) {
 			req, err := http.NewRequest("DELETE", baseURL+"/anemones", nil) //nolint:noctx
 			assert.NoError(t, err)
@@ -194,5 +196,4 @@ func createAnenmoes(t *testing.T, srv *httptest.Server) func(t *testing.T) {
 			res.Body.Close()
 		})
 	}
-
 }

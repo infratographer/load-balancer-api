@@ -273,28 +273,30 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 	}
 }
 
-func v1LoadBalancer(lb *models.LoadBalancer) any {
-	type tmp struct {
-		CreatedAt  time.Time  `json:"created_at"`
-		UpdatedAt  time.Time  `json:"updated_at"`
-		DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-		ID         string     `json:"id"`
-		TenantID   string     `json:"tenant_id"`
-		IPAddress  string     `json:"ip_address"`
-		Name       string     `json:"display_name"`
-		LocationID string     `json:"location_id"`
-		Size       string     `json:"load_balancer_size"`
-		Type       string     `json:"load_balancer_type"`
-	}
+type loadBalancer struct {
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+	ID         string     `json:"id"`
+	TenantID   string     `json:"tenant_id"`
+	IPAddress  string     `json:"ip_address"`
+	Name       string     `json:"display_name"`
+	LocationID string     `json:"location_id"`
+	Size       string     `json:"load_balancer_size"`
+	Type       string     `json:"load_balancer_type"`
+}
 
-	return struct {
-		Version string `json:"version"`
-		Kind    string `json:"kind"`
-		Data    tmp    `json:"data"`
-	}{
+type loadBalancerResponse struct {
+	Version      string       `json:"version"`
+	Kind         string       `json:"kind"`
+	LoadBalancer loadBalancer `json:"load_balancer"`
+}
+
+func v1LoadBalancer(lb *models.LoadBalancer) *loadBalancerResponse {
+	return &loadBalancerResponse{
 		Version: "v1",
 		Kind:    "loadBalancer",
-		Data: tmp{
+		LoadBalancer: loadBalancer{
 			CreatedAt:  lb.CreatedAt,
 			UpdatedAt:  lb.UpdatedAt,
 			DeletedAt:  lb.DeletedAt.Ptr(),
@@ -309,18 +311,22 @@ func v1LoadBalancer(lb *models.LoadBalancer) any {
 	}
 }
 
-func v1LoadBalancerSlice(lbs models.LoadBalancerSlice) any {
-	out := []any{}
+type loadBalancerSlice []*loadBalancer
+
+type loadBalancerListResponse struct {
+	Version       string            `json:"version"`
+	Kind          string            `json:"kind"`
+	LoadBalancers loadBalancerSlice `json:"load_balancers"`
+}
+
+func v1LoadBalancerSlice(lbs models.LoadBalancerSlice) *loadBalancerListResponse {
+	out := loadBalancerSlice{}
 
 	for _, lb := range lbs {
-		out = append(out, v1LoadBalancer(lb))
+		out = append(out, &v1LoadBalancer(lb).LoadBalancer)
 	}
 
-	return struct {
-		Version       string `json:"version"`
-		Kind          string `json:"kind"`
-		LoadBalancers []any  `json:"list,omitempty"`
-	}{
+	return &loadBalancerListResponse{
 		Version:       "v1",
 		Kind:          "loadBalancerList",
 		LoadBalancers: out,

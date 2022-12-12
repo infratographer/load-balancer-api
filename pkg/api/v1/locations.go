@@ -43,7 +43,6 @@ func (r *Router) locationsList(c echo.Context) error {
 	default:
 		return c.JSON(http.StatusOK, v1LocationSlice(ls))
 	}
-
 }
 
 // locationCreate creates a new location for a tenant
@@ -122,22 +121,24 @@ func valdiateLocation(l *models.Location) error {
 	return nil
 }
 
-func v1Location(l *models.Location) any {
-	type loc struct {
-		CreatedAt time.Time  `json:"created_at"`
-		UpdatedAt time.Time  `json:"updated_at"`
-		DeletedAt *time.Time `json:"deleted_at,omitempty"`
-		ID        string     `json:"id"`
-		TenantID  string     `json:"tenant_id"`
-		Name      string     `json:"display_name"`
-	}
+type location struct {
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	ID        string     `json:"id"`
+	TenantID  string     `json:"tenant_id"`
+	Name      string     `json:"display_name"`
+}
 
-	return struct {
-		Version  string `json:"version"`
-		Location loc    `json:"location"`
-	}{
+type locationResp struct {
+	Version  string    `json:"version"`
+	Location *location `json:"location"`
+}
+
+func v1Location(l *models.Location) *locationResp {
+	return &locationResp{
 		Version: "v1",
-		Location: loc{
+		Location: &location{
 			CreatedAt: l.CreatedAt,
 			UpdatedAt: l.UpdatedAt,
 			DeletedAt: l.DeletedAt.Ptr(),
@@ -148,17 +149,21 @@ func v1Location(l *models.Location) any {
 	}
 }
 
+type locationSlice []*location
+
+type locationSliceResp struct {
+	Version   string        `json:"version"`
+	Locations locationSlice `json:"locations"`
+}
+
 func v1LocationSlice(ls models.LocationSlice) any {
-	out := []any{}
+	out := locationSlice{}
 
 	for _, l := range ls {
-		out = append(out, v1Location(l))
+		out = append(out, v1Location(l).Location)
 	}
 
-	return struct {
-		Version   string `json:"version"`
-		Locations []any  `json:"locations,omitempty"`
-	}{
+	return locationSliceResp{
 		Version:   "v1",
 		Locations: out,
 	}
