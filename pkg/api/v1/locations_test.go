@@ -160,7 +160,7 @@ func TestLocationRoutes(t *testing.T) {
 	}
 }
 
-func createAnenmoes(t *testing.T, srv *httptest.Server) (*locationResp, func(t *testing.T)) {
+func createAnenmoes(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/locations"
 	happyPath := `{"display_name": "anemones", "tenant_id": "` + tenantID + `"}`
@@ -172,7 +172,7 @@ func createAnenmoes(t *testing.T, srv *httptest.Server) (*locationResp, func(t *
 		res.Body.Close()
 	})
 
-	loc := locationResp{}
+	loc := response{}
 
 	t.Run("GET anemones", func(t *testing.T) {
 		res, err := srv.Client().Get(baseURL + "/anemones") //nolint:noctx

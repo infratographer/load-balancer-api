@@ -120,13 +120,6 @@ func valdiateLocation(l *models.Location) error {
 	return nil
 }
 
-type locationResp struct {
-	Version   string        `json:"version"`
-	Kind      string        `json:"kind"`
-	Location  *location     `json:"location,omitempty"`
-	Locations locationSlice `json:"locations,omitempty"`
-}
-
 func (r *Router) addLocationRoutes(g *echo.Group) {
 	g.GET("/tenant/:tenant_id/locations", r.locationsList)
 	g.POST("/tenant/:tenant_id/locations", r.locationCreate)

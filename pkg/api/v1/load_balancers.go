@@ -223,7 +223,7 @@ func (r *Router) loadBalancerDeleteByID(c echo.Context) error {
 	// Look up the load balancer by ID from the path
 	lb, err := models.LoadBalancers(mods...).One(ctx, r.db)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
 	}
 
 	// Delete the load balancer
@@ -233,7 +233,7 @@ func (r *Router) loadBalancerDeleteByID(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
 	}
 
-	return c.JSON(http.StatusOK, v1DeletedResponse())
+	return c.JSON(http.StatusNoContent, v1DeletedResponse())
 }
 
 // loadBalancerDelete deletes a load balancer for a tenant
@@ -266,7 +266,7 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			return err
 		}
 
-		return c.JSON(http.StatusOK, v1DeletedResponse())
+		return c.JSON(http.StatusNoContent, v1DeletedResponse())
 	default:
 		return c.JSON(http.StatusUnprocessableEntity, v1UnprocessableEntityResponse(ErrAmbiguous))
 	}

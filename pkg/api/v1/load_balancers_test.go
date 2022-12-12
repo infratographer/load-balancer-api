@@ -148,28 +148,49 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		})
 	}
 
-	// delete nemo by id
-	t.Run("delete nemo by id", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+nemo.LoadBalancer.ID, nil)
-		assert.NoError(t, err)
+	var deleteTests = []struct {
+		name   string
+		url    string
+		status int
+	}{
+		{
+			name:   "delete invalid id",
+			url:    baseURL + "/invalid",
+			status: http.StatusNotFound,
+		},
+		{
+			name:   "delete small load balancers",
+			url:    baseURL + "?load_balancer_size=small",
+			status: http.StatusUnprocessableEntity,
+		},
+		{
+			name:   "delete nemo by id",
+			url:    baseURL + "/" + nemo.LoadBalancer.ID,
+			status: http.StatusNoContent,
+		},
+		{
+			name:   "delete Dori by name",
+			url:    baseURL + "?display_name=Dori",
+			status: http.StatusNoContent,
+		},
+		{
+			name:   "delete Dori again",
+			url:    baseURL + "?display_name=Dori",
+			status: http.StatusNotFound,
+		},
+	}
 
-		resp, err = http.DefaultClient.Do(req) //nolint
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	for _, tt := range deleteTests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodDelete, tt.url, nil) //nolint
+			assert.NoError(t, err)
 
-		resp.Body.Close()
-	})
-
-	// delete dori by ip
-	t.Run("delete dori by ip", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodDelete, baseURL+"?ip_addr=1.2.1.1", nil) //nolint
-		assert.NoError(t, err)
-
-		resp, err = http.DefaultClient.Do(req) //nolint
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		resp.Body.Close()
-	})
+			resp, err := http.DefaultClient.Do(req) //nolint
+			assert.NoError(t, err)
+			assert.Equal(t, tt.status, resp.StatusCode)
+			resp.Body.Close()
+		})
+	}
 }
 
 // nolint

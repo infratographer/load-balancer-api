@@ -52,7 +52,7 @@ func v1DeletedResponse() any {
 		Version:   "v1",
 		DeletedAt: time.Now(),
 		Message:   "resource deleted",
-		Status:    http.StatusOK,
+		Status:    http.StatusNoContent,
 	}
 }
 
