@@ -25,3 +25,5 @@ RUN go install github.com/volatiletech/sqlboiler/v4@latest \
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
+
+WORKDIR /workspace

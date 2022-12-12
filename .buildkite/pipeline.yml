@@ -13,6 +13,7 @@ steps:
           run: "app"
           config: .devcontainer/docker-compose.yml
           command: ["make", "test"]
+          workdir: /workspace
 
   - label: ":golang: build"
     key: "gobuild"
