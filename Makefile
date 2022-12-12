@@ -10,9 +10,11 @@ TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
 
-test: | models unit-test
+ci: | dev-database test
 
-unit-test: | lint
+test: | unit-test
+
+unit-test:
 	@echo Running unit tests...
 	@go test -cover ./...
 
@@ -53,9 +55,3 @@ dev-database: | vendor
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
 	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
-
-test-database: | vendor
-	@echo Creating test database...
-	@COCKROACH_URL="${TEST_URI}" cockroach sql -e "drop database if exists ${TEST_DB}"
-	@COCKROACH_URL="${TEST_URI}" cockroach sql -e "create database ${TEST_DB}"
-	@LOADBALANCERAPI_CRDB_URI="${TEST_URI}" go run main.go migrate up
