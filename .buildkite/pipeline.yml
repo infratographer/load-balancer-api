@@ -10,6 +10,7 @@ steps:
     key: "test"
     plugins:
       - docker-compose#v4.7.0:
+          cli-version: 2
           run: "app"
           config: .devcontainer/docker-compose.yml
           command: ["make", "test"]
