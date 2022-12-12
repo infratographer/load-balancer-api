@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Check if docker-compose is installed, if not install it
+stat ~/.docker/cli-plugins/docker-compose && exit 0
+
+# Install docker-compose
+mkdir -p ~/.docker/cli-plugins
+curl -sLl https://github.com/docker/compose/releases/download/v2.14.0/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
+
+# Add an alias to the docker-compose command
+alias docker-compose='docker compose'
