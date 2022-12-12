@@ -13,7 +13,7 @@ steps:
           cli-version: 2
           run: "app"
           config: .devcontainer/docker-compose.yml
-          command: ["make", "test"]
+          command: ["make", "ci"]
           workdir: /workspace
 
   - label: ":golang: build"
