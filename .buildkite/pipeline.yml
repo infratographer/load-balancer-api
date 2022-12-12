@@ -9,9 +9,10 @@ steps:
   - label: ":test_tube: test"
     key: "test"
     plugins:
-      - docker#v5.3.0:
-          image: "golang:1.19"
-          command: ["go", "test", "-cover" ,"-race", "./..."]
+      - docker-compose#v4.7.0:
+          run: "app"
+          config: .devcontainer/docker-compose.yml
+          command: ["make", "test"]
 
   - label: ":golang: build"
     key: "gobuild"
