@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -270,66 +269,6 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 		return c.JSON(http.StatusOK, v1DeletedResponse())
 	default:
 		return c.JSON(http.StatusUnprocessableEntity, v1UnprocessableEntityResponse(ErrAmbiguous))
-	}
-}
-
-type loadBalancer struct {
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-	ID         string     `json:"id"`
-	TenantID   string     `json:"tenant_id"`
-	IPAddress  string     `json:"ip_address"`
-	Name       string     `json:"display_name"`
-	LocationID string     `json:"location_id"`
-	Size       string     `json:"load_balancer_size"`
-	Type       string     `json:"load_balancer_type"`
-}
-
-type loadBalancerResponse struct {
-	Version      string       `json:"version"`
-	Kind         string       `json:"kind"`
-	LoadBalancer loadBalancer `json:"load_balancer"`
-}
-
-func v1LoadBalancer(lb *models.LoadBalancer) *loadBalancerResponse {
-	return &loadBalancerResponse{
-		Version: "v1",
-		Kind:    "loadBalancer",
-		LoadBalancer: loadBalancer{
-			CreatedAt:  lb.CreatedAt,
-			UpdatedAt:  lb.UpdatedAt,
-			DeletedAt:  lb.DeletedAt.Ptr(),
-			ID:         lb.LoadBalancerID,
-			Name:       lb.DisplayName,
-			IPAddress:  lb.IPAddr,
-			TenantID:   lb.TenantID,
-			LocationID: lb.LocationID,
-			Size:       lb.LoadBalancerSize,
-			Type:       lb.LoadBalancerType,
-		},
-	}
-}
-
-type loadBalancerSlice []*loadBalancer
-
-type loadBalancerListResponse struct {
-	Version       string            `json:"version"`
-	Kind          string            `json:"kind"`
-	LoadBalancers loadBalancerSlice `json:"load_balancers"`
-}
-
-func v1LoadBalancerSlice(lbs models.LoadBalancerSlice) *loadBalancerListResponse {
-	out := loadBalancerSlice{}
-
-	for _, lb := range lbs {
-		out = append(out, &v1LoadBalancer(lb).LoadBalancer)
-	}
-
-	return &loadBalancerListResponse{
-		Version:       "v1",
-		Kind:          "loadBalancerList",
-		LoadBalancers: out,
 	}
 }
 

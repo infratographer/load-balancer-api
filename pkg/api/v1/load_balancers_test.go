@@ -101,7 +101,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	}
 
 	// get nemo load balancer id
-	nemo := loadBalancerResponse{}
+	nemo := response{}
 	resp, err := http.Get(baseURL + "?display_name=Nemo") //nolint
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -173,7 +173,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 }
 
 // nolint
-func createNemoLB(t *testing.T, srv *httptest.Server) (*loadBalancerResponse, func(t *testing.T)) {
+func createNemoLB(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
 	tenantID := uuid.New().String()
 	loc, cleanupLoc := createAnenmoes(t, srv)
 	locationID := loc.Location.ID
@@ -197,7 +197,7 @@ func createNemoLB(t *testing.T, srv *httptest.Server) (*loadBalancerResponse, fu
 	})
 
 	// get nemo by name
-	nemo := loadBalancerResponse{}
+	nemo := response{}
 
 	t.Run("get nemo by name", func(t *testing.T) {
 		resp, err := http.Get(baseURL + "?display_name=Nemo")

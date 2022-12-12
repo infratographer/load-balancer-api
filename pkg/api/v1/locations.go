@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -121,52 +120,11 @@ func valdiateLocation(l *models.Location) error {
 	return nil
 }
 
-type location struct {
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	ID        string     `json:"id"`
-	TenantID  string     `json:"tenant_id"`
-	Name      string     `json:"display_name"`
-}
-
 type locationResp struct {
-	Version  string    `json:"version"`
-	Location *location `json:"location"`
-}
-
-func v1Location(l *models.Location) *locationResp {
-	return &locationResp{
-		Version: "v1",
-		Location: &location{
-			CreatedAt: l.CreatedAt,
-			UpdatedAt: l.UpdatedAt,
-			DeletedAt: l.DeletedAt.Ptr(),
-			ID:        l.LocationID,
-			TenantID:  l.TenantID,
-			Name:      l.DisplayName,
-		},
-	}
-}
-
-type locationSlice []*location
-
-type locationSliceResp struct {
 	Version   string        `json:"version"`
-	Locations locationSlice `json:"locations"`
-}
-
-func v1LocationSlice(ls models.LocationSlice) any {
-	out := locationSlice{}
-
-	for _, l := range ls {
-		out = append(out, v1Location(l).Location)
-	}
-
-	return locationSliceResp{
-		Version:   "v1",
-		Locations: out,
-	}
+	Kind      string        `json:"kind"`
+	Location  *location     `json:"location,omitempty"`
+	Locations locationSlice `json:"locations,omitempty"`
 }
 
 func (r *Router) addLocationRoutes(g *echo.Group) {
