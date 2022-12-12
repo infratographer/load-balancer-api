@@ -12,3 +12,4 @@ chmod +x ~/.docker/cli-plugins/docker-compose
 
 # Add an alias to the docker-compose command
 alias docker-compose='docker compose'
+echo "alias docker-compose='docker compose'" >> ~/.bashrc
