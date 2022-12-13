@@ -5,7 +5,7 @@ DB_STRING=host=crdb port=26257 user=root sslmode=disable
 DB=load_balancer_api
 DEV_DB=${DB}_dev
 TEST_DB=${DB}_test
-DEV_URI="postgresql://root@crdb:26257/${dev_DB}?sslmode=disable"
+DEV_URI="postgresql://root@crdb:26257/${DEV_DB}?sslmode=disable"
 TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
