@@ -15,10 +15,6 @@ steps:
           config: .devcontainer/docker-compose.yml
           command: ["make", "ci"]
           workdir: /workspace
-          environment:
-            - "GOMODCACHE=/workspace/.go/pkg/mod"
-            - "GOPATH=/workspace/.go"
-            - "GOCACHE=/workspace/.go/cache/go-build"
           propagate-uid-gid: true
 
   - label: ":golang: build"
