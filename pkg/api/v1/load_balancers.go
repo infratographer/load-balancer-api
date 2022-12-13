@@ -15,7 +15,7 @@ import (
 // for use with sqlboiler. It returns an error if the tenant_id is not present in the request
 // path or an invalid uuid is provided. It also returns an error if an invalid uuid is provided
 // for the load_balancer_id in the request path. It also iterates the expected query params
-// and appemds them to the slice of query mods if they are present in the request.
+// and appends them to the slice of query mods if they are present in the request.
 func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
 		tenantID       string
