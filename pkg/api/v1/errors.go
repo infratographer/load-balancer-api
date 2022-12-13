@@ -21,7 +21,6 @@ var (
 	// ErrNameRequired is returned when a location name is not provided
 	ErrNameRequired = errors.New("name is required")
 
-	//
 	// ErrNotFound is returned when a ip address is not found
 	ErrNotFound = errors.New("ip address not found")
 
