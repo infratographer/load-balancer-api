@@ -139,11 +139,6 @@ func TestLocationRoutes(t *testing.T) {
 			path:   baseURL + "/shell",
 			status: http.StatusOK,
 		},
-		// {
-		// 	name:   "delete invalid location",
-		// 	path:   baseURL + "/invalid",
-		// 	status: http.StatusNotFound,
-		// },
 	}
 
 	for _, tt := range deleteTests {

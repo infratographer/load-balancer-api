@@ -100,8 +100,7 @@ func (r *Router) locationDelete(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
 	}
 
-	_, err = l.Delete(ctx, r.db, false)
-	if err != nil {
+	if _, err = l.Delete(ctx, r.db, false); err != nil {
 		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
 	}
 

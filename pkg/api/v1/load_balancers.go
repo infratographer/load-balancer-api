@@ -18,6 +18,7 @@ import (
 // and appends them to the slice of query mods if they are present in the request.
 func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
+		err            error
 		tenantID       string
 		loadBalancerID string
 	)
@@ -26,8 +27,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	ppb := echo.PathParamsBinder(c)
 
 	// require tenant_id in the request path
-	tenantID, err := parseTenantID(c)
-	if err != nil {
+	if tenantID, err = parseTenantID(c); err != nil {
 		return nil, err
 	}
 
@@ -35,8 +35,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	r.logger.Debugw("path param", "tenant_id", tenantID)
 
 	// optional load_balancer_id in the request path
-	err = ppb.String("load_balancer_id", &tenantID).BindError()
-	if err != nil {
+	if err = ppb.String("load_balancer_id", &tenantID).BindError(); err != nil {
 		return nil, err
 	}
 
@@ -61,8 +60,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		}
 	}
 
-	err = qpb.BindError()
-	if err != nil {
+	if err = qpb.BindError(); err != nil {
 		return nil, err
 	}
 
@@ -227,8 +225,7 @@ func (r *Router) loadBalancerDeleteByID(c echo.Context) error {
 	}
 
 	// Delete the load balancer
-	_, err = lb.Delete(ctx, r.db, false)
-	if err != nil {
+	if _, err = lb.Delete(ctx, r.db, false); err != nil {
 		r.logger.Errorw("failed to delete load balancer", "error", err)
 		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
 	}
