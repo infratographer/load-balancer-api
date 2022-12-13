@@ -11,8 +11,7 @@ import (
 func parseTenantID(c echo.Context) (string, error) {
 	var tenantID string
 
-	err := echo.PathParamsBinder(c).MustString("tenant_id", &tenantID).BindError()
-	if err != nil {
+	if err := echo.PathParamsBinder(c).MustString("tenant_id", &tenantID).BindError(); err != nil {
 		return "", ErrTenantIDRequired
 	}
 
