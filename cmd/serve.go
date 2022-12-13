@@ -17,8 +17,7 @@ var (
 	defaultLBAPIListenAddr = ":7608"
 )
 
-// ServeCmd represents the serve command
-var ServeCmd = &cobra.Command{
+var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the load balancer API",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -27,10 +26,10 @@ var ServeCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(ServeCmd)
+	rootCmd.AddCommand(serveCmd)
 
-	ServeCmd.Flags().StringP("listen", "l", defaultLBAPIListenAddr, "The address to listen on")
-	viperx.MustBindFlag(viper.GetViper(), "listen", ServeCmd.Flags().Lookup("listen"))
+	serveCmd.Flags().StringP("listen", "l", defaultLBAPIListenAddr, "The address to listen on")
+	viperx.MustBindFlag(viper.GetViper(), "listen", serveCmd.Flags().Lookup("listen"))
 }
 
 func serve(ctx context.Context) {
