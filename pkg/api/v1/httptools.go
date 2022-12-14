@@ -6,12 +6,13 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+var tenantHeader = "X-Infratographer-Tenant-ID"
+
 // parseTenantID parses the tenant_id from the request path and returns an error if the tenant_id
 // is not present or an invalid uuid is provided.
-func parseTenantID(c echo.Context) (string, error) {
-	var tenantID string
-
-	if err := echo.PathParamsBinder(c).MustString("tenant_id", &tenantID).BindError(); err != nil {
+func (r *Router) parseTenantID(c echo.Context) (string, error) {
+	tenantID := c.Request().Header.Get(tenantHeader)
+	if tenantID == "" {
 		return "", ErrTenantIDRequired
 	}
 

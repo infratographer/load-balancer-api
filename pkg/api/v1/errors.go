@@ -3,6 +3,9 @@ package api
 import "errors"
 
 var (
+	// ErrEmptyPayload is returned when a payload is empty
+	ErrEmptyPayload = errors.New("payload is empty")
+
 	// ErrAlreadyDeleted is returned when a load balancer is already deleted
 	ErrAlreadyDeleted = errors.New("load balancer already deleted")
 

@@ -1,8 +1,6 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -17,9 +15,9 @@ func (r *Router) locationsList(c echo.Context) error {
 
 	span.SetAttributes(attribute.String("route", "locationsList"))
 
-	tenantID, err := parseTenantID(c)
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	mods := []qm.QueryMod{models.LocationWhere.TenantID.EQ(tenantID)}
@@ -31,16 +29,14 @@ func (r *Router) locationsList(c echo.Context) error {
 
 	ls, err := models.Locations(mods...).All(ctx, r.db)
 	if err != nil {
-		return err
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	switch len(ls) {
 	case 0:
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
-	case 1:
-		return c.JSON(http.StatusOK, v1Location(ls[0]))
+		return v1NotFoundResponse(c)
 	default:
-		return c.JSON(http.StatusOK, v1LocationSlice(ls))
+		return v1Locations(c, ls)
 	}
 }
 
@@ -54,12 +50,12 @@ func (r *Router) locationCreate(c echo.Context) error {
 	}{}
 
 	if err := c.Bind(&input); err != nil {
-		return err
+		return v1InternalServerErrorResponse(c, err)
 	}
 
-	tenantID, err := parseTenantID(c)
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
-		return err
+		return v1BadRequestResponse(c, err)
 	}
 
 	l := &models.Location{
@@ -68,14 +64,14 @@ func (r *Router) locationCreate(c echo.Context) error {
 	}
 
 	if err := valdiateLocation(l); err != nil {
-		return err
+		return v1BadRequestResponse(c, err)
 	}
 
 	if err := l.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
+		return v1InternalServerErrorResponse(c, err)
 	}
 
-	return c.JSON(http.StatusCreated, v1CreatedResponse())
+	return v1CreatedResponse(c)
 }
 
 // locationDelete soft deletes a location
@@ -85,9 +81,9 @@ func (r *Router) locationDelete(c echo.Context) error {
 
 	span.SetAttributes(attribute.String("route", "locationDelete"))
 
-	tenantID, err := parseTenantID(c)
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	mods := []qm.QueryMod{
@@ -97,14 +93,14 @@ func (r *Router) locationDelete(c echo.Context) error {
 
 	l, err := models.Locations(mods...).One(ctx, r.db)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
+		return v1NotFoundResponse(c)
 	}
 
 	if _, err = l.Delete(ctx, r.db, false); err != nil {
-		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
+		return v1InternalServerErrorResponse(c, err)
 	}
 
-	return c.JSON(http.StatusOK, v1DeletedResponse())
+	return v1DeletedResponse(c)
 }
 
 func valdiateLocation(l *models.Location) error {
@@ -120,8 +116,10 @@ func valdiateLocation(l *models.Location) error {
 }
 
 func (r *Router) addLocationRoutes(g *echo.Group) {
-	g.GET("/tenant/:tenant_id/locations", r.locationsList)
-	g.POST("/tenant/:tenant_id/locations", r.locationCreate)
-	g.GET("/tenant/:tenant_id/locations/:name", r.locationsList)
-	g.DELETE("/tenant/:tenant_id/locations/:name", r.locationDelete)
+	g.GET("/locations", r.locationsList)
+	g.GET("/locations/:name", r.locationsList)
+
+	g.POST("/locations", r.locationCreate)
+
+	g.DELETE("/locations/:name", r.locationDelete)
 }

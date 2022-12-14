@@ -56,6 +56,7 @@ func (r *Router) Routes(e *echo.Echo) {
 
 	v1 := e.Group("v1")
 	{
+		r.addFrontendRoutes(v1)
 		r.addLocationRoutes(v1)
 		r.addLoadBalancerRoutes(v1)
 	}

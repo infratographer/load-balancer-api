@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.infratographer.com/loadbalancerapi/internal/httptools"
 )
 
 func TestLoadBalancerRoutes(t *testing.T) {
@@ -17,232 +16,221 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
-	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/loadbalancers"
+	baseURL := srv.URL + "/v1/loadbalancers"
 
-	locationResp, cleanupAnemones := createAnenmoes(t, srv)
+	locationResp, cleanupAnemones := createAnemones(t, srv)
 	defer cleanupAnemones(t)
 
-	locationID := locationResp.Location.ID
+	locationID := (*locationResp.Locations)[0].ID
 
-	var payloadTests = []struct {
-		name   string
-		body   string
-		status int
-	}{
+	doHTTPTests(t, []httpTest{
+		// POST
 		{
 			name:   "happy path",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
 			status: http.StatusCreated,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "happy path 2",
 			body:   fmt.Sprintf(`[{"display_name": "Dori", "location_id": "%s", "ip_addr": "1.2.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
 			status: http.StatusCreated,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "Duplicate",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "missing display name",
 			body:   fmt.Sprintf(`[{"location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "missing location id",
 			body:   `[{"display_name": "Nemo", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`,
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "missing size",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "missing type",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "invalid type",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-12"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "bad ip address",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "Dori","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "ipv6",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "2601::","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "empty body",
 			body:   `[]`,
 			status: http.StatusUnprocessableEntity,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
 		{
 			name:   "bad body",
 			body:   `bad body`,
 			status: http.StatusBadRequest,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
 		},
-	}
-
-	for _, tt := range payloadTests {
-		t.Run(tt.name, func(t *testing.T) {
-			resp, err := http.Post(baseURL, "application/json", httptools.FakeBody(tt.body)) //nolint
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, resp.StatusCode)
-			resp.Body.Close()
-		})
-	}
-
-	// get nemo load balancer id
-	nemo := response{}
-	resp, err := http.Get(baseURL + "?display_name=Nemo") //nolint
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	err = json.NewDecoder(resp.Body).Decode(&nemo)
-	assert.NoError(t, err)
-	assert.Equal(t, 36 /*uuid*/, len(nemo.LoadBalancer.ID))
-
-	resp.Body.Close()
-
-	var getTests = []struct {
-		name   string
-		url    string
-		status int
-	}{
+		// GET tests
 		{
 			name:   "happy path",
-			url:    baseURL,
+			path:   baseURL,
 			status: http.StatusOK,
+			tenant: tenantID,
 		},
 		{
 			name:   "happy path nemo by name",
-			url:    baseURL + "?display_name=Nemo",
+			path:   baseURL + "?display_name=Nemo",
 			status: http.StatusOK,
+			tenant: tenantID,
 		},
 		{
 			name:   "happy path nemo by ip",
-			url:    baseURL + "?ip_addr=1.1.1.1",
+			path:   baseURL + "?ip_addr=1.1.1.1",
 			status: http.StatusOK,
+			tenant: tenantID,
 		},
-		{
-			name:   "happy path nemo by id",
-			url:    baseURL + "/" + nemo.LoadBalancer.ID,
-			status: http.StatusOK,
-		},
-	}
 
-	for _, tt := range getTests {
-		t.Run(tt.name, func(t *testing.T) {
-			resp, err := http.Get(tt.url) //nolint
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, resp.StatusCode)
-			resp.Body.Close()
-		})
-	}
-
-	var deleteTests = []struct {
-		name   string
-		url    string
-		status int
-	}{
+		// DELETE tests
 		{
 			name:   "delete invalid id",
-			url:    baseURL + "/invalid",
-			status: http.StatusNotFound,
+			path:   baseURL + "/invalid",
+			status: http.StatusUnprocessableEntity,
+			method: http.MethodDelete,
+			tenant: tenantID,
 		},
 		{
 			name:   "delete small load balancers",
-			url:    baseURL + "?load_balancer_size=small",
+			path:   baseURL + "?load_balancer_size=small",
 			status: http.StatusUnprocessableEntity,
+			method: http.MethodDelete,
+			tenant: tenantID,
 		},
 		{
-			name:   "delete nemo by id",
-			url:    baseURL + "/" + nemo.LoadBalancer.ID,
+			name:   "delete nemo by Name",
+			path:   baseURL + "?display_name=Nemo",
 			status: http.StatusNoContent,
+			method: http.MethodDelete,
+			tenant: tenantID,
 		},
 		{
 			name:   "delete Dori by name",
-			url:    baseURL + "?display_name=Dori",
+			path:   baseURL + "?display_name=Dori",
 			status: http.StatusNoContent,
+			method: http.MethodDelete,
+			tenant: tenantID,
 		},
 		{
 			name:   "delete Dori again",
-			url:    baseURL + "?display_name=Dori",
+			path:   baseURL + "?display_name=Dori",
 			status: http.StatusNotFound,
+			method: http.MethodDelete,
+			tenant: tenantID,
+		},
+	})
+}
+
+func createNemoLB(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
+	tenantID := uuid.New().String()
+	loc, cleanupLoc := createAnemones(t, srv)
+	locationID := (*loc.Locations)[0].ID
+	baseURL := srv.URL + "/v1/loadbalancers"
+
+	test := []httpTest{
+		{
+			name:   "make nemo",
+			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
+			status: http.StatusCreated,
 		},
 	}
 
-	for _, tt := range deleteTests {
-		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete, tt.url, nil) //nolint
-			assert.NoError(t, err)
+	doHTTPTests(t, test)
 
-			resp, err := http.DefaultClient.Do(req) //nolint
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, resp.StatusCode)
-			resp.Body.Close()
-		})
-	}
-}
+	// get loadbalancer by name
+	loadbalancer := response{}
 
-// nolint
-func createNemoLB(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
-	tenantID := uuid.New().String()
-	loc, cleanupLoc := createAnenmoes(t, srv)
-	locationID := loc.Location.ID
-	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/loadbalancers"
-	// post to create nemo
-	t.Run("create nemo", func(t *testing.T) {
-
-		nemoBody := fmt.Sprintf(`[{
-		"location_id": "%s",
-		"load_balancer_size": "small",
-		"load_balancer_type": "layer-3",
-		"ip_addr": "2.2.2.2",
-		"display_name": "Nemo",
-	}]`, locationID)
-
-		resp, err := http.Post(baseURL, "application/json", httptools.FakeBody(nemoBody)) //nolint
+	t.Run("get nemo by name:[POST] "+baseURL+"?display_name=Nemo", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, baseURL+"?display_name=Nemo", nil) //nolint
 		assert.NoError(t, err)
-		assert.Equal(t, http.StatusCreated, resp.StatusCode)
-		resp.Body.Close()
-	})
 
-	// get nemo by name
-	nemo := response{}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(tenantHeader, tenantID)
 
-	t.Run("get nemo by name", func(t *testing.T) {
-		resp, err := http.Get(baseURL + "?display_name=Nemo")
+		resp, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		err = json.NewDecoder(resp.Body).Decode(&nemo)
+		err = json.NewDecoder(resp.Body).Decode(&loadbalancer)
 		assert.NoError(t, err)
-		assert.Equal(t, 36 /*uuid*/, len(nemo.LoadBalancer.ID))
 		resp.Body.Close()
 	})
 
-	return &nemo, func(t *testing.T) {
-		// delete nemo by id
-		t.Run("delete nemo by id", func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+nemo.LoadBalancer.ID, nil)
-			assert.NoError(t, err)
+	return &loadbalancer, func(t *testing.T) {
+		test := []httpTest{
+			{
+				name:   "delete nemo",
+				tenant: tenantID,
+				path:   baseURL + "?display_name=Nemo",
+				method: http.MethodDelete,
+				status: http.StatusNoContent,
+			},
+		}
 
-			resp, err := http.DefaultClient.Do(req)
-			assert.NoError(t, err)
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
+		doHTTPTests(t, test)
 
-			resp.Body.Close()
-
-			cleanupLoc(t)
-		})
+		cleanupLoc(t)
 	}
 }
