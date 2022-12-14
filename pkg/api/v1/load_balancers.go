@@ -1,14 +1,16 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
+	"github.com/dspinhirne/netaddr-go"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.infratographer.com/loadbalancerapi/internal/models"
 	"go.opentelemetry.io/otel/attribute"
+
+	"go.infratographer.com/loadbalancerapi/internal/models"
 )
 
 // loadBalancerParamsBinding binds the request path and query params to a slice of query mods
@@ -27,7 +29,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	ppb := echo.PathParamsBinder(c)
 
 	// require tenant_id in the request path
-	if tenantID, err = parseTenantID(c); err != nil {
+	if tenantID, err = r.parseTenantID(c); err != nil {
 		return nil, err
 	}
 
@@ -76,52 +78,21 @@ func (r *Router) loadBalancerGet(c echo.Context) error {
 
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		r.logger.Errorw("failed to bind params", "error", err)
+		return v1BadRequestResponse(c, err)
 	}
 
 	lbs, err := models.LoadBalancers(mods...).All(ctx, r.db)
 	if err != nil {
-		return err
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	switch len(lbs) {
 	case 0:
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
-	case 1:
-		return c.JSON(http.StatusOK, v1LoadBalancer(lbs[0]))
+		return v1NotFoundResponse(c)
 	default:
-		return c.JSON(http.StatusOK, v1LoadBalancerSlice(lbs))
+		return v1LoadBalancers(c, lbs)
 	}
-}
-
-// loadBalancerGetByID returns a load balancer for a tenant by ID
-func (r *Router) loadBalancerGetByID(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "loadBalancerGetByID")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "loadBalancerGetByID"))
-
-	// Look up the load balancer by ID from the path
-	lb, err := models.FindLoadBalancer(ctx, r.db, c.Param("load_balancer_id"))
-	if err != nil {
-		return err
-	}
-
-	tenantID, err := parseTenantID(c)
-	if err != nil {
-		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
-	}
-
-	// Ensure the tenant ID matches the tenant ID in the path
-	// If not, return a 404. This prevents a tenant from accessing another tenant's load balancer
-	if lb.TenantID != tenantID {
-		r.logger.Errorw("not found", "db_tenant_id", lb.TenantID, "path_tenant_id", tenantID)
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
-	}
-
-	return c.JSON(http.StatusOK, v1LoadBalancer(lb))
 }
 
 // loadBalancerCreate creates a new load balancer for a tenant
@@ -131,30 +102,25 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	span.SetAttributes(attribute.String("route", "loadBalancerCreate"))
 
-	type input struct {
+	payload := []struct {
 		DisplayName      string `json:"display_name"`
 		LoadBalancerSize string `json:"load_balancer_size"`
 		LoadBalancerType string `json:"load_balancer_type"`
 		IPAddr           string `json:"ip_addr"`
 		LocationID       string `json:"location_id"`
-	}
+	}{}
 
-	type inputSlice []input
-
-	payload := inputSlice{}
-
-	err := c.Bind(&payload)
-	if err != nil {
-		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+	if err := c.Bind(&payload); err != nil {
+		r.logger.Errorw("failed to bind load balancer input", "error", err)
+		return v1BadRequestResponse(c, err)
 	}
 
 	// Ensure the tenant ID is a set from the path,this prevents
 	// a tenant from creating a load balancer for another tenant
-	tenantID, err := parseTenantID(c)
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
 		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	lbs := models.LoadBalancerSlice{}
@@ -162,7 +128,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		r.logger.Errorw("failed to begin transaction", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	for _, p := range payload {
@@ -175,6 +141,14 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			LocationID:       p.LocationID,
 		}
 
+		if err := validateLoadBalancer(lb); err != nil {
+			_ = tx.Rollback()
+
+			r.logger.Errorw("failed to validate load balancer", "error", err)
+
+			return v1UnprocessableEntityResponse(c, err)
+		}
+
 		lbs = append(lbs, lb)
 
 		err = lb.Insert(ctx, tx, boil.Infer())
@@ -183,54 +157,74 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 			_ = tx.Rollback()
 
-			return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+			return v1InternalServerErrorResponse(c, err)
 		}
 	}
 
 	switch len(lbs) {
 	case 0:
 		_ = tx.Rollback()
-		return c.JSON(http.StatusUnprocessableEntity, v1UnprocessableEntityResponse(ErrInvalidLoadBalancer))
+		return v1UnprocessableEntityResponse(c, ErrInvalidLoadBalancer)
 	default:
 		if err := tx.Commit(); err != nil {
 			r.logger.Errorw("failed to commit transaction", "error", err)
-			return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+			return v1BadRequestResponse(c, err)
 		}
 
-		return c.JSON(http.StatusCreated, v1CreatedResponse())
+		return v1CreatedResponse(c)
 	}
 }
 
-// loadBalancerDeleteByID deletes a load balancer for a tenant by ID
-func (r *Router) loadBalancerDeleteByID(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "loadBalancerDeleteByID")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "loadBalancerDeleteByID"))
-
-	tenantID, err := parseTenantID(c)
-	if err != nil {
-		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+// validateLoadBalancer validates a load balancer
+func validateLoadBalancer(lb *models.LoadBalancer) error {
+	if lb.IPAddr == "" {
+		return ErrLoadBalancerIPMissing
 	}
 
-	mods := []qm.QueryMod{
-		qm.Where(models.LoadBalancerColumns.LoadBalancerID+" = ?", c.Param("load_balancer_id")),
-		qm.Where(models.LoadBalancerColumns.TenantID+" = ?", tenantID),
-	}
-	// Look up the load balancer by ID from the path
-	lb, err := models.LoadBalancers(mods...).One(ctx, r.db)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
+	if _, err := netaddr.ParseIP(lb.IPAddr); err != nil {
+		return ErrLoadBalancerIPInvalid
 	}
 
+	if lb.DisplayName == "" {
+		return ErrDisplayNameMissing
+	}
+
+	if lb.LoadBalancerSize == "" {
+		return ErrSizeRequired
+	}
+
+	if lb.LoadBalancerType != "layer-3" {
+		return ErrTypeInvalid
+	}
+
+	if lb.LocationID == "" {
+		return ErrLocationIDRequired
+	}
+
+	return nil
+}
+
+// cleanupLoadBalancer deletes all related objects for a load balancer
+func (r *Router) cleanupLoadBalancer(ctx context.Context, lb *models.LoadBalancer) error {
 	// Delete the load balancer
-	if _, err = lb.Delete(ctx, r.db, false); err != nil {
+	if _, err := lb.Delete(ctx, r.db, false); err != nil {
 		r.logger.Errorw("failed to delete load balancer", "error", err)
-		return c.JSON(http.StatusInternalServerError, v1InternalServerErrorResponse(err))
+		return err
 	}
 
-	return c.JSON(http.StatusNoContent, v1DeletedResponse())
+	// Deelete frontends assigned to the load balancer
+	if _, err := models.Frontends(qm.Where(models.FrontendColumns.LoadBalancerID+" = ?", lb.LoadBalancerID)).DeleteAll(ctx, r.db, false); err != nil {
+		r.logger.Errorw("failed to delete frontends", "error", err)
+		return err
+	}
+
+	// Delete pools assigned to the load balancer
+	if _, err := models.Pools(qm.Where(models.PoolColumns.LoadBalancerID+" = ?", lb.LoadBalancerID)).DeleteAll(ctx, r.db, false); err != nil {
+		r.logger.Errorw("failed to delete pools", "error", err)
+		return err
+	}
+
+	return nil
 }
 
 // loadBalancerDelete deletes a load balancer for a tenant
@@ -245,34 +239,35 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
 		r.logger.Errorw("bad request", "error", err)
-		return c.JSON(http.StatusBadRequest, v1BadRequestResponse(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	lb, err := models.LoadBalancers(mods...).All(ctx, r.db)
 	if err != nil {
 		r.logger.Errorw("failed to delete load balancer", "error", err)
-		return err
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	switch len(lb) {
 	case 0:
-		return c.JSON(http.StatusNotFound, v1NotFoundResponse())
+		return v1NotFoundResponse(c)
 	case 1:
-		_, err = lb[0].Delete(ctx, r.db, false)
-		if err != nil {
+		if err := r.cleanupLoadBalancer(ctx, lb[0]); err != nil {
 			return err
 		}
 
-		return c.JSON(http.StatusNoContent, v1DeletedResponse())
+		return v1DeletedResponse(c)
 	default:
-		return c.JSON(http.StatusUnprocessableEntity, v1UnprocessableEntityResponse(ErrAmbiguous))
+		return v1UnprocessableEntityResponse(c, ErrAmbiguous)
 	}
 }
 
 func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
-	g.GET("/tenant/:tenant_id/loadbalancers", r.loadBalancerGet)
-	g.POST("/tenant/:tenant_id/loadbalancers", r.loadBalancerCreate)
-	g.DELETE("/tenant/:tenant_id/loadbalancers", r.loadBalancerDelete)
-	g.GET("/tenant/:tenant_id/loadbalancers/:load_balancer_id", r.loadBalancerGetByID)
-	g.DELETE("/tenant/:tenant_id/loadbalancers/:load_balancer_id", r.loadBalancerDeleteByID)
+	g.GET("/loadbalancers", r.loadBalancerGet)
+	g.GET("/loadbalancers/:load_balancer_id", r.loadBalancerGet)
+
+	g.POST("/loadbalancers", r.loadBalancerCreate)
+
+	g.DELETE("/loadbalancers", r.loadBalancerDelete)
+	g.DELETE("/loadbalancers/:load_balancer_id", r.loadBalancerDelete)
 }

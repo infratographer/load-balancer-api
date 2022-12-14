@@ -3,6 +3,7 @@ module go.infratographer.com/loadbalancerapi
 go 1.19
 
 require (
+	github.com/dspinhirne/netaddr-go v0.0.0-20211008142535-a4c5bccad224
 	github.com/friendsofgo/errors v0.9.2
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo-contrib v0.13.0
@@ -16,7 +17,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
 	go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3
-	go.opentelemetry.io/otel v1.11.2
+	go.opentelemetry.io/otel v1.11.1
 	go.uber.org/zap v1.24.0
 )
 
@@ -76,7 +77,7 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.11.1 // indirect
 	go.opentelemetry.io/otel/metric v0.33.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.11.1 // indirect
-	go.opentelemetry.io/otel/trace v1.11.2 // indirect
+	go.opentelemetry.io/otel/trace v1.11.1 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect

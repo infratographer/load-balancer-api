@@ -8,171 +8,138 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.infratographer.com/x/crdbx"
-	"go.uber.org/zap"
 
-	"go.infratographer.com/loadbalancerapi/internal/config"
 	"go.infratographer.com/loadbalancerapi/internal/httptools"
-	"go.infratographer.com/loadbalancerapi/internal/x/echox"
 )
-
-func newTestServer(t *testing.T) *httptest.Server {
-	db, err := crdbx.NewDB(config.AppConfig.CRDB, false)
-	assert.NoError(t, err)
-
-	e := echox.NewServer()
-	r := NewRouter(db, zap.NewNop().Sugar())
-
-	r.Routes(e)
-
-	return httptest.NewServer(e)
-}
 
 func TestLocationRoutes(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()
 
 	tenantID := uuid.New()
-	baseURL := srv.URL + "/v1/tenant/" + tenantID.String() + "/locations"
+	baseURL := srv.URL + "/v1/locations"
 
-	var payloadTests = []struct {
-		name        string
-		body        string
-		status      int
-		tenant      string
-		displayName string
-	}{
+	doHTTPTests(t, []httpTest{
+		// POST tests
 		{
 			name:        "make a reef",
-			body:        `{"display_name": "reef", "tenant_id": "` + tenantID.String() + `"}`,
+			body:        `{"display_name": "reef"}`,
+			path:        baseURL,
 			status:      http.StatusCreated,
 			displayName: "reef",
+			tenant:      tenantID.String(),
+			method:      "POST",
 		},
 		{
 			name:        "make a shell",
-			body:        `{"display_name": "shell", "tenant_id": "` + tenantID.String() + `"}`,
+			body:        `{"display_name": "shell"}`,
+			path:        baseURL,
 			status:      http.StatusCreated,
 			displayName: "shell",
+			tenant:      tenantID.String(),
+			method:      "POST",
 		},
 		{
 			name:        "make a shell, again",
-			body:        `{"display_name": "shell", "tenant_id": "` + tenantID.String() + `"}`,
+			body:        `{"display_name": "shell"}`,
+			path:        baseURL,
 			status:      http.StatusInternalServerError,
 			displayName: "shell",
+			tenant:      tenantID.String(),
+			method:      "POST",
 		},
-		{
-			name:   "missing display_name",
-			body:   `{"tenant_id": "` + tenantID.String() + `"}`,
-			status: 500,
-		},
-
 		{
 			name:   "bad body",
 			body:   "bad body",
-			status: 400,
+			path:   baseURL,
+			status: http.StatusInternalServerError,
+			tenant: tenantID.String(),
+			method: "POST",
 		},
-	}
-
-	for _, tt := range payloadTests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := srv.Client().Post(baseURL, "application/json", httptools.FakeBody(tt.body)) //nolint:noctx
-
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, res.StatusCode)
-			res.Body.Close()
-		})
-	}
-
-	var pathTests = []struct {
-		name   string
-		path   string
-		status int
-	}{
+		// Get tests
 		{
 			name:   "get reef",
 			path:   baseURL + "/reef",
 			status: http.StatusOK,
+			tenant: tenantID.String(),
+			method: "GET",
 		},
 		{
 			name:   "get shell",
 			path:   baseURL + "/shell",
 			status: http.StatusOK,
+			tenant: tenantID.String(),
+			method: "GET",
 		},
 		{
 			name:   "get all locations",
 			path:   baseURL,
 			status: http.StatusOK,
+			tenant: tenantID.String(),
+			method: "GET",
 		},
 		{
 			name:   "get inavlid tenant",
-			path:   srv.URL + "/v1/tenant/invalid/locations",
+			path:   baseURL,
 			status: http.StatusBadRequest,
+			tenant: "invalid",
+			method: "GET",
 		},
 		{
 			name:   "get invalid location",
 			path:   baseURL + "/invalid",
 			status: http.StatusNotFound,
+			tenant: tenantID.String(),
+			method: "GET",
 		},
-	}
-
-	for _, tt := range pathTests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := srv.Client().Get(tt.path) //nolint:noctx
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, res.StatusCode)
-			res.Body.Close()
-		})
-	}
-
-	var deleteTests = []struct {
-		name   string
-		path   string
-		status int
-	}{
+		// Delete tests
 		{
 			name:   "delete reef",
 			path:   baseURL + "/reef",
-			status: http.StatusOK,
+			status: http.StatusNoContent,
+			tenant: tenantID.String(),
+			method: "DELETE",
 		},
 		{
 			name:   "delete shell",
 			path:   baseURL + "/shell",
-			status: http.StatusOK,
+			status: http.StatusNoContent,
+			tenant: tenantID.String(),
+			method: "DELETE",
 		},
-	}
-
-	for _, tt := range deleteTests {
-		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest("DELETE", tt.path, nil) //nolint:noctx
-			assert.NoError(t, err)
-
-			req.Header.Set("Content-Type", "application/json")
-			res, err := http.DefaultClient.Do(req)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, res.StatusCode)
-			res.Body.Close()
-		})
-	}
+	})
 }
 
-func createAnenmoes(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
+func createAnemones(t *testing.T, srv *httptest.Server) (*response, func(t *testing.T)) {
 	tenantID := uuid.New().String()
-	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/locations"
+	baseURL := srv.URL + "/v1/locations"
 	happyPath := `{"display_name": "anemones"}`
 
 	t.Run("POST anemones", func(t *testing.T) {
-		res, err := srv.Client().Post(baseURL, "application/json", httptools.FakeBody(happyPath)) //nolint:noctx
+		req, err := http.NewRequest("POST", baseURL, httptools.FakeBody(happyPath)) //nolint
 		assert.NoError(t, err)
-		assert.Equal(t, 201, res.StatusCode)
+
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Infratographer-Tenant-ID", tenantID)
+
+		res, err := srv.Client().Do(req)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, res.StatusCode)
 		res.Body.Close()
 	})
 
 	loc := response{}
 
 	t.Run("GET anemones", func(t *testing.T) {
-		res, err := srv.Client().Get(baseURL + "/anemones") //nolint:noctx
+		req, err := http.NewRequest("GET", baseURL, nil) //nolint
 		assert.NoError(t, err)
-		assert.Equal(t, 200, res.StatusCode)
+
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Infratographer-Tenant-ID", tenantID)
+
+		res, err := srv.Client().Do(req)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
 
 		err = json.NewDecoder(res.Body).Decode(&loc)
 		assert.NoError(t, err)
@@ -185,9 +152,11 @@ func createAnenmoes(t *testing.T, srv *httptest.Server) (*response, func(t *test
 			assert.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("X-Infratographer-Tenant-ID", tenantID)
+
 			res, err := http.DefaultClient.Do(req)
 			assert.NoError(t, err)
-			assert.Equal(t, 200, res.StatusCode)
+			assert.Equal(t, http.StatusNoContent, res.StatusCode)
 			res.Body.Close()
 		})
 	}

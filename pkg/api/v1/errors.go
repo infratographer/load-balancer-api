@@ -3,6 +3,21 @@ package api
 import "errors"
 
 var (
+	// ErrLoadBalancerIPMissing is returned when a load balancer IP is missing
+	ErrLoadBalancerIPMissing = errors.New("load balancer IP is missing")
+
+	// ErrLoadBalancerIPInvalid is returned when a load balancer IP is invalid
+	ErrLoadBalancerIPInvalid = errors.New("load balancer IP is invalid")
+
+	// ErrLoadBalancerIDMissing is returned when a load balancer ID is missing
+	ErrLoadBalancerIDMissing = errors.New("load balancer ID is missing")
+
+	// ErrPortOutOfRange is returned when a port is out of 1-65535 range
+	ErrPortOutOfRange = errors.New("port is out of range")
+
+	// ErrEmptyPayload is returned when a payload is empty
+	ErrEmptyPayload = errors.New("payload is empty")
+
 	// ErrAlreadyDeleted is returned when a load balancer is already deleted
 	ErrAlreadyDeleted = errors.New("load balancer already deleted")
 
@@ -56,4 +71,7 @@ var (
 
 	// ErrWrite is returned when a write operation fails
 	ErrWrite = errors.New("failed to write location")
+
+	// ErrDisplayNameMissing is returned when a display name is missing
+	ErrDisplayNameMissing = errors.New("display name is missing")
 )

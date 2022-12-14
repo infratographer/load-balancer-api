@@ -5,12 +5,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.infratographer.com/loadbalancerapi/internal/config"
-	"go.infratographer.com/loadbalancerapi/internal/x/echox"
-	"go.infratographer.com/loadbalancerapi/pkg/api/v1"
 	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/viperx"
+
+	"go.infratographer.com/loadbalancerapi/internal/config"
+	"go.infratographer.com/loadbalancerapi/internal/x/echox"
+	"go.infratographer.com/loadbalancerapi/pkg/api/v1"
 )
 
 var (
