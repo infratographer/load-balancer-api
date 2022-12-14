@@ -1,7 +1,8 @@
 package cmd
 
-// TODO: Add your error definitions here
+import "errors"
+
 var (
-// ErrParameterRequired is returned when a parameters is missing
-// ErrParameterRequired = errors.New("parameters is required and cannot be empty")
+	// ErrAuditFilePathRequired is returned when a audit file path is missing
+	ErrAuditFilePathRequired = errors.New("audit file path is required and cannot be empty")
 )

@@ -24,15 +24,15 @@ import (
 
 // Location is an object representing the database table.
 type Location struct {
-	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt   time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt   null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	LocationID  string    `boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
-	TenantID    string    `boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	DisplayName string    `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	CreatedAt   time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt   time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt   null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	LocationID  string    `query:"location_id" param:"location_id" boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
+	TenantID    string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	DisplayName string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
 
-	R *locationR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L locationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *locationR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L locationL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var LocationColumns = struct {
@@ -94,7 +94,7 @@ var LocationRels = struct {
 
 // locationR is where relationships are stored.
 type locationR struct {
-	LoadBalancers LoadBalancerSlice `boil:"LoadBalancers" json:"LoadBalancers" toml:"LoadBalancers" yaml:"LoadBalancers"`
+	LoadBalancers LoadBalancerSlice `query:"LoadBalancers" param:"LoadBalancers" boil:"LoadBalancers" json:"LoadBalancers" toml:"LoadBalancers" yaml:"LoadBalancers"`
 }
 
 // NewStruct creates a new relationship struct
@@ -334,9 +334,6 @@ func (q locationQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Loc
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for locations")
 	}
 
@@ -608,9 +605,6 @@ func FindLocation(ctx context.Context, exec boil.ContextExecutor, locationID str
 
 	err := q.Bind(ctx, exec, locationObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from locations")
 	}
 

@@ -1,6 +1,8 @@
 run:
   build-tags:
     - testtools
+  skip-dirs:
+    - internal/models
 
 linters-settings:
   goimports:

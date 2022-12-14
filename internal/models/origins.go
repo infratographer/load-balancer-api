@@ -24,19 +24,19 @@ import (
 
 // Origin is an object representing the database table.
 type Origin struct {
-	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt      null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	OriginID       string    `boil:"origin_id" json:"origin_id" toml:"origin_id" yaml:"origin_id"`
-	PoolID         string    `boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
-	OriginTarget   string    `boil:"origin_target" json:"origin_target" toml:"origin_target" yaml:"origin_target"`
-	Port           int64     `boil:"port" json:"port" toml:"port" yaml:"port"`
-	TenantID       string    `boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	DisplayName    string    `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
-	OriginDisabled bool      `boil:"origin_disabled" json:"origin_disabled" toml:"origin_disabled" yaml:"origin_disabled"`
+	CreatedAt      time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	OriginID       string    `query:"origin_id" param:"origin_id" boil:"origin_id" json:"origin_id" toml:"origin_id" yaml:"origin_id"`
+	PoolID         string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
+	OriginTarget   string    `query:"origin_target" param:"origin_target" boil:"origin_target" json:"origin_target" toml:"origin_target" yaml:"origin_target"`
+	Port           int64     `query:"port" param:"port" boil:"port" json:"port" toml:"port" yaml:"port"`
+	TenantID       string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	DisplayName    string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	OriginDisabled bool      `query:"origin_disabled" param:"origin_disabled" boil:"origin_disabled" json:"origin_disabled" toml:"origin_disabled" yaml:"origin_disabled"`
 
-	R *originR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L originL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *originR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L originL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var OriginColumns = struct {
@@ -122,7 +122,7 @@ var OriginRels = struct {
 
 // originR is where relationships are stored.
 type originR struct {
-	Pool *Pool `boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
+	Pool *Pool `query:"Pool" param:"Pool" boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
 }
 
 // NewStruct creates a new relationship struct
@@ -362,9 +362,6 @@ func (q originQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Origi
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for origins")
 	}
 
@@ -633,9 +630,6 @@ func FindOrigin(ctx context.Context, exec boil.ContextExecutor, originID string,
 
 	err := q.Bind(ctx, exec, originObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from origins")
 	}
 

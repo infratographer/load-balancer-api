@@ -24,13 +24,13 @@ import (
 
 // GooseDBVersion is an object representing the database table.
 type GooseDBVersion struct {
-	ID        int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	VersionID int64     `boil:"version_id" json:"version_id" toml:"version_id" yaml:"version_id"`
-	IsApplied bool      `boil:"is_applied" json:"is_applied" toml:"is_applied" yaml:"is_applied"`
-	Tstamp    null.Time `boil:"tstamp" json:"tstamp,omitempty" toml:"tstamp" yaml:"tstamp,omitempty"`
+	ID        int64     `query:"id" param:"id" boil:"id" json:"id" toml:"id" yaml:"id"`
+	VersionID int64     `query:"version_id" param:"version_id" boil:"version_id" json:"version_id" toml:"version_id" yaml:"version_id"`
+	IsApplied bool      `query:"is_applied" param:"is_applied" boil:"is_applied" json:"is_applied" toml:"is_applied" yaml:"is_applied"`
+	Tstamp    null.Time `query:"tstamp" param:"tstamp" boil:"tstamp" json:"tstamp,omitempty" toml:"tstamp" yaml:"tstamp,omitempty"`
 
-	R *gooseDBVersionR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L gooseDBVersionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *gooseDBVersionR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L gooseDBVersionL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var GooseDBVersionColumns = struct {
@@ -318,9 +318,6 @@ func (q gooseDBVersionQuery) One(ctx context.Context, exec boil.ContextExecutor)
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for goose_db_version")
 	}
 
@@ -410,9 +407,6 @@ func FindGooseDBVersion(ctx context.Context, exec boil.ContextExecutor, iD int64
 
 	err := q.Bind(ctx, exec, gooseDBVersionObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from goose_db_version")
 	}
 

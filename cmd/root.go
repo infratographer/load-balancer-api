@@ -9,13 +9,15 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/goosex"
 	"go.infratographer.com/x/loggingx"
+	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
 
-	dbm "go.infratographer.sh/loadbalancerapi/db"
-	"go.infratographer.sh/loadbalancerapi/internal/config"
+	dbm "go.infratographer.com/loadbalancerapi/db"
+	"go.infratographer.com/loadbalancerapi/internal/config"
 )
 
 // TODO: update app name
@@ -37,8 +39,10 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
-	viper.WriteConfigAs("debugConfig.yaml")
 
+	if err := viper.WriteConfigAs("debugConfig.yaml"); err != nil {
+		logger.Fatal(err)
+	}
 }
 
 func init() {
@@ -51,6 +55,8 @@ func init() {
 
 	// Register version command
 	versionx.RegisterCobraCommand(rootCmd, func() { versionx.PrintVersion(logger) })
+	otelx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
+	crdbx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
 
 	// Setup migrate command
 	goosex.RegisterCobraCommand(rootCmd, func() {

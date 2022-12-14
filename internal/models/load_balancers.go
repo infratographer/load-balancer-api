@@ -24,19 +24,19 @@ import (
 
 // LoadBalancer is an object representing the database table.
 type LoadBalancer struct {
-	CreatedAt        time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt        time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt        null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	LoadBalancerID   string    `boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
-	TenantID         string    `boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	IPAddr           string    `boil:"ip_addr" json:"ip_addr" toml:"ip_addr" yaml:"ip_addr"`
-	DisplayName      string    `boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
-	LocationID       string    `boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
-	LoadBalancerSize string    `boil:"load_balancer_size" json:"load_balancer_size" toml:"load_balancer_size" yaml:"load_balancer_size"`
-	LoadBalancerType string    `boil:"load_balancer_type" json:"load_balancer_type" toml:"load_balancer_type" yaml:"load_balancer_type"`
+	CreatedAt        time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt        time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt        null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	LoadBalancerID   string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
+	TenantID         string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	IPAddr           string    `query:"ip_addr" param:"ip_addr" boil:"ip_addr" json:"ip_addr" toml:"ip_addr" yaml:"ip_addr"`
+	DisplayName      string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	LocationID       string    `query:"location_id" param:"location_id" boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
+	LoadBalancerSize string    `query:"load_balancer_size" param:"load_balancer_size" boil:"load_balancer_size" json:"load_balancer_size" toml:"load_balancer_size" yaml:"load_balancer_size"`
+	LoadBalancerType string    `query:"load_balancer_type" param:"load_balancer_type" boil:"load_balancer_type" json:"load_balancer_type" toml:"load_balancer_type" yaml:"load_balancer_type"`
 
-	R *loadBalancerR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L loadBalancerL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *loadBalancerR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L loadBalancerL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var LoadBalancerColumns = struct {
@@ -128,10 +128,10 @@ var LoadBalancerRels = struct {
 
 // loadBalancerR is where relationships are stored.
 type loadBalancerR struct {
-	Location    *Location       `boil:"Location" json:"Location" toml:"Location" yaml:"Location"`
-	Assignments AssignmentSlice `boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
-	Frontends   FrontendSlice   `boil:"Frontends" json:"Frontends" toml:"Frontends" yaml:"Frontends"`
-	Pools       PoolSlice       `boil:"Pools" json:"Pools" toml:"Pools" yaml:"Pools"`
+	Location    *Location       `query:"Location" param:"Location" boil:"Location" json:"Location" toml:"Location" yaml:"Location"`
+	Assignments AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
+	Frontends   FrontendSlice   `query:"Frontends" param:"Frontends" boil:"Frontends" json:"Frontends" toml:"Frontends" yaml:"Frontends"`
+	Pools       PoolSlice       `query:"Pools" param:"Pools" boil:"Pools" json:"Pools" toml:"Pools" yaml:"Pools"`
 }
 
 // NewStruct creates a new relationship struct
@@ -392,9 +392,6 @@ func (q loadBalancerQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for load_balancers")
 	}
 
@@ -1283,9 +1280,6 @@ func FindLoadBalancer(ctx context.Context, exec boil.ContextExecutor, loadBalanc
 
 	err := q.Bind(ctx, exec, loadBalancerObj)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
 		return nil, errors.Wrap(err, "models: unable to select from load_balancers")
 	}
 
