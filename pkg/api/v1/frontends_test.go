@@ -80,7 +80,7 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "negative port",
 			body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": -1}]`, loadBalancerID),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -88,7 +88,7 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "zero port",
 			body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 0}]`, loadBalancerID),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -96,7 +96,7 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "port too high",
 			body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 65536}]`, loadBalancerID),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -104,7 +104,7 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "missing port",
 			body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s"}]`, loadBalancerID),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -112,7 +112,7 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "missing display name",
 			body:   fmt.Sprintf(`[{"load_balancer_id": "%s", "port": 80}]`, loadBalancerID),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -120,7 +120,15 @@ func TestFrondendRoutes(t *testing.T) {
 		{
 			name:   "missing load balancer id",
 			body:   `[{"display_name": "Mouth", "port": 80}]`,
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
+			method: http.MethodPost,
+			path:   baseURL,
+			tenant: tenantID,
+		},
+		{
+			name:   "invalid load balancer id",
+			body:   `[{"display_name": "Mouth", "port": 80, "load_balancer_id": "bad id"}]`,
+			status: http.StatusBadRequest,
 			method: http.MethodPost,
 			path:   baseURL,
 			tenant: tenantID,
@@ -162,7 +170,28 @@ func TestFrondendRoutes(t *testing.T) {
 			method: http.MethodGet,
 			tenant: tenantID,
 		},
+		{
+			name:   "404",
+			path:   baseURL + "?display_name=not_found",
+			status: http.StatusNotFound,
+			method: http.MethodGet,
+			tenant: tenantID,
+		},
+		{
+			name:   "bad tenant id",
+			path:   baseURL,
+			status: http.StatusBadRequest,
+			method: http.MethodGet,
+			tenant: "tenantID",
+		},
 		// Delete
+		{
+			name:   "404",
+			path:   baseURL + "?display_name=not_found",
+			status: http.StatusNotFound,
+			method: http.MethodDelete,
+			tenant: tenantID,
+		},
 		{
 			name:   "ambiguous delete",
 			path:   baseURL + "?display_name=Mouth",

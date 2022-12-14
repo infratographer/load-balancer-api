@@ -52,7 +52,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "missing display name",
 			body:   fmt.Sprintf(`[{"location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -60,7 +60,15 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "missing location id",
 			body:   `[{"display_name": "Nemo", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`,
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
+			path:   baseURL,
+			method: http.MethodPost,
+			tenant: tenantID,
+		},
+		{
+			name:   "missing ip address",
+			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -68,7 +76,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "missing size",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -76,7 +84,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "missing type",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small"}]`, locationID),
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -84,7 +92,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "invalid type",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-12"}]`, locationID),
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -92,7 +100,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		{
 			name:   "bad ip address",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "Dori","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
-			status: http.StatusInternalServerError,
+			status: http.StatusUnprocessableEntity,
 			path:   baseURL,
 			method: http.MethodPost,
 			tenant: tenantID,
@@ -188,7 +196,7 @@ func createNemoLB(t *testing.T, srv *httptest.Server) (*response, func(t *testin
 
 	test := []httpTest{
 		{
-			name:   "make nemo",
+			name:   "create nemo lb",
 			body:   fmt.Sprintf(`[{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}]`, locationID),
 			path:   baseURL,
 			method: http.MethodPost,

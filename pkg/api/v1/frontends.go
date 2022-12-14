@@ -16,36 +16,21 @@ import (
 // and appends them to the slice of query mods if they are present in the request.
 func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
-		err            error
-		tenantID       string
-		loadBalancerID string
-		frontendID     string
+		err      error
+		tenantID string
+		// loadBalancerID string
+		frontendID string
 	)
 
 	mods := []qm.QueryMod{}
 	ppb := echo.PathParamsBinder(c)
 
-	// require tenant_id in the request path
 	if tenantID, err = r.parseTenantID(c); err != nil {
 		return nil, err
 	}
 
 	mods = append(mods, models.FrontendWhere.TenantID.EQ(tenantID))
 	r.logger.Debugw("path param", "tenant_id", tenantID)
-
-	// optional load_balancer_id in the request path
-	if err = ppb.String("load_balancer_id", &tenantID).BindError(); err != nil {
-		return nil, err
-	}
-
-	if loadBalancerID != "" {
-		if _, err := uuid.Parse(loadBalancerID); err != nil {
-			return nil, ErrInvalidUUID
-		}
-
-		mods = append(mods, models.FrontendWhere.LoadBalancerID.EQ(loadBalancerID))
-		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
-	}
 
 	// optional frontend_id in the request path
 	if err = ppb.String("frontend_id", &frontendID).BindError(); err != nil {
@@ -172,6 +157,11 @@ func (r *Router) frontendCreate(c echo.Context) error {
 			TenantID:       tenantID,
 		}
 
+		if err := validateFrontend(&frontend); err != nil {
+			_ = tx.Rollback()
+			return v1BadRequestResponse(c, err)
+		}
+
 		frontends = append(frontends, &frontend)
 
 		if err := frontend.Insert(ctx, tx, boil.Infer()); err != nil {
@@ -191,6 +181,28 @@ func (r *Router) frontendCreate(c echo.Context) error {
 
 		return v1CreatedResponse(c)
 	}
+}
+
+// validateFrontend validates a frontend
+func validateFrontend(frontend *models.Frontend) error {
+	if frontend.Port < 1 || frontend.Port > 65535 {
+		return ErrPortOutOfRange
+	}
+
+	if frontend.LoadBalancerID == "" {
+		return ErrLoadBalancerIDMissing
+	}
+
+	if _, err := uuid.Parse(frontend.LoadBalancerID); err != nil {
+		return ErrInvalidUUID
+	}
+
+	if frontend.DisplayName == "" {
+		// TODO: generate a display name
+		return ErrDisplayNameMissing
+	}
+
+	return nil
 }
 
 // addFrontendRoutes adds the frontend routes to the router

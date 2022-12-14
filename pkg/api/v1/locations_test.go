@@ -139,7 +139,7 @@ func createAnemones(t *testing.T, srv *httptest.Server) (*response, func(t *test
 
 		res, err := srv.Client().Do(req)
 		assert.NoError(t, err)
-		assert.Equal(t, 200, res.StatusCode)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
 
 		err = json.NewDecoder(res.Body).Decode(&loc)
 		assert.NoError(t, err)

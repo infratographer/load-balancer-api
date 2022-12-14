@@ -105,11 +105,7 @@ func (r *Router) locationDelete(c echo.Context) error {
 
 func valdiateLocation(l *models.Location) error {
 	if l.DisplayName == "" {
-		return ErrNameRequired
-	}
-
-	if l.TenantID == "" {
-		return ErrTenantIDRequired
+		return ErrDisplayNameMissing
 	}
 
 	return nil

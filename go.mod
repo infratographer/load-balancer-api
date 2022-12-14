@@ -3,6 +3,7 @@ module go.infratographer.com/loadbalancerapi
 go 1.19
 
 require (
+	github.com/dspinhirne/netaddr-go v0.0.0-20211008142535-a4c5bccad224
 	github.com/friendsofgo/errors v0.9.2
 	github.com/google/uuid v1.3.0
 	github.com/labstack/echo-contrib v0.13.0

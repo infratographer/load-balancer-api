@@ -3,12 +3,14 @@ package api
 import (
 	"context"
 
+	"github.com/dspinhirne/netaddr-go"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.infratographer.com/loadbalancerapi/internal/models"
 	"go.opentelemetry.io/otel/attribute"
+
+	"go.infratographer.com/loadbalancerapi/internal/models"
 )
 
 // loadBalancerParamsBinding binds the request path and query params to a slice of query mods
@@ -139,6 +141,14 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			LocationID:       p.LocationID,
 		}
 
+		if err := validateLoadBalancer(lb); err != nil {
+			_ = tx.Rollback()
+
+			r.logger.Errorw("failed to validate load balancer", "error", err)
+
+			return v1UnprocessableEntityResponse(c, err)
+		}
+
 		lbs = append(lbs, lb)
 
 		err = lb.Insert(ctx, tx, boil.Infer())
@@ -163,6 +173,35 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 		return v1CreatedResponse(c)
 	}
+}
+
+// validateLoadBalancer validates a load balancer
+func validateLoadBalancer(lb *models.LoadBalancer) error {
+	if lb.IPAddr == "" {
+		return ErrLoadBalancerIPMissing
+	}
+
+	if _, err := netaddr.ParseIP(lb.IPAddr); err != nil {
+		return ErrLoadBalancerIPInvalid
+	}
+
+	if lb.DisplayName == "" {
+		return ErrDisplayNameMissing
+	}
+
+	if lb.LoadBalancerSize == "" {
+		return ErrSizeRequired
+	}
+
+	if lb.LoadBalancerType != "layer-3" {
+		return ErrTypeInvalid
+	}
+
+	if lb.LocationID == "" {
+		return ErrLocationIDRequired
+	}
+
+	return nil
 }
 
 // cleanupLoadBalancer deletes all related objects for a load balancer
