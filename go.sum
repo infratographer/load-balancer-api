@@ -578,6 +578,8 @@ go.etcd.io/etcd/client/pkg/v3 v3.5.0/go.mod h1:IJHfcCEKxYu1Os13ZdwCwIUTUVGYTSAM3
 go.etcd.io/etcd/client/v2 v2.305.0/go.mod h1:h9puh54ZTgAKtEbut2oe9P4L/oqKCVB6xsXlzd7alYQ=
 go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3 h1:PnEoE6/dyB86CV9sHN1ncFw/wni3e97eLYMoxa9UADs=
 go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3/go.mod h1:5L/2IOVka5ifop/fhI/T5mlAIuH/1tkKLs8LR4pshcM=
+go.infratographer.com/x v0.0.0-20221215180826-7cc9044fe585 h1:853EajickHTKQlu56e4qv8iwDgPX9yAuESbn3cyKhyc=
+go.infratographer.com/x v0.0.0-20221215180826-7cc9044fe585/go.mod h1:5L/2IOVka5ifop/fhI/T5mlAIuH/1tkKLs8LR4pshcM=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

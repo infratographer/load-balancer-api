@@ -16,7 +16,7 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
-	go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3
+	go.infratographer.com/x v0.0.0-20221215180826-7cc9044fe585
 	go.opentelemetry.io/otel v1.11.1
 	go.uber.org/zap v1.24.0
 )
