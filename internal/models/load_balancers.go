@@ -118,12 +118,10 @@ var LoadBalancerRels = struct {
 	Location    string
 	Assignments string
 	Frontends   string
-	Pools       string
 }{
 	Location:    "Location",
 	Assignments: "Assignments",
 	Frontends:   "Frontends",
-	Pools:       "Pools",
 }
 
 // loadBalancerR is where relationships are stored.
@@ -131,7 +129,6 @@ type loadBalancerR struct {
 	Location    *Location       `query:"Location" param:"Location" boil:"Location" json:"Location" toml:"Location" yaml:"Location"`
 	Assignments AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
 	Frontends   FrontendSlice   `query:"Frontends" param:"Frontends" boil:"Frontends" json:"Frontends" toml:"Frontends" yaml:"Frontends"`
-	Pools       PoolSlice       `query:"Pools" param:"Pools" boil:"Pools" json:"Pools" toml:"Pools" yaml:"Pools"`
 }
 
 // NewStruct creates a new relationship struct
@@ -158,13 +155,6 @@ func (r *loadBalancerR) GetFrontends() FrontendSlice {
 		return nil
 	}
 	return r.Frontends
-}
-
-func (r *loadBalancerR) GetPools() PoolSlice {
-	if r == nil {
-		return nil
-	}
-	return r.Pools
 }
 
 // loadBalancerL is where Load methods for each relationship are stored.
@@ -490,20 +480,6 @@ func (o *LoadBalancer) Frontends(mods ...qm.QueryMod) frontendQuery {
 	)
 
 	return Frontends(queryMods...)
-}
-
-// Pools retrieves all the pool's Pools with an executor.
-func (o *LoadBalancer) Pools(mods ...qm.QueryMod) poolQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"pools\".\"load_balancer_id\"=?", o.LoadBalancerID),
-	)
-
-	return Pools(queryMods...)
 }
 
 // LoadLocation allows an eager lookup of values, cached into the
@@ -857,121 +833,6 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadPools allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (loadBalancerL) LoadPools(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
-	var slice []*LoadBalancer
-	var object *LoadBalancer
-
-	if singular {
-		var ok bool
-		object, ok = maybeLoadBalancer.(*LoadBalancer)
-		if !ok {
-			object = new(LoadBalancer)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeLoadBalancer)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeLoadBalancer))
-			}
-		}
-	} else {
-		s, ok := maybeLoadBalancer.(*[]*LoadBalancer)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeLoadBalancer)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeLoadBalancer))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &loadBalancerR{}
-		}
-		args = append(args, object.LoadBalancerID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &loadBalancerR{}
-			}
-
-			for _, a := range args {
-				if a == obj.LoadBalancerID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.LoadBalancerID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`pools`),
-		qm.WhereIn(`pools.load_balancer_id in ?`, args...),
-		qmhelper.WhereIsNull(`pools.deleted_at`),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load pools")
-	}
-
-	var resultSlice []*Pool
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice pools")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on pools")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pools")
-	}
-
-	if len(poolAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.Pools = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &poolR{}
-			}
-			foreign.R.LoadBalancer = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.LoadBalancerID == foreign.LoadBalancerID {
-				local.R.Pools = append(local.R.Pools, foreign)
-				if foreign.R == nil {
-					foreign.R = &poolR{}
-				}
-				foreign.R.LoadBalancer = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // SetLocation of the loadBalancer to the related item.
 // Sets o.R.Location to related.
 // Adds o to related.R.LoadBalancers.
@@ -1190,59 +1051,6 @@ func (o *LoadBalancer) AddFrontends(ctx context.Context, exec boil.ContextExecut
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &frontendR{
-				LoadBalancer: o,
-			}
-		} else {
-			rel.R.LoadBalancer = o
-		}
-	}
-	return nil
-}
-
-// AddPools adds the given related objects to the existing relationships
-// of the load_balancer, optionally inserting them as new records.
-// Appends related to o.R.Pools.
-// Sets related.R.LoadBalancer appropriately.
-func (o *LoadBalancer) AddPools(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Pool) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.LoadBalancerID = o.LoadBalancerID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"pools\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-				strmangle.WhereClause("\"", "\"", 2, poolPrimaryKeyColumns),
-			)
-			values := []interface{}{o.LoadBalancerID, rel.PoolID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.LoadBalancerID = o.LoadBalancerID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &loadBalancerR{
-			Pools: related,
-		}
-	} else {
-		o.R.Pools = append(o.R.Pools, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &poolR{
 				LoadBalancer: o,
 			}
 		} else {

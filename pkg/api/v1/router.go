@@ -9,7 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-var tracer = otel.Tracer("go.infratographer.com/loadbalanccerapi/pkg/api/v1")
+const apiVersion = "v1"
+
+var tracer = otel.Tracer("go.infratographer.com/loadbalancerapi/pkg/api/v1")
 
 // Router provides a router for the API
 type Router struct {
@@ -54,10 +56,11 @@ func (r *Router) Routes(e *echo.Echo) {
 
 	e.Use(defaultRequestType)
 
-	v1 := e.Group("v1")
+	v1 := e.Group(apiVersion)
 	{
 		r.addFrontendRoutes(v1)
 		r.addLocationRoutes(v1)
 		r.addLoadBalancerRoutes(v1)
+		r.addPoolsRoutes(v1)
 	}
 }

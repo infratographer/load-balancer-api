@@ -3,6 +3,9 @@ package api
 import "errors"
 
 var (
+	// ErrProtocolInvalid is returned when a protocol is invalid
+	ErrPoolProtocolInvalid = errors.New("protocol must be tcp")
+
 	// ErrLoadBalancerIPMissing is returned when a load balancer IP is missing
 	ErrLoadBalancerIPMissing = errors.New("load balancer IP is missing")
 

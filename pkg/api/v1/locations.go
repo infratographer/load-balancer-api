@@ -5,15 +5,11 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/loadbalancerapi/internal/models"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // locationsList return all the locations for a tenant
 func (r *Router) locationsList(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "locationsList")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "locationsList"))
+	ctx := c.Request().Context()
 
 	tenantID, err := r.parseTenantID(c)
 	if err != nil {
@@ -42,8 +38,7 @@ func (r *Router) locationsList(c echo.Context) error {
 
 // locationCreate creates a new location for a tenant
 func (r *Router) locationCreate(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "locationCreate")
-	defer span.End()
+	ctx := c.Request().Context()
 
 	input := struct {
 		Name string `json:"display_name"`
@@ -76,10 +71,7 @@ func (r *Router) locationCreate(c echo.Context) error {
 
 // locationDelete soft deletes a location
 func (r *Router) locationDelete(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "locationDelete")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "locationDelete"))
+	ctx := c.Request().Context()
 
 	tenantID, err := r.parseTenantID(c)
 	if err != nil {

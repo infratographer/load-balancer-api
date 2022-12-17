@@ -48,12 +48,40 @@ type location struct {
 
 type locationSlice []*location
 
+type origin struct {
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
+	ID             string     `json:"id"`
+	TenantID       string     `json:"tenant_id"`
+	Name           string     `json:"display_name"`
+	Port           int64      `json:"port"`
+	OriginTarget   string     `json:"origin_target"`
+	OriginDisabled bool       `json:"origin_disabled"`
+}
+
+type originSlice []*origin
+
+type pool struct {
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	ID        string     `json:"id"`
+	TenantID  string     `json:"tenant_id"`
+	Name      string     `json:"display_name"`
+	Protocol  string     `json:"protocol"`
+}
+
+type poolSlice []*pool
+
 type response struct {
 	Version       string             `json:"version"`
 	Kind          string             `json:"kind"`
 	Frontends     *frontendSlice     `json:"frontends,omitempty"`
 	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
 	Locations     *locationSlice     `json:"locations,omitempty"`
+	Origins       *originSlice       `json:"origins,omitempty"`
+	Pools         *poolSlice         `json:"pools,omitempty"`
 }
 
 func v1DeletedResponse(c echo.Context) error {
@@ -63,7 +91,7 @@ func v1DeletedResponse(c echo.Context) error {
 		Status    int       `json:"status"`
 		Version   string    `json:"version"`
 	}{
-		Version:   "v1",
+		Version:   apiVersion,
 		DeletedAt: time.Now(),
 		Message:   "resource deleted",
 		Status:    http.StatusNoContent,
@@ -79,7 +107,7 @@ func v1CreatedResponse(c echo.Context) error {
 	}{
 		CreatedAt: time.Now(),
 		Message:   "resource created",
-		Version:   "v1",
+		Version:   apiVersion,
 		Status:    http.StatusCreated,
 	})
 }
@@ -90,7 +118,7 @@ func v1NotFoundResponse(c echo.Context) error {
 		Message string `json:"message"`
 		Status  int    `json:"status"`
 	}{
-		Version: "v1",
+		Version: apiVersion,
 		Message: "resource not found",
 		Status:  http.StatusNotFound,
 	})
@@ -103,7 +131,7 @@ func v1BadRequestResponse(c echo.Context, err error) error {
 		Error   string `json:"error"`
 		Status  int    `json:"status"`
 	}{
-		Version: "v1",
+		Version: apiVersion,
 		Message: "bad request",
 		Error:   err.Error(),
 		Status:  http.StatusBadRequest,
@@ -117,7 +145,7 @@ func v1UnprocessableEntityResponse(c echo.Context, err error) error {
 		Error   string `json:"error"`
 		Status  int    `json:"status"`
 	}{
-		Version: "v1",
+		Version: apiVersion,
 		Message: "unprocessable entity",
 		Error:   err.Error(),
 		Status:  http.StatusUnprocessableEntity,
@@ -131,7 +159,7 @@ func v1InternalServerErrorResponse(c echo.Context, err error) error {
 		Error   string `json:"error"`
 		Status  int    `json:"status"`
 	}{
-		Version: "v1",
+		Version: apiVersion,
 		Message: "internal server error",
 		Error:   err.Error(),
 		Status:  http.StatusInternalServerError,
@@ -155,7 +183,7 @@ func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
 	}
 
 	return c.JSON(http.StatusOK, &response{
-		Version:   "v1",
+		Version:   apiVersion,
 		Kind:      "frontendsList",
 		Frontends: &out,
 	})
@@ -180,7 +208,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	}
 
 	return c.JSON(http.StatusOK, &response{
-		Version:       "v1",
+		Version:       apiVersion,
 		Kind:          "loadBalancersList",
 		LoadBalancers: &out,
 	})
@@ -201,8 +229,54 @@ func v1Locations(c echo.Context, ls models.LocationSlice) error {
 	}
 
 	return c.JSON(http.StatusOK, &response{
-		Version:   "v1",
+		Version:   apiVersion,
 		Kind:      "locationsList",
 		Locations: &out,
+	})
+}
+
+func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
+	out := originSlice{}
+
+	for _, o := range os {
+		out = append(out, &origin{
+			CreatedAt:      o.CreatedAt,
+			UpdatedAt:      o.UpdatedAt,
+			DeletedAt:      o.DeletedAt.Ptr(),
+			ID:             o.OriginID,
+			Name:           o.DisplayName,
+			TenantID:       o.TenantID,
+			OriginDisabled: o.OriginDisabled,
+			OriginTarget:   o.OriginTarget,
+			Port:           o.Port,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "originsList",
+		Origins: &out,
+	})
+}
+
+func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
+	out := poolSlice{}
+
+	for _, p := range ps {
+		out = append(out, &pool{
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
+			DeletedAt: p.DeletedAt.Ptr(),
+			ID:        p.PoolID,
+			Name:      p.DisplayName,
+			Protocol:  p.Protocol,
+			TenantID:  p.TenantID,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "poolsList",
+		Pools:   &out,
 	})
 }

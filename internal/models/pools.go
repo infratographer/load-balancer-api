@@ -24,116 +24,92 @@ import (
 
 // Pool is an object representing the database table.
 type Pool struct {
-	CreatedAt        time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt        time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt        null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	PoolID           string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
-	LoadBalancerID   string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
-	TenantID         string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	Protocol         string    `query:"protocol" param:"protocol" boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
-	UseProxyProtocol bool      `query:"use_proxy_protocol" param:"use_proxy_protocol" boil:"use_proxy_protocol" json:"use_proxy_protocol" toml:"use_proxy_protocol" yaml:"use_proxy_protocol"`
-	DisplayName      string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	CreatedAt   time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt   time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt   null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	PoolID      string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
+	TenantID    string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	Protocol    string    `query:"protocol" param:"protocol" boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
+	DisplayName string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
 
 	R *poolR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L poolL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PoolColumns = struct {
-	CreatedAt        string
-	UpdatedAt        string
-	DeletedAt        string
-	PoolID           string
-	LoadBalancerID   string
-	TenantID         string
-	Protocol         string
-	UseProxyProtocol string
-	DisplayName      string
+	CreatedAt   string
+	UpdatedAt   string
+	DeletedAt   string
+	PoolID      string
+	TenantID    string
+	Protocol    string
+	DisplayName string
 }{
-	CreatedAt:        "created_at",
-	UpdatedAt:        "updated_at",
-	DeletedAt:        "deleted_at",
-	PoolID:           "pool_id",
-	LoadBalancerID:   "load_balancer_id",
-	TenantID:         "tenant_id",
-	Protocol:         "protocol",
-	UseProxyProtocol: "use_proxy_protocol",
-	DisplayName:      "display_name",
+	CreatedAt:   "created_at",
+	UpdatedAt:   "updated_at",
+	DeletedAt:   "deleted_at",
+	PoolID:      "pool_id",
+	TenantID:    "tenant_id",
+	Protocol:    "protocol",
+	DisplayName: "display_name",
 }
 
 var PoolTableColumns = struct {
-	CreatedAt        string
-	UpdatedAt        string
-	DeletedAt        string
-	PoolID           string
-	LoadBalancerID   string
-	TenantID         string
-	Protocol         string
-	UseProxyProtocol string
-	DisplayName      string
+	CreatedAt   string
+	UpdatedAt   string
+	DeletedAt   string
+	PoolID      string
+	TenantID    string
+	Protocol    string
+	DisplayName string
 }{
-	CreatedAt:        "pools.created_at",
-	UpdatedAt:        "pools.updated_at",
-	DeletedAt:        "pools.deleted_at",
-	PoolID:           "pools.pool_id",
-	LoadBalancerID:   "pools.load_balancer_id",
-	TenantID:         "pools.tenant_id",
-	Protocol:         "pools.protocol",
-	UseProxyProtocol: "pools.use_proxy_protocol",
-	DisplayName:      "pools.display_name",
+	CreatedAt:   "pools.created_at",
+	UpdatedAt:   "pools.updated_at",
+	DeletedAt:   "pools.deleted_at",
+	PoolID:      "pools.pool_id",
+	TenantID:    "pools.tenant_id",
+	Protocol:    "pools.protocol",
+	DisplayName: "pools.display_name",
 }
 
 // Generated where
 
 var PoolWhere = struct {
-	CreatedAt        whereHelpertime_Time
-	UpdatedAt        whereHelpertime_Time
-	DeletedAt        whereHelpernull_Time
-	PoolID           whereHelperstring
-	LoadBalancerID   whereHelperstring
-	TenantID         whereHelperstring
-	Protocol         whereHelperstring
-	UseProxyProtocol whereHelperbool
-	DisplayName      whereHelperstring
+	CreatedAt   whereHelpertime_Time
+	UpdatedAt   whereHelpertime_Time
+	DeletedAt   whereHelpernull_Time
+	PoolID      whereHelperstring
+	TenantID    whereHelperstring
+	Protocol    whereHelperstring
+	DisplayName whereHelperstring
 }{
-	CreatedAt:        whereHelpertime_Time{field: "\"pools\".\"created_at\""},
-	UpdatedAt:        whereHelpertime_Time{field: "\"pools\".\"updated_at\""},
-	DeletedAt:        whereHelpernull_Time{field: "\"pools\".\"deleted_at\""},
-	PoolID:           whereHelperstring{field: "\"pools\".\"pool_id\""},
-	LoadBalancerID:   whereHelperstring{field: "\"pools\".\"load_balancer_id\""},
-	TenantID:         whereHelperstring{field: "\"pools\".\"tenant_id\""},
-	Protocol:         whereHelperstring{field: "\"pools\".\"protocol\""},
-	UseProxyProtocol: whereHelperbool{field: "\"pools\".\"use_proxy_protocol\""},
-	DisplayName:      whereHelperstring{field: "\"pools\".\"display_name\""},
+	CreatedAt:   whereHelpertime_Time{field: "\"pools\".\"created_at\""},
+	UpdatedAt:   whereHelpertime_Time{field: "\"pools\".\"updated_at\""},
+	DeletedAt:   whereHelpernull_Time{field: "\"pools\".\"deleted_at\""},
+	PoolID:      whereHelperstring{field: "\"pools\".\"pool_id\""},
+	TenantID:    whereHelperstring{field: "\"pools\".\"tenant_id\""},
+	Protocol:    whereHelperstring{field: "\"pools\".\"protocol\""},
+	DisplayName: whereHelperstring{field: "\"pools\".\"display_name\""},
 }
 
 // PoolRels is where relationship names are stored.
 var PoolRels = struct {
-	LoadBalancer string
-	Assignments  string
-	Origins      string
+	Assignments string
+	Origins     string
 }{
-	LoadBalancer: "LoadBalancer",
-	Assignments:  "Assignments",
-	Origins:      "Origins",
+	Assignments: "Assignments",
+	Origins:     "Origins",
 }
 
 // poolR is where relationships are stored.
 type poolR struct {
-	LoadBalancer *LoadBalancer   `query:"LoadBalancer" param:"LoadBalancer" boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
-	Assignments  AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
-	Origins      OriginSlice     `query:"Origins" param:"Origins" boil:"Origins" json:"Origins" toml:"Origins" yaml:"Origins"`
+	Assignments AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
+	Origins     OriginSlice     `query:"Origins" param:"Origins" boil:"Origins" json:"Origins" toml:"Origins" yaml:"Origins"`
 }
 
 // NewStruct creates a new relationship struct
 func (*poolR) NewStruct() *poolR {
 	return &poolR{}
-}
-
-func (r *poolR) GetLoadBalancer() *LoadBalancer {
-	if r == nil {
-		return nil
-	}
-	return r.LoadBalancer
 }
 
 func (r *poolR) GetAssignments() AssignmentSlice {
@@ -154,9 +130,9 @@ func (r *poolR) GetOrigins() OriginSlice {
 type poolL struct{}
 
 var (
-	poolAllColumns            = []string{"created_at", "updated_at", "deleted_at", "pool_id", "load_balancer_id", "tenant_id", "protocol", "use_proxy_protocol", "display_name"}
-	poolColumnsWithoutDefault = []string{"load_balancer_id", "tenant_id", "protocol", "display_name"}
-	poolColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "pool_id", "use_proxy_protocol"}
+	poolAllColumns            = []string{"created_at", "updated_at", "deleted_at", "pool_id", "tenant_id", "protocol", "display_name"}
+	poolColumnsWithoutDefault = []string{"tenant_id", "protocol", "display_name"}
+	poolColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "pool_id"}
 	poolPrimaryKeyColumns     = []string{"pool_id"}
 	poolGeneratedColumns      = []string{}
 )
@@ -436,17 +412,6 @@ func (q poolQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	return count > 0, nil
 }
 
-// LoadBalancer pointed to by the foreign key.
-func (o *Pool) LoadBalancer(mods ...qm.QueryMod) loadBalancerQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"load_balancer_id\" = ?", o.LoadBalancerID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return LoadBalancers(queryMods...)
-}
-
 // Assignments retrieves all the assignment's Assignments with an executor.
 func (o *Pool) Assignments(mods ...qm.QueryMod) assignmentQuery {
 	var queryMods []qm.QueryMod
@@ -473,127 +438,6 @@ func (o *Pool) Origins(mods ...qm.QueryMod) originQuery {
 	)
 
 	return Origins(queryMods...)
-}
-
-// LoadLoadBalancer allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (poolL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, singular bool, maybePool interface{}, mods queries.Applicator) error {
-	var slice []*Pool
-	var object *Pool
-
-	if singular {
-		var ok bool
-		object, ok = maybePool.(*Pool)
-		if !ok {
-			object = new(Pool)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybePool)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePool))
-			}
-		}
-	} else {
-		s, ok := maybePool.(*[]*Pool)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybePool)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePool))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &poolR{}
-		}
-		args = append(args, object.LoadBalancerID)
-
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &poolR{}
-			}
-
-			for _, a := range args {
-				if a == obj.LoadBalancerID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.LoadBalancerID)
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`load_balancers`),
-		qm.WhereIn(`load_balancers.load_balancer_id in ?`, args...),
-		qmhelper.WhereIsNull(`load_balancers.deleted_at`),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load LoadBalancer")
-	}
-
-	var resultSlice []*LoadBalancer
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice LoadBalancer")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for load_balancers")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for load_balancers")
-	}
-
-	if len(poolAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.LoadBalancer = foreign
-		if foreign.R == nil {
-			foreign.R = &loadBalancerR{}
-		}
-		foreign.R.Pools = append(foreign.R.Pools, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.LoadBalancerID == foreign.LoadBalancerID {
-				local.R.LoadBalancer = foreign
-				if foreign.R == nil {
-					foreign.R = &loadBalancerR{}
-				}
-				foreign.R.Pools = append(foreign.R.Pools, local)
-				break
-			}
-		}
-	}
-
-	return nil
 }
 
 // LoadAssignments allows an eager lookup of values, cached into the
@@ -821,53 +665,6 @@ func (poolL) LoadOrigins(ctx context.Context, e boil.ContextExecutor, singular b
 				break
 			}
 		}
-	}
-
-	return nil
-}
-
-// SetLoadBalancer of the pool to the related item.
-// Sets o.R.LoadBalancer to related.
-// Adds o to related.R.Pools.
-func (o *Pool) SetLoadBalancer(ctx context.Context, exec boil.ContextExecutor, insert bool, related *LoadBalancer) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"pools\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-		strmangle.WhereClause("\"", "\"", 2, poolPrimaryKeyColumns),
-	)
-	values := []interface{}{related.LoadBalancerID, o.PoolID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.LoadBalancerID = related.LoadBalancerID
-	if o.R == nil {
-		o.R = &poolR{
-			LoadBalancer: related,
-		}
-	} else {
-		o.R.LoadBalancer = related
-	}
-
-	if related.R == nil {
-		related.R = &loadBalancerR{
-			Pools: PoolSlice{o},
-		}
-	} else {
-		related.R.Pools = append(related.R.Pools, o)
 	}
 
 	return nil
