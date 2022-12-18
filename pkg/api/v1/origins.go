@@ -62,5 +62,4 @@ func (r *Router) originsGet(c echo.Context) error {
 	default:
 		return v1OriginsResponse(c, os)
 	}
-
 }

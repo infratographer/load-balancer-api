@@ -1,6 +1,6 @@
 # Go config
-GOBIN=/workspace/.go/bin
+GOBIN=/home/vscode/go/bin
 GOENV=/workspace/.devcontainer/.env.go
-GOMODCACHE=/workspace/.go/pkg/mod
-GOPATH=/workspace/.go
-GOCACHE=/workspace/.go/cache/go-build
+GOMODCACHE=/home/vscode/go/pkg/mod
+GOPATH=/home/vscode/go
+GOCACHE=/home/vscode/go/cache/go-build
