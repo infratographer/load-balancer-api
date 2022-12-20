@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"go.infratographer.com/loadbalancerapi/internal/models"
 )
 
@@ -74,7 +75,8 @@ func (r *Router) frontendGet(c echo.Context) error {
 
 	frontends, err := models.Frontends(mods...).All(ctx, r.db)
 	if err != nil {
-		return err
+		r.logger.Errorw("failed to get frontends", "error", err)
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	switch len(frontends) {
@@ -114,8 +116,8 @@ func (r *Router) frontendDelete(c echo.Context) error {
 	}
 }
 
-// frontendCreate creates a new frontend
-func (r *Router) frontendCreate(c echo.Context) error {
+// frontendPost creates a new frontend
+func (r *Router) frontendPost(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := []struct {
@@ -137,6 +139,7 @@ func (r *Router) frontendCreate(c echo.Context) error {
 
 	tx, err := r.db.Begin()
 	if err != nil {
+		r.logger.Errorw("failed to begin transaction", "error", err)
 		return err
 	}
 
@@ -158,7 +161,12 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		frontends = append(frontends, &frontend)
 
 		if err := frontend.Insert(ctx, tx, boil.Infer()); err != nil {
-			_ = tx.Rollback()
+			r.logger.Errorw("failed to insert frontend", "error", err)
+
+			if err := tx.Rollback(); err != nil {
+				r.logger.Errorw("failed to rollback transaction", "error", err)
+			}
+
 			return err
 		}
 	}
@@ -204,7 +212,7 @@ func (r *Router) addFrontendRoutes(rg *echo.Group) {
 	rg.GET("/frontends/:frontend_id", r.frontendGet)
 	rg.GET("/loadbalancers/:load_balancer_id/frontends", r.frontendGet)
 
-	rg.POST("/frontends", r.frontendCreate)
+	rg.POST("/frontends", r.frontendPost)
 
 	rg.DELETE("/frontends", r.frontendDelete)
 	rg.DELETE("/frontends/:frontend_id", r.frontendDelete)

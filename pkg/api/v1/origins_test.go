@@ -8,13 +8,14 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/stretchr/testify/assert"
 )
 
-func createOrigin(t *testing.T, srv *httptest.Server, poolID, tenantID string) (*origin, func(*testing.T)) {
+func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID, tenantID string) (*origin, func(*testing.T)) {
 	t.Helper()
 
-	body := fmt.Sprintf(`[{"disabled": true,"display_name": "The Butt", "target": "1.1.1.1", "port": 80, "pool_id": "%s"}]`, poolID)
+	body := fmt.Sprintf(`[{"disabled": true,"display_name": "%s", "target": "1.1.1.1", "port": 80, "pool_id": "%s"}]`, name, poolID)
 
 	doHTTPTest(t, &httpTest{
 		name:   "create origin",
@@ -26,7 +27,7 @@ func createOrigin(t *testing.T, srv *httptest.Server, poolID, tenantID string) (
 	})
 
 	// Get the origin
-	req, err := http.NewRequest(http.MethodGet, srv.URL+"/v1/origins?slug=the-butt", nil) //nolint
+	req, err := http.NewRequest(http.MethodGet, srv.URL+"/v1/origins?slug="+slug.Make(name), nil) //nolint
 	assert.NoError(t, err)
 
 	req.Header.Set(tenantHeader, tenantID)
@@ -46,7 +47,7 @@ func createOrigin(t *testing.T, srv *httptest.Server, poolID, tenantID string) (
 		t.Helper()
 
 		// Delete the origin
-		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/v1/origins?slug=create-origin", nil) //nolint
+		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/v1/origins?slug="+slug.Make(name), nil) //nolint
 		assert.NoError(t, err)
 
 		req.Header.Set(tenantHeader, tenantID)
@@ -64,7 +65,7 @@ func TestOriginRoutes(t *testing.T) {
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/origins"
-	pool, remove := createPool(t, srv, tenantID)
+	pool, remove := createPool(t, srv, "squirt", tenantID)
 
 	// doHTTPTest is a helper function that makes a request to the server and
 	// checks the response.

@@ -24,14 +24,14 @@ import (
 
 // Assignment is an object representing the database table.
 type Assignment struct {
-	CreatedAt      time.Time   `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt      time.Time   `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt      null.Time   `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	AssignmentID   string      `query:"assignment_id" param:"assignment_id" boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
-	PoolID         null.String `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id,omitempty" toml:"pool_id" yaml:"pool_id,omitempty"`
-	FrontendID     null.String `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id,omitempty" toml:"frontend_id" yaml:"frontend_id,omitempty"`
-	LoadBalancerID null.String `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id,omitempty" toml:"load_balancer_id" yaml:"load_balancer_id,omitempty"`
-	TenantID       string      `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	CreatedAt      time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt      time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	AssignmentID   string    `query:"assignment_id" param:"assignment_id" boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
+	PoolID         string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
+	FrontendID     string    `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id" toml:"frontend_id" yaml:"frontend_id"`
+	LoadBalancerID string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
+	TenantID       string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
 
 	R *assignmentR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignmentL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -147,61 +147,23 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var AssignmentWhere = struct {
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
 	DeletedAt      whereHelpernull_Time
 	AssignmentID   whereHelperstring
-	PoolID         whereHelpernull_String
-	FrontendID     whereHelpernull_String
-	LoadBalancerID whereHelpernull_String
+	PoolID         whereHelperstring
+	FrontendID     whereHelperstring
+	LoadBalancerID whereHelperstring
 	TenantID       whereHelperstring
 }{
 	CreatedAt:      whereHelpertime_Time{field: "\"assignments\".\"created_at\""},
 	UpdatedAt:      whereHelpertime_Time{field: "\"assignments\".\"updated_at\""},
 	DeletedAt:      whereHelpernull_Time{field: "\"assignments\".\"deleted_at\""},
 	AssignmentID:   whereHelperstring{field: "\"assignments\".\"assignment_id\""},
-	PoolID:         whereHelpernull_String{field: "\"assignments\".\"pool_id\""},
-	FrontendID:     whereHelpernull_String{field: "\"assignments\".\"frontend_id\""},
-	LoadBalancerID: whereHelpernull_String{field: "\"assignments\".\"load_balancer_id\""},
+	PoolID:         whereHelperstring{field: "\"assignments\".\"pool_id\""},
+	FrontendID:     whereHelperstring{field: "\"assignments\".\"frontend_id\""},
+	LoadBalancerID: whereHelperstring{field: "\"assignments\".\"load_balancer_id\""},
 	TenantID:       whereHelperstring{field: "\"assignments\".\"tenant_id\""},
 }
 
@@ -254,8 +216,8 @@ type assignmentL struct{}
 
 var (
 	assignmentAllColumns            = []string{"created_at", "updated_at", "deleted_at", "assignment_id", "pool_id", "frontend_id", "load_balancer_id", "tenant_id"}
-	assignmentColumnsWithoutDefault = []string{"tenant_id"}
-	assignmentColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "assignment_id", "pool_id", "frontend_id", "load_balancer_id"}
+	assignmentColumnsWithoutDefault = []string{"pool_id", "frontend_id", "load_balancer_id", "tenant_id"}
+	assignmentColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "assignment_id"}
 	assignmentPrimaryKeyColumns     = []string{"assignment_id"}
 	assignmentGeneratedColumns      = []string{}
 )
@@ -601,9 +563,7 @@ func (assignmentL) LoadPool(ctx context.Context, e boil.ContextExecutor, singula
 		if object.R == nil {
 			object.R = &assignmentR{}
 		}
-		if !queries.IsNil(object.PoolID) {
-			args = append(args, object.PoolID)
-		}
+		args = append(args, object.PoolID)
 
 	} else {
 	Outer:
@@ -613,14 +573,12 @@ func (assignmentL) LoadPool(ctx context.Context, e boil.ContextExecutor, singula
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.PoolID) {
+				if a == obj.PoolID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.PoolID) {
-				args = append(args, obj.PoolID)
-			}
+			args = append(args, obj.PoolID)
 
 		}
 	}
@@ -679,7 +637,7 @@ func (assignmentL) LoadPool(ctx context.Context, e boil.ContextExecutor, singula
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.PoolID, foreign.PoolID) {
+			if local.PoolID == foreign.PoolID {
 				local.R.Pool = foreign
 				if foreign.R == nil {
 					foreign.R = &poolR{}
@@ -726,9 +684,7 @@ func (assignmentL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &assignmentR{}
 		}
-		if !queries.IsNil(object.LoadBalancerID) {
-			args = append(args, object.LoadBalancerID)
-		}
+		args = append(args, object.LoadBalancerID)
 
 	} else {
 	Outer:
@@ -738,14 +694,12 @@ func (assignmentL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.LoadBalancerID) {
+				if a == obj.LoadBalancerID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.LoadBalancerID) {
-				args = append(args, obj.LoadBalancerID)
-			}
+			args = append(args, obj.LoadBalancerID)
 
 		}
 	}
@@ -804,7 +758,7 @@ func (assignmentL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor,
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.LoadBalancerID, foreign.LoadBalancerID) {
+			if local.LoadBalancerID == foreign.LoadBalancerID {
 				local.R.LoadBalancer = foreign
 				if foreign.R == nil {
 					foreign.R = &loadBalancerR{}
@@ -851,9 +805,7 @@ func (assignmentL) LoadFrontend(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &assignmentR{}
 		}
-		if !queries.IsNil(object.FrontendID) {
-			args = append(args, object.FrontendID)
-		}
+		args = append(args, object.FrontendID)
 
 	} else {
 	Outer:
@@ -863,14 +815,12 @@ func (assignmentL) LoadFrontend(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.FrontendID) {
+				if a == obj.FrontendID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.FrontendID) {
-				args = append(args, obj.FrontendID)
-			}
+			args = append(args, obj.FrontendID)
 
 		}
 	}
@@ -929,7 +879,7 @@ func (assignmentL) LoadFrontend(ctx context.Context, e boil.ContextExecutor, sin
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.FrontendID, foreign.FrontendID) {
+			if local.FrontendID == foreign.FrontendID {
 				local.R.Frontend = foreign
 				if foreign.R == nil {
 					foreign.R = &frontendR{}
@@ -970,7 +920,7 @@ func (o *Assignment) SetPool(ctx context.Context, exec boil.ContextExecutor, ins
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.PoolID, related.PoolID)
+	o.PoolID = related.PoolID
 	if o.R == nil {
 		o.R = &assignmentR{
 			Pool: related,
@@ -987,39 +937,6 @@ func (o *Assignment) SetPool(ctx context.Context, exec boil.ContextExecutor, ins
 		related.R.Assignments = append(related.R.Assignments, o)
 	}
 
-	return nil
-}
-
-// RemovePool relationship.
-// Sets o.R.Pool to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Assignment) RemovePool(ctx context.Context, exec boil.ContextExecutor, related *Pool) error {
-	var err error
-
-	queries.SetScanner(&o.PoolID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("pool_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Pool = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Assignments {
-		if queries.Equal(o.PoolID, ri.PoolID) {
-			continue
-		}
-
-		ln := len(related.R.Assignments)
-		if ln > 1 && i < ln-1 {
-			related.R.Assignments[i] = related.R.Assignments[ln-1]
-		}
-		related.R.Assignments = related.R.Assignments[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1050,7 +967,7 @@ func (o *Assignment) SetLoadBalancer(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.LoadBalancerID, related.LoadBalancerID)
+	o.LoadBalancerID = related.LoadBalancerID
 	if o.R == nil {
 		o.R = &assignmentR{
 			LoadBalancer: related,
@@ -1067,39 +984,6 @@ func (o *Assignment) SetLoadBalancer(ctx context.Context, exec boil.ContextExecu
 		related.R.Assignments = append(related.R.Assignments, o)
 	}
 
-	return nil
-}
-
-// RemoveLoadBalancer relationship.
-// Sets o.R.LoadBalancer to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Assignment) RemoveLoadBalancer(ctx context.Context, exec boil.ContextExecutor, related *LoadBalancer) error {
-	var err error
-
-	queries.SetScanner(&o.LoadBalancerID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("load_balancer_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.LoadBalancer = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Assignments {
-		if queries.Equal(o.LoadBalancerID, ri.LoadBalancerID) {
-			continue
-		}
-
-		ln := len(related.R.Assignments)
-		if ln > 1 && i < ln-1 {
-			related.R.Assignments[i] = related.R.Assignments[ln-1]
-		}
-		related.R.Assignments = related.R.Assignments[:ln-1]
-		break
-	}
 	return nil
 }
 
@@ -1130,7 +1014,7 @@ func (o *Assignment) SetFrontend(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.FrontendID, related.FrontendID)
+	o.FrontendID = related.FrontendID
 	if o.R == nil {
 		o.R = &assignmentR{
 			Frontend: related,
@@ -1147,39 +1031,6 @@ func (o *Assignment) SetFrontend(ctx context.Context, exec boil.ContextExecutor,
 		related.R.Assignments = append(related.R.Assignments, o)
 	}
 
-	return nil
-}
-
-// RemoveFrontend relationship.
-// Sets o.R.Frontend to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Assignment) RemoveFrontend(ctx context.Context, exec boil.ContextExecutor, related *Frontend) error {
-	var err error
-
-	queries.SetScanner(&o.FrontendID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("frontend_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Frontend = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Assignments {
-		if queries.Equal(o.FrontendID, ri.FrontendID) {
-			continue
-		}
-
-		ln := len(related.R.Assignments)
-		if ln > 1 && i < ln-1 {
-			related.R.Assignments[i] = related.R.Assignments[ln-1]
-		}
-		related.R.Assignments = related.R.Assignments[:ln-1]
-		break
-	}
 	return nil
 }
 

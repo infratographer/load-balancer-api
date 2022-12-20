@@ -8,6 +8,19 @@ import (
 	"go.infratographer.com/loadbalancerapi/internal/models"
 )
 
+type assignment struct {
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
+	ID             string     `json:"id"`
+	FrontendID     string     `json:"frontend_id"`
+	LoadBalancerID string     `json:"load_balancer_id"`
+	PoolID         string     `json:"pool_id"`
+	TenantID       string     `json:"tenant_id"`
+}
+
+type assignmentSlice []*assignment
+
 type frontend struct {
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
@@ -77,6 +90,7 @@ type poolSlice []*pool
 type response struct {
 	Version       string             `json:"version"`
 	Kind          string             `json:"kind"`
+	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
 	Frontends     *frontendSlice     `json:"frontends,omitempty"`
 	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
 	Locations     *locationSlice     `json:"locations,omitempty"`
@@ -163,6 +177,28 @@ func v1InternalServerErrorResponse(c echo.Context, err error) error {
 		Message: "internal server error",
 		Error:   err.Error(),
 		Status:  http.StatusInternalServerError,
+	})
+}
+
+func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
+	out := assignmentSlice{}
+	for _, a := range as {
+		out = append(out, &assignment{
+			CreatedAt:      a.CreatedAt,
+			UpdatedAt:      a.UpdatedAt,
+			DeletedAt:      a.DeletedAt.Ptr(),
+			ID:             a.AssignmentID,
+			LoadBalancerID: a.LoadBalancerID,
+			FrontendID:     a.FrontendID,
+			PoolID:         a.PoolID,
+			TenantID:       a.TenantID,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version:     apiVersion,
+		Kind:        "assignmentsList",
+		Assignments: &out,
 	})
 }
 

@@ -8,14 +8,15 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/stretchr/testify/assert"
 )
 
 // createPool creates a pool with the given display name and protocol.
-func createPool(t *testing.T, srv *httptest.Server, tenantID string) (*pool, func(t *testing.T)) {
+func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string) (*pool, func(t *testing.T)) {
 	t.Helper()
 
-	body := `[{"display_name": "Dory", "protocol": "tcp"}]`
+	body := `[{"display_name": "` + name + `", "protocol": "tcp"}]`
 
 	baseURL := srv.URL + "/v1/pools"
 
@@ -30,7 +31,7 @@ func createPool(t *testing.T, srv *httptest.Server, tenantID string) (*pool, fun
 
 	pool := response{}
 
-	req, err := http.NewRequest(http.MethodGet, baseURL+"?slug=dory", nil) //nolint
+	req, err := http.NewRequest(http.MethodGet, baseURL+"?slug="+slug.Make(name), nil) //nolint
 	assert.NoError(t, err)
 
 	req.Header.Set(tenantHeader, tenantID)
