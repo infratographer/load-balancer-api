@@ -2,11 +2,12 @@ package api
 
 import (
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"go.infratographer.com/loadbalancerapi/internal/models"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // frontendParamsBinding binds the request path and query params to a slice of query mods
@@ -47,7 +48,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	}
 
 	// query params
-	queryParams := []string{"port", "load_balancer_id", "display_name", "af_inet"}
+	queryParams := []string{"port", "load_balancer_id", "slug", "af_inet"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -64,10 +65,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 
 // frontendGet returns a list of frontends for a given load balancer
 func (r *Router) frontendGet(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "frontendGet")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("router", "frontendGet"))
+	ctx := c.Request().Context()
 
 	mods, err := r.frontendParamsBinding(c)
 	if err != nil {
@@ -77,7 +75,8 @@ func (r *Router) frontendGet(c echo.Context) error {
 
 	frontends, err := models.Frontends(mods...).All(ctx, r.db)
 	if err != nil {
-		return err
+		r.logger.Errorw("failed to get frontends", "error", err)
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	switch len(frontends) {
@@ -90,10 +89,7 @@ func (r *Router) frontendGet(c echo.Context) error {
 
 // frontendDelete deletes a frontend
 func (r *Router) frontendDelete(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "frontendDelete")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("router", "frontendDelete"))
+	ctx := c.Request().Context()
 
 	mods, err := r.frontendParamsBinding(c)
 	if err != nil {
@@ -120,12 +116,9 @@ func (r *Router) frontendDelete(c echo.Context) error {
 	}
 }
 
-// frontendCreate creates a new frontend
-func (r *Router) frontendCreate(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "frontendCreate")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("router", "frontendCreate"))
+// frontendPost creates a new frontend
+func (r *Router) frontendPost(c echo.Context) error {
+	ctx := c.Request().Context()
 
 	payload := []struct {
 		DisplayName    string `json:"display_name"`
@@ -146,6 +139,7 @@ func (r *Router) frontendCreate(c echo.Context) error {
 
 	tx, err := r.db.Begin()
 	if err != nil {
+		r.logger.Errorw("failed to begin transaction", "error", err)
 		return err
 	}
 
@@ -155,6 +149,8 @@ func (r *Router) frontendCreate(c echo.Context) error {
 			Port:           p.Port,
 			LoadBalancerID: p.LoadBalancerID,
 			TenantID:       tenantID,
+			Slug:           slug.Make(p.DisplayName),
+			CurrentState:   "pending",
 		}
 
 		if err := validateFrontend(&frontend); err != nil {
@@ -165,7 +161,12 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		frontends = append(frontends, &frontend)
 
 		if err := frontend.Insert(ctx, tx, boil.Infer()); err != nil {
-			_ = tx.Rollback()
+			r.logger.Errorw("failed to insert frontend", "error", err)
+
+			if err := tx.Rollback(); err != nil {
+				r.logger.Errorw("failed to rollback transaction", "error", err)
+			}
+
 			return err
 		}
 	}
@@ -211,7 +212,7 @@ func (r *Router) addFrontendRoutes(rg *echo.Group) {
 	rg.GET("/frontends/:frontend_id", r.frontendGet)
 	rg.GET("/loadbalancers/:load_balancer_id/frontends", r.frontendGet)
 
-	rg.POST("/frontends", r.frontendCreate)
+	rg.POST("/frontends", r.frontendPost)
 
 	rg.DELETE("/frontends", r.frontendDelete)
 	rg.DELETE("/frontends/:frontend_id", r.frontendDelete)

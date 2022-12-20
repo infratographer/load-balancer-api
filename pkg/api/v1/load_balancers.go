@@ -5,10 +5,10 @@ import (
 
 	"github.com/dspinhirne/netaddr-go"
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.opentelemetry.io/otel/attribute"
 
 	"go.infratographer.com/loadbalancerapi/internal/models"
 )
@@ -50,7 +50,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "display_name"}
+	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -71,10 +71,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 
 // loadBalancerGet returns a load balancer for a tenant by ID
 func (r *Router) loadBalancerGet(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "loadBalancerGet")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "loadBalancerGet"))
+	ctx := c.Request().Context()
 
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
@@ -97,10 +94,7 @@ func (r *Router) loadBalancerGet(c echo.Context) error {
 
 // loadBalancerCreate creates a new load balancer for a tenant
 func (r *Router) loadBalancerCreate(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "loadBalancerCreate")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "loadBalancerCreate"))
+	ctx := c.Request().Context()
 
 	payload := []struct {
 		DisplayName      string `json:"display_name"`
@@ -125,7 +119,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	lbs := models.LoadBalancerSlice{}
 
-	tx, err := r.db.Begin()
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		r.logger.Errorw("failed to begin transaction", "error", err)
 		return v1BadRequestResponse(c, err)
@@ -139,6 +133,8 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			LoadBalancerType: p.LoadBalancerType,
 			IPAddr:           p.IPAddr,
 			LocationID:       p.LocationID,
+			Slug:             slug.Make(p.DisplayName),
+			CurrentState:     "provisioning",
 		}
 
 		if err := validateLoadBalancer(lb); err != nil {
@@ -155,7 +151,10 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		if err != nil {
 			r.logger.Errorw("failed to create load balancer, rolling back transaction", "error", err)
 
-			_ = tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				r.logger.Errorw("failed to rollback transaction", "error", err)
+				return v1InternalServerErrorResponse(c, err)
+			}
 
 			return v1InternalServerErrorResponse(c, err)
 		}
@@ -163,7 +162,11 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	switch len(lbs) {
 	case 0:
-		_ = tx.Rollback()
+		if err := tx.Rollback(); err != nil {
+			r.logger.Errorw("failed to rollback transaction", "error", err)
+			return v1BadRequestResponse(c, err)
+		}
+
 		return v1UnprocessableEntityResponse(c, ErrInvalidLoadBalancer)
 	default:
 		if err := tx.Commit(); err != nil {
@@ -218,21 +221,12 @@ func (r *Router) cleanupLoadBalancer(ctx context.Context, lb *models.LoadBalance
 		return err
 	}
 
-	// Delete pools assigned to the load balancer
-	if _, err := models.Pools(qm.Where(models.PoolColumns.LoadBalancerID+" = ?", lb.LoadBalancerID)).DeleteAll(ctx, r.db, false); err != nil {
-		r.logger.Errorw("failed to delete pools", "error", err)
-		return err
-	}
-
 	return nil
 }
 
 // loadBalancerDelete deletes a load balancer for a tenant
 func (r *Router) loadBalancerDelete(c echo.Context) error {
-	ctx, span := tracer.Start(c.Request().Context(), "loadBalancerDelete")
-	defer span.End()
-
-	span.SetAttributes(attribute.String("route", "loadBalancerDelete"))
+	ctx := c.Request().Context()
 
 	// Look up the load balancer by ID from the path and IP address from the query param
 	// this is a unique index in the database, so it will only return one load balancer
@@ -252,8 +246,19 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 	case 0:
 		return v1NotFoundResponse(c)
 	case 1:
+		tx, err := r.db.BeginTx(ctx, nil)
+		if err != nil {
+			r.logger.Errorw("failed to begin transaction", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
 		if err := r.cleanupLoadBalancer(ctx, lb[0]); err != nil {
-			return err
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		if err := tx.Commit(); err != nil {
+			r.logger.Errorw("failed to commit transaction", "error", err)
+			return v1InternalServerErrorResponse(c, err)
 		}
 
 		return v1DeletedResponse(c)

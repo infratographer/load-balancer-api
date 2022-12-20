@@ -3,11 +3,20 @@ package api
 import "errors"
 
 var (
+	// ErrMissingPoolID is returned when a pool ID is missing
+	ErrMissingPoolID = errors.New("pool ID is missing")
+
+	// ErrMissingOriginTarget is returned when an origin target is missing
+	ErrMissingOriginTarget = errors.New("origin target is missing")
+
 	// ErrLoadBalancerIPMissing is returned when a load balancer IP is missing
 	ErrLoadBalancerIPMissing = errors.New("load balancer IP is missing")
 
 	// ErrLoadBalancerIPInvalid is returned when a load balancer IP is invalid
 	ErrLoadBalancerIPInvalid = errors.New("load balancer IP is invalid")
+
+	// ErrPoolProtocolInvalid is returned when a protocol is invalid
+	ErrPoolProtocolInvalid = errors.New("protocol must be tcp")
 
 	// ErrLoadBalancerIDMissing is returned when a load balancer ID is missing
 	ErrLoadBalancerIDMissing = errors.New("load balancer ID is missing")

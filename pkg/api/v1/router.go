@@ -2,23 +2,21 @@
 package api
 
 import (
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
-var tracer = otel.Tracer("go.infratographer.com/loadbalanccerapi/pkg/api/v1")
+const apiVersion = "v1"
 
 // Router provides a router for the API
 type Router struct {
-	db     *sql.DB
+	db     *sqlx.DB
 	logger *zap.SugaredLogger
 }
 
 // NewRouter creates a new router for the API
-func NewRouter(db *sql.DB, l *zap.SugaredLogger) *Router {
+func NewRouter(db *sqlx.DB, l *zap.SugaredLogger) *Router {
 	return &Router{
 		db:     db,
 		logger: l.Named("api"),
@@ -54,10 +52,12 @@ func (r *Router) Routes(e *echo.Echo) {
 
 	e.Use(defaultRequestType)
 
-	v1 := e.Group("v1")
+	v1 := e.Group(apiVersion)
 	{
+		r.addAssignRoutes(v1)
 		r.addFrontendRoutes(v1)
-		r.addLocationRoutes(v1)
 		r.addLoadBalancerRoutes(v1)
+		r.addOriginRoutes(v1)
+		r.addPoolsRoutes(v1)
 	}
 }
