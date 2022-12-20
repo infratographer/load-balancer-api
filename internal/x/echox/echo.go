@@ -37,5 +37,8 @@ func NewServer() *echo.Echo {
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)
 
+	e.HideBanner = true
+	e.HidePort = true
+
 	return e
 }

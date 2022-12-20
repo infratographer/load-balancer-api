@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"go.infratographer.com/loadbalancerapi/internal/models"
 )
 
@@ -26,7 +28,7 @@ func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		mods = append(mods, models.PoolWhere.PoolID.EQ(poolID))
 	}
 
-	queryParams := []string{"display_name", "protocol"}
+	queryParams := []string{"slug", "protocol"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -101,6 +103,7 @@ func (r *Router) poolCreate(c echo.Context) error {
 			DisplayName: p.DisplayName,
 			Protocol:    p.Protocol,
 			TenantID:    tenantID,
+			Slug:        slug.Make(p.DisplayName),
 		}
 
 		if err := validatePool(pool); err != nil {
@@ -196,7 +199,7 @@ func (r *Router) cleanUpPool(ctx context.Context, pool *models.Pool) error {
 	}
 
 	// delete origins
-	//TODO
+	// TODO
 
 	return nil
 }

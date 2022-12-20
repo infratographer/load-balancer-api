@@ -16,7 +16,7 @@ test: | unit-test
 
 unit-test:
 	@echo Running unit tests...
-	@go test -race -cover -failfast ./...
+	@go test -race -cover -failfast ./... -p 1
 
 coverage:
 	@echo Generating coverage report...
@@ -54,4 +54,4 @@ dev-database: | vendor
 	@echo Creating dev database...
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
+	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run cmd/migrations/main.go migrate up

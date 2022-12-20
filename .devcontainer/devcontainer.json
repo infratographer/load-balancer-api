@@ -22,7 +22,9 @@
 				"golang.Go",
 				"mutantdino.resourcemonitor",
 				"oderwat.indent-rainbow",
-				"ms-azuretools.vscode-docker"
+				"ms-azuretools.vscode-docker",
+				"RemiMarche.cspell-tech",
+				"streetsidesoftware.code-spell-checker"
 			]
 		}
 	},

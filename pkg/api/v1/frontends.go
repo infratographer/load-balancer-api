@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -46,7 +47,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	}
 
 	// query params
-	queryParams := []string{"port", "load_balancer_id", "display_name", "af_inet"}
+	queryParams := []string{"port", "load_balancer_id", "slug", "af_inet"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -145,6 +146,8 @@ func (r *Router) frontendCreate(c echo.Context) error {
 			Port:           p.Port,
 			LoadBalancerID: p.LoadBalancerID,
 			TenantID:       tenantID,
+			Slug:           slug.Make(p.DisplayName),
+			CurrentState:   "pending",
 		}
 
 		if err := validateFrontend(&frontend); err != nil {

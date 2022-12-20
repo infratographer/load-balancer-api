@@ -85,7 +85,7 @@ type response struct {
 }
 
 func v1DeletedResponse(c echo.Context) error {
-	return c.JSON(http.StatusNoContent, struct {
+	return c.JSON(http.StatusOK, struct {
 		DeletedAt time.Time `json:"deleted_at"`
 		Message   string    `json:"message"`
 		Status    int       `json:"status"`
@@ -94,12 +94,12 @@ func v1DeletedResponse(c echo.Context) error {
 		Version:   apiVersion,
 		DeletedAt: time.Now(),
 		Message:   "resource deleted",
-		Status:    http.StatusNoContent,
+		Status:    http.StatusOK,
 	})
 }
 
 func v1CreatedResponse(c echo.Context) error {
-	return c.JSON(http.StatusCreated, struct {
+	return c.JSON(http.StatusOK, struct {
 		Version   string    `json:"version"`
 		CreatedAt time.Time `json:"created_at"`
 		Message   string    `json:"message"`
@@ -108,7 +108,7 @@ func v1CreatedResponse(c echo.Context) error {
 		CreatedAt: time.Now(),
 		Message:   "resource created",
 		Version:   apiVersion,
-		Status:    http.StatusCreated,
+		Status:    http.StatusOK,
 	})
 }
 
@@ -214,27 +214,6 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	})
 }
 
-func v1Locations(c echo.Context, ls models.LocationSlice) error {
-	out := locationSlice{}
-
-	for _, l := range ls {
-		out = append(out, &location{
-			CreatedAt: l.CreatedAt,
-			UpdatedAt: l.UpdatedAt,
-			DeletedAt: l.DeletedAt.Ptr(),
-			ID:        l.LocationID,
-			TenantID:  l.TenantID,
-			Name:      l.DisplayName,
-		})
-	}
-
-	return c.JSON(http.StatusOK, &response{
-		Version:   apiVersion,
-		Kind:      "locationsList",
-		Locations: &out,
-	})
-}
-
 func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 	out := originSlice{}
 
@@ -246,7 +225,7 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 			ID:             o.OriginID,
 			Name:           o.DisplayName,
 			TenantID:       o.TenantID,
-			OriginDisabled: o.OriginDisabled,
+			OriginDisabled: o.OriginUserSettingDisabled,
 			OriginTarget:   o.OriginTarget,
 			Port:           o.Port,
 		})

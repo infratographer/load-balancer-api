@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
@@ -14,9 +15,7 @@ import (
 	"go.infratographer.com/loadbalancerapi/pkg/api/v1"
 )
 
-var (
-	defaultLBAPIListenAddr = ":7608"
-)
+var defaultLBAPIListenAddr = ":7608"
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -44,8 +43,10 @@ func serve(ctx context.Context) {
 		logger.Fatalw("failed to connect to database", "error", err)
 	}
 
+	dbx := sqlx.NewDb(db, "postgres")
+
 	e := echox.NewServer()
-	r := api.NewRouter(db, logger)
+	r := api.NewRouter(dbx, logger)
 
 	e.Debug = true
 	r.Routes(e)

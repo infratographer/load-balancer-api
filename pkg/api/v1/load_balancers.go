@@ -5,6 +5,7 @@ import (
 
 	"github.com/dspinhirne/netaddr-go"
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -49,7 +50,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "display_name"}
+	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -132,6 +133,8 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			LoadBalancerType: p.LoadBalancerType,
 			IPAddr:           p.IPAddr,
 			LocationID:       p.LocationID,
+			Slug:             slug.Make(p.DisplayName),
+			CurrentState:     "provisioning",
 		}
 
 		if err := validateLoadBalancer(lb); err != nil {
