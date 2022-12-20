@@ -15,11 +15,13 @@ ci: | dev-database test
 test: | unit-test
 
 unit-test:
-	@echo Running unit tests...
+	@echo --- Running unit tests...
+	@date --rfc-3339=seconds
 	@go test -race -cover -failfast ./... -p 1
 
 coverage:
-	@echo Generating coverage report...
+	@echo --- Generating coverage report...
+	@date --rfc-3339=seconds
 	@go test ./... -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
@@ -27,31 +29,36 @@ coverage:
 lint: golint
 
 golint:
-	@echo Running golint...
+	@echo --- Running golint...
+	@date --rfc-3339=seconds
 	@golangci-lint run
 
 clean:
-	@echo Cleaning...
+	@echo --- Cleaning...
+	@date --rfc-3339=seconds
 	@rm -rf ./dist/
 	@rm -rf coverage.out
 	@go clean -testcache
 
 models: dev-database
-	@echo Generating models...
+	@echo -- Generating models...
 	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models --no-tests --tag query,param
 	@go mod tidy
 
 binary: | models
-	@echo Building binary...
+	@echo --- Building binary...
+	@date --rfc-3339=seconds
 	@go build -o bin/${APP_NAME} main.go
 
 vendor:
-	@echo Downloading dependencies...
+	@echo --- Downloading dependencies...
+	@date --rfc-3339=seconds
 	@go mod tidy
 	@go mod download
 
 dev-database: | vendor
-	@echo Creating dev database...
+	@echo --- Creating dev database...
+	@date --rfc-3339=seconds
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
 	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run cmd/migrations/main.go migrate up
