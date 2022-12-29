@@ -17,7 +17,6 @@ CREATE TABLE load_balancers (
     current_state STRING NOT NULL,
     previous_state STRING NOT NULL,
     UNIQUE INDEX idx_load_balancers_tenant_id_slug (tenant_id, slug) WHERE deleted_at IS NULL,
-
     UNIQUE INDEX idx_load_balancer_display_name_tenant_id (tenant_id,ip_addr) WHERE deleted_at IS NULL,
     INDEX idx_load_balancer_tenant_id (tenant_id),
     INDEX idx_load_balancer_created_at (created_at),

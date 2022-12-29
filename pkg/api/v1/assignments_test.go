@@ -130,6 +130,7 @@ func Test_Assignments(t *testing.T) {
 		status: http.StatusOK,
 		tenant: loadBalancer.TenantID,
 	})
+
 	// Delete the assignment
 	doHTTPTest(t, &httpTest{
 		name:   "delete ambiguous",

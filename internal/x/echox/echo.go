@@ -21,7 +21,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
-// NewServer will return an opinionated gin server for processing API requests.
+// NewServer will return an opinionated echo server for processing API requests.
 func NewServer() *echo.Echo {
 	e := echo.New()
 
