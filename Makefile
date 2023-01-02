@@ -61,4 +61,4 @@ dev-database: | vendor
 	@date --rfc-3339=seconds
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run cmd/migrations/main.go migrate up
+	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
