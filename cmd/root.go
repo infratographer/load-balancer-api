@@ -16,8 +16,8 @@ import (
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
 
-	dbm "go.infratographer.com/loadbalancerapi/db"
-	"go.infratographer.com/loadbalancerapi/internal/config"
+	dbm "go.infratographer.com/load-balancer-api/db"
+	"go.infratographer.com/load-balancer-api/internal/config"
 )
 
 // TODO: update app name

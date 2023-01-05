@@ -10,9 +10,9 @@ import (
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/viperx"
 
-	"go.infratographer.com/loadbalancerapi/internal/config"
-	"go.infratographer.com/loadbalancerapi/internal/x/echox"
-	"go.infratographer.com/loadbalancerapi/pkg/api/v1"
+	"go.infratographer.com/load-balancer-api/internal/config"
+	"go.infratographer.com/load-balancer-api/internal/x/echox"
+	"go.infratographer.com/load-balancer-api/pkg/api/v1"
 )
 
 var defaultLBAPIListenAddr = ":7608"
