@@ -23,6 +23,10 @@ RUN go install github.com/volatiletech/sqlboiler/v4@latest \
     && go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest \
     && go install github.com/glerchundi/sqlboiler-crdb/v4@latest
 
+RUN mkdir /home/vscode/.ssh && \
+    chown vscode:vscode /home/vscode/.ssh && \
+    chmod 0700 /home/vscode/.ssh
+
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
 
