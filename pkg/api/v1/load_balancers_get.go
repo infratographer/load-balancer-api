@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
-	"go.infratographer.com/loadbalancerapi/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // loadBalancerGet returns a load balancer for a tenant by ID

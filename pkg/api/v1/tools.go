@@ -8,9 +8,9 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
-	"go.infratographer.com/loadbalancerapi/internal/config"
-	"go.infratographer.com/loadbalancerapi/internal/httptools"
-	"go.infratographer.com/loadbalancerapi/internal/x/echox"
+	"go.infratographer.com/load-balancer-api/internal/config"
+	"go.infratographer.com/load-balancer-api/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/x/crdbx"
 	"go.uber.org/zap"
 )

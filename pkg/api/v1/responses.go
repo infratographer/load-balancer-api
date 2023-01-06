@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.infratographer.com/loadbalancerapi/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 func v1DeletedResponse(c echo.Context) error {

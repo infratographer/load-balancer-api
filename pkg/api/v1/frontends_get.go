@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
-	"go.infratographer.com/loadbalancerapi/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // frontendGet returns a list of frontends for a given load balancer

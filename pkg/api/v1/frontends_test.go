@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.infratographer.com/loadbalancerapi/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/httptools"
 )
 
 func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string, tenantID string) (*frontend, func(*testing.T)) {

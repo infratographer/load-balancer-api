@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.infratographer.com/loadbalancerapi/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // loadBalancerDelete deletes a load balancer for a tenant

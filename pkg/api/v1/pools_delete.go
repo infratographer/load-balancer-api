@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
-	"go.infratographer.com/loadbalancerapi/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // poolDelete deletes a pool

@@ -1,4 +1,4 @@
-module go.infratographer.com/loadbalancerapi
+module go.infratographer.com/load-balancer-api
 
 go 1.19
 
