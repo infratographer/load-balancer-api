@@ -22,10 +22,10 @@ services:
     depends_on:
       - crdb
     volumes:
-      - type: bind
+      - type: volume
         source: ..
         target: /workspace
-      - type: bind
+      - type: volume
         source: ~/.ssh/authorized_keys
         target: /home/vscode/.ssh/authorized_keys
         read_only: true
