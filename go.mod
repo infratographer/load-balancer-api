@@ -16,6 +16,7 @@ require (
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/volatiletech/null/v8 v8.1.2
+	github.com/volatiletech/null/v9 v9.0.0
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
 	go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3
