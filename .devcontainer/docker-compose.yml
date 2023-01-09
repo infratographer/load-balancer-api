@@ -22,13 +22,8 @@ services:
     depends_on:
       - crdb
     volumes:
-      - type: bind
-        source: ..
-        target: /workspace
-      - type: bind
-        source: ~/.ssh/authorized_keys
-        target: /home/vscode/.ssh/authorized_keys
-        read_only: true
+      - ..:/workspace
+      - ~/.ssh/authorized_keys:/home/vscode/.ssh/authorized_keys:ro
     networks:
       - infradev
     # Port forwarded for local development with emacs tramp
