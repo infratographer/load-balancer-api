@@ -9,7 +9,7 @@ steps:
   - label: ":test_tube: test"
     key: "test"
     plugins:
-      - docker-compose#v4.8.0:
+      - docker-compose#v4.9.0:
           cli-version: 2
           run: "app"
           config: .devcontainer/docker-compose.yml
