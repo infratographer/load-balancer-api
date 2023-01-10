@@ -20,7 +20,7 @@ require (
 	github.com/volatiletech/null/v9 v9.0.0
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
-	go.infratographer.com/x v0.0.0-20221201150359-af418db1bfc3
+	go.infratographer.com/x v0.0.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.37.0
 	go.uber.org/zap v1.24.0
 )
