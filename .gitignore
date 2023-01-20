@@ -19,3 +19,7 @@ vendor/
 # Build artifacts
 bin/
 debugConfig.yaml
+
+# devcontainer artifacts
+.devcontainer/nats/resolver.conf
+.devcontainer/nsc
