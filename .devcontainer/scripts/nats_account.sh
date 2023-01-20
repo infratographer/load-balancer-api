@@ -1,5 +1,6 @@
 #!/bin/bash
  # script to dump creds for use in our app
+sudo chown -R vscode /nsc
 
  echo "Dumping NATS user creds file"
  nsc generate creds -a LBAAS -n USER > /tmp/user.creds

@@ -3,6 +3,8 @@ FROM cockroachdb/cockroach:latest-v22.2 as CRDB
 
 FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.19-bullseye
 
+ENV NATS_CLI_VERSION=0.0.35
+
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
@@ -20,14 +22,14 @@ COPY --from=CRDB /usr/local/lib/cockroach/libgeos_c.so /usr/local/lib/cockroach/
 # Install NATS Tooling
 RUN curl -o /tmp/install.sh  https://raw.githubusercontent.com/nats-io/nsc/main/install.sh \
      && chmod +x /tmp/install.sh \
-     && /tmp/install.sh \
+     && su vscode -c "/tmp/install.sh -s /usr/local/bin" \
      && rm -f /tmp/install.sh
 
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 USER vscode
 RUN go install github.com/volatiletech/sqlboiler/v4@latest \
     && go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest \
-    && go install github.com/glerchundi/sqlboiler-crdb/v4@latest
+    && go install github.com/glerchundi/sqlboiler-crdb/v4@latest \
     && go install github.com/nats-io/natscli/nats@v${NATS_CLI_VERSION} \
     && go install github.com/nats-io/nkeys/nk@latest
 

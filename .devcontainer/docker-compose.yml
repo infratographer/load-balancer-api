@@ -21,7 +21,7 @@ services:
       - .env.go
     depends_on:
       - crdb
-      - nats-server
+      - nats
     volumes:
       - ./nsc:/nsc
       - ..:/workspace

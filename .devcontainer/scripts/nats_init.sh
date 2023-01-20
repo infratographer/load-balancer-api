@@ -3,7 +3,7 @@
 
  echo "Creating NATS operator"
  nsc add operator --generate-signing-key --sys --name LOCAL
- nsc edit operator -u 'nats://nats-server:4222'
+ nsc edit operator -u 'nats://nats:4222'
  nsc list operators
  nsc describe operator
 
