@@ -4,7 +4,7 @@ import (
 	"go.infratographer.com/x/pubsubx"
 )
 
-// NewLoadBalancerURN creates a new assignment URN
+// NewLoadBalancerURN creates a new loadbalancer URN
 func NewLoadBalancerURN(loadBalancerID string) string {
 	return newURN("load-balancer", loadBalancerID)
 }
