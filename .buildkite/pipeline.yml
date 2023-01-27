@@ -16,6 +16,8 @@ steps:
           command: ["make", "ci"]
           workdir: /workspace
           propagate-uid-gid: true
+          environment:
+            - LOADBALANCERAPI_CRDB_URI='postgresql://root@crdb:26257/load_balancer_api?sslmode=disable'
 
   - label: ":golang: build"
     key: "gobuild"
