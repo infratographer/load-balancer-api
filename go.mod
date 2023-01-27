@@ -10,7 +10,6 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo-contrib v0.13.1
 	github.com/labstack/echo/v4 v4.10.0
-	github.com/leodido/go-urn v1.2.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nats-io/nats.go v1.23.0
 	github.com/spf13/cobra v1.6.1

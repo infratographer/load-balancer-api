@@ -15,7 +15,8 @@ services:
       args:
         VARIANT: 1.19-bullseye
         NODE_VERSION: "none"
-    command: sleep infinity
+    command:
+      - .devcontainer/scripts/nats_account.sh
     env_file:
       - .env
       - .env.go
@@ -25,7 +26,6 @@ services:
     volumes:
       - ./nsc:/nsc
       - ..:/workspace
-      - ~/.ssh/authorized_keys:/home/vscode/.ssh/authorized_keys:ro
     networks:
       - infradev
     # Port forwarded for local development with emacs tramp
@@ -85,8 +85,8 @@ services:
       - -D
     volumes:
       - ./nats/:/etc/nats
-    ports:
-      - "4222:4222"
+    # ports:
+    #   - "4222:4222"
     restart: unless-stopped
     networks:
       - infradev

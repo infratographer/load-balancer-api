@@ -7,3 +7,6 @@ sudo chown -R vscode /nsc
 
  echo "Dumping NATS sys creds file"
  nsc generate creds -a SYS -n sys > /tmp/sys.creds
+
+
+sleep infinity
