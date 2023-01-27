@@ -5,6 +5,8 @@ FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.19-bullseye
 
 ENV NATS_CLI_VERSION=0.0.35
 
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarn-archive-keyring.gpg
+
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \

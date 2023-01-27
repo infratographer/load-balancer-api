@@ -17,7 +17,7 @@ func (r *Router) assignmentParamsBinding(c echo.Context) ([]qm.QueryMod, error) 
 
 	mods = append(mods, models.AssignmentWhere.TenantID.EQ(tenantID))
 
-	queryParams := []string{"frontend_id", "load_balancer_id", "pool_id"}
+	queryParams := []string{"frontend_id", "pool_id"}
 
 	qpb := echo.QueryParamsBinder(c)
 

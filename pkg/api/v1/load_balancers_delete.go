@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 // loadBalancerDelete deletes a load balancer for a tenant
@@ -42,6 +43,17 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 
 		if err := tx.Commit(); err != nil {
 			r.logger.Errorw("failed to commit transaction", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		msg, err := pubsub.NewLoadBalancerMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+lb[0].TenantID, pubsub.NewLoadBalancerURN(lb[0].LoadBalancerID))
+		if err != nil {
+			r.logger.Errorw("failed to create load balancer message", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		if err := pubsub.PublishDelete(ctx, r.events, "load-balancer", "global", msg); err != nil {
+			r.logger.Errorw("failed to publish load balancer message", "error", err)
 			return v1InternalServerErrorResponse(c, err)
 		}
 

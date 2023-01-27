@@ -40,7 +40,7 @@
 	"remoteEnv": {
 		"PATH": "${containerEnv:PATH}:/home/vscode/.nsccli/bin",
 		"NKEYS_PATH": "/nsc/nkeys",
-		"NSC_HOME": "/nsc/.config/nats/nsc"
+		"NSC_HOME": "/nsc"
 	},
 	"features": {
 		"git": "latest",

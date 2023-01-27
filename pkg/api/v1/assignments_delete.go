@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 // assignmentsDelete handles the DELETE /assignments route
@@ -27,6 +28,25 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 	case 1:
 		if _, err := assignments[0].Delete(ctx, r.db, false); err != nil {
 			r.logger.Errorw("error deleting assignment", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		feMods := models.FrontendWhere.FrontendID.EQ(assignments[0].FrontendID)
+
+		feModel, err := models.Frontends(feMods).One(ctx, r.db)
+		if err != nil {
+			r.logger.Errorw("error fetching frontend", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		msg, err := pubsub.NewAssignmentMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+assignments[0].TenantID, pubsub.NewAssignmentURN(assignments[0].AssignmentID), "urn:infratographer:infratographer.com:load-balancer:"+feModel.LoadBalancerID)
+		if err != nil {
+			r.logger.Errorw("error creating message", "error", err)
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		if err := pubsub.PublishDelete(ctx, r.events, "assignment", "global", msg); err != nil {
+			r.logger.Errorw("error publishing event", "error", err)
 			return v1InternalServerErrorResponse(c, err)
 		}
 

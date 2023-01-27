@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
@@ -14,6 +15,8 @@ import (
 	"go.infratographer.com/x/crdbx"
 	"go.uber.org/zap"
 )
+
+const someTestJWTURN = "urn:infratographer:infratographer.com:identity:some-jwt"
 
 type httpTest struct {
 	name   string
@@ -32,7 +35,25 @@ func newTestServer(t *testing.T) *httptest.Server {
 
 	dbx := sqlx.NewDb(db, "postgres")
 	e := echox.NewServer()
-	r := NewRouter(dbx, zap.NewNop().Sugar())
+
+	opts := []nats.Option{}
+
+	// make this configurable for tests.
+	opts = append(opts, nats.UserCredentials("/tmp/user.creds"))
+
+	nc, err := nats.Connect("nats://nats:4222", opts...)
+	if err != nil {
+		t.Fatal(err)
+		return nil
+	}
+
+	js, err := nc.JetStream()
+	if err != nil {
+		t.Fatal(err)
+		return nil
+	}
+
+	r := NewRouter(dbx, zap.NewNop().Sugar(), js)
 
 	r.Routes(e)
 

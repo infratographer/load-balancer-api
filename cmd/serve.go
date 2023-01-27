@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/nats-io/nats.go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
@@ -45,11 +46,42 @@ func serve(ctx context.Context) {
 
 	dbx := sqlx.NewDb(db, "postgres")
 
+	js, natsClose, err := newJetstreamConnection()
+	if err != nil {
+		logger.Fatalw("failed to create NATS jetstream connection", "error", err)
+	}
+
+	defer natsClose()
+
 	e := echox.NewServer()
-	r := api.NewRouter(dbx, logger)
+	r := api.NewRouter(dbx, logger, js)
 
 	e.Debug = true
 	r.Routes(e)
 
 	e.Logger.Fatal(e.Start(viper.GetString("listen")))
+}
+
+func newJetstreamConnection() (nats.JetStreamContext, func(), error) {
+	opts := []nats.Option{nats.Name(appName)}
+
+	if viper.GetBool("development") {
+		logger.Debug("enabling development settings")
+
+		opts = append(opts, nats.Token(viper.GetString("nats.token")))
+	} else {
+		opts = append(opts, nats.UserCredentials(viper.GetString("nats.creds-file")))
+	}
+
+	nc, err := nats.Connect(viper.GetString("nats.url"), opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	js, err := nc.JetStream()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return js, nc.Close, nil
 }

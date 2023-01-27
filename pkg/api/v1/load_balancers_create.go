@@ -4,14 +4,16 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 // loadBalancerCreate creates a new load balancer for a tenant
 func (r *Router) loadBalancerCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	payload := []struct {
+	payload := struct {
 		DisplayName      string `json:"display_name"`
 		LoadBalancerSize string `json:"load_balancer_size"`
 		LoadBalancerType string `json:"load_balancer_type"`
@@ -32,63 +34,69 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	lbs := models.LoadBalancerSlice{}
-
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		r.logger.Errorw("failed to begin transaction", "error", err)
 		return v1BadRequestResponse(c, err)
 	}
 
-	for _, p := range payload {
-		lb := &models.LoadBalancer{
-			TenantID:         tenantID,
-			DisplayName:      p.DisplayName,
-			LoadBalancerSize: p.LoadBalancerSize,
-			LoadBalancerType: p.LoadBalancerType,
-			IPAddr:           p.IPAddr,
-			LocationID:       p.LocationID,
-			Slug:             slug.Make(p.DisplayName),
-			CurrentState:     "provisioning",
-		}
-
-		if err := validateLoadBalancer(lb); err != nil {
-			_ = tx.Rollback()
-
-			r.logger.Errorw("failed to validate load balancer", "error", err)
-
-			return v1UnprocessableEntityResponse(c, err)
-		}
-
-		lbs = append(lbs, lb)
-
-		err = lb.Insert(ctx, tx, boil.Infer())
-		if err != nil {
-			r.logger.Errorw("failed to create load balancer, rolling back transaction", "error", err)
-
-			if err := tx.Rollback(); err != nil {
-				r.logger.Errorw("failed to rollback transaction", "error", err)
-				return v1InternalServerErrorResponse(c, err)
-			}
-
-			return v1InternalServerErrorResponse(c, err)
-		}
+	lb := &models.LoadBalancer{
+		TenantID:         tenantID,
+		DisplayName:      payload.DisplayName,
+		LoadBalancerSize: payload.LoadBalancerSize,
+		LoadBalancerType: payload.LoadBalancerType,
+		IPAddr:           payload.IPAddr,
+		LocationID:       payload.LocationID,
+		Slug:             slug.Make(payload.DisplayName),
+		CurrentState:     "provisioning",
 	}
 
-	switch len(lbs) {
-	case 0:
+	if err := validateLoadBalancer(lb); err != nil {
+		_ = tx.Rollback()
+
+		r.logger.Errorw("failed to validate load balancer", "error", err)
+
+		return v1UnprocessableEntityResponse(c, err)
+	}
+
+	err = lb.Insert(ctx, tx, boil.Infer())
+	if err != nil {
+		r.logger.Errorw("failed to create load balancer, rolling back transaction", "error", err)
+
 		if err := tx.Rollback(); err != nil {
 			r.logger.Errorw("failed to rollback transaction", "error", err)
-			return v1BadRequestResponse(c, err)
+			return v1InternalServerErrorResponse(c, err)
 		}
 
-		return v1UnprocessableEntityResponse(c, ErrInvalidLoadBalancer)
-	default:
-		if err := tx.Commit(); err != nil {
-			r.logger.Errorw("failed to commit transaction", "error", err)
-			return v1BadRequestResponse(c, err)
-		}
-
-		return v1CreatedResponse(c)
+		return v1InternalServerErrorResponse(c, err)
 	}
+
+	if err := tx.Commit(); err != nil {
+		r.logger.Errorw("failed to commit transaction", "error", err)
+		return v1BadRequestResponse(c, err)
+	}
+
+	lbMods := []qm.QueryMod{
+		models.LoadBalancerWhere.TenantID.EQ(tenantID),
+		models.LoadBalancerWhere.IPAddr.EQ(payload.IPAddr),
+	}
+
+	lbModel, err := models.LoadBalancers(lbMods...).One(ctx, r.db)
+	if err != nil {
+		r.logger.Errorw("failed to retrieve load balancer", "error", err)
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	msg, err := pubsub.NewLoadBalancerMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+tenantID, pubsub.NewLoadBalancerURN(lbModel.LoadBalancerID))
+	if err != nil {
+		r.logger.Errorw("failed to create load balancer message", "error", err)
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	if err := pubsub.PublishCreate(ctx, r.events, "load-balancer", "global", msg); err != nil {
+		r.logger.Errorw("failed to publish load balancer message", "error", err)
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	return v1CreatedResponse(c)
 }

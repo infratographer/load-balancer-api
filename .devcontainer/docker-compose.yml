@@ -29,8 +29,8 @@ services:
     networks:
       - infradev
     # Port forwarded for local development with emacs tramp
-    ports:
-      - "127.0.0.1:2222:2222"
+    # ports:
+    #   - "127.0.0.1:2222:2222"
     # Use "forwardPorts" in **devcontainer.json** to forward a port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
@@ -65,20 +65,22 @@ services:
       - infradev
 
   nats-init:
-     image: natsio/nats-box
-     volumes:
-       - ./nsc:/nsc
-       - ./nats:/nats
-       - ./scripts:/scripts
-     command:
-       - "/scripts/nats_init.sh"
+    image: natsio/nats-box
+    environment:
+      - NSC_HOME=/nsc
+    volumes:
+      - ./nsc:/nsc
+      - ./nats:/nats
+      - ./scripts:/scripts
+    command:
+      - /scripts/nats_init.sh
 
   nats:
     image: 'nats:alpine'
     depends_on:
       - nats-init
     command:
-      - -c 
+      - -c
       - '/etc/nats/nats-server.conf'
       - -D
     volumes:

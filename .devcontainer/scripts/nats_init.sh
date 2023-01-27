@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
  # script to bootstrap a nats operator environment
 
  echo "Creating NATS operator"

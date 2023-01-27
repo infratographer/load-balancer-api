@@ -97,7 +97,6 @@ CREATE TABLE assignments (
     assignment_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     pool_id UUID REFERENCES pools(pool_id) ON UPDATE CASCADE NOT NULL,
     frontend_id UUID REFERENCES frontends(frontend_id) ON UPDATE CASCADE NOT NULL,
-    load_balancer_id UUID REFERENCES load_balancers(load_balancer_id) ON UPDATE CASCADE NOT NULL,
     tenant_id UUID NOT NULL,
     UNIQUE INDEX idx_pool_frontend_assocs_pool_id_frontend_id (pool_id, frontend_id) WHERE deleted_at is NULL,
     INDEX idx_assocs_tenant_id (tenant_id),

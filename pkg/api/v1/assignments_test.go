@@ -46,7 +46,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusOK,
 		tenant: loadBalancer.TenantID,
 	})
@@ -55,7 +55,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Duplicate assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
 		tenant: loadBalancer.TenantID,
 	})
@@ -64,7 +64,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment2",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, pool2.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool2.ID, loadBalancer.ID),
 		status: http.StatusOK,
 		tenant: loadBalancer.TenantID,
 	})
@@ -74,7 +74,7 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodPost,
 		path:   baseURL,
 		body:   "",
-		status: http.StatusNotFound,
+		status: http.StatusInternalServerError,
 		tenant: loadBalancer.TenantID,
 	})
 
@@ -91,7 +91,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid frontend",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, "invalid", pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, "invalid", pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
 		tenant: loadBalancer.TenantID,
 	})
@@ -100,7 +100,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid pool",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, "invalid", loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, "invalid", loadBalancer.ID),
 		status: http.StatusInternalServerError,
 		tenant: loadBalancer.TenantID,
 	})
@@ -109,7 +109,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid load balancer",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, pool.ID, "invalid"),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, "invalid"),
 		status: http.StatusInternalServerError,
 		tenant: loadBalancer.TenantID,
 	})
@@ -118,7 +118,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid tenant",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`[{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}]`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
 		tenant: "invalid",
 	})
