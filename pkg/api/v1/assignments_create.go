@@ -28,31 +28,14 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return err
 	}
 
-	tx, err := r.db.Begin()
-	if err != nil {
-		r.logger.Errorw("error starting transaction", "error", err)
-		return v1InternalServerErrorResponse(c, err)
-	}
-
 	assignment := models.Assignment{
 		TenantID:   tenantID,
 		FrontendID: payload.FrontendID,
 		PoolID:     payload.PoolID,
 	}
 
-	if err := assignment.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Errorw("error inserting assignment", "error", err)
-
-		if err := tx.Rollback(); err != nil {
-			r.logger.Errorw("error rolling back transaction", "error", err)
-			return v1InternalServerErrorResponse(c, err)
-		}
-
-		return v1InternalServerErrorResponse(c, err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		r.logger.Errorw("error committing transaction", "error", err)
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -71,19 +54,19 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 
 	feModel, err := models.Frontends(feMods).One(ctx, r.db)
 	if err != nil {
+		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("error fetching frontend", "error", err)
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	msg, err := pubsub.NewAssignmentMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+tenantID, pubsub.NewAssignmentURN(aModel.AssignmentID), "urn:infratographer:infratographer.com:load-balancer:"+feModel.LoadBalancerID)
 	if err != nil {
+		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("error creating message", "error", err)
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	if err := pubsub.PublishCreate(ctx, r.events, "assignment", "global", msg); err != nil {
+		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("error publishing event", "error", err)
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	return v1CreatedResponse(c)

@@ -34,12 +34,6 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		r.logger.Errorw("failed to begin transaction", "error", err)
-		return v1BadRequestResponse(c, err)
-	}
-
 	lb := &models.LoadBalancer{
 		TenantID:         tenantID,
 		DisplayName:      payload.DisplayName,
@@ -52,28 +46,16 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	}
 
 	if err := validateLoadBalancer(lb); err != nil {
-		_ = tx.Rollback()
-
 		r.logger.Errorw("failed to validate load balancer", "error", err)
 
 		return v1UnprocessableEntityResponse(c, err)
 	}
 
-	err = lb.Insert(ctx, tx, boil.Infer())
+	err = lb.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
 		r.logger.Errorw("failed to create load balancer, rolling back transaction", "error", err)
 
-		if err := tx.Rollback(); err != nil {
-			r.logger.Errorw("failed to rollback transaction", "error", err)
-			return v1InternalServerErrorResponse(c, err)
-		}
-
 		return v1InternalServerErrorResponse(c, err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		r.logger.Errorw("failed to commit transaction", "error", err)
-		return v1BadRequestResponse(c, err)
 	}
 
 	lbMods := []qm.QueryMod{
@@ -89,13 +71,13 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	msg, err := pubsub.NewLoadBalancerMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+tenantID, pubsub.NewLoadBalancerURN(lbModel.LoadBalancerID))
 	if err != nil {
+		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("failed to create load balancer message", "error", err)
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	if err := pubsub.PublishCreate(ctx, r.events, "load-balancer", "global", msg); err != nil {
+		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("failed to publish load balancer message", "error", err)
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	return v1CreatedResponse(c)

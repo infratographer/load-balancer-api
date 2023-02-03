@@ -64,10 +64,13 @@ func (r *Router) Routes(e *echo.Echo) {
 		r.addPoolsRoutes(v1)
 	}
 
-	r.events.AddStream(&nats.StreamConfig{
+	_, err := r.events.AddStream(&nats.StreamConfig{
 		Name: "lbapi",
 		Subjects: []string{
 			"com.infratographer.events.>",
 		},
 	})
+	if err != nil {
+		r.logger.Fatal()
+	}
 }

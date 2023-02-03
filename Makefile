@@ -56,6 +56,11 @@ vendor:
 	@go mod tidy
 	@go mod download
 
+dev-nats:
+	@echo --- Initializing nats
+	@date --rfc-3339=seconds
+	@.devcontainer/scripts/nats_account.sh
+
 dev-database: | vendor
 	@echo --- Creating dev database...
 	@date --rfc-3339=seconds

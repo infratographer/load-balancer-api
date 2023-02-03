@@ -11,8 +11,8 @@ func NewAssignmentURN(assignmentID string) string {
 	return newURN("assignment", assignmentID)
 }
 
-func newURN(kind, ID string) string {
-	return fmt.Sprintf("urn:infratographer:infratographer.com:%s:%s/", kind, ID)
+func newURN(kind, id string) string {
+	return fmt.Sprintf("urn:infratographer:infratographer.com:%s:%s/", kind, id)
 }
 
 // NewAssignmentMessage creates a new assignment message

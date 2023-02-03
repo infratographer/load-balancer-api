@@ -16,7 +16,7 @@ services:
         VARIANT: 1.19-bullseye
         NODE_VERSION: "none"
     command:
-      - .devcontainer/scripts/nats_account.sh
+      - .devcontainer/scripts/app-entrypoint.sh
     env_file:
       - .env
       - .env.go
@@ -85,8 +85,6 @@ services:
       - -D
     volumes:
       - ./nats/:/etc/nats
-    # ports:
-    #   - "4222:4222"
     restart: unless-stopped
     networks:
       - infradev

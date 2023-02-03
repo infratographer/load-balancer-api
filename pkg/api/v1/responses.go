@@ -87,14 +87,15 @@ func v1InternalServerErrorResponse(c echo.Context, err error) error {
 
 func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	out := assignmentSlice{}
+
 	for _, a := range as {
 		out = append(out, &assignment{
-			CreatedAt:      a.CreatedAt,
-			UpdatedAt:      a.UpdatedAt,
-			ID:             a.AssignmentID,
-			FrontendID:     a.FrontendID,
-			PoolID:         a.PoolID,
-			TenantID:       a.TenantID,
+			CreatedAt:  a.CreatedAt,
+			UpdatedAt:  a.UpdatedAt,
+			ID:         a.AssignmentID,
+			FrontendID: a.FrontendID,
+			PoolID:     a.PoolID,
+			TenantID:   a.TenantID,
 		})
 	}
 

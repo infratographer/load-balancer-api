@@ -35,19 +35,19 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 
 		feModel, err := models.Frontends(feMods).One(ctx, r.db)
 		if err != nil {
+			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("error fetching frontend", "error", err)
-			return v1InternalServerErrorResponse(c, err)
 		}
 
 		msg, err := pubsub.NewAssignmentMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+assignments[0].TenantID, pubsub.NewAssignmentURN(assignments[0].AssignmentID), "urn:infratographer:infratographer.com:load-balancer:"+feModel.LoadBalancerID)
 		if err != nil {
+			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("error creating message", "error", err)
-			return v1InternalServerErrorResponse(c, err)
 		}
 
 		if err := pubsub.PublishDelete(ctx, r.events, "assignment", "global", msg); err != nil {
+			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("error publishing event", "error", err)
-			return v1InternalServerErrorResponse(c, err)
 		}
 
 		return v1DeletedResponse(c)
