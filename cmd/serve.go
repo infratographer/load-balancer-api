@@ -65,7 +65,7 @@ func serve(ctx context.Context) {
 func newJetstreamConnection() (nats.JetStreamContext, func(), error) {
 	opts := []nats.Option{nats.Name(appName)}
 
-	if viper.GetBool("development") {
+	if viper.GetBool("debug") {
 		logger.Debug("enabling development settings")
 
 		opts = append(opts, nats.Token(viper.GetString("nats.token")))

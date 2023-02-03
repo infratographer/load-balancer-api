@@ -38,7 +38,7 @@ services:
   create_databases:
     image: cockroachdb/cockroach:latest-v22.2
     restart: on-failure:5
-    command: "sql --insecure -e 'CREATE DATABASE IF NOT EXISTS load_balancer_api;'"
+    command: "sql --insecure -e 'CREATE DATABASE IF NOT EXISTS load_balancer_api_dev;'"
     env_file:
       - .env
     depends_on:
