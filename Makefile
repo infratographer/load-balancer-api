@@ -17,7 +17,7 @@ test: | unit-test
 unit-test:
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
-	@go test -race -cover -failfast ./... -p 1
+	@go test -race -cover -failfast ./... -p 1 -v
 
 coverage:
 	@echo --- Generating coverage report...
