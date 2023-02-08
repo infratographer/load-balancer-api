@@ -33,7 +33,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   appName,
 	Short: "A utility for managing load balancers definitions",
-	Long:  `ladbalancer-api is a service for managing abstract lb relationships`,
+	Long:  `loadbalancer-api is a service for managing abstract lb relationships`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
