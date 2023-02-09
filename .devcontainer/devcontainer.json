@@ -1,6 +1,6 @@
 // Config reference, https://containers.dev/implementors/json_reference/
 {
-	"name": "loadbalancerapi",
+	"name": "loadbalancer-api",
 	"dockerComposeFile":"docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspace",
@@ -29,21 +29,14 @@
 		}
 	},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": ".devcontainer/scripts/nats_account.sh",
-
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
-	"remoteEnv": {
-		"PATH": "${containerEnv:PATH}:/home/vscode/.nsccli/bin",
-		"NKEYS_PATH": "/nsc/nkeys",
-		"NSC_HOME": "/nsc/.config/nats/nsc"
-	},
+	// "remoteEnv": {
+	// 	"PATH": "${containerEnv:PATH}:/home/vscode/.nsccli/bin",
+	// 	"NKEYS_PATH": "/nsc/nkeys",
+	// 	"NSC_HOME": "/nsc"
+	// },
 	"features": {
-		"git": "latest",
-		"ghcr.io/devcontainers/features/sshd:1": {}
+		"git": "latest"
 	}
 }

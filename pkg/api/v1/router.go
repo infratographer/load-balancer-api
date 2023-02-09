@@ -4,6 +4,7 @@ package api
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 )
 
@@ -12,13 +13,15 @@ const apiVersion = "v1"
 // Router provides a router for the API
 type Router struct {
 	db     *sqlx.DB
+	events nats.JetStreamContext
 	logger *zap.SugaredLogger
 }
 
 // NewRouter creates a new router for the API
-func NewRouter(db *sqlx.DB, l *zap.SugaredLogger) *Router {
+func NewRouter(db *sqlx.DB, l *zap.SugaredLogger, js nats.JetStreamContext) *Router {
 	return &Router{
 		db:     db,
+		events: js,
 		logger: l.Named("api"),
 	}
 }
@@ -59,5 +62,15 @@ func (r *Router) Routes(e *echo.Echo) {
 		r.addLoadBalancerRoutes(v1)
 		r.addOriginRoutes(v1)
 		r.addPoolsRoutes(v1)
+	}
+
+	_, err := r.events.AddStream(&nats.StreamConfig{
+		Name: "lbapi",
+		Subjects: []string{
+			"com.infratographer.events.>",
+		},
+	})
+	if err != nil {
+		r.logger.Fatal()
 	}
 }

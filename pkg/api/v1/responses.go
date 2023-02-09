@@ -87,16 +87,15 @@ func v1InternalServerErrorResponse(c echo.Context, err error) error {
 
 func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	out := assignmentSlice{}
+
 	for _, a := range as {
 		out = append(out, &assignment{
-			CreatedAt:      a.CreatedAt,
-			UpdatedAt:      a.UpdatedAt,
-			DeletedAt:      a.DeletedAt.Ptr(),
-			ID:             a.AssignmentID,
-			LoadBalancerID: a.LoadBalancerID,
-			FrontendID:     a.FrontendID,
-			PoolID:         a.PoolID,
-			TenantID:       a.TenantID,
+			CreatedAt:  a.CreatedAt,
+			UpdatedAt:  a.UpdatedAt,
+			ID:         a.AssignmentID,
+			FrontendID: a.FrontendID,
+			PoolID:     a.PoolID,
+			TenantID:   a.TenantID,
 		})
 	}
 
@@ -137,7 +136,6 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 		out = append(out, &loadBalancer{
 			CreatedAt:  lb.CreatedAt,
 			UpdatedAt:  lb.UpdatedAt,
-			DeletedAt:  lb.DeletedAt.Ptr(),
 			ID:         lb.LoadBalancerID,
 			Name:       lb.DisplayName,
 			IPAddress:  lb.IPAddr,
@@ -162,7 +160,6 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 		out = append(out, &origin{
 			CreatedAt:      o.CreatedAt,
 			UpdatedAt:      o.UpdatedAt,
-			DeletedAt:      o.DeletedAt.Ptr(),
 			ID:             o.OriginID,
 			Name:           o.DisplayName,
 			TenantID:       o.TenantID,
@@ -186,7 +183,6 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 		out = append(out, &pool{
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
-			DeletedAt: p.DeletedAt.Ptr(),
 			ID:        p.PoolID,
 			Name:      p.DisplayName,
 			Protocol:  p.Protocol,

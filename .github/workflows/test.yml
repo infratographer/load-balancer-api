@@ -1,0 +1,27 @@
+name: 'Run tests in dev container on PR'
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  run-tests:
+    runs-on: "ubuntu-latest"
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Pre-build image and run make ci-build in dev container
+        uses: devcontainers/ci@v0.2
+        with:
+          push: never
+          runCmd: make ci

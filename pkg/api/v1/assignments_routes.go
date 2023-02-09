@@ -1,6 +1,8 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 // addAssignRoutes adds the assignment routes to the router
 func (r *Router) addAssignRoutes(g *echo.Group) {

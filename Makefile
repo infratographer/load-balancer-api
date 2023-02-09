@@ -17,7 +17,7 @@ test: | unit-test
 unit-test:
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
-	@go test -race -cover -failfast ./... -p 1
+	@go test -race -cover -failfast ./... -p 1 -v
 
 coverage:
 	@echo --- Generating coverage report...
@@ -55,6 +55,11 @@ vendor:
 	@date --rfc-3339=seconds
 	@go mod tidy
 	@go mod download
+
+dev-nats:
+	@echo --- Initializing nats
+	@date --rfc-3339=seconds
+	@.devcontainer/scripts/nats_account.sh
 
 dev-database: | vendor
 	@echo --- Creating dev database...
