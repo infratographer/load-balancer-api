@@ -1,4 +1,4 @@
-FROM golang:1.19.4-alpine AS builder
+FROM golang:1.19.4 AS builder
 
 COPY . /src
 WORKDIR /src
@@ -11,7 +11,7 @@ FROM gcr.io/distroless/static:nonroot
 # `nonroot` coming from distroless
 USER 65532:65532
 
-COPY  --from=builder ./bin/loadbalancer-api /loadbalancer-api
+COPY  --from=builder /src/bin/loadbalancer-api /loadbalancer-api
 
 # Run the web service on container startup.
 ENTRYPOINT ["/loadbalancer-api"]
