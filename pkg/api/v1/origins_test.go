@@ -65,6 +65,8 @@ func TestOriginRoutes(t *testing.T) {
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/origins"
+	missingUUID := uuid.New().String()
+
 	pool, remove := createPool(t, srv, "squirt", tenantID)
 
 	// doHTTPTest is a helper function that makes a request to the server and
@@ -72,6 +74,14 @@ func TestOriginRoutes(t *testing.T) {
 	//
 	// To ensure test output has meaningful line references the function is
 	// called individually for each test case
+	doHTTPTest(t, &httpTest{
+		name:   "list origins before created",
+		status: http.StatusOK,
+		path:   baseURL,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
 	// POST
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
@@ -135,6 +145,38 @@ func TestOriginRoutes(t *testing.T) {
 		tenant: tenantID,
 	})
 
+	doHTTPTest(t, &httpTest{
+		name:   "missing origin uuid",
+		path:   baseURL + "/" + missingUUID,
+		status: http.StatusNotFound,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "bad origin uuid",
+		path:   baseURL + "/123456",
+		status: http.StatusBadRequest,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list origins with invalid tenant id",
+		path:   baseURL,
+		status: http.StatusBadRequest,
+		method: http.MethodGet,
+		tenant: "123456",
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list origins with unknown tenant id",
+		path:   baseURL,
+		status: http.StatusOK,
+		method: http.MethodGet,
+		tenant: missingUUID,
+	})
+
 	// DELETE
 	doHTTPTest(t, &httpTest{
 		name:   "ambigous delete",
@@ -169,4 +211,53 @@ func TestOriginRoutes(t *testing.T) {
 	})
 
 	remove(t)
+}
+
+func TestOriginsBalancerGet(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	assert.NotNil(t, srv)
+
+	baseURL := srv.URL + "/v1/origins"
+	missingUUID := uuid.New().String()
+
+	// Create a load balancer
+	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
+	defer cleanupLB(t)
+
+	// Create a pool
+	pool, cleanupPool := createPool(t, srv, "marlin", loadBalancer.TenantID)
+	defer cleanupPool(t)
+
+	// Create an origin in the pool
+	origin, cleanupOrigin := createOrigin(t, srv, "bruce", pool.ID, loadBalancer.TenantID)
+	defer cleanupOrigin(t)
+
+	// Get the origin
+	doHTTPTest(t, &httpTest{
+		name:   "get origin by id",
+		method: http.MethodGet,
+		path:   baseURL + "/" + origin.ID,
+		status: http.StatusOK,
+		tenant: loadBalancer.TenantID,
+	})
+
+	// Get an unknown origin
+	doHTTPTest(t, &httpTest{
+		name:   "get origin by id",
+		method: http.MethodGet,
+		path:   baseURL + "/bfad65a9-abe3-44af-82ce-64331c84b2ad",
+		status: http.StatusNotFound,
+		tenant: loadBalancer.TenantID,
+	})
+
+	// Get an unknown tenant
+	doHTTPTest(t, &httpTest{
+		name:   "get missing origin by id",
+		method: http.MethodGet,
+		path:   baseURL + "/" + origin.ID,
+		status: http.StatusNotFound,
+		tenant: missingUUID,
+	})
 }
