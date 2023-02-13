@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -19,7 +20,12 @@ func (r *Router) originsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 
 	originID := c.Param("origin_id")
 	if originID != "" {
+		if _, err := uuid.Parse(originID); err != nil {
+			return nil, ErrInvalidUUID
+		}
+
 		mods = append(mods, models.OriginWhere.OriginID.EQ(originID))
+		r.logger.Debugw("path param", "origin_id", originID)
 	}
 
 	queryParams := []string{"slug", "target", "port"}

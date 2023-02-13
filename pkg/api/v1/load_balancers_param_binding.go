@@ -33,7 +33,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	r.logger.Debugw("path param", "tenant_id", tenantID)
 
 	// optional load_balancer_id in the request path
-	if err = ppb.String("load_balancer_id", &tenantID).BindError(); err != nil {
+	if err = ppb.String("load_balancer_id", &loadBalancerID).BindError(); err != nil {
 		return nil, err
 	}
 

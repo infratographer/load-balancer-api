@@ -18,13 +18,22 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/loadbalancers"
 	locationID := uuid.New().String()
+	missingUUID := uuid.New().String()
 
 	// doHTTPTest is a helper function that makes a request to the server and
 	// checks the response.
 	//
 	// To ensure test output has meaningful line references the function is
 	// called individually for each test case
-	// POST
+	doHTTPTest(t, &httpTest{
+		name:   "list lbs before created",
+		path:   baseURL,
+		status: http.StatusOK,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	// POST tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
@@ -167,12 +176,52 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		tenant: tenantID,
 	})
 
+	doHTTPTest(t, &httpTest{
+		name:   "sad path lb doesnt exist",
+		path:   baseURL + "/" + missingUUID,
+		status: http.StatusNotFound,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path bad uuid",
+		path:   baseURL + "/123456",
+		status: http.StatusBadRequest,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list lbs with invalid tenant id",
+		path:   baseURL,
+		status: http.StatusBadRequest,
+		method: http.MethodGet,
+		tenant: "123456",
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list lbs with unknown tenant id",
+		path:   baseURL,
+		status: http.StatusOK,
+		method: http.MethodGet,
+		tenant: missingUUID,
+	})
+
 	// DELETE tests
 	doHTTPTest(t, &httpTest{
 		name:   "delete invalid id",
 		path:   baseURL + "/invalid",
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		method: http.MethodDelete,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "delete lb that doesnt exist",
+		path:   baseURL + "/ce94616e-3798-454d-91f3-9e3cec32bff6",
+		status: http.StatusNotFound,
+		method: http.MethodGet,
 		tenant: tenantID,
 	})
 
@@ -206,6 +255,47 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		status: http.StatusNotFound,
 		method: http.MethodDelete,
 		tenant: tenantID,
+	})
+}
+
+func TestLoadBalancerGet(t *testing.T) {
+	srv := newTestServer(t)
+	defer srv.Close()
+
+	assert.NotNil(t, srv)
+
+	baseURL := srv.URL + "/v1/loadbalancers"
+	missingUUID := uuid.New().String()
+
+	// Create a load balancer
+	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
+	defer cleanupLB(t)
+
+	// Get the load balancer
+	doHTTPTest(t, &httpTest{
+		name:   "get loadblancer by id",
+		method: http.MethodGet,
+		path:   baseURL + "/" + loadBalancer.ID,
+		status: http.StatusOK,
+		tenant: loadBalancer.TenantID,
+	})
+
+	// Get an unknown load balancer
+	doHTTPTest(t, &httpTest{
+		name:   "get missing loadblancer by id",
+		method: http.MethodGet,
+		path:   baseURL + "/" + missingUUID,
+		status: http.StatusNotFound,
+		tenant: loadBalancer.TenantID,
+	})
+
+	// Get an unknown tenant
+	doHTTPTest(t, &httpTest{
+		name:   "get missing loadblancer by id",
+		method: http.MethodGet,
+		path:   baseURL + "/" + loadBalancer.ID,
+		status: http.StatusNotFound,
+		tenant: missingUUID,
 	})
 }
 

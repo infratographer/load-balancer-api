@@ -5,6 +5,25 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
+// frontendList returns a list of frontends
+func (r *Router) frontendList(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	mods, err := r.frontendParamsBinding(c)
+	if err != nil {
+		r.logger.Errorw("failed to bind frontend params", "error", err)
+		return v1BadRequestResponse(c, err)
+	}
+
+	frontends, err := models.Frontends(mods...).All(ctx, r.db)
+	if err != nil {
+		r.logger.Errorw("failed to get frontends", "error", err)
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	return v1Frontends(c, frontends)
+}
+
 // frontendGet returns a list of frontends for a given load balancer
 func (r *Router) frontendGet(c echo.Context) error {
 	ctx := c.Request().Context()

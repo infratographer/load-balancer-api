@@ -4,7 +4,7 @@ import "github.com/labstack/echo/v4"
 
 // addOriginsRoutes adds the origins routes to the router
 func (r *Router) addOriginRoutes(g *echo.Group) {
-	g.GET("/origins", r.originsGet)
+	g.GET("/origins", r.originsList)
 	g.GET("/origins/:origin_id", r.originsGet)
 
 	g.POST("/origins", r.originsCreate)
