@@ -6,6 +6,25 @@ import (
 )
 
 // poolsGet returns a list of pools
+func (r *Router) poolsList(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	mods, err := r.poolsParamsBinding(c)
+	if err != nil {
+		r.logger.Errorw("error parsing query params", "error", err)
+		return v1BadRequestResponse(c, err)
+	}
+
+	ps, err := models.Pools(mods...).All(ctx, r.db)
+	if err != nil {
+		r.logger.Errorw("error getting pools", "error", err)
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	return v1PoolsResponse(c, ps)
+}
+
+// poolsGet returns a pool by ID
 func (r *Router) poolsGet(c echo.Context) error {
 	ctx := c.Request().Context()
 

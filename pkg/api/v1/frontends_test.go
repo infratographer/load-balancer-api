@@ -71,6 +71,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/frontends"
+	missingUUID := uuid.New().String()
 
 	req, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`[{"display_name": "Ears", "load_balancer_id": "%s", "port": 25},{"display_name": "Eyes", "port": 465, "load_balancer_id" : "%s"}]`, loadBalancerID, loadBalancerID))) //nolint
 	assert.NoError(t, err)
@@ -234,22 +235,46 @@ func TestFrondendRoutest(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "404",
+		name:   "not found with query",
 		path:   baseURL + "?slug=not_found",
-		status: http.StatusNotFound,
+		status: http.StatusOK,
 		method: http.MethodGet,
 		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "bad tenant id",
+		name:   "list frontends with invalid tenant id",
 		path:   baseURL,
 		status: http.StatusBadRequest,
 		method: http.MethodGet,
-		tenant: "tenantID",
+		tenant: "123456",
 	})
-	// Delete
 
+	doHTTPTest(t, &httpTest{
+		name:   "list frontends with unknown tenant id",
+		path:   baseURL,
+		status: http.StatusOK,
+		method: http.MethodGet,
+		tenant: missingUUID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "not found with path param",
+		status: http.StatusNotFound,
+		path:   baseURL + "/" + missingUUID,
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "bad UUID in path param",
+		status: http.StatusBadRequest,
+		path:   baseURL + "/123456",
+		method: http.MethodGet,
+		tenant: tenantID,
+	})
+
+	// Delete
 	doHTTPTest(t, &httpTest{
 		name:   "404",
 		path:   baseURL + "?slug=not_found",

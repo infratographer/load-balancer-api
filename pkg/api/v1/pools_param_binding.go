@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -21,7 +22,12 @@ func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 
 	poolID := c.Param("pool_id")
 	if poolID != "" {
+		if _, err := uuid.Parse(poolID); err != nil {
+			return nil, ErrInvalidUUID
+		}
+
 		mods = append(mods, models.PoolWhere.PoolID.EQ(poolID))
+		r.logger.Debugw("path param", "pool_id", poolID)
 	}
 
 	queryParams := []string{"slug", "protocol"}
