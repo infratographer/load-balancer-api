@@ -80,5 +80,5 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		r.logger.Errorw("failed to publish load balancer message", "error", err)
 	}
 
-	return v1CreatedResponse(c)
+	return v1LoadBalancerCreatedResponse(c, lb.LoadBalancerID)
 }
