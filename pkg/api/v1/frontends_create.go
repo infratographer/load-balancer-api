@@ -38,7 +38,7 @@ func (r *Router) frontendCreate(c echo.Context) error {
 
 	if err := validateFrontend(&frontend); err != nil {
 		r.logger.Errorw("failed to validate frontend", "error", err)
-		return v1UnprocessableEntityResponse(c, err)
+		return v1BadRequestResponse(c, err)
 	}
 
 	if err := frontend.Insert(ctx, r.db, boil.Infer()); err != nil {

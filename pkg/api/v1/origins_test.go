@@ -15,7 +15,7 @@ import (
 func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID, tenantID string) (*origin, func(*testing.T)) {
 	t.Helper()
 
-	body := fmt.Sprintf(`[{"disabled": true,"display_name": "%s", "target": "1.1.1.1", "port": 80, "pool_id": "%s"}]`, name, poolID)
+	body := fmt.Sprintf(`{"disabled": true,"display_name": "%s", "target": "1.1.1.1", "port": 80, "pool_id": "%s"}`, name, poolID)
 
 	doHTTPTest(t, &httpTest{
 		name:   "create origin",
@@ -85,7 +85,7 @@ func TestOriginRoutes(t *testing.T) {
 	// POST
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `[{"disabled": true,"display_name": "The Butt", "target": "9.9.9.9", "port": 80, "pool_id": "` + pool.ID + `"}]`,
+		body:   `{"disabled": true,"display_name": "The Butt", "target": "9.9.9.9", "port": 80, "pool_id": "` + pool.ID + `"}`,
 		status: http.StatusOK,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -94,8 +94,17 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `[{"disabled": true,"display_name": "Fish are friends", "target": "9.9.8.8", "port": 80, "pool_id": "` + pool.ID + `"}]`,
+		body:   `{"disabled": true,"display_name": "Fish are friends", "target": "9.9.8.8", "port": 80, "pool_id": "` + pool.ID + `"}`,
 		status: http.StatusOK,
+		path:   baseURL,
+		method: http.MethodPost,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list of origins",
+		body:   `[{"disabled": true,"display_name": "The Butt", "target": "9.9.9.9", "port": 80, "pool_id": "` + pool.ID + `"},{"disabled": true,"display_name": "The Beard", "target": "9.9.9.10", "port": 80, "pool_id": "` + pool.ID + `"}]`,
+		status: http.StatusBadRequest,
 		path:   baseURL,
 		method: http.MethodPost,
 		tenant: tenantID,
@@ -121,7 +130,7 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing pool_id",
-		body:   `[{"disabled": true,"display_name": "the-butt", "target": "2.0.0.1", "port": 80}]`,
+		body:   `{"disabled": true,"display_name": "the-butt", "target": "2.0.0.1", "port": 80}`,
 		status: http.StatusBadRequest,
 		path:   baseURL,
 		method: http.MethodPost,
