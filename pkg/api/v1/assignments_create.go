@@ -69,5 +69,5 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		r.logger.Errorw("error publishing event", "error", err)
 	}
 
-	return v1CreatedResponse(c)
+	return v1AssignmentsCreatedResponse(c, assignment.AssignmentID)
 }

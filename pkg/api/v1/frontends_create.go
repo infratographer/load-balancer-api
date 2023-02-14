@@ -12,7 +12,7 @@ import (
 func (r *Router) frontendCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	payload := []struct {
+	payload := struct {
 		DisplayName    string `json:"display_name"`
 		Port           int64  `json:"port"`
 		LoadBalancerID string `json:"load_balancer_id"`
@@ -27,53 +27,26 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	frontends := models.FrontendSlice{}
-
-	tx, err := r.db.Begin()
-	if err != nil {
-		r.logger.Errorw("failed to begin transaction", "error", err)
-		return err
+	frontend := models.Frontend{
+		DisplayName:    payload.DisplayName,
+		Port:           payload.Port,
+		LoadBalancerID: payload.LoadBalancerID,
+		TenantID:       tenantID,
+		Slug:           slug.Make(payload.DisplayName),
+		CurrentState:   "pending",
 	}
 
-	for _, p := range payload {
-		frontend := models.Frontend{
-			DisplayName:    p.DisplayName,
-			Port:           p.Port,
-			LoadBalancerID: p.LoadBalancerID,
-			TenantID:       tenantID,
-			Slug:           slug.Make(p.DisplayName),
-			CurrentState:   "pending",
-		}
-
-		if err := validateFrontend(&frontend); err != nil {
-			_ = tx.Rollback()
-			return v1BadRequestResponse(c, err)
-		}
-
-		frontends = append(frontends, &frontend)
-
-		if err := frontend.Insert(ctx, tx, boil.Infer()); err != nil {
-			r.logger.Errorw("failed to insert frontend", "error", err)
-
-			if err := tx.Rollback(); err != nil {
-				r.logger.Errorw("failed to rollback transaction", "error", err)
-			}
-
-			return err
-		}
+	if err := validateFrontend(&frontend); err != nil {
+		r.logger.Errorw("failed to validate frontend", "error", err)
+		return v1UnprocessableEntityResponse(c, err)
 	}
 
-	switch len(frontends) {
-	case 0:
-		_ = tx.Rollback()
-		return v1UnprocessableEntityResponse(c, ErrEmptyPayload)
-	default:
-		if err := tx.Commit(); err != nil {
-			return err
-		}
-
-		return v1CreatedResponse(c)
+	if err := frontend.Insert(ctx, r.db, boil.Infer()); err != nil {
+		r.logger.Errorw("failed to insert frontend", "error", err)
+		return v1InternalServerErrorResponse(c, err)
 	}
+
+	return v1FrontendCreatedResponse(c, frontend.FrontendID)
 }
 
 // validateFrontend validates a frontend

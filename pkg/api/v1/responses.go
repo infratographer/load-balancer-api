@@ -19,15 +19,73 @@ func v1DeletedResponse(c echo.Context) error {
 	})
 }
 
-func v1CreatedResponse(c echo.Context) error {
+func v1AssignmentsCreatedResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusOK, struct {
+		Version      string `json:"version"`
+		Message      string `json:"message"`
+		Status       int    `json:"status"`
+		AssignmentID string `json:"assignment_id,omitempty"`
+	}{
+		Message:      "resource created",
+		Version:      apiVersion,
+		Status:       http.StatusOK,
+		AssignmentID: id,
+	})
+}
+
+func v1LoadBalancerCreatedResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusOK, struct {
+		Version        string `json:"version"`
+		Message        string `json:"message"`
+		Status         int    `json:"status"`
+		LoadBalancerID string `json:"load_balancer_id"`
+	}{
+		Message:        "resource created",
+		Version:        apiVersion,
+		Status:         http.StatusOK,
+		LoadBalancerID: id,
+	})
+}
+
+func v1FrontendCreatedResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusOK, struct {
+		Version    string `json:"version"`
+		Message    string `json:"message"`
+		Status     int    `json:"status"`
+		FrontendID string `json:"frontend_id"`
+	}{
+		Message:    "resource created",
+		Version:    apiVersion,
+		Status:     http.StatusOK,
+		FrontendID: id,
+	})
+}
+
+func v1OriginCreatedResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusOK, struct {
+		Version  string `json:"version"`
+		Message  string `json:"message"`
+		Status   int    `json:"status"`
+		OriginID string `json:"origin_id,omitempty"`
+	}{
+		Message:  "resource created",
+		Version:  apiVersion,
+		Status:   http.StatusOK,
+		OriginID: id,
+	})
+}
+
+func v1PoolCreatedResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Status  int    `json:"status"`
+		PoolID  string `json:"pool_id,omitempty"`
 	}{
 		Message: "resource created",
 		Version: apiVersion,
 		Status:  http.StatusOK,
+		PoolID:  id,
 	})
 }
 
