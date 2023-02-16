@@ -10,6 +10,8 @@ func (r *Router) addFrontendRoutes(rg *echo.Group) {
 
 	rg.POST("/frontends", r.frontendCreate)
 
+	rg.PUT("/frontends/:frontend_id", r.frontendUpdate)
+
 	rg.DELETE("/frontends", r.frontendDelete)
 	rg.DELETE("/frontends/:frontend_id", r.frontendDelete)
 	rg.DELETE("/loadbalancers/:load_balancer_id/frontends", r.frontendDelete)

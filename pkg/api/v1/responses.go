@@ -89,6 +89,20 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
+func v1UpdateFrontendResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version    string `json:"version"`
+		Message    string `json:"message"`
+		Status     int    `json:"status"`
+		FrontendID string `json:"frontend_id"`
+	}{
+		Message:    "resource created",
+		Version:    apiVersion,
+		Status:     http.StatusOK,
+		FrontendID: id,
+	})
+}
+
 func v1NotFoundResponse(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, struct {
 		Version string `json:"version"`
