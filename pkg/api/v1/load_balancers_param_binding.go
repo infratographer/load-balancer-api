@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/dspinhirne/netaddr-go"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,20 +26,22 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 
 	// optional tenant_id in the request path
 	if tenantID, err = r.parseUUID(c, "tenant_id"); err != nil {
-		return nil, err
-	}
-
-	if tenantID != "" {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
+		}
+	} else {
+		// found tenant_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.TenantID.EQ(tenantID))
 		r.logger.Debugw("path param", "tenant_id", tenantID)
 	}
 
 	// optional load_balancer_id in the request path
 	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {
-		return nil, err
-	}
-
-	if loadBalancerID != "" {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
+		}
+	} else {
+		// found load_balancer_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID))
 		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
 	}

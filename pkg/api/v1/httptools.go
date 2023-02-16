@@ -26,7 +26,6 @@ func (r *Router) parseTenantID(c echo.Context) (string, error) {
 }
 
 // parseUUID parses and validates a UUID from the request path if the path param is found
-// returns UUID or empty string in the case where path param is not found
 func (r *Router) parseUUID(c echo.Context, path string) (string, error) {
 	var id string
 	if err := echo.PathParamsBinder(c).String(path, &id).BindError(); err != nil {
@@ -37,9 +36,11 @@ func (r *Router) parseUUID(c echo.Context, path string) (string, error) {
 		if _, err := uuid.Parse(id); err != nil {
 			return "", ErrInvalidUUID
 		}
+
+		return id, nil
 	}
 
-	return id, nil
+	return "", ErrUUIDNotFound
 }
 
 // queryParamsToQueryMods is a helper function that takes a echo.ValueBinder, table name,

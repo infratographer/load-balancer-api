@@ -29,7 +29,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	// Ensure the tenant ID is a set from the path,this prevents
 	// a tenant from creating a load balancer for another tenant
 	tenantID, err := r.parseUUID(c, "tenant_id")
-	if err != nil || tenantID == "" {
+	if err != nil {
 		r.logger.Errorw("bad request", "error", err)
 		return v1BadRequestResponse(c, err)
 	}
