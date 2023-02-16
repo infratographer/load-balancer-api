@@ -1,8 +1,9 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/dspinhirne/netaddr-go"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -22,28 +23,32 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	)
 
 	mods := []qm.QueryMod{}
-	ppb := echo.PathParamsBinder(c)
 
-	// require tenant_id in the request path
-	if tenantID, err = r.parseTenantID(c); err != nil {
-		return nil, err
+	// optional tenant_id in the request path
+	if tenantID, err = r.parseUUID(c, "tenant_id"); err != nil {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
+		}
+	} else {
+		// found tenant_id in path so add to query mods
+		mods = append(mods, models.LoadBalancerWhere.TenantID.EQ(tenantID))
+		r.logger.Debugw("path param", "tenant_id", tenantID)
 	}
-
-	mods = append(mods, models.LoadBalancerWhere.TenantID.EQ(tenantID))
-	r.logger.Debugw("path param", "tenant_id", tenantID)
 
 	// optional load_balancer_id in the request path
-	if err = ppb.String("load_balancer_id", &loadBalancerID).BindError(); err != nil {
-		return nil, err
-	}
-
-	if loadBalancerID != "" {
-		if _, err := uuid.Parse(loadBalancerID); err != nil {
-			return nil, ErrInvalidUUID
+	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
 		}
-
+	} else {
+		// found load_balancer_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID))
 		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
+	}
+
+	if tenantID == "" && loadBalancerID == "" {
+		r.logger.Debugw("either tenantID or loadBalancerID required in the path")
+		return nil, ErrIDRequired
 	}
 	// query params
 	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug"}

@@ -8,7 +8,7 @@ import (
 
 var tenantHeader = "X-Infratographer-Tenant-ID"
 
-// parseTenantID parses the tenant_id from the request path and returns an error if the tenant_id
+// parseTenantID parses the tenant_id from the headers and returns an error if the tenant_id
 // is not present or an invalid uuid is provided.
 func (r *Router) parseTenantID(c echo.Context) (string, error) {
 	tenantID := c.Request().Header.Get(tenantHeader)
@@ -23,6 +23,24 @@ func (r *Router) parseTenantID(c echo.Context) (string, error) {
 	}
 
 	return tenantID, nil
+}
+
+// parseUUID parses and validates a UUID from the request path if the path param is found
+func (r *Router) parseUUID(c echo.Context, path string) (string, error) {
+	var id string
+	if err := echo.PathParamsBinder(c).String(path, &id).BindError(); err != nil {
+		return "", err
+	}
+
+	if id != "" {
+		if _, err := uuid.Parse(id); err != nil {
+			return "", ErrInvalidUUID
+		}
+
+		return id, nil
+	}
+
+	return "", ErrUUIDNotFound
 }
 
 // queryParamsToQueryMods is a helper function that takes a echo.ValueBinder, table name,

@@ -75,6 +75,9 @@ var (
 	// ErrNullUUID is returned when a UUID is null
 	ErrNullUUID = errors.New("UUID is null")
 
+	// ErrUUIDNotFound is returned when a UUID is not found in the path
+	ErrUUIDNotFound = errors.New("UUID not found in path")
+
 	// ErrUnauthenticatedRequest is returned when a request is not authenticated
 	ErrUnauthenticatedRequest = errors.New("unauthenticated request")
 
