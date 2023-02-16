@@ -16,7 +16,7 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string, t
 	baseURL := srv.URL + "/v1/frontends"
 
 	t.Run("create frontend:[POST]_"+baseURL, func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`[{"display_name": "Ears", "load_balancer_id": "%s", "port": 25}]`, loadBalancerID))) //nolint
+		req, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`{"display_name": "Ears", "load_balancer_id": "%s", "port": 25}`, loadBalancerID))) //nolint
 		assert.NoError(t, err)
 		req.Header.Set(tenantHeader, tenantID)
 		resp, err := http.DefaultClient.Do(req)
@@ -60,7 +60,7 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string, t
 	}
 }
 
-func TestFrondendRoutest(t *testing.T) {
+func TestFrondendRoutes(t *testing.T) {
 	srv := newTestServer(t)
 	defer srv.Close()
 
@@ -73,25 +73,33 @@ func TestFrondendRoutest(t *testing.T) {
 	baseURL := srv.URL + "/v1/frontends"
 	missingUUID := uuid.New().String()
 
-	req, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`[{"display_name": "Ears", "load_balancer_id": "%s", "port": 25},{"display_name": "Eyes", "port": 465, "load_balancer_id" : "%s"}]`, loadBalancerID, loadBalancerID))) //nolint
+	req1, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`{"display_name": "Ears", "load_balancer_id": "%s", "port": 25}`, loadBalancerID))) //nolint
 	assert.NoError(t, err)
-	req.Header.Set(tenantHeader, tenantID)
-	resp, err := http.DefaultClient.Do(req)
+	req1.Header.Set(tenantHeader, tenantID)
+	resp1, err := http.DefaultClient.Do(req1)
 	assert.NoError(t, err)
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp1.StatusCode)
+	resp1.Body.Close()
 
-	req, err = http.NewRequest(http.MethodGet, srv.URL+"/v1/loadbalancers/"+loadBalancerID+"/frontends", nil) //nolint
+	req2, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`{"display_name": "Eyes", "port": 465, "load_balancer_id" : "%s"}`, loadBalancerID))) //nolint
 	assert.NoError(t, err)
-	req.Header.Set(tenantHeader, tenantID)
-	resp, err = http.DefaultClient.Do(req)
+	req2.Header.Set(tenantHeader, tenantID)
+	resp2, err := http.DefaultClient.Do(req2)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp2.StatusCode)
+	resp2.Body.Close()
+
+	req3, err := http.NewRequest(http.MethodGet, srv.URL+"/v1/loadbalancers/"+loadBalancerID+"/frontends", nil) //nolint
+	assert.NoError(t, err)
+	req3.Header.Set(tenantHeader, tenantID)
+	resp3, err := http.DefaultClient.Do(req3)
 	assert.NoError(t, err)
 
 	feResp := response{}
 
-	_ = json.NewDecoder(resp.Body).Decode(&feResp)
+	_ = json.NewDecoder(resp3.Body).Decode(&feResp)
 
-	resp.Body.Close()
+	resp3.Body.Close()
 
 	earsID := ""
 
@@ -104,7 +112,7 @@ func TestFrondendRoutest(t *testing.T) {
 	// POST tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 80}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s", "port": 80}`, loadBalancerID),
 		status: http.StatusOK,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -113,7 +121,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 80}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s", "port": 80}`, loadBalancerID),
 		status: http.StatusInternalServerError,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -122,7 +130,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "443",
-		body:   fmt.Sprintf(`[{"display_name": "TLS Mouth", "load_balancer_id": "%s", "port": 443}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "TLS Mouth", "load_balancer_id": "%s", "port": 443}`, loadBalancerID),
 		status: http.StatusOK,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -130,8 +138,17 @@ func TestFrondendRoutest(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
+		name:   "list of frontends",
+		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 80},{"display_name": "Beard", "load_balancer_id": "%s", "port": 443}]`, loadBalancerID, loadBalancerID),
+		status: http.StatusBadRequest,
+		method: http.MethodPost,
+		path:   baseURL,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
 		name:   "negative port",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": -1}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s", "port": -1}`, loadBalancerID),
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -140,7 +157,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "zero port",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 0}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s", "port": 0}`, loadBalancerID),
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -149,7 +166,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "port too high",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s", "port": 65536}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s", "port": 65536}`, loadBalancerID),
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -158,7 +175,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing port",
-		body:   fmt.Sprintf(`[{"display_name": "Mouth", "load_balancer_id": "%s"}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"display_name": "Mouth", "load_balancer_id": "%s"}`, loadBalancerID),
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -167,7 +184,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing display name",
-		body:   fmt.Sprintf(`[{"load_balancer_id": "%s", "port": 80}]`, loadBalancerID),
+		body:   fmt.Sprintf(`{"load_balancer_id": "%s", "port": 80}`, loadBalancerID),
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -176,7 +193,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing load balancer id",
-		body:   `[{"display_name": "Mouth", "port": 80}]`,
+		body:   `{"display_name": "Mouth", "port": 80}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -185,7 +202,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid load balancer id",
-		body:   `[{"display_name": "Mouth", "port": 80, "load_balancer_id": "bad id"}]`,
+		body:   `{"display_name": "Mouth", "port": 80, "load_balancer_id": "bad id"}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
@@ -194,7 +211,7 @@ func TestFrondendRoutest(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing body",
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		method: http.MethodPost,
 		path:   baseURL,
 		tenant: tenantID,

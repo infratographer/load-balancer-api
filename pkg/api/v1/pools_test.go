@@ -16,7 +16,7 @@ import (
 func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string) (*pool, func(t *testing.T)) {
 	t.Helper()
 
-	body := `[{"display_name": "` + name + `", "protocol": "tcp"}]`
+	body := `{"display_name": "` + name + `", "protocol": "tcp"}`
 
 	baseURL := srv.URL + "/v1/pools"
 
@@ -87,7 +87,7 @@ func TestPoolRoutes(t *testing.T) {
 	// POST
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `[{"display_name": "Nemo", "protocol": "tcp"}]`,
+		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusOK,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -96,7 +96,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate",
-		body:   `[{"display_name": "Nemo", "protocol": "tcp"}]`,
+		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusInternalServerError,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -104,8 +104,17 @@ func TestPoolRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
+		name:   "multiple pools",
+		body:   `[{"display_name": "Nemo", "protocol": "tcp"},{"display_name": "Dory", "protocol": "tcp"}]`,
+		status: http.StatusBadRequest,
+		path:   baseURL,
+		method: http.MethodPost,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
 		name:   "missing display name",
-		body:   `[{"protocol": "tcp"}]`,
+		body:   `{"protocol": "tcp"}`,
 		status: http.StatusBadRequest,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -114,7 +123,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing protocol",
-		body:   `[{"display_name": "Bruce"}]`,
+		body:   `{"display_name": "Bruce"}`,
 		status: http.StatusOK,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -123,7 +132,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid protocol",
-		body:   `[{"display_name": "Nemo", "protocol": "invalid"}]`,
+		body:   `{"display_name": "Nemo", "protocol": "invalid"}`,
 		status: http.StatusBadRequest,
 		path:   baseURL,
 		method: http.MethodPost,

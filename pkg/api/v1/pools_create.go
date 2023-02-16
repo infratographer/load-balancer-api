@@ -10,7 +10,7 @@ import (
 // poolCreate creates a new pool
 func (r *Router) poolCreate(c echo.Context) error {
 	ctx := c.Request().Context()
-	payload := []struct {
+	payload := struct {
 		DisplayName string `json:"display_name"`
 		Protocol    string `json:"protocol"`
 	}{}
@@ -26,60 +26,26 @@ func (r *Router) poolCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	ps := models.PoolSlice{}
+	pool := &models.Pool{
+		DisplayName: payload.DisplayName,
+		Protocol:    payload.Protocol,
+		TenantID:    tenantID,
+		Slug:        slug.Make(payload.DisplayName),
+	}
 
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		r.logger.Errorw("error starting transaction", "error", err)
+	if err := validatePool(pool); err != nil {
+		r.logger.Errorw("error validating pool", "error", err)
+
+		return v1BadRequestResponse(c, err)
+	}
+
+	if err := pool.Insert(ctx, r.db, boil.Infer()); err != nil {
+		r.logger.Errorw("error inserting pool", "error", err)
+
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	for _, p := range payload {
-		pool := &models.Pool{
-			DisplayName: p.DisplayName,
-			Protocol:    p.Protocol,
-			TenantID:    tenantID,
-			Slug:        slug.Make(p.DisplayName),
-		}
-
-		if err := validatePool(pool); err != nil {
-			if err := tx.Rollback(); err != nil {
-				r.logger.Errorw("error rolling back transaction", "error", err)
-				return v1InternalServerErrorResponse(c, err)
-			}
-
-			r.logger.Errorw("error validating pool", "error", err)
-
-			return v1BadRequestResponse(c, err)
-		}
-
-		ps = append(ps, pool)
-
-		if err := pool.Insert(ctx, tx, boil.Infer()); err != nil {
-			_ = tx.Rollback()
-
-			r.logger.Errorw("error inserting pool", "error", err)
-
-			return v1InternalServerErrorResponse(c, err)
-		}
-	}
-
-	switch len(ps) {
-	case 0:
-		if err := tx.Rollback(); err != nil {
-			r.logger.Errorw("error rolling back transaction", "error", err)
-			return v1InternalServerErrorResponse(c, err)
-		}
-
-		return v1NotFoundResponse(c)
-	default:
-		if err := tx.Commit(); err != nil {
-			r.logger.Errorw("error committing transaction", "error", err)
-			return v1BadRequestResponse(c, err)
-		}
-
-		return v1CreatedResponse(c)
-	}
+	return v1PoolCreatedResponse(c, pool.PoolID)
 }
 
 // validatePool validates a pool
