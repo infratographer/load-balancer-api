@@ -234,6 +234,61 @@ func TestFrondendRoutes(t *testing.T) {
 		tenant: "bad tenant id",
 	})
 
+	// PUT
+	doHTTPTest(t, &httpTest{
+		name:   "happy path update frontend",
+		body:   `{"display_name": "LeftEar", "port": 8080}`,
+		status: http.StatusAccepted,
+		method: http.MethodPut,
+		path:   baseURL + "/" + earsID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update frontend port too low",
+		body:   `{"display_name": "LeftEar", "port": -1}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + earsID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update frontend port two high",
+		body:   `{"display_name": "LeftEar", "port": 131337}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + earsID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update frontend missing display name",
+		body:   `{"port": 8080}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + earsID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update frontend missing port",
+		body:   `{"display_name": "LeftEar"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + earsID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "missing frontend id",
+		body:   `{"display_name": "LeftEar", "port": 8080}`,
+		status: http.StatusMethodNotAllowed,
+		method: http.MethodPut,
+		path:   baseURL,
+		tenant: tenantID,
+	})
+
 	// Get Tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
@@ -244,7 +299,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "happy pathwith id",
+		name:   "happy path with id",
 		path:   srv.URL + "/v1/loadbalancers/" + loadBalancerID + "/frontends",
 		status: http.StatusOK,
 		method: http.MethodGet,
