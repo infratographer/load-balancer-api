@@ -41,7 +41,6 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 
 	if _, err := frontend.Update(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Errorw("failed to update frontend", "error", err)
-
 		return v1InternalServerErrorResponse(c, err)
 	}
 
