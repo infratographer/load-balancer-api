@@ -19,22 +19,20 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 	body := `{"display_name": "` + name + `", "protocol": "tcp"}`
 
 	baseURL := srv.URL + "/v1/pools"
+	baseURLTenant := srv.URL + "/v1/tenant/" + tenantID + "/pools"
 
 	doHTTPTest(t, &httpTest{
 		name:   "create pool",
 		method: http.MethodPost,
-		path:   baseURL,
+		path:   baseURLTenant,
 		body:   body,
 		status: http.StatusOK,
-		tenant: tenantID,
 	})
 
 	pool := response{}
 
-	req, err := http.NewRequest(http.MethodGet, baseURL+"?slug="+slug.Make(name), nil) //nolint
+	req, err := http.NewRequest(http.MethodGet, baseURLTenant+"?slug="+slug.Make(name), nil) //nolint
 	assert.NoError(t, err)
-
-	req.Header.Set(tenantHeader, tenantID)
 
 	res, err := http.DefaultClient.Do(req) //nolint
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -53,8 +51,6 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+(*pool.Pools)[0].ID, nil) //nolint
 		assert.NoError(t, err)
 
-		req.Header.Set(tenantHeader, tenantID)
-
 		res, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
 
@@ -69,6 +65,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/pools"
+	baseURLTenant := srv.URL + "/v1/tenant/" + tenantID + "/pools"
 	missingUUID := uuid.New().String()
 
 	// doHTTPTest is a helper function that makes a request to the server and
@@ -79,9 +76,8 @@ func TestPoolRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "get pools before create",
 		status: http.StatusOK,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodGet,
-		tenant: tenantID,
 	})
 
 	// POST
@@ -89,78 +85,70 @@ func TestPoolRoutes(t *testing.T) {
 		name:   "happy path",
 		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusOK,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate",
 		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusInternalServerError,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "multiple pools",
 		body:   `[{"display_name": "Nemo", "protocol": "tcp"},{"display_name": "Dory", "protocol": "tcp"}]`,
 		status: http.StatusBadRequest,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing display name",
 		body:   `{"protocol": "tcp"}`,
 		status: http.StatusBadRequest,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing protocol",
 		body:   `{"display_name": "Bruce"}`,
 		status: http.StatusOK,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid protocol",
 		body:   `{"display_name": "Nemo", "protocol": "invalid"}`,
 		status: http.StatusBadRequest,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid body",
 		body:   `invalid`,
 		status: http.StatusBadRequest,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodPost,
-		tenant: tenantID,
 	})
 
 	// GET
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
 		status: http.StatusOK,
-		path:   baseURL,
+		path:   baseURLTenant,
 		method: http.MethodGet,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path with query",
 		status: http.StatusOK,
-		path:   baseURL + "?display_name=Nemo",
+		path:   baseURLTenant + "?display_name=Nemo",
 		method: http.MethodGet,
 		tenant: tenantID,
 	})
@@ -168,25 +156,30 @@ func TestPoolRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "not found with query",
 		status: http.StatusOK,
-		path:   baseURL + "?slug=NotNemo",
+		path:   baseURLTenant + "?slug=NotNemo",
 		method: http.MethodGet,
 		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "list pools with invalid tenant id",
+		name:   "get pools without tenant or pool id",
+		status: http.StatusNotFound,
 		path:   baseURL,
+		method: http.MethodGet,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list pools with invalid tenant id",
+		path:   srv.URL + "/v1/tenant/123456/pools",
 		status: http.StatusBadRequest,
 		method: http.MethodGet,
-		tenant: "123456",
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "list pools with unknown tenant id",
-		path:   baseURL,
+		path:   srv.URL + "/v1/tenant/" + missingUUID + "/pools",
 		status: http.StatusOK,
 		method: http.MethodGet,
-		tenant: missingUUID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -194,7 +187,6 @@ func TestPoolRoutes(t *testing.T) {
 		status: http.StatusNotFound,
 		path:   baseURL + "/" + missingUUID,
 		method: http.MethodGet,
-		tenant: tenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -202,16 +194,14 @@ func TestPoolRoutes(t *testing.T) {
 		status: http.StatusBadRequest,
 		path:   baseURL + "/123456",
 		method: http.MethodGet,
-		tenant: tenantID,
 	})
 
 	// DELETE
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
 		status: http.StatusOK,
-		path:   baseURL + "?display_name=Nemo",
+		path:   baseURLTenant + "?display_name=Nemo",
 		method: http.MethodDelete,
-		tenant: tenantID,
 	})
 }
 
