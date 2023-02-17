@@ -1,0 +1,102 @@
+---
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "common.names.fullname" . }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.api.extraLabels }}
+    {{- toYaml .Values.api.extraLabels | nindent 4 }}
+    {{- end }}
+    {{- if .Values.api.extraAnnotations }}
+  annotations:
+    {{- toYaml .Values.api.extraAnnotations | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.api.replicas | default 1 }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+      {{- include "common.labels.standard" . | nindent 8 }}
+      {{- if .Values.api.extraLabels }}
+      {{- toYaml .Values.api.extraLabels | nindent 8 }}
+      {{- end }}
+      {{- if .Values.api.extraAnnotations }}
+      annotations:
+        {{- toYaml .Values.api.extraAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.api.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.api.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.api.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: LOAD_BALANCER_API_CHART_PATH
+              value: "/chart.tgz"
+            - name: LOAD_BALANCER_API_NATS_URL
+              value: "{{ .Values.api.events.connectionURL }}"
+            - name: LOAD_BALANCER_API_NATS_STREAM_NAME
+              value: "{{ .Values.api.events.queue | default "loadbalancerapi" }}"
+            - name: LOAD_BALANCER_API_NATS_SUBJECT_PREFIX
+              value: "{{ .Values.api.events.subjects }}"
+          {{- if .Values.api.events.auth.secretName }}
+            - name: LOAD_BALANCER_API_NATS_CREDS_FILE
+              value: "/creds"
+          {{- end -}}
+          {{- with .Values.api.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - serve
+          ports:
+            - name: hc
+              containerPort: {{ .Values.api.healthCheckPort | default "8080" }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: hc
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: hc
+          volumeMounts:
+            {{- if .Values.api.events.auth.secretName  }}
+            - name: events-creds
+              mountPath: /creds
+              subPath: "creds"
+            {{- end }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+      {{- with .Values.api.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- if .Values.api.events.auth.secretName  }}
+        - name: events-creds
+          secret:
+            secretName: "{{ .Values.api.events.auth.secretName }}"
+        {{- end }}
+
+

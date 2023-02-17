@@ -23,3 +23,6 @@ debugConfig.yaml
 # devcontainer artifacts
 .devcontainer/nats/resolver.conf
 .devcontainer/nsc
+
+# helm test
+test-output/

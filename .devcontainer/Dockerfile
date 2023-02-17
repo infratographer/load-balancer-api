@@ -3,28 +3,31 @@ FROM cockroachdb/cockroach:latest-v22.2 as CRDB
 
 FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.19-bullseye
 
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarn-archive-keyring.gpg
-
-# [Optional] Uncomment this section to install additional OS packages.
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-        bash-completion \
-        uuid-runtime \
-        postgresql-client
-
-
 # Set up crdb
 RUN mkdir /usr/local/lib/cockroach
 COPY --from=CRDB /cockroach/cockroach /usr/local/bin
 COPY --from=CRDB /usr/local/lib/cockroach/libgeos.so /usr/local/lib/cockroach/
 COPY --from=CRDB /usr/local/lib/cockroach/libgeos_c.so /usr/local/lib/cockroach/
 
+# [Optional] Uncomment this section to install additional OS packages.
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg \
+    &&  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarn-archive-keyring.gpg \
+    && apt-get install apt-transport-https --yes \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list \
+    && apt-get update \
+    && apt-get -y install --no-install-recommends \
+        bash-completion \
+        helm \
+        uuid-runtime \
+        postgresql-client
+
+
 # Install NATS Tooling
 RUN curl -o /tmp/install.sh  https://raw.githubusercontent.com/nats-io/nsc/main/install.sh \
     && chmod +x /tmp/install.sh \
     && su vscode -c "/tmp/install.sh -s /usr/local/bin" \
-    && rm -f /tmp/install.sh
-
+    && rm -f /tmp/install.sh \
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 USER vscode
 

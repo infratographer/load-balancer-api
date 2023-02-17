@@ -2,6 +2,6 @@
 user="root"
 pass=""
 host="crdb"
-port=26257
 dbname="load_balancer_api_dev"
+port=26257
 sslmode="disable"
