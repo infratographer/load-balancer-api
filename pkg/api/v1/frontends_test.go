@@ -234,7 +234,7 @@ func TestFrondendRoutes(t *testing.T) {
 		tenant: "bad tenant id",
 	})
 
-	// PUT
+	// PUT tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path update frontend",
 		body:   `{"display_name": "LeftEar", "port": 8080}`,

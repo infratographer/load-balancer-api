@@ -96,10 +96,24 @@ func v1UpdateFrontendResponse(c echo.Context, id string) error {
 		Status     int    `json:"status"`
 		FrontendID string `json:"frontend_id"`
 	}{
-		Message:    "resource created",
+		Message:    "resource updated",
 		Version:    apiVersion,
-		Status:     http.StatusOK,
+		Status:     http.StatusAccepted,
 		FrontendID: id,
+	})
+}
+
+func v1UpdateLoadBalancerResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version        string `json:"version"`
+		Message        string `json:"message"`
+		Status         int    `json:"status"`
+		LoadBalancerID string `json:"load_balancer_id"`
+	}{
+		Message:        "resource updated",
+		Version:        apiVersion,
+		Status:         http.StatusAccepted,
+		LoadBalancerID: id,
 	})
 }
 

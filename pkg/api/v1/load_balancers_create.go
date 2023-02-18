@@ -47,14 +47,12 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	if err := validateLoadBalancer(lb); err != nil {
 		r.logger.Errorw("failed to validate load balancer", "error", err)
-
-		return v1UnprocessableEntityResponse(c, err)
+		return v1BadRequestResponse(c, err)
 	}
 
 	err = lb.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
 		r.logger.Errorw("failed to create load balancer, rolling back transaction", "error", err)
-
 		return v1InternalServerErrorResponse(c, err)
 	}
 

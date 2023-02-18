@@ -44,7 +44,7 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	// TODO emit event that frontend is updated
+	// TODO emit event that load balancers associated with frontend is updated
 
 	return v1UpdateFrontendResponse(c, frontend.FrontendID)
 }
