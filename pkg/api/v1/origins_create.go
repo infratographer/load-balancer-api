@@ -15,7 +15,6 @@ func (r *Router) originsCreate(c echo.Context) error {
 		DisplayName string `json:"display_name"`
 		Target      string `json:"target"`
 		Port        int    `json:"port"`
-		PoolID      string `json:"pool_id"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -23,7 +22,7 @@ func (r *Router) originsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	tenantID, err := r.parseTenantID(c)
+	poolID, err := r.parseUUID(c, "pool_id")
 	if err != nil {
 		return v1BadRequestResponse(c, err)
 	}
@@ -32,9 +31,8 @@ func (r *Router) originsCreate(c echo.Context) error {
 		DisplayName:               payload.DisplayName,
 		OriginUserSettingDisabled: payload.Disabled,
 		OriginTarget:              payload.Target,
-		PoolID:                    payload.PoolID,
+		PoolID:                    poolID,
 		Port:                      int64(payload.Port),
-		TenantID:                  tenantID,
 		Slug:                      slug.Make(payload.DisplayName),
 		CurrentState:              "configuring",
 	}

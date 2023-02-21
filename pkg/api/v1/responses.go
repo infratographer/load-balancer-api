@@ -248,7 +248,6 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 			UpdatedAt:      o.UpdatedAt,
 			ID:             o.OriginID,
 			Name:           o.DisplayName,
-			TenantID:       o.TenantID,
 			OriginDisabled: o.OriginUserSettingDisabled,
 			OriginTarget:   o.OriginTarget,
 			Port:           o.Port,
