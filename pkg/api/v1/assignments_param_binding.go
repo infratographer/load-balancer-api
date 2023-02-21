@@ -10,7 +10,7 @@ import (
 func (r *Router) assignmentParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	mods := []qm.QueryMod{}
 
-	tenantID, err := r.parseTenantID(c)
+	tenantID, err := r.parseUUID(c, "tenant_id")
 	if err != nil {
 		return nil, err
 	}

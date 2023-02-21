@@ -23,7 +23,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	tenantID, err := r.parseTenantID(c)
+	tenantID, err := r.parseUUID(c, "tenant_id")
 	if err != nil {
 		return err
 	}

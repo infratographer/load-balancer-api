@@ -15,10 +15,11 @@ func Test_Assignments(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	baseURL := srv.URL + "/v1/assignments"
+	tenantID := uuid.NewString()
+	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/assignments"
 
 	// Create a load balancer
-	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
+	loadBalancer, cleanupLB := createLoadBalancer(t, srv, tenantID)
 	defer cleanupLB(t)
 
 	// Create a frontend
@@ -48,7 +49,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -57,7 +57,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -66,7 +65,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool2.ID, loadBalancer.ID),
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -75,7 +73,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   "",
 		status: http.StatusInternalServerError,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -84,7 +81,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   "invalid",
 		status: http.StatusBadRequest,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -93,7 +89,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, "invalid", pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -102,7 +97,6 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, "invalid", loadBalancer.ID),
 		status: http.StatusInternalServerError,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -111,16 +105,14 @@ func Test_Assignments(t *testing.T) {
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, "invalid"),
 		status: http.StatusInternalServerError,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "Invalid tenant",
 		method: http.MethodPost,
-		path:   baseURL,
+		path:   srv.URL + "/v1/tenant/invalid/assignments",
 		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
 		status: http.StatusInternalServerError,
-		tenant: "invalid",
 	})
 	// Get the assignments
 	doHTTPTest(t, &httpTest{
@@ -128,7 +120,6 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodGet,
 		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
 	})
 
 	// Delete the assignment
@@ -137,7 +128,6 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodDelete,
 		path:   baseURL + "?load_balancer_id=" + loadBalancer.ID,
 		status: http.StatusBadRequest,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -145,7 +135,6 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodDelete,
 		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -153,7 +142,6 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodDelete,
 		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusNotFound,
-		tenant: loadBalancer.TenantID,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -161,6 +149,5 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodDelete,
 		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool2.ID,
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
 	})
 }
