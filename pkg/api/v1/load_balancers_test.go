@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.infratographer.com/load-balancer-api/internal/httptools"
 )
 
 func TestLoadBalancerRoutes(t *testing.T) {
@@ -20,6 +22,40 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	baseURLTenant := srv.URL + "/v1/tenant/" + tenantID + "/loadbalancers"
 	locationID := uuid.New().String()
 	missingUUID := uuid.New().String()
+
+	// create a test load balancer named Bruce
+	req1, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodPost,
+		baseURLTenant,
+		httptools.FakeBody(
+			fmt.Sprintf(`{"display_name": "Bruce", "location_id": "%s", "ip_addr": "2.2.2.2","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
+		),
+	)
+	assert.NoError(t, err)
+	resp1, err := http.DefaultClient.Do(req1)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp1.StatusCode)
+
+	testLoadBalancer := struct {
+		Version        string `json:"version"`
+		Message        string `json:"message"`
+		Status         int    `json:"status"`
+		LoadBalancerID string `json:"load_balancer_id"`
+	}{}
+
+	_ = json.NewDecoder(resp1.Body).Decode(&testLoadBalancer)
+	resp1.Body.Close()
+
+	// cleanup test load balancer
+	defer func(id string) {
+		rq, err := http.NewRequestWithContext(context.TODO(), http.MethodDelete, baseURL+"/"+id, nil)
+		assert.NoError(t, err)
+		rs, err := http.DefaultClient.Do(rq)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, rs.StatusCode)
+		rs.Body.Close()
+	}(testLoadBalancer.LoadBalancerID)
 
 	// doHTTPTest is a helper function that makes a request to the server and
 	// checks the response.
@@ -69,7 +105,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "missing display name",
 		body:   fmt.Sprintf(`{"location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -77,7 +113,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "missing location id",
 		body:   `{"display_name": "Nemo", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-3"}`,
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -85,7 +121,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "missing ip address",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -93,7 +129,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "missing size",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_type": "layer-3"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -101,7 +137,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "missing type",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -109,7 +145,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "invalid type",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "ip_addr": "1.1.1.1","load_balancer_size": "small","load_balancer_type": "layer-12"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -117,7 +153,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "bad ip address",
 		body:   fmt.Sprintf(`{"display_name": "Nemo", "location_id": "%s", "ip_addr": "Dori","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -133,7 +169,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "empty body",
 		body:   ``,
-		status: http.StatusUnprocessableEntity,
+		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
@@ -144,6 +180,52 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
+	})
+
+	// PUT tests
+	doHTTPTest(t, &httpTest{
+		name:   "happy path update load balancer",
+		body:   `{"display_name": "Bruce", "load_balancer_size": "x-large","load_balancer_type": "layer-3"}`,
+		status: http.StatusAccepted,
+		method: http.MethodPut,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update load balancer missing display name",
+		body:   `{"load_balancer_size": "x-large","load_balancer_type": "layer-3"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update load balancer, missing size",
+		body:   `{"display_name": "Bruce","load_balancer_type": "layer-3"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update load balancer, missing type",
+		body:   `{"display_name": "Bruce", "load_balancer_size": "x-large"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPut,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update load balancer, missing load balancer id",
+		body:   `{"display_name": "Bruce", "load_balancer_size": "x-large","load_balancer_type": "layer-3"}`,
+		status: http.StatusNotFound,
+		method: http.MethodPut,
+		path:   baseURL,
+		tenant: tenantID,
 	})
 
 	// GET tests

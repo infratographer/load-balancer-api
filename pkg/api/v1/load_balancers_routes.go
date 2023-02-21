@@ -8,6 +8,8 @@ func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 
 	g.POST("/tenant/:tenant_id/loadbalancers", r.loadBalancerCreate)
 
+	g.PUT("/loadbalancers/:load_balancer_id", r.loadBalancerUpdate)
+
 	g.DELETE("/tenant/:tenant_id/loadbalancers", r.loadBalancerDelete)
 	g.DELETE("/loadbalancers/:load_balancer_id", r.loadBalancerDelete)
 }

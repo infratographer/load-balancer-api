@@ -10,7 +10,7 @@ TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
 
-ci: | dev-database test
+ci: | dev-nats dev-database test
 
 test: | unit-test
 
