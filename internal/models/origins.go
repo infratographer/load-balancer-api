@@ -31,7 +31,6 @@ type Origin struct {
 	PoolID                    string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
 	OriginTarget              string    `query:"origin_target" param:"origin_target" boil:"origin_target" json:"origin_target" toml:"origin_target" yaml:"origin_target"`
 	Port                      int64     `query:"port" param:"port" boil:"port" json:"port" toml:"port" yaml:"port"`
-	TenantID                  string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
 	DisplayName               string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
 	Slug                      string    `query:"slug" param:"slug" boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	OriginUserSettingDisabled bool      `query:"origin_user_setting_disabled" param:"origin_user_setting_disabled" boil:"origin_user_setting_disabled" json:"origin_user_setting_disabled" toml:"origin_user_setting_disabled" yaml:"origin_user_setting_disabled"`
@@ -51,7 +50,6 @@ var OriginColumns = struct {
 	PoolID                    string
 	OriginTarget              string
 	Port                      string
-	TenantID                  string
 	DisplayName               string
 	Slug                      string
 	OriginUserSettingDisabled string
@@ -66,7 +64,6 @@ var OriginColumns = struct {
 	PoolID:                    "pool_id",
 	OriginTarget:              "origin_target",
 	Port:                      "port",
-	TenantID:                  "tenant_id",
 	DisplayName:               "display_name",
 	Slug:                      "slug",
 	OriginUserSettingDisabled: "origin_user_setting_disabled",
@@ -83,7 +80,6 @@ var OriginTableColumns = struct {
 	PoolID                    string
 	OriginTarget              string
 	Port                      string
-	TenantID                  string
 	DisplayName               string
 	Slug                      string
 	OriginUserSettingDisabled string
@@ -98,7 +94,6 @@ var OriginTableColumns = struct {
 	PoolID:                    "origins.pool_id",
 	OriginTarget:              "origins.origin_target",
 	Port:                      "origins.port",
-	TenantID:                  "origins.tenant_id",
 	DisplayName:               "origins.display_name",
 	Slug:                      "origins.slug",
 	OriginUserSettingDisabled: "origins.origin_user_setting_disabled",
@@ -117,7 +112,6 @@ var OriginWhere = struct {
 	PoolID                    whereHelperstring
 	OriginTarget              whereHelperstring
 	Port                      whereHelperint64
-	TenantID                  whereHelperstring
 	DisplayName               whereHelperstring
 	Slug                      whereHelperstring
 	OriginUserSettingDisabled whereHelperbool
@@ -132,7 +126,6 @@ var OriginWhere = struct {
 	PoolID:                    whereHelperstring{field: "\"origins\".\"pool_id\""},
 	OriginTarget:              whereHelperstring{field: "\"origins\".\"origin_target\""},
 	Port:                      whereHelperint64{field: "\"origins\".\"port\""},
-	TenantID:                  whereHelperstring{field: "\"origins\".\"tenant_id\""},
 	DisplayName:               whereHelperstring{field: "\"origins\".\"display_name\""},
 	Slug:                      whereHelperstring{field: "\"origins\".\"slug\""},
 	OriginUserSettingDisabled: whereHelperbool{field: "\"origins\".\"origin_user_setting_disabled\""},
@@ -169,8 +162,8 @@ func (r *originR) GetPool() *Pool {
 type originL struct{}
 
 var (
-	originAllColumns            = []string{"created_at", "updated_at", "deleted_at", "origin_id", "pool_id", "origin_target", "port", "tenant_id", "display_name", "slug", "origin_user_setting_disabled", "state_changed_at", "current_state", "previous_state"}
-	originColumnsWithoutDefault = []string{"pool_id", "origin_target", "port", "tenant_id", "display_name", "slug", "current_state", "previous_state"}
+	originAllColumns            = []string{"created_at", "updated_at", "deleted_at", "origin_id", "pool_id", "origin_target", "port", "display_name", "slug", "origin_user_setting_disabled", "state_changed_at", "current_state", "previous_state"}
+	originColumnsWithoutDefault = []string{"pool_id", "origin_target", "port", "display_name", "slug", "current_state", "previous_state"}
 	originColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "origin_id", "origin_user_setting_disabled", "state_changed_at"}
 	originPrimaryKeyColumns     = []string{"origin_id"}
 	originGeneratedColumns      = []string{}

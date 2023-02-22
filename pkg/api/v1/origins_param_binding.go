@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -11,12 +13,16 @@ import (
 func (r *Router) originsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	mods := []qm.QueryMod{}
 
-	tenantID, err := r.parseTenantID(c)
-	if err != nil {
-		return nil, err
+	// optional pool_id in the request path
+	if poolID, err := r.parseUUID(c, "pool_id"); err != nil {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
+		}
+	} else {
+		// found pool_id in path so add to query mods
+		mods = append(mods, models.OriginWhere.PoolID.EQ(poolID))
+		r.logger.Debugw("path param", "pool_id", poolID)
 	}
-
-	mods = append(mods, models.OriginWhere.TenantID.EQ(tenantID))
 
 	originID := c.Param("origin_id")
 	if originID != "" {
@@ -40,7 +46,7 @@ func (r *Router) originsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		}
 	}
 
-	if err = qpb.BindError(); err != nil {
+	if err := qpb.BindError(); err != nil {
 		return nil, err
 	}
 

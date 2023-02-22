@@ -60,7 +60,6 @@ type origin struct {
 	UpdatedAt      time.Time  `json:"updated_at"`
 	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
 	ID             string     `json:"id"`
-	TenantID       string     `json:"tenant_id"`
 	Name           string     `json:"display_name"`
 	Port           int64      `json:"port"`
 	OriginTarget   string     `json:"origin_target"`
