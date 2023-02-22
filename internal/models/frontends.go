@@ -29,7 +29,6 @@ type Frontend struct {
 	DeletedAt      null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	FrontendID     string    `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id" toml:"frontend_id" yaml:"frontend_id"`
 	LoadBalancerID string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
-	TenantID       string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
 	Port           int64     `query:"port" param:"port" boil:"port" json:"port" toml:"port" yaml:"port"`
 	AfInet         string    `query:"af_inet" param:"af_inet" boil:"af_inet" json:"af_inet" toml:"af_inet" yaml:"af_inet"`
 	DisplayName    string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
@@ -48,7 +47,6 @@ var FrontendColumns = struct {
 	DeletedAt      string
 	FrontendID     string
 	LoadBalancerID string
-	TenantID       string
 	Port           string
 	AfInet         string
 	DisplayName    string
@@ -62,7 +60,6 @@ var FrontendColumns = struct {
 	DeletedAt:      "deleted_at",
 	FrontendID:     "frontend_id",
 	LoadBalancerID: "load_balancer_id",
-	TenantID:       "tenant_id",
 	Port:           "port",
 	AfInet:         "af_inet",
 	DisplayName:    "display_name",
@@ -78,7 +75,6 @@ var FrontendTableColumns = struct {
 	DeletedAt      string
 	FrontendID     string
 	LoadBalancerID string
-	TenantID       string
 	Port           string
 	AfInet         string
 	DisplayName    string
@@ -92,7 +88,6 @@ var FrontendTableColumns = struct {
 	DeletedAt:      "frontends.deleted_at",
 	FrontendID:     "frontends.frontend_id",
 	LoadBalancerID: "frontends.load_balancer_id",
-	TenantID:       "frontends.tenant_id",
 	Port:           "frontends.port",
 	AfInet:         "frontends.af_inet",
 	DisplayName:    "frontends.display_name",
@@ -133,7 +128,6 @@ var FrontendWhere = struct {
 	DeletedAt      whereHelpernull_Time
 	FrontendID     whereHelperstring
 	LoadBalancerID whereHelperstring
-	TenantID       whereHelperstring
 	Port           whereHelperint64
 	AfInet         whereHelperstring
 	DisplayName    whereHelperstring
@@ -147,7 +141,6 @@ var FrontendWhere = struct {
 	DeletedAt:      whereHelpernull_Time{field: "\"frontends\".\"deleted_at\""},
 	FrontendID:     whereHelperstring{field: "\"frontends\".\"frontend_id\""},
 	LoadBalancerID: whereHelperstring{field: "\"frontends\".\"load_balancer_id\""},
-	TenantID:       whereHelperstring{field: "\"frontends\".\"tenant_id\""},
 	Port:           whereHelperint64{field: "\"frontends\".\"port\""},
 	AfInet:         whereHelperstring{field: "\"frontends\".\"af_inet\""},
 	DisplayName:    whereHelperstring{field: "\"frontends\".\"display_name\""},
@@ -195,8 +188,8 @@ func (r *frontendR) GetAssignments() AssignmentSlice {
 type frontendL struct{}
 
 var (
-	frontendAllColumns            = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "load_balancer_id", "tenant_id", "port", "af_inet", "display_name", "slug", "state_changed_at", "current_state", "previous_state"}
-	frontendColumnsWithoutDefault = []string{"load_balancer_id", "tenant_id", "port", "display_name", "slug", "current_state", "previous_state"}
+	frontendAllColumns            = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "load_balancer_id", "port", "af_inet", "display_name", "slug", "state_changed_at", "current_state", "previous_state"}
+	frontendColumnsWithoutDefault = []string{"load_balancer_id", "port", "display_name", "slug", "current_state", "previous_state"}
 	frontendColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "af_inet", "state_changed_at"}
 	frontendPrimaryKeyColumns     = []string{"frontend_id"}
 	frontendGeneratedColumns      = []string{}

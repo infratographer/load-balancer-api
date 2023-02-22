@@ -31,7 +31,6 @@ CREATE TABLE frontends (
     deleted_at TIMESTAMPTZ,
     frontend_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
     load_balancer_id UUID NOT NULL REFERENCES load_balancers (load_balancer_id) ON UPDATE CASCADE,
-    tenant_id UUID NOT NULL,
     port INT NOT NULL CHECK (port > 1 AND port < 65536),
     af_inet STRING NOT NULL DEFAULT 'ipv4',
     display_name STRING NOT NULL,
@@ -39,9 +38,7 @@ CREATE TABLE frontends (
     state_changed_at TIMESTAMPTZ,
     current_state STRING NOT NULL,
     previous_state STRING NOT NULL,
-    UNIQUE INDEX idx_frontends_tenant_id_slug  (tenant_id, slug) WHERE deleted_at IS NULL,
     UNIQUE INDEX idx_frontends_ip_port (load_balancer_id, port) WHERE deleted_at is NULL,
-    INDEX idx_frontends_tenant_id (tenant_id),
     INDEX idx_frontends_created_at (created_at),
     INDEX idx_frontends_updated_at (updated_at),
     INDEX idx_frontends_deleted_at (deleted_at)
