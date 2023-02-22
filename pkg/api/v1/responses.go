@@ -204,7 +204,6 @@ func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
 			Port:           f.Port,
 			AddressFamily:  f.AfInet,
 			Name:           f.DisplayName,
-			TenantID:       f.TenantID,
 		})
 	}
 

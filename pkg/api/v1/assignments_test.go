@@ -23,7 +23,7 @@ func Test_Assignments(t *testing.T) {
 	defer cleanupLB(t)
 
 	// Create a frontend
-	fe, cleanupFE := createFrontend(t, srv, loadBalancer.ID, loadBalancer.TenantID)
+	fe, cleanupFE := createFrontend(t, srv, loadBalancer.ID)
 	defer cleanupFE(t)
 
 	// Create a pool

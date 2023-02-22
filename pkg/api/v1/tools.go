@@ -77,7 +77,6 @@ func doHTTPTest(t *testing.T, tt *httpTest) {
 		req, err := http.NewRequest(tt.method, tt.path, body) //nolint
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set(tenantHeader, tt.tenant)
 
 		res, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)

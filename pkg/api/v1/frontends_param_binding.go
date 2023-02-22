@@ -1,7 +1,8 @@
 package api
 
 import (
-	"github.com/google/uuid"
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -15,32 +16,31 @@ import (
 // and appends them to the slice of query mods if they are present in the request.
 func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
-		err      error
-		tenantID string
-		// loadBalancerID string
-		frontendID string
+		err            error
+		loadBalancerID string
+		frontendID     string
 	)
 
 	mods := []qm.QueryMod{}
-	ppb := echo.PathParamsBinder(c)
 
-	if tenantID, err = r.parseTenantID(c); err != nil {
-		return nil, err
+	// optional load_balancer_id in the request path
+	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
+		}
+	} else {
+		// found load_balancer_id in path so add to query mods
+		mods = append(mods, models.FrontendWhere.LoadBalancerID.EQ(loadBalancerID))
+		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
 	}
-
-	mods = append(mods, models.FrontendWhere.TenantID.EQ(tenantID))
-	r.logger.Debugw("path param", "tenant_id", tenantID)
 
 	// optional frontend_id in the request path
-	if err = ppb.String("frontend_id", &frontendID).BindError(); err != nil {
-		return nil, err
-	}
-
-	if frontendID != "" {
-		if _, err := uuid.Parse(frontendID); err != nil {
-			return nil, ErrInvalidUUID
+	if frontendID, err = r.parseUUID(c, "frontend_id"); err != nil {
+		if !errors.Is(err, ErrUUIDNotFound) {
+			return nil, err
 		}
-
+	} else {
+		// found frontend_id in path so add to query mods
 		mods = append(mods, models.FrontendWhere.FrontendID.EQ(frontendID))
 		r.logger.Debugw("path param", "frontend_id", frontendID)
 	}

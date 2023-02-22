@@ -13,25 +13,24 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		DisplayName    string `json:"display_name"`
-		Port           int64  `json:"port"`
-		LoadBalancerID string `json:"load_balancer_id"`
+		DisplayName string `json:"display_name"`
+		Port        int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Errorw("failed to bind frontend create input", "error", err)
 		return v1BadRequestResponse(c, err)
 	}
 
-	tenantID, err := r.parseTenantID(c)
+	loadBalancerID, err := r.parseUUID(c, "load_balancer_id")
 	if err != nil {
+		r.logger.Errorw("bad request", "error", err)
 		return v1BadRequestResponse(c, err)
 	}
 
 	frontend := models.Frontend{
 		DisplayName:    payload.DisplayName,
 		Port:           payload.Port,
-		LoadBalancerID: payload.LoadBalancerID,
-		TenantID:       tenantID,
+		LoadBalancerID: loadBalancerID,
 		Slug:           slug.Make(payload.DisplayName),
 		CurrentState:   "pending",
 	}
