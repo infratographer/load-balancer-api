@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/infratographr/load-balancer-api
+  repository: ghcr.io/infratographer/load-balancer-api
   pullPolicy: IfNotPresent
   tag: "v0.0.1"
 
