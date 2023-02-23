@@ -44,7 +44,10 @@ api:
       secretName: "events-creds"
       credsPath: "/creds"
     subjects: "events"
-    queue: "my-queue"
+    queue: "load-balancer"
+  db:
+    uriSecret: load-balancer-api-db-uri
+    certSecret: load-balancer-api-db-ca
 
 reloader:
   enabled: false
