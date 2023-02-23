@@ -64,6 +64,9 @@ spec:
             - name: hc
               containerPort: {{ .Values.api.healthCheckPort | default "8080" }}
               protocol: TCP
+            - name: http
+              containerPort: {{ .Values.api.listenPort | default "8080" }}
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /healthz

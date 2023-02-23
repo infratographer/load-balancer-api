@@ -20,9 +20,18 @@ podAnnotations: {}
 service:
   type: ClusterIP
   port: 80
+  sessionAffinity: None
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts: []
+  tls: {}
 
 api:
   replicas: 1
+  listenPort: 7608
+  healthCheckPort: 7608
   extraLabels: {}
   extraAnnotations: {}
   extraEnvVars: {}
@@ -39,7 +48,6 @@ api:
 
 reloader:
   enabled: false
-
 
 cockroachdb:
   enabled: false
