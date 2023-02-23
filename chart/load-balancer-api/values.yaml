@@ -48,14 +48,3 @@ api:
 
 reloader:
   enabled: false
-
-cockroachdb:
-  enabled: false
-
-  image:
-    tag: v22.2.2
-    repository: cockroachdb/cockroach
-  conf:
-    single-node: true
-  statefulset:
-    replicas: 1
