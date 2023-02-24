@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VARIANT: 1.19-bullseye
+        VARIANT: 1.20-bullseye
         NODE_VERSION: "none"
     command:
       - .devcontainer/scripts/app-entrypoint.sh
