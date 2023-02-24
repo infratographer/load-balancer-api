@@ -1,6 +1,6 @@
 module go.infratographer.com/load-balancer-api
 
-go 1.19
+go 1.20
 
 require (
 	github.com/dspinhirne/netaddr-go v0.0.0-20211008142535-a4c5bccad224

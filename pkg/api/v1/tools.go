@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const someTestJWTURN = "urn:infratographer:infratographer.com:identity:some-jwt"
+const someTestJWTURN = "urn:infratographer:identity:some-jwt"
 
 type httpTest struct {
 	name   string

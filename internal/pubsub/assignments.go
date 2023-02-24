@@ -1,18 +1,12 @@
 package pubsub
 
 import (
-	"fmt"
-
 	"go.infratographer.com/x/pubsubx"
 )
 
 // NewAssignmentURN creates a new assignment URN
 func NewAssignmentURN(assignmentID string) string {
 	return newURN("assignment", assignmentID)
-}
-
-func newURN(kind, id string) string {
-	return fmt.Sprintf("urn:infratographer:infratographer.com:%s:%s/", kind, id)
 }
 
 // NewAssignmentMessage creates a new assignment message
