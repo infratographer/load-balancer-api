@@ -42,7 +42,7 @@ api:
     connectionURL: "my-events-cluster.example.com:4222"
     auth:
       secretName: "events-creds"
-      credsPath: "/creds"
+      credsPath: "/nats/creds"
     subjects: "events"
     queue: "load-balancer"
   db:

@@ -48,7 +48,7 @@ spec:
               value: "{{ .Values.api.events.subjects }}"
           {{- if .Values.api.events.auth.secretName }}
             - name: LOAD_BALANCER_API_NATS_CREDS_FILE
-              value: "/creds"
+              value: "{{ .Values.api.events.credsPath }}"
           {{- end }}
           envFrom:
             - secretRef:
@@ -79,8 +79,7 @@ spec:
           volumeMounts:
             {{- if .Values.api.events.auth.secretName  }}
             - name: events-creds
-              mountPath: /creds
-              subPath: "creds"
+              mountPath: /nats
             {{- end }}
             {{- if .Values.api.db.certSecret }}
             - name: dbcerts
