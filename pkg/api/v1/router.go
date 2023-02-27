@@ -2,6 +2,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
@@ -55,6 +57,10 @@ func (r *Router) Routes(e *echo.Echo) {
 
 	e.Use(defaultRequestType)
 
+	// Health endpoints
+	e.GET("/healthz", r.livenessCheck)
+	e.GET("/readyz", r.readinessCheck)
+
 	v1 := e.Group(apiVersion)
 	{
 		r.addAssignRoutes(v1)
@@ -73,4 +79,28 @@ func (r *Router) Routes(e *echo.Echo) {
 	if err != nil {
 		r.logger.Fatal()
 	}
+}
+
+// livenessCheck ensures that the server is up and responding
+func (r *Router) livenessCheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"status": "UP",
+	})
+}
+
+// readinessCheck ensures that the server is up and that we are able to process
+// requests. currently this only checks the database connection.
+func (r *Router) readinessCheck(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	if err := r.db.PingContext(ctx); err != nil {
+		r.logger.Errorf("readiness check db ping failed", "err", err)
+		return c.JSON(http.StatusServiceUnavailable, map[string]string{
+			"status": "DOWN",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"status": "UP",
+	})
 }
