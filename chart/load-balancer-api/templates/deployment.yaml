@@ -52,7 +52,7 @@ spec:
           {{- end }}
           envFrom:
             - secretRef:
-              name: {{ .Values.api.db.uriSecret }}
+                name: {{ .Values.api.db.uriSecret }}
           {{- with .Values.api.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
