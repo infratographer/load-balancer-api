@@ -95,6 +95,7 @@ func (r *Router) readinessCheck(c echo.Context) error {
 
 	if err := r.db.PingContext(ctx); err != nil {
 		r.logger.Errorf("readiness check db ping failed", "err", err)
+
 		return c.JSON(http.StatusServiceUnavailable, map[string]string{
 			"status": "DOWN",
 		})
