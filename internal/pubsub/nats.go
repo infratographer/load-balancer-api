@@ -69,7 +69,7 @@ func (c *Client) AddStream() (*nats.StreamInfo, error) {
 		return nil, err
 	}
 
-	c.logger.Debug("nats stream not found, attempting to create it")
+	c.logger.Debug("nats stream not found, attempting to create it", zap.String("nats.stream.name", c.stream))
 
 	return c.js.AddStream(&nats.StreamConfig{
 		Name: c.stream,
