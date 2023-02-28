@@ -48,13 +48,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/."+appName+".yaml)")
 	viperx.MustBindFlag(viper.GetViper(), "config", rootCmd.PersistentFlags().Lookup("config"))
 
-	rootCmd.PersistentFlags().String("nats-url", "", "NATS server connection url")
+	rootCmd.PersistentFlags().String("nats-url", "nats://nats:4222", "NATS server connection url")
 	viperx.MustBindFlag(viper.GetViper(), "nats.url", rootCmd.PersistentFlags().Lookup("nats-url"))
 
 	rootCmd.PersistentFlags().String("nats-creds-file", "", "Path to the file containing the NATS nkey keypair")
 	viperx.MustBindFlag(viper.GetViper(), "nats.creds-file", rootCmd.PersistentFlags().Lookup("nats-creds-file"))
 
-	rootCmd.PersistentFlags().String("nats-subject-prefix", "", "prefix for NATS subjects")
+	rootCmd.PersistentFlags().String("nats-subject-prefix", "com.infratographer.events", "prefix for NATS subjects")
 	viperx.MustBindFlag(viper.GetViper(), "nats.subject-prefix", rootCmd.PersistentFlags().Lookup("nats-subject-prefix"))
 
 	rootCmd.PersistentFlags().String("nats-stream-name", "load-balancer-api", "prefix for NATS subjects")

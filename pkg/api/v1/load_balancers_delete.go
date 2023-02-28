@@ -52,7 +52,7 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			r.logger.Errorw("failed to create load balancer message", "error", err)
 		}
 
-		if err := pubsub.PublishDelete(ctx, r.events, "load-balancer", "global", msg); err != nil {
+		if err := r.pubsub.PublishDelete(ctx, "load-balancer", "global", msg); err != nil {
 			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("failed to publish load balancer message", "error", err)
 		}

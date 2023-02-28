@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nats-io/nats.go"
-
 	"go.infratographer.com/x/pubsubx"
 )
 
@@ -26,35 +24,35 @@ func newMessage(actorURN string, subjectURN string, additionalSubjectURNs ...str
 }
 
 // PublishCreate publishes a create event
-func PublishCreate(ctx context.Context, js nats.JetStreamContext, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishCreate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
 	data.EventType = "create"
 
-	return publish(ctx, js, "create", actor, location, data)
+	return c.publish(ctx, "create", actor, location, data)
 }
 
 // PublishUpdate publishes an update event
-func PublishUpdate(ctx context.Context, js nats.JetStreamContext, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishUpdate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
 	data.EventType = "update"
 
-	return publish(ctx, js, "update", actor, location, data)
+	return c.publish(ctx, "update", actor, location, data)
 }
 
 // PublishDelete publishes a delete event
-func PublishDelete(ctx context.Context, js nats.JetStreamContext, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishDelete(ctx context.Context, actor, location string, data *pubsubx.Message) error {
 	data.EventType = "delete"
 
-	return publish(ctx, js, "delete", actor, location, data)
+	return c.publish(ctx, "delete", actor, location, data)
 }
 
 // publish publishes an event
-func publish(ctx context.Context, js nats.JetStreamContext, action, actor, location string, data interface{}) error {
+func (c *Client) publish(ctx context.Context, action, actor, location string, data interface{}) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
 	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
-	if _, err := js.Publish(subject, b); err != nil {
+	if _, err := c.js.Publish(subject, b); err != nil {
 		return err
 	}
 

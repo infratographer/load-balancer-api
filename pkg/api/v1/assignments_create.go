@@ -64,7 +64,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		r.logger.Errorw("error creating message", "error", err)
 	}
 
-	if err := pubsub.PublishCreate(ctx, r.events, "assignment", "global", msg); err != nil {
+	if err := r.pubsub.PublishCreate(ctx, "assignment", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
 		r.logger.Errorw("error publishing event", "error", err)
 	}

@@ -45,7 +45,7 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 			r.logger.Errorw("error creating message", "error", err)
 		}
 
-		if err := pubsub.PublishDelete(ctx, r.events, "assignment", "global", msg); err != nil {
+		if err := r.pubsub.PublishDelete(ctx, "assignment", "global", msg); err != nil {
 			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("error publishing event", "error", err)
 		}
