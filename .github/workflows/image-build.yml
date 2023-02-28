@@ -3,7 +3,6 @@ name: Image Build
 on:
   push:
     branches:
-    - *
 
 permissions:
   contents: read
