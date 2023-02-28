@@ -77,7 +77,7 @@ func (r *Router) Routes(e *echo.Echo) {
 		},
 	})
 	if err != nil {
-		r.logger.Fatal()
+		r.logger.Fatal("failed to add stream", zap.Error("error", err))
 	}
 }
 
