@@ -74,7 +74,7 @@ func (c *Client) AddStream() (*nats.StreamInfo, error) {
 	return c.js.AddStream(&nats.StreamConfig{
 		Name: c.stream,
 		Subjects: []string{
-			c.prefix + ".<",
+			c.prefix + ".>",
 		},
 		Storage:   nats.FileStorage,
 		Retention: nats.LimitsPolicy,
