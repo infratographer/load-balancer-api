@@ -40,14 +40,14 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           env:
-            - name: LOAD_BALANCER_API_NATS_URL
+            - name: LOADBALANCERAPI_NATS_URL
               value: "{{ .Values.api.events.connectionURL }}"
-            - name: LOAD_BALANCER_API_NATS_STREAM_NAME
+            - name: LOADBALANCERAPI_NATS_STREAM_NAME
               value: "{{ .Values.api.events.queue | default "loadbalancerapi" }}"
-            - name: LOAD_BALANCER_API_NATS_SUBJECT_PREFIX
+            - name: LOADBALANCERAPI_NATS_SUBJECT_PREFIX
               value: "{{ .Values.api.events.subjects }}"
           {{- if .Values.api.events.auth.secretName }}
-            - name: LOAD_BALANCER_API_NATS_CREDS_FILE
+            - name: LOADBALANCERAPI_NATS_CREDS_FILE
               value: "{{ .Values.api.events.credsPath }}"
           {{- end }}
           envFrom:

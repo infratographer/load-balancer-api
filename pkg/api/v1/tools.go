@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/x/crdbx"
 	"go.uber.org/zap"
@@ -53,7 +54,14 @@ func newTestServer(t *testing.T) *httptest.Server {
 		t.Log(err)
 	}
 
-	r := NewRouter(dbx, zap.NewNop().Sugar(), js)
+	ps := pubsub.NewClient(
+		pubsub.WithJetreamContext(js),
+		pubsub.WithLogger(zap.NewNop().Sugar()),
+		pubsub.WithStreamName("load-balancer-api"),
+		pubsub.WithSubjectPrefix("com.infratographer.events"),
+	)
+
+	r := NewRouter(dbx, zap.NewNop().Sugar(), ps)
 
 	r.Routes(e)
 

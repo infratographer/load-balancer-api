@@ -16,7 +16,7 @@ metadata:
   labels:
     {{- include "common.labels.standard" . | nindent 4 }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.className }}
   rules:
     {{- range .Values.ingress.hosts }}
     - host: {{ .host  | quote }}
@@ -34,6 +34,10 @@ spec:
   {{- end }}
   {{- with .Values.ingress.tls }}
   tls:
-    {{- toYaml . | nindent 4 }}
+    - hosts:
+        {{- range $.Values.ingress.hosts }}
+        - {{ .host  | quote }}
+        {{- end }}
+      secretName: {{ $fullName }}-api-tls
   {{- end }}
 {{- end }}

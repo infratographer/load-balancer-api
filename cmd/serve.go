@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/x/viperx"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/load-balancer-api/pkg/api/v1"
 )
@@ -54,7 +55,16 @@ func serve(ctx context.Context) {
 	defer natsClose()
 
 	e := echox.NewServer()
-	r := api.NewRouter(dbx, logger, js)
+	r := api.NewRouter(
+		dbx,
+		logger,
+		pubsub.NewClient(
+			pubsub.WithJetreamContext(js),
+			pubsub.WithLogger(logger),
+			pubsub.WithStreamName(viper.GetString("nats.stream-name")),
+			pubsub.WithSubjectPrefix(viper.GetString("nats.subject-prefix")),
+		),
+	)
 
 	e.Debug = true
 	r.Routes(e)
