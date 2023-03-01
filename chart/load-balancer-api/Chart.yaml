@@ -14,5 +14,5 @@ dependencies:
     version: 2.2.3
   - name: reloader
     condition: reloader.enabled
-    version: "v1.0.5"
+    version: "v1.0.6"
     repository: "https://stakater.github.io/stakater-charts"
