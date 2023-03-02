@@ -21,6 +21,7 @@ service:
   type: ClusterIP
   port: 80
   sessionAffinity: None
+  annotations: {}
 
 ingress:
   enabled: false
