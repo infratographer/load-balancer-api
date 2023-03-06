@@ -39,7 +39,12 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 			r.logger.Errorw("error fetching frontend", "error", err)
 		}
 
-		msg, err := pubsub.NewAssignmentMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+assignments[0].TenantID, pubsub.NewAssignmentURN(assignments[0].AssignmentID), "urn:infratographer:infratographer.com:load-balancer:"+feModel.LoadBalancerID)
+		msg, err := pubsub.NewAssignmentMessage(
+			someTestJWTURN,
+			pubsub.NewTenantURN(assignments[0].TenantID),
+			pubsub.NewAssignmentURN(assignments[0].AssignmentID),
+			pubsub.NewLoadBalancerURN(feModel.LoadBalancerID),
+		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("error creating message", "error", err)
