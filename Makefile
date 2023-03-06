@@ -17,12 +17,12 @@ test: | unit-test
 unit-test:
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
-	@go test -race -cover -failfast ./... -p 1 -v
+	@go test -race -cover -failfast -tags testtools -p 1 -v ./...
 
 coverage:
 	@echo --- Generating coverage report...
 	@date --rfc-3339=seconds
-	@go test ./... -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1
+	@go test -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1 ./...
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 

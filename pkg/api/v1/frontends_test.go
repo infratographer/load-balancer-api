@@ -58,7 +58,7 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (
 }
 
 func TestFrondendRoutes(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	lb, cleanupLoadBalancers := createLoadBalancer(t, srv, uuid.New().String())
