@@ -79,6 +79,7 @@ func WaitConnected(t *testing.T, c *natsgo.Conn) {
 		if c.IsConnected() {
 			return
 		}
+
 		time.Sleep(defaultWaitTime)
 	}
 
