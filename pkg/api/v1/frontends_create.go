@@ -65,9 +65,9 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		r.logger.Errorw("failed to create load balancer message", "error", err)
 	}
 
-	if err := r.pubsub.PublishCreate(ctx, "load-balancer-assignment", "global", msg); err != nil {
+	if err := r.pubsub.PublishCreate(ctx, "load-balancer-frontend", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("failed to publish load balancer message", "error", err)
+		r.logger.Errorw("failed to publish load balancer frontend message", "error", err)
 	}
 
 	return v1FrontendCreatedResponse(c, frontend.FrontendID)

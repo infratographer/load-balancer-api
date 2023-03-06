@@ -68,7 +68,8 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	}
 
 	msg, err := pubsub.NewLoadBalancerMessage(
-		someTestJWTURN, pubsub.NewTenantURN(tenantID),
+		someTestJWTURN,
+		pubsub.NewTenantURN(tenantID),
 		pubsub.NewLoadBalancerURN(lbModel.LoadBalancerID),
 	)
 	if err != nil {
