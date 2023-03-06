@@ -28,7 +28,7 @@ func NewOriginURN(id string) string {
 	return newURN("load-balancer-origin", id)
 }
 
-// NewPoolURN creates a new assignment URN
+// NewPoolURN creates a new pool URN
 func NewPoolURN(id string) string {
 	return newURN("load-balancer-pool", id)
 }
