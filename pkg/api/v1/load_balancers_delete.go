@@ -46,7 +46,7 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			return v1InternalServerErrorResponse(c, err)
 		}
 
-		msg, err := pubsub.NewLoadBalancerMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+lb[0].TenantID, pubsub.NewLoadBalancerURN(lb[0].LoadBalancerID))
+		msg, err := pubsub.NewLoadBalancerMessage(someTestJWTURN, "urn:infratographer:tenant:"+lb[0].TenantID, pubsub.NewLoadBalancerURN(lb[0].LoadBalancerID))
 		if err != nil {
 			// TODO: add status to reconcile and requeue this
 			r.logger.Errorw("failed to create load balancer message", "error", err)

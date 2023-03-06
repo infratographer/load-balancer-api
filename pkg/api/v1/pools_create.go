@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 // poolCreate creates a new pool
@@ -43,6 +44,21 @@ func (r *Router) poolCreate(c echo.Context) error {
 		r.logger.Errorw("error inserting pool", "error", err)
 
 		return v1InternalServerErrorResponse(c, err)
+	}
+
+	msg, err := pubsub.NewPoolMessage(
+		someTestJWTURN,
+		pubsub.NewTenantURN(tenantID),
+		pubsub.NewPoolURN(pool.PoolID),
+	)
+	if err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Errorw("error creating pool message", "error", err)
+	}
+
+	if err := r.pubsub.PublishCreate(ctx, "load-balancer-pool", "global", msg); err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Errorw("error publishing pool event", "error", err)
 	}
 
 	return v1PoolCreatedResponse(c, pool.PoolID)
