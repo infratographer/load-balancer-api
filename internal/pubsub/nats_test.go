@@ -6,10 +6,27 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+
+	natssrv "github.com/nats-io/nats-server/v2/server"
 )
 
+var natsSrv *natssrv.Server
+
+func TestMain(m *testing.M) {
+	srv, err := StartNatsServer()
+	if err != nil {
+		panic(err)
+	}
+
+	natsSrv = srv
+
+	defer natsSrv.Shutdown()
+
+	m.Run()
+}
+
 func TestClient_AddStream(t *testing.T) {
-	nc, err := nats.Connect("nats://nats:4222", nats.UserCredentials("/tmp/user.creds"))
+	nc, err := nats.Connect(natsSrv.ClientURL())
 	if err != nil {
 		// fail open on nats
 		t.Log(err)

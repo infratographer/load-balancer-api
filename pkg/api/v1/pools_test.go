@@ -60,7 +60,7 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 }
 
 func TestPoolRoutes(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
@@ -206,7 +206,7 @@ func TestPoolRoutes(t *testing.T) {
 }
 
 func TestPoolsGet(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

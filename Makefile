@@ -10,19 +10,19 @@ TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
 
-ci: | dev-nats dev-database test
+ci: | dev-database test
 
 test: | unit-test
 
 unit-test:
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
-	@go test -race -cover -failfast ./... -p 1 -v
+	@go test -race -cover -failfast -tags testtools -p 1 -v ./...
 
 coverage:
 	@echo --- Generating coverage report...
 	@date --rfc-3339=seconds
-	@go test ./... -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1
+	@go test -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1 ./...
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 

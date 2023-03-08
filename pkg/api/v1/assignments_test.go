@@ -10,7 +10,7 @@ import (
 )
 
 func Test_Assignments(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)
@@ -47,7 +47,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusOK,
 	})
 
@@ -55,7 +55,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Duplicate assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusInternalServerError,
 	})
 
@@ -63,7 +63,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment2",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool2.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool2.ID),
 		status: http.StatusOK,
 	})
 
@@ -72,7 +72,7 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodPost,
 		path:   baseURL,
 		body:   "",
-		status: http.StatusInternalServerError,
+		status: http.StatusBadRequest,
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -87,31 +87,23 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid frontend",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, "invalid", pool.ID, loadBalancer.ID),
-		status: http.StatusInternalServerError,
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, "invalid", pool.ID),
+		status: http.StatusBadRequest,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "Invalid pool",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, "invalid", loadBalancer.ID),
-		status: http.StatusInternalServerError,
-	})
-
-	doHTTPTest(t, &httpTest{
-		name:   "Invalid load balancer",
-		method: http.MethodPost,
-		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, "invalid"),
-		status: http.StatusInternalServerError,
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, "invalid"),
+		status: http.StatusBadRequest,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "Invalid tenant",
 		method: http.MethodPost,
 		path:   srv.URL + "/v1/tenant/invalid/assignments",
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s","load_balancer_id":"%s"}`, fe.ID, pool.ID, loadBalancer.ID),
+		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusInternalServerError,
 	})
 	// Get the assignments

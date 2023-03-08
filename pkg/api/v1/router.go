@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	apiVersion = "v1"
+	apiVersion     = "v1"
+	someTestJWTURN = "urn:infratographer:identity:some-jwt"
 )
 
 // Router provides a router for the API

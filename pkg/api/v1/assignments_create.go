@@ -28,10 +28,29 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return err
 	}
 
+	// validate frontend exists
+	frontend, err := models.Frontends(
+		models.FrontendWhere.FrontendID.EQ(payload.FrontendID),
+		qm.Load("LoadBalancer"),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Errorw("error fetching frontend", "error", err)
+		return v1BadRequestResponse(c, err)
+	}
+
+	// validate pool exists
+	pool, err := models.Pools(
+		models.PoolWhere.PoolID.EQ(payload.PoolID),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Errorw("error fetching pool", "error", err)
+		return v1BadRequestResponse(c, err)
+	}
+
 	assignment := models.Assignment{
 		TenantID:   tenantID,
-		FrontendID: payload.FrontendID,
-		PoolID:     payload.PoolID,
+		FrontendID: frontend.FrontendID,
+		PoolID:     pool.PoolID,
 	}
 
 	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
@@ -39,34 +58,21 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	aMods := []qm.QueryMod{
-		models.AssignmentWhere.TenantID.EQ(tenantID),
-		models.AssignmentWhere.FrontendID.EQ(payload.FrontendID),
-		models.AssignmentWhere.PoolID.EQ(payload.PoolID),
-	}
-
-	aModel, err := models.Assignments(aMods...).One(ctx, r.db)
-	if err != nil {
-		return v1InternalServerErrorResponse(c, err)
-	}
-
-	feMods := models.FrontendWhere.FrontendID.EQ(payload.FrontendID)
-
-	feModel, err := models.Frontends(feMods).One(ctx, r.db)
+	msg, err := pubsub.NewAssignmentMessage(
+		someTestJWTURN,
+		pubsub.NewTenantURN(tenantID),
+		pubsub.NewAssignmentURN(assignment.AssignmentID),
+		pubsub.NewLoadBalancerURN(frontend.LoadBalancerID),
+		pubsub.NewPoolURN(pool.PoolID),
+	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error fetching frontend", "error", err)
+		r.logger.Errorw("error creating assignment message", "error", err)
 	}
 
-	msg, err := pubsub.NewAssignmentMessage(someTestJWTURN, "urn:infratographer:infratographer.com:tenant:"+tenantID, pubsub.NewAssignmentURN(aModel.AssignmentID), "urn:infratographer:infratographer.com:load-balancer:"+feModel.LoadBalancerID)
-	if err != nil {
+	if err := r.pubsub.PublishCreate(ctx, "load-balancer-assignment", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error creating message", "error", err)
-	}
-
-	if err := r.pubsub.PublishCreate(ctx, "assignment", "global", msg); err != nil {
-		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error publishing event", "error", err)
+		r.logger.Errorw("error publishing assignment event", "error", err)
 	}
 
 	return v1AssignmentsCreatedResponse(c, assignment.AssignmentID)

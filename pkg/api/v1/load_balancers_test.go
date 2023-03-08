@@ -14,7 +14,7 @@ import (
 )
 
 func TestLoadBalancerRoutes(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
@@ -330,7 +330,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 }
 
 func TestLoadBalancerGet(t *testing.T) {
-	srv := newTestServer(t)
+	srv := newTestServer(t, natsSrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

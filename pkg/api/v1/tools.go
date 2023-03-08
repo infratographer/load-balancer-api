@@ -1,3 +1,6 @@
+//go:build testtools
+// +build testtools
+
 package api
 
 import (
@@ -17,8 +20,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const someTestJWTURN = "urn:infratographer:identity:some-jwt"
-
 type httpTest struct {
 	name   string
 	body   string
@@ -28,7 +29,7 @@ type httpTest struct {
 	status int
 }
 
-func newTestServer(t *testing.T) *httptest.Server {
+func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	db, err := crdbx.NewDB(config.AppConfig.CRDB, false)
 	if err != nil {
 		t.Fatal(err)
@@ -37,12 +38,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	dbx := sqlx.NewDb(db, "postgres")
 	e := echox.NewServer()
 
-	opts := []nats.Option{}
-
-	// make this configurable for tests.
-	opts = append(opts, nats.UserCredentials("/tmp/user.creds"))
-
-	nc, err := nats.Connect("nats://nats:4222", opts...)
+	nc, err := nats.Connect(natsURL)
 	if err != nil {
 		// fail open on nats
 		t.Log(err)
