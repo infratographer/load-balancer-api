@@ -4,6 +4,30 @@
 
 This is an API for managing load balancer configurations for the Infratographer platform.
 
+## Load Balancer Components
+
+Load balancer --> Frontend --> Pool --> Origin
+
+### Load Balancers
+
+Load balancers are the top level component managed by the load balancer API.  Load balancers are assigned to a tenant.
+
+### Frontends
+
+Frontends of the listening port of the load balancer. Frontends are assigned to a load balancer.
+
+### Pools
+
+Pools are a collection of origins. Pools are assigned to a tenant, and linked to a frontend through assignments.
+
+### Origins
+
+Origins define a backend service IP and port. Origins belong to a pool.
+
+### Assignments
+
+Assignments link frontend to pools.
+
 ## Development and Contributing
 
 * [Development Guide](docs/development.md)

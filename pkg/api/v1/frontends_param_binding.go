@@ -10,10 +10,10 @@ import (
 )
 
 // frontendParamsBinding binds the request path and query params to a slice of query mods
-// for use with sqlboiler. It returns an error if the tenant_id is not present in the request
-// path or an invalid uuid is provided. It also returns an error if an invalid uuid is provided
-// for the load_balancer_id in the request path. It also iterates the expected query params
-// and appends them to the slice of query mods if they are present in the request.
+// for use with sqlboiler. It returns an error if an invalid uuid is provided
+// for the load_balancer_id or frontend_id in the request path. It also iterates the
+// expected query params and appends them to the slice of query mods if they are present
+// in the request.
 func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
 		err            error

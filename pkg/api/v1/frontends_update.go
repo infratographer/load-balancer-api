@@ -1,9 +1,14 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.uber.org/zap"
 )
 
 // frontendUpdate updates a frontend
@@ -12,14 +17,27 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 
 	mods, err := r.frontendParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("failed to bind frontend params", "error", err)
+		r.logger.Error("failed to bind frontend params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	frontend, err := models.Frontends(mods...).One(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("failed to get frontend", "error", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return v1NotFoundResponse(c)
+		}
+
+		r.logger.Error("failed to get frontend", zap.Error(err))
+
 		return v1InternalServerErrorResponse(c, err)
+	}
+
+	loadBalancer, err := models.LoadBalancers(
+		models.LoadBalancerWhere.LoadBalancerID.EQ(frontend.LoadBalancerID),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Error("error looking up load balancer for frontend", zap.Error(err))
+		return v1BadRequestResponse(c, err)
 	}
 
 	payload := struct {
@@ -27,7 +45,7 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 		Port        int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Errorw("failed to bind frontend update input", "error", err)
+		r.logger.Error("failed to bind frontend update input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -40,11 +58,25 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 	}
 
 	if _, err := frontend.Update(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Errorw("failed to update frontend", "error", err)
+		r.logger.Error("failed to update frontend", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	// TODO emit event that load balancers associated with frontend is updated
+	msg, err := pubsub.NewFrontendMessage(
+		someTestJWTURN,
+		pubsub.NewTenantURN(loadBalancer.TenantID),
+		pubsub.NewFrontendURN(frontend.FrontendID),
+		pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID),
+	)
+	if err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Error("failed to create load balancer frontend message", zap.Error(err))
+	}
+
+	if err := r.pubsub.PublishUpdate(ctx, "load-balancer-frontend", "global", msg); err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Error("failed to publish load balancer frontend message", zap.Error(err))
+	}
 
 	return v1UpdateFrontendResponse(c, frontend.FrontendID)
 }

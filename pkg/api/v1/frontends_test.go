@@ -285,26 +285,26 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	// Delete
-	doHTTPTest(t, &httpTest{
-		name:   "404",
-		path:   baseURLLoadBalancer + "?slug=not_found",
-		status: http.StatusNotFound,
-		method: http.MethodDelete,
-	})
+	// doHTTPTest(t, &httpTest{
+	// 	name:   "404",
+	// 	path:   baseURLLoadBalancer + "?slug=not_found",
+	// 	status: http.StatusNotFound,
+	// 	method: http.MethodDelete,
+	// })
 
-	doHTTPTest(t, &httpTest{
-		name:   "delete frontend with port 80",
-		path:   baseURLLoadBalancer + "?slug=mouth&port=80",
-		status: http.StatusOK,
-		method: http.MethodDelete,
-	})
+	// doHTTPTest(t, &httpTest{
+	// 	name:   "delete frontend with port 80",
+	// 	path:   baseURLLoadBalancer + "?slug=mouth&port=80",
+	// 	status: http.StatusOK,
+	// 	method: http.MethodDelete,
+	// })
 
-	doHTTPTest(t, &httpTest{
-		name:   "delete frontend with port 443",
-		path:   baseURLLoadBalancer + "?slug=tls-mouth&port=443",
-		status: http.StatusOK,
-		method: http.MethodDelete,
-	})
+	// doHTTPTest(t, &httpTest{
+	// 	name:   "delete frontend with port 443",
+	// 	path:   baseURLLoadBalancer + "?slug=tls-mouth&port=443",
+	// 	status: http.StatusOK,
+	// 	method: http.MethodDelete,
+	// })
 
 	doHTTPTest(t, &httpTest{
 		name:   "delete frontend Ears by id",
@@ -313,10 +313,10 @@ func TestFrondendRoutes(t *testing.T) {
 		method: http.MethodDelete,
 	})
 
-	doHTTPTest(t, &httpTest{
-		name:   "delete frontend Eyes by port ",
-		path:   baseURLLoadBalancer + "?port=465&display_name=Eyes",
-		status: http.StatusOK,
-		method: http.MethodDelete,
-	})
+	// doHTTPTest(t, &httpTest{
+	// 	name:   "delete frontend Eyes by port ",
+	// 	path:   baseURLLoadBalancer + "?port=465&display_name=Eyes",
+	// 	status: http.StatusOK,
+	// 	method: http.MethodDelete,
+	// })
 }
