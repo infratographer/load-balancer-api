@@ -60,5 +60,4 @@ func (r *Router) frontendDelete(c echo.Context) error {
 	}
 
 	return v1DeletedResponse(c)
-
 }
