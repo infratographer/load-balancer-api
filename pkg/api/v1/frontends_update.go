@@ -1,9 +1,6 @@
 package api
 
 import (
-	"database/sql"
-	"errors"
-
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
@@ -21,16 +18,19 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	frontend, err := models.Frontends(mods...).One(ctx, r.db)
+	frontends, err := models.Frontends(mods...).All(ctx, r.db)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return v1NotFoundResponse(c)
-		}
-
 		r.logger.Error("failed to get frontend", zap.Error(err))
-
 		return v1InternalServerErrorResponse(c, err)
 	}
+
+	if len(frontends) == 0 {
+		return v1NotFoundResponse(c)
+	} else if len(frontends) != 1 {
+		return v1BadRequestResponse(c, ErrAmbiguous)
+	}
+
+	frontend := frontends[0]
 
 	loadBalancer, err := models.LoadBalancers(
 		models.LoadBalancerWhere.LoadBalancerID.EQ(frontend.LoadBalancerID),
