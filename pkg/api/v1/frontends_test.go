@@ -248,6 +248,14 @@ func TestFrondendRoutes(t *testing.T) {
 		path:   baseURL,
 	})
 
+	doHTTPTest(t, &httpTest{
+		name:   "port not found",
+		body:   `{"display_name": "Plain Mouth", "port": 80}`,
+		status: http.StatusAccepted,
+		method: http.MethodPut,
+		path:   baseURLLoadBalancer + "?port=80",
+	})
+
 	// Get Tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
@@ -286,8 +294,15 @@ func TestFrondendRoutes(t *testing.T) {
 
 	// Delete
 	doHTTPTest(t, &httpTest{
-		name:   "404",
+		name:   "slug not found",
 		path:   baseURLLoadBalancer + "?slug=not_found",
+		status: http.StatusNotFound,
+		method: http.MethodDelete,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "port not found",
+		path:   baseURLLoadBalancer + "?port=404",
 		status: http.StatusNotFound,
 		method: http.MethodDelete,
 	})
