@@ -14,7 +14,10 @@ import (
 )
 
 func TestLoadBalancerRoutes(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
@@ -330,7 +333,10 @@ func TestLoadBalancerRoutes(t *testing.T) {
 }
 
 func TestLoadBalancerGet(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

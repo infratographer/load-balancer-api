@@ -6,13 +6,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // poolsParamsBinding return a set of query mods based
 // on the query parameters and path parameters
-func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
+func (r *Router) poolsParamsBinding(c echo.Context, relationships ...string) ([]qm.QueryMod, error) {
 	mods := []qm.QueryMod{}
 
 	// optional tenant_id in the request path
@@ -23,7 +24,7 @@ func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	} else {
 		// found tenant_id in path so add to query mods
 		mods = append(mods, models.PoolWhere.TenantID.EQ(tenantID))
-		r.logger.Debugw("path param", "tenant_id", tenantID)
+		r.logger.Debug("path param", zap.String("tenant_id", tenantID))
 	}
 
 	poolID := c.Param("pool_id")
@@ -33,10 +34,10 @@ func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		}
 
 		mods = append(mods, models.PoolWhere.PoolID.EQ(poolID))
-		r.logger.Debugw("path param", "pool_id", poolID)
+		r.logger.Debug("path param", zap.String("pool_id", poolID))
 	}
 
-	queryParams := []string{"slug", "protocol"}
+	queryParams := []string{"slug", "protocol", "display_name"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -44,12 +45,17 @@ func (r *Router) poolsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debugw("query param", "query_param", qp, "param_vale", c.QueryParam(qp))
+			r.logger.Debug("query param", zap.String("query_param", qp), zap.String("param_vale", c.QueryParam(qp)))
 		}
 	}
 
 	if err := qpb.BindError(); err != nil {
 		return nil, err
+	}
+
+	for _, rel := range relationships {
+		r.logger.Debug("appending relationships to query", zap.String("relationship", rel))
+		mods = append(mods, qm.Load(rel))
 	}
 
 	return mods, nil

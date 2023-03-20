@@ -58,7 +58,10 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (
 }
 
 func TestFrondendRoutes(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	lb, cleanupLoadBalancers := createLoadBalancer(t, srv, uuid.New().String())

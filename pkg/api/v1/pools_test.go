@@ -1,15 +1,23 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
+	"go.infratographer.com/x/pubsubx"
+)
+
+const (
+	natsMsgSubTimeout = 2 * time.Second
 )
 
 // createPool creates a pool with the given display name and protocol.
@@ -60,8 +68,26 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 }
 
 func TestPoolRoutes(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
+
+	// create a pubsub client for subscribing to NATS events
+	subscriber := newPubSubClient(t, nsrv.ClientURL())
+	msgChan := make(chan *nats.Msg, 10)
+
+	// create a new nats subscription on the server created above
+	subscription, err := subscriber.ChanSubscribe(
+		context.TODO(),
+		"com.infratographer.events.load-balancer-pool.>",
+		msgChan,
+		"load-balancer-api-test",
+	)
+
+	assert.NoError(t, err)
+	defer subscription.Unsubscribe()
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/pools"
@@ -88,6 +114,19 @@ func TestPoolRoutes(t *testing.T) {
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "com.infratographer.events.load-balancer-pool.create.global", msg.Subject)
+		assert.Equal(t, "urn:infratographer:identity:some-jwt", pMsg.ActorURN)
+		assert.Equal(t, "create", pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate",
@@ -120,6 +159,19 @@ func TestPoolRoutes(t *testing.T) {
 		path:   baseURLTenant,
 		method: http.MethodPost,
 	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "com.infratographer.events.load-balancer-pool.create.global", msg.Subject)
+		assert.Equal(t, "urn:infratographer:identity:some-jwt", pMsg.ActorURN)
+		assert.Equal(t, "create", pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid protocol",
@@ -203,10 +255,65 @@ func TestPoolRoutes(t *testing.T) {
 		path:   baseURLTenant + "?display_name=Nemo",
 		method: http.MethodDelete,
 	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "com.infratographer.events.load-balancer-pool.delete.global", msg.Subject)
+		assert.Equal(t, "urn:infratographer:identity:some-jwt", pMsg.ActorURN)
+		assert.Equal(t, "delete", pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	// create a test pool, but don't cleanup since it will get deleted below by id
+	testPool, _ := createPool(t, srv, "Anchor", tenantID)
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "com.infratographer.events.load-balancer-pool.create.global", msg.Subject)
+		assert.Equal(t, "urn:infratographer:identity:some-jwt", pMsg.ActorURN)
+		assert.Equal(t, "create", pMsg.EventType)
+		assert.Equal(t, "urn:infratographer:load-balancer-pool:"+testPool.ID, pMsg.SubjectURN)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path test pool id",
+		status: http.StatusOK,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodDelete,
+	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "com.infratographer.events.load-balancer-pool.delete.global", msg.Subject)
+		assert.Equal(t, "urn:infratographer:identity:some-jwt", pMsg.ActorURN)
+		assert.Equal(t, "delete", pMsg.EventType)
+		assert.Equal(t, "urn:infratographer:load-balancer-pool:"+testPool.ID, pMsg.SubjectURN)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
 }
 
 func TestPoolsGet(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

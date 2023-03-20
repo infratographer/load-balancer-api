@@ -61,6 +61,8 @@ func WithLogger(l *zap.SugaredLogger) Option {
 // AddStream checks if a stream exists and attempts to create it if it doesn't. Currently we don't
 // currently check that the stream is configured identically to the desired configuration.
 func (c *Client) AddStream() (*nats.StreamInfo, error) {
+	c.logger.Debug("checking for nats stream", zap.String("nats.stream.name", c.stream))
+
 	info, err := c.js.StreamInfo(c.stream)
 	if err == nil {
 		c.logger.Debug("got info for stream, assuming stream exists", zap.Any("nats.stream.info", info.Config))
@@ -80,4 +82,10 @@ func (c *Client) AddStream() (*nats.StreamInfo, error) {
 		Retention: nats.LimitsPolicy,
 		Discard:   nats.DiscardNew,
 	})
+}
+
+// deleteStream deletes a nats stream
+func (c *Client) deleteStream() error {
+	c.logger.Debug("deleting nats stream", zap.String("nats.stream.name", c.stream))
+	return c.js.DeleteStream(c.stream)
 }

@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nats-io/nats.go"
 	"go.infratographer.com/x/pubsubx"
+	"go.uber.org/zap"
 )
 
 // May be a config option later
@@ -40,21 +42,27 @@ func (c *Client) PublishUpdate(ctx context.Context, actor, location string, data
 // PublishDelete publishes a delete event
 func (c *Client) PublishDelete(ctx context.Context, actor, location string, data *pubsubx.Message) error {
 	data.EventType = "delete"
-
 	return c.publish(ctx, "delete", actor, location, data)
 }
 
 // publish publishes an event
 func (c *Client) publish(ctx context.Context, action, actor, location string, data interface{}) error {
+	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
+	c.logger.Debug("publishing nats message", zap.String("nats.subject", subject))
+
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
 	if _, err := c.js.Publish(subject, b); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// ChanSubscribe creates a subcription and returns messages on a channel
+func (c *Client) ChanSubscribe(ctx context.Context, sub string, ch chan *nats.Msg, stream string) (*nats.Subscription, error) {
+	return c.js.ChanSubscribe(sub, ch, nats.BindStream(stream))
 }
