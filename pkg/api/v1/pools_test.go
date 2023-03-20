@@ -87,7 +87,12 @@ func TestPoolRoutes(t *testing.T) {
 	)
 
 	assert.NoError(t, err)
-	defer subscription.Unsubscribe()
+
+	defer func() {
+		if err := subscription.Unsubscribe(); err != nil {
+			t.Error(err)
+		}
+	}()
 
 	tenantID := uuid.New().String()
 	baseURL := srv.URL + "/v1/pools"
@@ -306,7 +311,6 @@ func TestPoolRoutes(t *testing.T) {
 	case <-time.After(natsMsgSubTimeout):
 		t.Error("failed to receive nats message")
 	}
-
 }
 
 func TestPoolsGet(t *testing.T) {
