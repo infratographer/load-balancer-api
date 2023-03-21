@@ -55,7 +55,10 @@ func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID string
 }
 
 func TestOriginRoutes(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
@@ -202,7 +205,10 @@ func TestOriginRoutes(t *testing.T) {
 }
 
 func TestOriginsBalancerGet(t *testing.T) {
-	srv := newTestServer(t, natsSrv.ClientURL())
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

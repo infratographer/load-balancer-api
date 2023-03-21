@@ -20,13 +20,16 @@ const (
 // StartNatsServer creates a new Nats server in memory.
 // If stream subjects are passed, a new stream will be created
 // with all subjects, using the first subject as the stream name.
-func StartNatsServer(streamSubjects ...string) (*natssrv.Server, error) {
+func StartNatsServer() (*natssrv.Server, error) {
 	const maxControlLine = 2048
 
 	s, err := natssrv.NewServer(&natssrv.Options{
 		Host:           "127.0.0.1",
+		Debug:          false,
+		Trace:          false,
+		TraceVerbose:   false,
 		Port:           natssrv.RANDOM_PORT,
-		NoLog:          true,
+		NoLog:          false,
 		NoSigs:         true,
 		MaxControlLine: maxControlLine,
 		JetStream:      true,
@@ -35,34 +38,15 @@ func StartNatsServer(streamSubjects ...string) (*natssrv.Server, error) {
 		return nil, fmt.Errorf("building nats server: %w", err)
 	}
 
-	//nolint:errcheck // we don't care about the error here
-	go natssrv.Run(s)
+	// uncomment to enable nats server logging
+	// s.ConfigureLogger()
+
+	if err := natssrv.Run(s); err != nil {
+		return nil, err
+	}
 
 	if !s.ReadyForConnections(natsTimeout) {
 		return nil, errors.New("starting nats server: timeout") //nolint:goerr113
-	}
-
-	if len(streamSubjects) != 0 {
-		nc, err := natsgo.Connect(s.ClientURL())
-		if err != nil {
-			return nil, fmt.Errorf("stream seed failed to connect to server: %w", err)
-		}
-
-		defer nc.Close()
-
-		js, err := nc.JetStream()
-		if err != nil {
-			return nil, fmt.Errorf("stream seed failed to establish JetStream: %w", err)
-		}
-
-		_, err = js.AddStream(&natsgo.StreamConfig{
-			Name:     streamSubjects[0],
-			Subjects: []string{streamSubjects[0] + ".>"},
-			Storage:  natsgo.MemoryStorage,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("stream seed failed to create JetStream: %w", err)
-		}
 	}
 
 	return s, nil

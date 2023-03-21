@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.uber.org/zap"
 )
 
 // poolsGet returns a list of pools
@@ -11,13 +12,13 @@ func (r *Router) poolsList(c echo.Context) error {
 
 	mods, err := r.poolsParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("error parsing query params", "error", err)
+		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	ps, err := models.Pools(mods...).All(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error getting pools", "error", err)
+		r.logger.Error("error getting pools", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -30,13 +31,13 @@ func (r *Router) poolsGet(c echo.Context) error {
 
 	mods, err := r.poolsParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("error parsing query params", "error", err)
+		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	ps, err := models.Pools(mods...).All(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error getting pools", "error", err)
+		r.logger.Error("error getting pools", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 

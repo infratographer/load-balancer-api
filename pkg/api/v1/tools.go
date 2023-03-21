@@ -38,30 +38,32 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	dbx := sqlx.NewDb(db, "postgres")
 	e := echox.NewServer()
 
-	nc, err := nats.Connect(natsURL)
+	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
+
+	r.Routes(e)
+
+	return httptest.NewServer(e)
+}
+
+func newPubSubClient(t *testing.T, url string) *pubsub.Client {
+	nc, err := nats.Connect(url)
 	if err != nil {
 		// fail open on nats
-		t.Log(err)
+		t.Error(err)
 	}
 
 	js, err := nc.JetStream()
 	if err != nil {
 		// fail open on nats
-		t.Log(err)
+		t.Error(err)
 	}
 
-	ps := pubsub.NewClient(
+	return pubsub.NewClient(
 		pubsub.WithJetreamContext(js),
 		pubsub.WithLogger(zap.NewNop().Sugar()),
-		pubsub.WithStreamName("load-balancer-api"),
+		pubsub.WithStreamName("load-balancer-api-test"),
 		pubsub.WithSubjectPrefix("com.infratographer.events"),
 	)
-
-	r := NewRouter(dbx, zap.NewNop().Sugar(), ps)
-
-	r.Routes(e)
-
-	return httptest.NewServer(e)
 }
 
 // doHTTPReqTest is a helper function to test the HTTP request

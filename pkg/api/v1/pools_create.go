@@ -6,6 +6,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.uber.org/zap"
 )
 
 // poolCreate creates a new pool
@@ -17,13 +18,13 @@ func (r *Router) poolCreate(c echo.Context) error {
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Errorw("error binding payload", "error", err)
+		r.logger.Error("error binding payload", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	tenantID, err := r.parseUUID(c, "tenant_id")
 	if err != nil {
-		r.logger.Errorw("error parsing tenant id", "error", err)
+		r.logger.Error("error parsing tenant id", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -35,13 +36,13 @@ func (r *Router) poolCreate(c echo.Context) error {
 	}
 
 	if err := validatePool(pool); err != nil {
-		r.logger.Errorw("error validating pool", "error", err)
+		r.logger.Error("error validating pool", zap.Error(err))
 
 		return v1BadRequestResponse(c, err)
 	}
 
 	if err := pool.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Errorw("error inserting pool", "error", err)
+		r.logger.Error("error inserting pool", zap.Error(err))
 
 		return v1InternalServerErrorResponse(c, err)
 	}
@@ -53,12 +54,12 @@ func (r *Router) poolCreate(c echo.Context) error {
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error creating pool message", "error", err)
+		r.logger.Error("error creating pool message", zap.Error(err))
 	}
 
 	if err := r.pubsub.PublishCreate(ctx, "load-balancer-pool", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error publishing pool event", "error", err)
+		r.logger.Error("error publishing pool event", zap.Error(err))
 	}
 
 	return v1PoolCreatedResponse(c, pool.PoolID)

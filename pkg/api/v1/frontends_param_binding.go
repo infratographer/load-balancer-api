@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
@@ -31,7 +32,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	} else {
 		// found load_balancer_id in path so add to query mods
 		mods = append(mods, models.FrontendWhere.LoadBalancerID.EQ(loadBalancerID))
-		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
+		r.logger.Debug("path param", zap.String("load_balancer_id", loadBalancerID))
 	}
 
 	// optional frontend_id in the request path
@@ -42,7 +43,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	} else {
 		// found frontend_id in path so add to query mods
 		mods = append(mods, models.FrontendWhere.FrontendID.EQ(frontendID))
-		r.logger.Debugw("path param", "frontend_id", frontendID)
+		r.logger.Debug("path param", zap.String("frontend_id", frontendID))
 	}
 
 	// query params
@@ -54,7 +55,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debugw("query param", "query_param", qp, "param_vale", c.QueryParam(qp))
+			r.logger.Debug("query param", zap.String("query_param", qp), zap.String("param_vale", c.QueryParam(qp)))
 		}
 	}
 

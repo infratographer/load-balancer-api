@@ -7,6 +7,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.uber.org/zap"
 )
 
 // frontendCreate creates a new frontend
@@ -18,13 +19,13 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		Port        int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Errorw("failed to bind frontend create input", "error", err)
+		r.logger.Error("failed to bind frontend create input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	loadBalancerID, err := r.parseUUID(c, "load_balancer_id")
 	if err != nil {
-		r.logger.Errorw("bad request", "error", err)
+		r.logger.Error("bad request", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -32,7 +33,7 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID),
 	).One(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error looking up load balancer", "error", err)
+		r.logger.Error("error looking up load balancer", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -45,12 +46,12 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	}
 
 	if err := validateFrontend(&frontend); err != nil {
-		r.logger.Errorw("failed to validate frontend", "error", err)
+		r.logger.Error("failed to validate frontend", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	if err := frontend.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Errorw("failed to insert frontend", "error", err)
+		r.logger.Error("failed to insert frontend", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -62,12 +63,12 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("failed to create load balancer message", "error", err)
+		r.logger.Error("failed to create load balancer message", zap.Error(err))
 	}
 
 	if err := r.pubsub.PublishCreate(ctx, "load-balancer-frontend", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("failed to publish load balancer frontend message", "error", err)
+		r.logger.Error("failed to publish load balancer frontend message", zap.Error(err))
 	}
 
 	return v1FrontendCreatedResponse(c, frontend.FrontendID)
