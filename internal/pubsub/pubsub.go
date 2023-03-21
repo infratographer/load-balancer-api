@@ -13,8 +13,11 @@ import (
 )
 
 const (
+	// CreateEventType is the create event type string
 	CreateEventType = "create"
+	// DeleteEventType is the delete event type string
 	DeleteEventType = "delete"
+	// UpdateEventType is the update event type string
 	UpdateEventType = "update"
 )
 
