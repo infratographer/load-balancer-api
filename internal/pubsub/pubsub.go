@@ -12,6 +12,12 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	CreateEventType = "create"
+	DeleteEventType = "delete"
+	UpdateEventType = "update"
+)
+
 // May be a config option later
 var prefix = "com.infratographer.events"
 
@@ -27,22 +33,22 @@ func newMessage(actorURN string, subjectURN string, additionalSubjectURNs ...str
 
 // PublishCreate publishes a create event
 func (c *Client) PublishCreate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = "create"
+	data.EventType = CreateEventType
 
-	return c.publish(ctx, "create", actor, location, data)
+	return c.publish(ctx, CreateEventType, actor, location, data)
 }
 
 // PublishUpdate publishes an update event
 func (c *Client) PublishUpdate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = "update"
+	data.EventType = UpdateEventType
 
-	return c.publish(ctx, "update", actor, location, data)
+	return c.publish(ctx, UpdateEventType, actor, location, data)
 }
 
 // PublishDelete publishes a delete event
 func (c *Client) PublishDelete(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = "delete"
-	return c.publish(ctx, "delete", actor, location, data)
+	data.EventType = DeleteEventType
+	return c.publish(ctx, DeleteEventType, actor, location, data)
 }
 
 // publish publishes an event
