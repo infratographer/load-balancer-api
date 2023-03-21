@@ -9,7 +9,7 @@ require (
 	github.com/gosimple/slug v1.13.1
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo-contrib v0.13.1
-	github.com/labstack/echo/v4 v4.10.1
+	github.com/labstack/echo/v4 v4.10.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nats-io/nats-server/v2 v2.9.11
 	github.com/nats-io/nats.go v1.23.0
