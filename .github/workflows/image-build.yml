@@ -24,7 +24,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pre-build image and run make ci-build in dev container
-        uses: devcontainers/ci@v0.2
+        uses: devcontainers/ci@v0.3
         with:
           imageName: ghcr.io/${{ github.repository }}-devcontainer
           cacheFrom: ghcr.io/${{ github.repository }}-devcontainer
