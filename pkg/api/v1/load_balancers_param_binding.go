@@ -51,7 +51,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		return nil, ErrIDRequired
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug"}
+	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug", "name"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -80,7 +80,7 @@ func validateLoadBalancer(lb *models.LoadBalancer) error {
 		return ErrLoadBalancerIPInvalid
 	}
 
-	if lb.DisplayName == "" {
+	if lb.Name == "" {
 		return ErrDisplayNameMissing
 	}
 

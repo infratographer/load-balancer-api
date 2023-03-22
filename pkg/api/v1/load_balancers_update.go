@@ -24,7 +24,7 @@ func (r *Router) loadBalancerUpdate(c echo.Context) error {
 	}
 
 	payload := struct {
-		DisplayName      string `json:"display_name"`
+		Name             string `json:"name"`
 		LoadBalancerSize string `json:"load_balancer_size"`
 		LoadBalancerType string `json:"load_balancer_type"`
 	}{}
@@ -34,8 +34,8 @@ func (r *Router) loadBalancerUpdate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	lb.DisplayName = payload.DisplayName
-	lb.Slug = slug.Make(payload.DisplayName)
+	lb.Name = payload.Name
+	lb.Slug = slug.Make(payload.Name)
 	lb.LoadBalancerSize = payload.LoadBalancerSize
 	lb.LoadBalancerType = payload.LoadBalancerType
 	// TODO do we need to update a CurrentState here?

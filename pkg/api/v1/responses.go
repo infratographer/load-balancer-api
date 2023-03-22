@@ -222,7 +222,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 			CreatedAt:  lb.CreatedAt,
 			UpdatedAt:  lb.UpdatedAt,
 			ID:         lb.LoadBalancerID,
-			Name:       lb.DisplayName,
+			Name:       lb.Name,
 			IPAddress:  lb.IPAddr,
 			TenantID:   lb.TenantID,
 			LocationID: lb.LocationID,

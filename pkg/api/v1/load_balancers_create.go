@@ -14,7 +14,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		DisplayName      string `json:"display_name"`
+		Name             string `json:"name"`
 		LoadBalancerSize string `json:"load_balancer_size"`
 		LoadBalancerType string `json:"load_balancer_type"`
 		IPAddr           string `json:"ip_addr"`
@@ -36,12 +36,12 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	lb := &models.LoadBalancer{
 		TenantID:         tenantID,
-		DisplayName:      payload.DisplayName,
+		Name:             payload.Name,
 		LoadBalancerSize: payload.LoadBalancerSize,
 		LoadBalancerType: payload.LoadBalancerType,
 		IPAddr:           payload.IPAddr,
 		LocationID:       payload.LocationID,
-		Slug:             slug.Make(payload.DisplayName),
+		Slug:             slug.Make(payload.Name),
 		CurrentState:     "provisioning",
 	}
 
