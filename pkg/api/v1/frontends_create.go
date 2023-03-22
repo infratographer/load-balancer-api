@@ -15,8 +15,8 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		DisplayName string `json:"display_name"`
-		Port        int64  `json:"port"`
+		Name string `json:"name"`
+		Port int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind frontend create input", zap.Error(err))
@@ -38,10 +38,10 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	}
 
 	frontend := models.Frontend{
-		DisplayName:    payload.DisplayName,
+		Name:           payload.Name,
 		Port:           payload.Port,
 		LoadBalancerID: loadBalancer.LoadBalancerID,
-		Slug:           slug.Make(payload.DisplayName),
+		Slug:           slug.Make(payload.Name),
 		CurrentState:   "pending",
 	}
 
@@ -88,9 +88,9 @@ func validateFrontend(frontend *models.Frontend) error {
 		return ErrInvalidUUID
 	}
 
-	if frontend.DisplayName == "" {
+	if frontend.Name == "" {
 		// TODO: generate a display name
-		return ErrDisplayNameMissing
+		return ErrNameMissing
 	}
 
 	return nil

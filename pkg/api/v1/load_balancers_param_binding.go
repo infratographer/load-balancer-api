@@ -3,9 +3,9 @@ package api
 import (
 	"errors"
 
-	"github.com/dspinhirne/netaddr-go"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
@@ -32,7 +32,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	} else {
 		// found tenant_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.TenantID.EQ(tenantID))
-		r.logger.Debugw("path param", "tenant_id", tenantID)
+		r.logger.Debug("path param", zap.String("tenant_id", tenantID))
 	}
 
 	// optional load_balancer_id in the request path
@@ -43,15 +43,15 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	} else {
 		// found load_balancer_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID))
-		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
+		r.logger.Debug("path param", zap.String("load_balancer_id", loadBalancerID))
 	}
 
 	if tenantID == "" && loadBalancerID == "" {
-		r.logger.Debugw("either tenantID or loadBalancerID required in the path")
+		r.logger.Debug("either tenantID or loadBalancerID required in the path")
 		return nil, ErrIDRequired
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_addr", "location_id", "slug"}
+	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_address_id", "location_id", "slug", "name"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -72,16 +72,12 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 
 // validateLoadBalancer validates a load balancer
 func validateLoadBalancer(lb *models.LoadBalancer) error {
-	if lb.IPAddr == "" {
+	if lb.IPAddressID == "" {
 		return ErrLoadBalancerIPMissing
 	}
 
-	if _, err := netaddr.ParseIP(lb.IPAddr); err != nil {
-		return ErrLoadBalancerIPInvalid
-	}
-
-	if lb.DisplayName == "" {
-		return ErrDisplayNameMissing
+	if lb.Name == "" {
+		return ErrNameMissing
 	}
 
 	if lb.LoadBalancerSize == "" {

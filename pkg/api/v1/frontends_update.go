@@ -41,15 +41,15 @@ func (r *Router) frontendUpdate(c echo.Context) error {
 	}
 
 	payload := struct {
-		DisplayName string `json:"display_name"`
-		Port        int64  `json:"port"`
+		Name string `json:"name"`
+		Port int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind frontend update input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
-	frontend.DisplayName = payload.DisplayName
+	frontend.Name = payload.Name
 	frontend.Port = payload.Port
 	// TODO do we need to update a CurrentState here?
 

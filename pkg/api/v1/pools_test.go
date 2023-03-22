@@ -28,7 +28,7 @@ const (
 func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string) (*pool, func(t *testing.T)) {
 	t.Helper()
 
-	body := `{"display_name": "` + name + `", "protocol": "tcp"}`
+	body := `{"name": "` + name + `", "protocol": "tcp"}`
 
 	baseURL := srv.URL + "/v1/pools"
 	baseURLTenant := srv.URL + "/v1/tenant/" + tenantID + "/pools"
@@ -118,7 +118,7 @@ func TestPoolRoutes(t *testing.T) {
 	// POST
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
+		body:   `{"name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -139,7 +139,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate",
-		body:   `{"display_name": "Nemo", "protocol": "tcp"}`,
+		body:   `{"name": "Nemo", "protocol": "tcp"}`,
 		status: http.StatusInternalServerError,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -147,7 +147,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "multiple pools",
-		body:   `[{"display_name": "Nemo", "protocol": "tcp"},{"display_name": "Dory", "protocol": "tcp"}]`,
+		body:   `[{"name": "Nemo", "protocol": "tcp"},{"name": "Dory", "protocol": "tcp"}]`,
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -163,7 +163,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing protocol",
-		body:   `{"display_name": "Bruce"}`,
+		body:   `{"name": "Bruce"}`,
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -184,7 +184,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid protocol",
-		body:   `{"display_name": "Nemo", "protocol": "invalid"}`,
+		body:   `{"name": "Nemo", "protocol": "invalid"}`,
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -209,7 +209,7 @@ func TestPoolRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "happy path with query",
 		status: http.StatusOK,
-		path:   baseURLTenant + "?display_name=Nemo",
+		path:   baseURLTenant + "?name=Nemo",
 		method: http.MethodGet,
 		tenant: tenantID,
 	})
@@ -261,7 +261,7 @@ func TestPoolRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
 		status: http.StatusOK,
-		path:   baseURLTenant + "?display_name=Nemo",
+		path:   baseURLTenant + "?name=Nemo",
 		method: http.MethodDelete,
 	})
 

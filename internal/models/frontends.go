@@ -31,7 +31,7 @@ type Frontend struct {
 	LoadBalancerID string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
 	Port           int64     `query:"port" param:"port" boil:"port" json:"port" toml:"port" yaml:"port"`
 	AfInet         string    `query:"af_inet" param:"af_inet" boil:"af_inet" json:"af_inet" toml:"af_inet" yaml:"af_inet"`
-	DisplayName    string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	Name           string    `query:"name" param:"name" boil:"name" json:"name" toml:"name" yaml:"name"`
 	Slug           string    `query:"slug" param:"slug" boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	StateChangedAt null.Time `query:"state_changed_at" param:"state_changed_at" boil:"state_changed_at" json:"state_changed_at,omitempty" toml:"state_changed_at" yaml:"state_changed_at,omitempty"`
 	CurrentState   string    `query:"current_state" param:"current_state" boil:"current_state" json:"current_state" toml:"current_state" yaml:"current_state"`
@@ -49,7 +49,7 @@ var FrontendColumns = struct {
 	LoadBalancerID string
 	Port           string
 	AfInet         string
-	DisplayName    string
+	Name           string
 	Slug           string
 	StateChangedAt string
 	CurrentState   string
@@ -62,7 +62,7 @@ var FrontendColumns = struct {
 	LoadBalancerID: "load_balancer_id",
 	Port:           "port",
 	AfInet:         "af_inet",
-	DisplayName:    "display_name",
+	Name:           "name",
 	Slug:           "slug",
 	StateChangedAt: "state_changed_at",
 	CurrentState:   "current_state",
@@ -77,7 +77,7 @@ var FrontendTableColumns = struct {
 	LoadBalancerID string
 	Port           string
 	AfInet         string
-	DisplayName    string
+	Name           string
 	Slug           string
 	StateChangedAt string
 	CurrentState   string
@@ -90,7 +90,7 @@ var FrontendTableColumns = struct {
 	LoadBalancerID: "frontends.load_balancer_id",
 	Port:           "frontends.port",
 	AfInet:         "frontends.af_inet",
-	DisplayName:    "frontends.display_name",
+	Name:           "frontends.name",
 	Slug:           "frontends.slug",
 	StateChangedAt: "frontends.state_changed_at",
 	CurrentState:   "frontends.current_state",
@@ -130,7 +130,7 @@ var FrontendWhere = struct {
 	LoadBalancerID whereHelperstring
 	Port           whereHelperint64
 	AfInet         whereHelperstring
-	DisplayName    whereHelperstring
+	Name           whereHelperstring
 	Slug           whereHelperstring
 	StateChangedAt whereHelpernull_Time
 	CurrentState   whereHelperstring
@@ -143,7 +143,7 @@ var FrontendWhere = struct {
 	LoadBalancerID: whereHelperstring{field: "\"frontends\".\"load_balancer_id\""},
 	Port:           whereHelperint64{field: "\"frontends\".\"port\""},
 	AfInet:         whereHelperstring{field: "\"frontends\".\"af_inet\""},
-	DisplayName:    whereHelperstring{field: "\"frontends\".\"display_name\""},
+	Name:           whereHelperstring{field: "\"frontends\".\"name\""},
 	Slug:           whereHelperstring{field: "\"frontends\".\"slug\""},
 	StateChangedAt: whereHelpernull_Time{field: "\"frontends\".\"state_changed_at\""},
 	CurrentState:   whereHelperstring{field: "\"frontends\".\"current_state\""},
@@ -188,8 +188,8 @@ func (r *frontendR) GetAssignments() AssignmentSlice {
 type frontendL struct{}
 
 var (
-	frontendAllColumns            = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "load_balancer_id", "port", "af_inet", "display_name", "slug", "state_changed_at", "current_state", "previous_state"}
-	frontendColumnsWithoutDefault = []string{"load_balancer_id", "port", "display_name", "slug", "current_state", "previous_state"}
+	frontendAllColumns            = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "load_balancer_id", "port", "af_inet", "name", "slug", "state_changed_at", "current_state", "previous_state"}
+	frontendColumnsWithoutDefault = []string{"load_balancer_id", "port", "name", "slug", "current_state", "previous_state"}
 	frontendColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "af_inet", "state_changed_at"}
 	frontendPrimaryKeyColumns     = []string{"frontend_id"}
 	frontendGeneratedColumns      = []string{}

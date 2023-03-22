@@ -22,7 +22,7 @@ type frontend struct {
 	ID             string     `json:"id"`
 	TenantID       string     `json:"tenant_id"`
 	LoadBalancerID string     `json:"load_balancer_id"`
-	Name           string     `json:"display_name"`
+	Name           string     `json:"name"`
 	AddressFamily  string     `json:"address_family"`
 	Port           int64      `json:"port"`
 }
@@ -30,16 +30,16 @@ type frontend struct {
 type frontendSlice []*frontend
 
 type loadBalancer struct {
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-	ID         string     `json:"id"`
-	TenantID   string     `json:"tenant_id"`
-	IPAddress  string     `json:"ip_address"`
-	Name       string     `json:"display_name"`
-	LocationID string     `json:"location_id"`
-	Size       string     `json:"load_balancer_size"`
-	Type       string     `json:"load_balancer_type"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	ID          string     `json:"id"`
+	IPAddressID string     `json:"ip_address_id"`
+	TenantID    string     `json:"tenant_id"`
+	Name        string     `json:"name"`
+	LocationID  string     `json:"location_id"`
+	Size        string     `json:"load_balancer_size"`
+	Type        string     `json:"load_balancer_type"`
 }
 
 type loadBalancerSlice []*loadBalancer
@@ -50,7 +50,7 @@ type location struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	ID        string     `json:"id"`
 	TenantID  string     `json:"tenant_id"`
-	Name      string     `json:"display_name"`
+	Name      string     `json:"name"`
 }
 
 type locationSlice []*location
@@ -60,7 +60,7 @@ type origin struct {
 	UpdatedAt      time.Time  `json:"updated_at"`
 	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
 	ID             string     `json:"id"`
-	Name           string     `json:"display_name"`
+	Name           string     `json:"name"`
 	Port           int64      `json:"port"`
 	OriginTarget   string     `json:"origin_target"`
 	OriginDisabled bool       `json:"origin_disabled"`
@@ -74,7 +74,7 @@ type pool struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	ID        string     `json:"id"`
 	TenantID  string     `json:"tenant_id"`
-	Name      string     `json:"display_name"`
+	Name      string     `json:"name"`
 	Protocol  string     `json:"protocol"`
 }
 

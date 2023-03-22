@@ -24,79 +24,79 @@ import (
 
 // Pool is an object representing the database table.
 type Pool struct {
-	CreatedAt   time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt   time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt   null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	PoolID      string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
-	Protocol    string    `query:"protocol" param:"protocol" boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
-	DisplayName string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
-	Slug        string    `query:"slug" param:"slug" boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
-	TenantID    string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	CreatedAt time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	PoolID    string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
+	Protocol  string    `query:"protocol" param:"protocol" boil:"protocol" json:"protocol" toml:"protocol" yaml:"protocol"`
+	Name      string    `query:"name" param:"name" boil:"name" json:"name" toml:"name" yaml:"name"`
+	Slug      string    `query:"slug" param:"slug" boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
+	TenantID  string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
 
 	R *poolR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L poolL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PoolColumns = struct {
-	CreatedAt   string
-	UpdatedAt   string
-	DeletedAt   string
-	PoolID      string
-	Protocol    string
-	DisplayName string
-	Slug        string
-	TenantID    string
+	CreatedAt string
+	UpdatedAt string
+	DeletedAt string
+	PoolID    string
+	Protocol  string
+	Name      string
+	Slug      string
+	TenantID  string
 }{
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
-	DeletedAt:   "deleted_at",
-	PoolID:      "pool_id",
-	Protocol:    "protocol",
-	DisplayName: "display_name",
-	Slug:        "slug",
-	TenantID:    "tenant_id",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
+	DeletedAt: "deleted_at",
+	PoolID:    "pool_id",
+	Protocol:  "protocol",
+	Name:      "name",
+	Slug:      "slug",
+	TenantID:  "tenant_id",
 }
 
 var PoolTableColumns = struct {
-	CreatedAt   string
-	UpdatedAt   string
-	DeletedAt   string
-	PoolID      string
-	Protocol    string
-	DisplayName string
-	Slug        string
-	TenantID    string
+	CreatedAt string
+	UpdatedAt string
+	DeletedAt string
+	PoolID    string
+	Protocol  string
+	Name      string
+	Slug      string
+	TenantID  string
 }{
-	CreatedAt:   "pools.created_at",
-	UpdatedAt:   "pools.updated_at",
-	DeletedAt:   "pools.deleted_at",
-	PoolID:      "pools.pool_id",
-	Protocol:    "pools.protocol",
-	DisplayName: "pools.display_name",
-	Slug:        "pools.slug",
-	TenantID:    "pools.tenant_id",
+	CreatedAt: "pools.created_at",
+	UpdatedAt: "pools.updated_at",
+	DeletedAt: "pools.deleted_at",
+	PoolID:    "pools.pool_id",
+	Protocol:  "pools.protocol",
+	Name:      "pools.name",
+	Slug:      "pools.slug",
+	TenantID:  "pools.tenant_id",
 }
 
 // Generated where
 
 var PoolWhere = struct {
-	CreatedAt   whereHelpertime_Time
-	UpdatedAt   whereHelpertime_Time
-	DeletedAt   whereHelpernull_Time
-	PoolID      whereHelperstring
-	Protocol    whereHelperstring
-	DisplayName whereHelperstring
-	Slug        whereHelperstring
-	TenantID    whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
+	DeletedAt whereHelpernull_Time
+	PoolID    whereHelperstring
+	Protocol  whereHelperstring
+	Name      whereHelperstring
+	Slug      whereHelperstring
+	TenantID  whereHelperstring
 }{
-	CreatedAt:   whereHelpertime_Time{field: "\"pools\".\"created_at\""},
-	UpdatedAt:   whereHelpertime_Time{field: "\"pools\".\"updated_at\""},
-	DeletedAt:   whereHelpernull_Time{field: "\"pools\".\"deleted_at\""},
-	PoolID:      whereHelperstring{field: "\"pools\".\"pool_id\""},
-	Protocol:    whereHelperstring{field: "\"pools\".\"protocol\""},
-	DisplayName: whereHelperstring{field: "\"pools\".\"display_name\""},
-	Slug:        whereHelperstring{field: "\"pools\".\"slug\""},
-	TenantID:    whereHelperstring{field: "\"pools\".\"tenant_id\""},
+	CreatedAt: whereHelpertime_Time{field: "\"pools\".\"created_at\""},
+	UpdatedAt: whereHelpertime_Time{field: "\"pools\".\"updated_at\""},
+	DeletedAt: whereHelpernull_Time{field: "\"pools\".\"deleted_at\""},
+	PoolID:    whereHelperstring{field: "\"pools\".\"pool_id\""},
+	Protocol:  whereHelperstring{field: "\"pools\".\"protocol\""},
+	Name:      whereHelperstring{field: "\"pools\".\"name\""},
+	Slug:      whereHelperstring{field: "\"pools\".\"slug\""},
+	TenantID:  whereHelperstring{field: "\"pools\".\"tenant_id\""},
 }
 
 // PoolRels is where relationship names are stored.
@@ -137,8 +137,8 @@ func (r *poolR) GetOrigins() OriginSlice {
 type poolL struct{}
 
 var (
-	poolAllColumns            = []string{"created_at", "updated_at", "deleted_at", "pool_id", "protocol", "display_name", "slug", "tenant_id"}
-	poolColumnsWithoutDefault = []string{"protocol", "display_name", "slug", "tenant_id"}
+	poolAllColumns            = []string{"created_at", "updated_at", "deleted_at", "pool_id", "protocol", "name", "slug", "tenant_id"}
+	poolColumnsWithoutDefault = []string{"protocol", "name", "slug", "tenant_id"}
 	poolColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "pool_id"}
 	poolPrimaryKeyColumns     = []string{"pool_id"}
 	poolGeneratedColumns      = []string{}

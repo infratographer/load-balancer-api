@@ -38,6 +38,16 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	dbx := sqlx.NewDb(db, "postgres")
 	e := echox.NewServer()
 
+	// lgrCfg := zap.NewDevelopmentConfig()
+	// lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+
+	// l, err := lgrCfg.Build()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// r := NewRouter(dbx, l.Sugar(), newPubSubClient(t, natsURL))
+
 	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
 
 	r.Routes(e)
@@ -86,7 +96,9 @@ func doHTTPTest(t *testing.T, tt *httpTest) {
 
 		res, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
+
+		defer res.Body.Close()
+
 		assert.Equal(t, tt.status, res.StatusCode)
-		res.Body.Close()
 	})
 }

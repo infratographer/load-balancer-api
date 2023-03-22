@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.uber.org/zap"
 )
 
 // loadBalancerList returns a list of load balancers for a tenant
@@ -11,7 +12,7 @@ func (r *Router) loadBalancerList(c echo.Context) error {
 
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("failed to bind params", "error", err)
+		r.logger.Error("failed to bind params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -29,7 +30,7 @@ func (r *Router) loadBalancerGet(c echo.Context) error {
 
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("failed to bind params", "error", err)
+		r.logger.Error("failed to bind params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 

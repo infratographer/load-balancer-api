@@ -30,14 +30,14 @@ type LoadBalancer struct {
 	LoadBalancerID   string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
 	LocationID       string    `query:"location_id" param:"location_id" boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
 	TenantID         string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
-	IPAddr           string    `query:"ip_addr" param:"ip_addr" boil:"ip_addr" json:"ip_addr" toml:"ip_addr" yaml:"ip_addr"`
-	DisplayName      string    `query:"display_name" param:"display_name" boil:"display_name" json:"display_name" toml:"display_name" yaml:"display_name"`
+	Name             string    `query:"name" param:"name" boil:"name" json:"name" toml:"name" yaml:"name"`
 	Slug             string    `query:"slug" param:"slug" boil:"slug" json:"slug" toml:"slug" yaml:"slug"`
 	LoadBalancerSize string    `query:"load_balancer_size" param:"load_balancer_size" boil:"load_balancer_size" json:"load_balancer_size" toml:"load_balancer_size" yaml:"load_balancer_size"`
 	LoadBalancerType string    `query:"load_balancer_type" param:"load_balancer_type" boil:"load_balancer_type" json:"load_balancer_type" toml:"load_balancer_type" yaml:"load_balancer_type"`
 	StateChangedAt   null.Time `query:"state_changed_at" param:"state_changed_at" boil:"state_changed_at" json:"state_changed_at,omitempty" toml:"state_changed_at" yaml:"state_changed_at,omitempty"`
 	CurrentState     string    `query:"current_state" param:"current_state" boil:"current_state" json:"current_state" toml:"current_state" yaml:"current_state"`
 	PreviousState    string    `query:"previous_state" param:"previous_state" boil:"previous_state" json:"previous_state" toml:"previous_state" yaml:"previous_state"`
+	IPAddressID      string    `query:"ip_address_id" param:"ip_address_id" boil:"ip_address_id" json:"ip_address_id" toml:"ip_address_id" yaml:"ip_address_id"`
 
 	R *loadBalancerR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loadBalancerL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -50,14 +50,14 @@ var LoadBalancerColumns = struct {
 	LoadBalancerID   string
 	LocationID       string
 	TenantID         string
-	IPAddr           string
-	DisplayName      string
+	Name             string
 	Slug             string
 	LoadBalancerSize string
 	LoadBalancerType string
 	StateChangedAt   string
 	CurrentState     string
 	PreviousState    string
+	IPAddressID      string
 }{
 	CreatedAt:        "created_at",
 	UpdatedAt:        "updated_at",
@@ -65,14 +65,14 @@ var LoadBalancerColumns = struct {
 	LoadBalancerID:   "load_balancer_id",
 	LocationID:       "location_id",
 	TenantID:         "tenant_id",
-	IPAddr:           "ip_addr",
-	DisplayName:      "display_name",
+	Name:             "name",
 	Slug:             "slug",
 	LoadBalancerSize: "load_balancer_size",
 	LoadBalancerType: "load_balancer_type",
 	StateChangedAt:   "state_changed_at",
 	CurrentState:     "current_state",
 	PreviousState:    "previous_state",
+	IPAddressID:      "ip_address_id",
 }
 
 var LoadBalancerTableColumns = struct {
@@ -82,14 +82,14 @@ var LoadBalancerTableColumns = struct {
 	LoadBalancerID   string
 	LocationID       string
 	TenantID         string
-	IPAddr           string
-	DisplayName      string
+	Name             string
 	Slug             string
 	LoadBalancerSize string
 	LoadBalancerType string
 	StateChangedAt   string
 	CurrentState     string
 	PreviousState    string
+	IPAddressID      string
 }{
 	CreatedAt:        "load_balancers.created_at",
 	UpdatedAt:        "load_balancers.updated_at",
@@ -97,14 +97,14 @@ var LoadBalancerTableColumns = struct {
 	LoadBalancerID:   "load_balancers.load_balancer_id",
 	LocationID:       "load_balancers.location_id",
 	TenantID:         "load_balancers.tenant_id",
-	IPAddr:           "load_balancers.ip_addr",
-	DisplayName:      "load_balancers.display_name",
+	Name:             "load_balancers.name",
 	Slug:             "load_balancers.slug",
 	LoadBalancerSize: "load_balancers.load_balancer_size",
 	LoadBalancerType: "load_balancers.load_balancer_type",
 	StateChangedAt:   "load_balancers.state_changed_at",
 	CurrentState:     "load_balancers.current_state",
 	PreviousState:    "load_balancers.previous_state",
+	IPAddressID:      "load_balancers.ip_address_id",
 }
 
 // Generated where
@@ -116,14 +116,14 @@ var LoadBalancerWhere = struct {
 	LoadBalancerID   whereHelperstring
 	LocationID       whereHelperstring
 	TenantID         whereHelperstring
-	IPAddr           whereHelperstring
-	DisplayName      whereHelperstring
+	Name             whereHelperstring
 	Slug             whereHelperstring
 	LoadBalancerSize whereHelperstring
 	LoadBalancerType whereHelperstring
 	StateChangedAt   whereHelpernull_Time
 	CurrentState     whereHelperstring
 	PreviousState    whereHelperstring
+	IPAddressID      whereHelperstring
 }{
 	CreatedAt:        whereHelpertime_Time{field: "\"load_balancers\".\"created_at\""},
 	UpdatedAt:        whereHelpertime_Time{field: "\"load_balancers\".\"updated_at\""},
@@ -131,14 +131,14 @@ var LoadBalancerWhere = struct {
 	LoadBalancerID:   whereHelperstring{field: "\"load_balancers\".\"load_balancer_id\""},
 	LocationID:       whereHelperstring{field: "\"load_balancers\".\"location_id\""},
 	TenantID:         whereHelperstring{field: "\"load_balancers\".\"tenant_id\""},
-	IPAddr:           whereHelperstring{field: "\"load_balancers\".\"ip_addr\""},
-	DisplayName:      whereHelperstring{field: "\"load_balancers\".\"display_name\""},
+	Name:             whereHelperstring{field: "\"load_balancers\".\"name\""},
 	Slug:             whereHelperstring{field: "\"load_balancers\".\"slug\""},
 	LoadBalancerSize: whereHelperstring{field: "\"load_balancers\".\"load_balancer_size\""},
 	LoadBalancerType: whereHelperstring{field: "\"load_balancers\".\"load_balancer_type\""},
 	StateChangedAt:   whereHelpernull_Time{field: "\"load_balancers\".\"state_changed_at\""},
 	CurrentState:     whereHelperstring{field: "\"load_balancers\".\"current_state\""},
 	PreviousState:    whereHelperstring{field: "\"load_balancers\".\"previous_state\""},
+	IPAddressID:      whereHelperstring{field: "\"load_balancers\".\"ip_address_id\""},
 }
 
 // LoadBalancerRels is where relationship names are stored.
@@ -169,8 +169,8 @@ func (r *loadBalancerR) GetFrontends() FrontendSlice {
 type loadBalancerL struct{}
 
 var (
-	loadBalancerAllColumns            = []string{"created_at", "updated_at", "deleted_at", "load_balancer_id", "location_id", "tenant_id", "ip_addr", "display_name", "slug", "load_balancer_size", "load_balancer_type", "state_changed_at", "current_state", "previous_state"}
-	loadBalancerColumnsWithoutDefault = []string{"location_id", "tenant_id", "ip_addr", "display_name", "slug", "load_balancer_size", "load_balancer_type", "current_state", "previous_state"}
+	loadBalancerAllColumns            = []string{"created_at", "updated_at", "deleted_at", "load_balancer_id", "location_id", "tenant_id", "name", "slug", "load_balancer_size", "load_balancer_type", "state_changed_at", "current_state", "previous_state", "ip_address_id"}
+	loadBalancerColumnsWithoutDefault = []string{"location_id", "tenant_id", "name", "slug", "load_balancer_size", "load_balancer_type", "current_state", "previous_state", "ip_address_id"}
 	loadBalancerColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "load_balancer_id", "state_changed_at"}
 	loadBalancerPrimaryKeyColumns     = []string{"load_balancer_id"}
 	loadBalancerGeneratedColumns      = []string{}
