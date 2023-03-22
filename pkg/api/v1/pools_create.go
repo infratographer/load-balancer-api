@@ -13,8 +13,8 @@ import (
 func (r *Router) poolCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 	payload := struct {
-		DisplayName string `json:"display_name"`
-		Protocol    string `json:"protocol"`
+		Name     string `json:"name"`
+		Protocol string `json:"protocol"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -29,10 +29,10 @@ func (r *Router) poolCreate(c echo.Context) error {
 	}
 
 	pool := &models.Pool{
-		DisplayName: payload.DisplayName,
-		Protocol:    payload.Protocol,
-		TenantID:    tenantID,
-		Slug:        slug.Make(payload.DisplayName),
+		Name:     payload.Name,
+		Protocol: payload.Protocol,
+		TenantID: tenantID,
+		Slug:     slug.Make(payload.Name),
 	}
 
 	if err := validatePool(pool); err != nil {
@@ -67,8 +67,8 @@ func (r *Router) poolCreate(c echo.Context) error {
 
 // validatePool validates a pool
 func validatePool(p *models.Pool) error {
-	if p.DisplayName == "" {
-		return ErrDisplayNameMissing
+	if p.Name == "" {
+		return ErrNameMissing
 	}
 
 	if p.Protocol == "" {

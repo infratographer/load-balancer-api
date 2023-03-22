@@ -15,7 +15,7 @@ import (
 func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID string) (*origin, func(*testing.T)) {
 	t.Helper()
 
-	body := fmt.Sprintf(`{"disabled": true,"display_name": "%s", "target": "1.1.1.1", "port": 80}`, name)
+	body := fmt.Sprintf(`{"disabled": true,"name": "%s", "target": "1.1.1.1", "port": 80}`, name)
 
 	doHTTPTest(t, &httpTest{
 		name:   "create origin",
@@ -83,7 +83,7 @@ func TestOriginRoutes(t *testing.T) {
 	// POST
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `{"disabled": true,"display_name": "The Butt", "target": "9.9.9.9", "port": 80}`,
+		body:   `{"disabled": true,"name": "The Butt", "target": "9.9.9.9", "port": 80}`,
 		status: http.StatusOK,
 		path:   baseURLPool,
 		method: http.MethodPost,
@@ -91,7 +91,7 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   `{"disabled": true,"display_name": "Fish are friends", "target": "9.9.8.8", "port": 80}`,
+		body:   `{"disabled": true,"name": "Fish are friends", "target": "9.9.8.8", "port": 80}`,
 		status: http.StatusOK,
 		path:   baseURLPool,
 		method: http.MethodPost,
@@ -99,7 +99,7 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "list of origins",
-		body:   `[{"disabled": true,"display_name": "The Butt", "target": "9.9.9.9", "port": 80},{"disabled": true,"display_name": "The Beard", "target": "9.9.9.10", "port": 80}]`,
+		body:   `[{"disabled": true,"name": "The Butt", "target": "9.9.9.9", "port": 80},{"disabled": true,"name": "The Beard", "target": "9.9.9.10", "port": 80}]`,
 		status: http.StatusBadRequest,
 		path:   baseURLPool,
 		method: http.MethodPost,
@@ -123,7 +123,7 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing pool_id in path",
-		body:   `{"disabled": true,"display_name": "the-butt", "target": "2.0.0.1", "port": 80}`,
+		body:   `{"disabled": true,"name": "the-butt", "target": "2.0.0.1", "port": 80}`,
 		status: http.StatusNotFound,
 		path:   baseURL,
 		method: http.MethodPost,

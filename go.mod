@@ -3,7 +3,6 @@ module go.infratographer.com/load-balancer-api
 go 1.20
 
 require (
-	github.com/dspinhirne/netaddr-go v0.0.0-20211008142535-a4c5bccad224
 	github.com/friendsofgo/errors v0.9.2
 	github.com/google/uuid v1.3.0
 	github.com/gosimple/slug v1.13.1

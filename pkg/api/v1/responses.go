@@ -203,7 +203,7 @@ func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
 			LoadBalancerID: f.LoadBalancerID,
 			Port:           f.Port,
 			AddressFamily:  f.AfInet,
-			Name:           f.DisplayName,
+			Name:           f.Name,
 		})
 	}
 
@@ -219,11 +219,14 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 
 	for _, lb := range lbs {
 		out = append(out, &loadBalancer{
-			CreatedAt:  lb.CreatedAt,
-			UpdatedAt:  lb.UpdatedAt,
-			ID:         lb.LoadBalancerID,
-			Name:       lb.Name,
-			IPAddress:  lb.IPAddr,
+			CreatedAt: lb.CreatedAt,
+			UpdatedAt: lb.UpdatedAt,
+			ID:        lb.LoadBalancerID,
+			Name:      lb.Name,
+			IPAddress: &loadBalancerIPAddress{
+				ID:      lb.IPAddressID,
+				Address: "0.0.0.0",
+			},
 			TenantID:   lb.TenantID,
 			LocationID: lb.LocationID,
 			Size:       lb.LoadBalancerSize,
@@ -246,7 +249,7 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 			CreatedAt:      o.CreatedAt,
 			UpdatedAt:      o.UpdatedAt,
 			ID:             o.OriginID,
-			Name:           o.DisplayName,
+			Name:           o.Name,
 			OriginDisabled: o.OriginUserSettingDisabled,
 			OriginTarget:   o.OriginTarget,
 			Port:           o.Port,
@@ -268,7 +271,7 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
 			ID:        p.PoolID,
-			Name:      p.DisplayName,
+			Name:      p.Name,
 			Protocol:  p.Protocol,
 			TenantID:  p.TenantID,
 		})

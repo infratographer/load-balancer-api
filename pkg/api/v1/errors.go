@@ -84,6 +84,6 @@ var (
 	// ErrWrite is returned when a write operation fails
 	ErrWrite = errors.New("failed to write location")
 
-	// ErrDisplayNameMissing is returned when a display name is missing
-	ErrDisplayNameMissing = errors.New("display name is missing")
+	// ErrNameMissing is returned when a name is missing
+	ErrNameMissing = errors.New("name is missing")
 )

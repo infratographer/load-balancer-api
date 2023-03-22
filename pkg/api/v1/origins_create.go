@@ -12,10 +12,10 @@ import (
 func (r *Router) originsCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 	payload := struct {
-		Disabled    bool   `json:"disabled"`
-		DisplayName string `json:"display_name"`
-		Target      string `json:"target"`
-		Port        int    `json:"port"`
+		Disabled bool   `json:"disabled"`
+		Name     string `json:"name"`
+		Target   string `json:"target"`
+		Port     int    `json:"port"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -38,12 +38,12 @@ func (r *Router) originsCreate(c echo.Context) error {
 	}
 
 	origin := models.Origin{
-		DisplayName:               payload.DisplayName,
+		Name:                      payload.Name,
 		OriginUserSettingDisabled: payload.Disabled,
 		OriginTarget:              payload.Target,
 		PoolID:                    pool.PoolID,
 		Port:                      int64(payload.Port),
-		Slug:                      slug.Make(payload.DisplayName),
+		Slug:                      slug.Make(payload.Name),
 		CurrentState:              "configuring",
 	}
 

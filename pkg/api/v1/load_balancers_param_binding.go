@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 
-	"github.com/dspinhirne/netaddr-go"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -72,16 +71,12 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 
 // validateLoadBalancer validates a load balancer
 func validateLoadBalancer(lb *models.LoadBalancer) error {
-	if lb.IPAddr == "" {
+	if lb.IPAddressID == "" {
 		return ErrLoadBalancerIPMissing
 	}
 
-	if _, err := netaddr.ParseIP(lb.IPAddr); err != nil {
-		return ErrLoadBalancerIPInvalid
-	}
-
 	if lb.Name == "" {
-		return ErrDisplayNameMissing
+		return ErrNameMissing
 	}
 
 	if lb.LoadBalancerSize == "" {
