@@ -219,18 +219,15 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 
 	for _, lb := range lbs {
 		out = append(out, &loadBalancer{
-			CreatedAt: lb.CreatedAt,
-			UpdatedAt: lb.UpdatedAt,
-			ID:        lb.LoadBalancerID,
-			Name:      lb.Name,
-			IPAddress: &loadBalancerIPAddress{
-				ID:      lb.IPAddressID,
-				Address: "0.0.0.0",
-			},
-			TenantID:   lb.TenantID,
-			LocationID: lb.LocationID,
-			Size:       lb.LoadBalancerSize,
-			Type:       lb.LoadBalancerType,
+			CreatedAt:   lb.CreatedAt,
+			UpdatedAt:   lb.UpdatedAt,
+			ID:          lb.LoadBalancerID,
+			Name:        lb.Name,
+			IPAddressID: lb.IPAddressID,
+			TenantID:    lb.TenantID,
+			LocationID:  lb.LocationID,
+			Size:        lb.LoadBalancerSize,
+			Type:        lb.LoadBalancerType,
 		})
 	}
 

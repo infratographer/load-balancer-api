@@ -61,11 +61,6 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		rs.Body.Close()
 	}(testLoadBalancer.LoadBalancerID)
 
-	// doHTTPTest is a helper function that makes a request to the server and
-	// checks the response.
-	//
-	// To ensure test output has meaningful line references the function is
-	// called individually for each test case
 	doHTTPTest(t, &httpTest{
 		name:   "list lbs before created",
 		path:   baseURLTenant,

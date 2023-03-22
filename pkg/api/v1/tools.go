@@ -96,7 +96,9 @@ func doHTTPTest(t *testing.T, tt *httpTest) {
 
 		res, err := http.DefaultClient.Do(req)
 		assert.NoError(t, err)
+
+		defer res.Body.Close()
+
 		assert.Equal(t, tt.status, res.StatusCode)
-		res.Body.Close()
 	})
 }

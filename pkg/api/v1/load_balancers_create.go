@@ -18,7 +18,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		Name             string `json:"name"`
 		LoadBalancerSize string `json:"load_balancer_size"`
 		LoadBalancerType string `json:"load_balancer_type"`
-		IPAddressID      string `json:"ip_address_uuid"`
+		IPAddressID      string `json:"ip_address_id"`
 		LocationID       string `json:"location_id"`
 	}{}
 
