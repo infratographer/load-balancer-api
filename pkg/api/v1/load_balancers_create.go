@@ -75,17 +75,6 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	// lbMods := []qm.QueryMod{
-	// 	models.LoadBalancerWhere.TenantID.EQ(tenantID),
-	// 	models.LoadBalancerWhere.IPAddr.EQ(payload.IPAddr),
-	// }
-
-	// lbModel, err := models.LoadBalancers(lbMods...).One(ctx, r.db)
-	// if err != nil {
-	// 	r.logger.Errorw("failed to retrieve load balancer", "error", err)
-	// 	return v1InternalServerErrorResponse(c, err)
-	// }
-
 	msg, err := pubsub.NewLoadBalancerMessage(
 		someTestJWTURN,
 		pubsub.NewTenantURN(tenantID),
