@@ -33,7 +33,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		http.MethodPost,
 		baseURLTenant,
 		httptools.FakeBody(
-			fmt.Sprintf(`{"name": "Bruce", "location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDBruce),
+			fmt.Sprintf(`{"name": "Bruce", "location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDBruce),
 		),
 	)
 	assert.NoError(t, err)
@@ -73,7 +73,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	// POST tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDNemo),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDNemo),
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -83,7 +83,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path 2",
-		body:   fmt.Sprintf(`{"name": "Dori", "location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDDory),
+		body:   fmt.Sprintf(`{"name": "Dori", "location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, testIPaddressUUIDDory),
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -91,7 +91,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "Duplicate",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
 		status: http.StatusInternalServerError,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -99,7 +99,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing tenantID",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": %s,"load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": %s,"load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
 		status: http.StatusNotFound,
 		path:   baseURL,
 		method: http.MethodPost,
@@ -107,7 +107,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing name",
-		body:   fmt.Sprintf(`{"location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
+		body:   fmt.Sprintf(`{"location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID, uuid.NewString()),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -115,7 +115,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing location id",
-		body:   fmt.Sprintf(`{"name": "Nemo", "ip_address_uuid": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, uuid.NewString()),
+		body:   fmt.Sprintf(`{"name": "Nemo", "ip_address_id": "%s","load_balancer_size": "small","load_balancer_type": "layer-3"}`, uuid.NewString()),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -131,7 +131,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing size",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": testIPaddressUUID,"load_balancer_type": "layer-3"}`, locationID),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": testIPaddressUUID,"load_balancer_type": "layer-3"}`, locationID),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -139,7 +139,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "missing type",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": "%s","load_balancer_size": "small"}`, locationID, uuid.NewString()),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": "%s","load_balancer_size": "small"}`, locationID, uuid.NewString()),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -147,7 +147,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "invalid type",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s","ip_address_uuid": testIPaddressUUID,"load_balancer_size": "small","load_balancer_type": "layer-12"}`, locationID),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s","ip_address_id": testIPaddressUUID,"load_balancer_size": "small","load_balancer_type": "layer-12"}`, locationID),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -155,7 +155,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "bad ip address uuid",
-		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_uuid": "Dori","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
+		body:   fmt.Sprintf(`{"name": "Nemo", "location_id": "%s", "ip_address_id": "Dori","load_balancer_size": "small","load_balancer_type": "layer-3"}`, locationID),
 		status: http.StatusBadRequest,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -240,7 +240,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path nemo by ip",
-		path:   baseURLTenant + "?ip_address_uuid=" + testIPaddressUUIDNemo,
+		path:   baseURLTenant + "?ip_address_id=" + testIPaddressUUIDNemo,
 		status: http.StatusOK,
 		method: http.MethodGet,
 	})
