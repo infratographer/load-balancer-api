@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
@@ -44,11 +42,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			return v1BadRequestResponse(c, err)
 		}
 	} else {
-		u, err := uuid.NewUUID()
-		if err != nil {
-			return v1BadRequestResponse(c, err)
-		}
-		payload.IPAddressID = u.String()
+		payload.IPAddressID = uuid.NewString()
 	}
 
 	lb := &models.LoadBalancer{
@@ -67,13 +61,12 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	fmt.Printf("inserting lb: %+v", lb)
-
-	err = lb.Insert(ctx, r.db, boil.Infer())
-	if err != nil {
+	if err = lb.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to create load balancer, rolling back transaction", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
+
+	r.logger.Info("created new load balancer", zap.Any("loadbalancer.id", lb.LoadBalancerID))
 
 	msg, err := pubsub.NewLoadBalancerMessage(
 		someTestJWTURN,

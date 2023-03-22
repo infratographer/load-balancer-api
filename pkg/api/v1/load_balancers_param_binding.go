@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
@@ -31,7 +32,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	} else {
 		// found tenant_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.TenantID.EQ(tenantID))
-		r.logger.Debugw("path param", "tenant_id", tenantID)
+		r.logger.Debug("path param", zap.String("tenant_id", tenantID))
 	}
 
 	// optional load_balancer_id in the request path
@@ -42,11 +43,11 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	} else {
 		// found load_balancer_id in path so add to query mods
 		mods = append(mods, models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID))
-		r.logger.Debugw("path param", "load_balancer_id", loadBalancerID)
+		r.logger.Debug("path param", zap.String("load_balancer_id", loadBalancerID))
 	}
 
 	if tenantID == "" && loadBalancerID == "" {
-		r.logger.Debugw("either tenantID or loadBalancerID required in the path")
+		r.logger.Debug("either tenantID or loadBalancerID required in the path")
 		return nil, ErrIDRequired
 	}
 	// query params
