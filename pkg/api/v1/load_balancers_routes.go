@@ -1,8 +1,8 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import "github.com/gin-gonic/gin"
 
-func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
+func (r *Router) addLoadBalancerRoutes(g *gin.RouterGroup) {
 	g.GET("/tenant/:tenant_id/loadbalancers", r.loadBalancerList)
 	g.GET("/loadbalancers/:load_balancer_id", r.loadBalancerGet)
 

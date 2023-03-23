@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -11,8 +11,8 @@ import (
 )
 
 // loadBalancerCreate creates a new load balancer for a tenant
-func (r *Router) loadBalancerCreate(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) loadBalancerCreate(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	payload := struct {
 		Name             string `json:"name"`
@@ -24,22 +24,28 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind load balancer input", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	// Ensure the tenant ID is a set from the path,this prevents
 	// a tenant from creating a load balancer for another tenant
-	tenantID, err := r.parseUUID(c, "tenant_id")
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
 		r.logger.Error("bad request", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	// TODO get/validate IP address uuid from IPAM - just mock it out for now
 	if payload.IPAddressID != "" {
 		if _, err := uuid.Parse(payload.IPAddressID); err != nil {
 			r.logger.Error("bad ip address uuid in request", zap.Error(err))
-			return v1BadRequestResponse(c, err)
+			v1BadRequestResponse(c, err)
+
+			return
 		}
 	} else {
 		payload.IPAddressID = uuid.NewString()
@@ -58,12 +64,16 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	if err := validateLoadBalancer(lb); err != nil {
 		r.logger.Error("failed to validate load balancer", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	if err = lb.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to create load balancer, rolling back transaction", zap.Error(err))
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	r.logger.Info("created new load balancer", zap.Any("loadbalancer.id", lb.LoadBalancerID))
@@ -83,5 +93,5 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		r.logger.Error("failed to publish load balancer message", zap.Error(err))
 	}
 
-	return v1LoadBalancerCreatedResponse(c, lb.LoadBalancerID)
+	v1LoadBalancerCreatedResponse(c, lb.LoadBalancerID)
 }

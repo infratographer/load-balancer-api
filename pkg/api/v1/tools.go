@@ -9,15 +9,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
-	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/ginx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type httpTest struct {
@@ -36,7 +38,9 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	}
 
 	dbx := sqlx.NewDb(db, "postgres")
-	e := echox.NewServer()
+	e := ginx.DefaultEngine(zap.NewNop(), func(c *gin.Context) []zapcore.Field {
+		return []zapcore.Field{}
+	})
 
 	// lgrCfg := zap.NewDevelopmentConfig()
 	// lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
@@ -50,7 +54,7 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 
 	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
 
-	r.Routes(e)
+	r.Routes(e.Group("/"))
 
 	return httptest.NewServer(e)
 }

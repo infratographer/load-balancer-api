@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -10,8 +10,8 @@ import (
 )
 
 // assignmentsCreate handles the POST /assignments route
-func (r *Router) assignmentsCreate(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) assignmentsCreate(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	payload := struct {
 		FrontendID string `json:"frontend_id"`
@@ -20,12 +20,17 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Errorw("error binding payload", "error", err)
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
-	tenantID, err := r.parseUUID(c, "tenant_id")
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
-		return err
+		r.logger.Errorw("error parsing tenant id", "error", err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	// validate frontend exists
@@ -35,7 +40,9 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	).One(ctx, r.db)
 	if err != nil {
 		r.logger.Errorw("error fetching frontend", "error", err)
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	// validate pool exists
@@ -44,7 +51,9 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	).One(ctx, r.db)
 	if err != nil {
 		r.logger.Errorw("error fetching pool", "error", err)
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	assignment := models.Assignment{
@@ -55,7 +64,9 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 
 	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Errorw("error inserting assignment", "error", err)
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	msg, err := pubsub.NewAssignmentMessage(
@@ -75,5 +86,5 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		r.logger.Errorw("error publishing assignment event", "error", err)
 	}
 
-	return v1AssignmentsCreatedResponse(c, assignment.AssignmentID)
+	v1AssignmentsCreatedResponse(c, assignment.AssignmentID)
 }

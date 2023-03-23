@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.uber.org/zap"
 
@@ -15,7 +15,7 @@ import (
 // path or an invalid uuid is provided. It also returns an error if an invalid uuid is provided
 // for the load_balancer_id in the request path. It also iterates the expected query params
 // and appends them to the slice of query mods if they are present in the request.
-func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
+func (r *Router) loadBalancerParamsBinding(c *gin.Context) ([]qm.QueryMod, error) {
 	var (
 		err            error
 		tenantID       string
@@ -25,7 +25,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	mods := []qm.QueryMod{}
 
 	// optional tenant_id in the request path
-	if tenantID, err = r.parseUUID(c, "tenant_id"); err != nil {
+	if tenantID, err = r.parseTenantID(c); err != nil {
 		if !errors.Is(err, ErrUUIDNotFound) {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 	}
 
 	// optional load_balancer_id in the request path
-	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {
+	if loadBalancerID, err = r.parseLoadBalancerID(c); err != nil {
 		if !errors.Is(err, ErrUUIDNotFound) {
 			return nil, err
 		}
@@ -51,20 +51,43 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		return nil, ErrIDRequired
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_address_id", "location_id", "slug", "name"}
+	// queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_address_id", "location_id", "slug", "name"}
 
-	qpb := echo.QueryParamsBinder(c)
+	query := struct {
+		LoadBalancerSize string `form:"load_balancer_size"`
+		LoadBalancerType string `form:"load_balancer_type"`
+		IPAddressID      string `form:"ip_address_id"`
+		LocationID       string `form:"location_id"`
+		Slug             string `form:"slug"`
+		Name             string `form:"name"`
+	}{}
 
-	for _, qp := range queryParams {
-		mods = queryParamsToQueryMods(qpb, qp, mods)
-
-		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debugw("query param", "query_param", qp, "param_vale", c.QueryParam(qp))
-		}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return nil, err
 	}
 
-	if err = qpb.BindError(); err != nil {
-		return nil, err
+	if query.LoadBalancerSize != "" {
+		mods = append(mods, models.LoadBalancerWhere.LoadBalancerSize.EQ(query.LoadBalancerSize))
+	}
+
+	if query.LoadBalancerType != "" {
+		mods = append(mods, models.LoadBalancerWhere.LoadBalancerType.EQ(query.LoadBalancerType))
+	}
+
+	if query.IPAddressID != "" {
+		mods = append(mods, models.LoadBalancerWhere.IPAddressID.EQ(query.IPAddressID))
+	}
+
+	if query.LocationID != "" {
+		mods = append(mods, models.LoadBalancerWhere.LocationID.EQ(query.LocationID))
+	}
+
+	if query.Slug != "" {
+		mods = append(mods, models.LoadBalancerWhere.Slug.EQ(query.Slug))
+	}
+
+	if query.Name != "" {
+		mods = append(mods, models.LoadBalancerWhere.Name.EQ(query.Name))
 	}
 
 	return mods, nil

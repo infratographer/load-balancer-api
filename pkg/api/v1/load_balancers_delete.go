@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -11,40 +11,50 @@ import (
 )
 
 // loadBalancerDelete deletes a load balancer for a tenant
-func (r *Router) loadBalancerDelete(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) loadBalancerDelete(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	// Look up the load balancer by ID from the path and IP address from the query param
 	// this is a unique index in the database, so it will only return one load balancer
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
 		r.logger.Error("bad request", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	lb, err := models.LoadBalancers(mods...).All(ctx, r.db)
 	if err != nil {
 		r.logger.Error("failed to delete load balancer", zap.Error(err))
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	switch len(lb) {
 	case 0:
-		return v1NotFoundResponse(c)
+		v1NotFoundResponse(c)
 	case 1:
 		tx, err := r.db.BeginTx(ctx, nil)
 		if err != nil {
 			r.logger.Error("failed to begin transaction", zap.Error(err))
-			return v1InternalServerErrorResponse(c, err)
+			v1InternalServerErrorResponse(c, err)
+
+			return
 		}
 
 		if err := r.cleanupLoadBalancer(ctx, lb[0]); err != nil {
-			return v1InternalServerErrorResponse(c, err)
+			v1InternalServerErrorResponse(c, err)
+
+			return
 		}
 
 		if err := tx.Commit(); err != nil {
 			r.logger.Error("failed to commit transaction", zap.Error(err))
-			return v1InternalServerErrorResponse(c, err)
+			v1InternalServerErrorResponse(c, err)
+
+			return
 		}
 
 		msg, err := pubsub.NewLoadBalancerMessage(
@@ -62,9 +72,9 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			r.logger.Error("failed to publish load balancer message", zap.Error(err))
 		}
 
-		return v1DeletedResponse(c)
+		v1DeletedResponse(c)
 	default:
-		return v1UnprocessableEntityResponse(c, ErrAmbiguous)
+		v1UnprocessableEntityResponse(c, ErrAmbiguous)
 	}
 }
 

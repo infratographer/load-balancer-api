@@ -1,9 +1,9 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import "github.com/gin-gonic/gin"
 
 // addOriginsRoutes adds the origins routes to the router
-func (r *Router) addOriginRoutes(g *echo.Group) {
+func (r *Router) addOriginRoutes(g *gin.RouterGroup) {
 	g.GET("/pools/:pool_id/origins", r.originsList)
 	g.GET("/origins/:origin_id", r.originsGet)
 

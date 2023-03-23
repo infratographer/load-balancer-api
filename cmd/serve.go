@@ -8,16 +8,17 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/ginx"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/viperx"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
-	"go.infratographer.com/load-balancer-api/internal/x/echox"
+
 	"go.infratographer.com/load-balancer-api/pkg/api/v1"
 )
 
-var defaultLBAPIListenAddr = ":7608"
+var defaultLBAPIListenAddr = "0.0.0.0:7608"
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -30,7 +31,7 @@ var serveCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().StringP("listen", "l", defaultLBAPIListenAddr, "The address to listen on")
+	ginx.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
 	viperx.MustBindFlag(viper.GetViper(), "listen", serveCmd.Flags().Lookup("listen"))
 }
 
@@ -54,7 +55,7 @@ func serve(ctx context.Context) {
 
 	defer natsClose()
 
-	e := echox.NewServer()
+	s := ginx.NewServer(logger.Desugar(), config.AppConfig.Server, &config.AppConfig.Details)
 	r := api.NewRouter(
 		dbx,
 		logger,
@@ -66,10 +67,11 @@ func serve(ctx context.Context) {
 		),
 	)
 
-	e.Debug = true
-	r.Routes(e)
+	s.Debug = true
 
-	e.Logger.Fatal(e.Start(viper.GetString("listen")))
+	s.AddHandler(r)
+
+	s.Run()
 }
 
 func newJetstreamConnection() (nats.JetStreamContext, func(), error) {

@@ -1,8 +1,8 @@
 package api
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/gosimple/slug"
-	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -10,18 +10,22 @@ import (
 )
 
 // loadBalancerUpdate updates a load balancer
-func (r *Router) loadBalancerUpdate(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) loadBalancerUpdate(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	mods, err := r.loadBalancerParamsBinding(c)
 	if err != nil {
 		r.logger.Error("failed to bind params", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	lb, err := models.LoadBalancers(mods...).One(ctx, r.db)
 	if err != nil {
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	payload := struct {
@@ -32,7 +36,9 @@ func (r *Router) loadBalancerUpdate(c echo.Context) error {
 
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind load balancer input", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	lb.Name = payload.Name
@@ -43,12 +49,16 @@ func (r *Router) loadBalancerUpdate(c echo.Context) error {
 
 	if err := validateLoadBalancer(lb); err != nil {
 		r.logger.Error("failed to validate load balancer", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	if _, err := lb.Update(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to update load balancer", zap.Error(err))
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	msg, err := pubsub.NewLoadBalancerMessage(
@@ -66,5 +76,5 @@ func (r *Router) loadBalancerUpdate(c echo.Context) error {
 		r.logger.Error("failed to publish load balancer message", zap.Error(err))
 	}
 
-	return v1UpdateLoadBalancerResponse(c, lb.LoadBalancerID)
+	v1UpdateLoadBalancerResponse(c, lb.LoadBalancerID)
 }

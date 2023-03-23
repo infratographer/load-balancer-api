@@ -1,9 +1,9 @@
 package api
 
-import "github.com/labstack/echo/v4"
+import "github.com/gin-gonic/gin"
 
 // addPoolsRoutes adds the routes for the pools API
-func (r *Router) addPoolsRoutes(g *echo.Group) {
+func (r *Router) addPoolsRoutes(g *gin.RouterGroup) {
 	g.GET("/tenant/:tenant_id/pools", r.poolsList)
 	g.GET("/pools/:pool_id", r.poolsGet)
 

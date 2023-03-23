@@ -4,8 +4,8 @@ package api
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.uber.org/zap"
 )
@@ -35,36 +35,27 @@ func NewRouter(db *sqlx.DB, l *zap.SugaredLogger, ps *pubsub.Client) *Router {
 // 	return c.JSON(http.StatusOK, map[string]string{"status": "endpoint not implemented yet"})
 // }
 
-func errorHandler(err error, c echo.Context) {
-	c.Echo().DefaultHTTPErrorHandler(err, c)
-}
+// func errorHandler(err error, c echo.Context) {
+// 	c.Echo().DefaultHTTPErrorHandler(err, c)
+// }
 
-func defaultRequestType(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		contentType := c.Request().Header.Get("Content-Type")
-		if contentType == "" {
-			c.Request().Header.Set("Content-Type", "application/json")
-		}
+// func defaultRequestType(c *gin.Context) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		contentType := c.Request.Header.Get("Content-Type")
+// 		if contentType == "" {
+// 			c.Request.Header.Set("Content-Type", "application/json")
+// 		}
 
-		return next(c)
-	}
-}
+// 		c.Next()
+// 	}
+// }
 
 // Routes will add the routes for this API version to a router group
-func (r *Router) Routes(e *echo.Echo) {
-	// authenticate a request, not included the v1 group since this has custom
-	// authentication as it's accepting external auth
-	e.HideBanner = true
-
-	e.HTTPErrorHandler = errorHandler
-
-	e.Use(defaultRequestType)
-
+func (r *Router) Routes(rg *gin.RouterGroup) {
 	// Health endpoints
-	e.GET("/healthz", r.livenessCheck)
-	e.GET("/readyz", r.readinessCheck)
-
-	v1 := e.Group(apiVersion)
+	rg.GET("/healthz", r.livenessCheck)
+	rg.GET("/readyz", r.readinessCheck)
+	v1 := rg.Group(apiVersion)
 	{
 		r.addAssignRoutes(v1)
 		r.addFrontendRoutes(v1)
@@ -80,26 +71,28 @@ func (r *Router) Routes(e *echo.Echo) {
 }
 
 // livenessCheck ensures that the server is up and responding
-func (r *Router) livenessCheck(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
+func (r *Router) livenessCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, map[string]string{
 		"status": "UP",
 	})
 }
 
 // readinessCheck ensures that the server is up and that we are able to process
 // requests. currently this only checks the database connection.
-func (r *Router) readinessCheck(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) readinessCheck(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	if err := r.db.PingContext(ctx); err != nil {
 		r.logger.Errorf("readiness check db ping failed", "err", err)
 
-		return c.JSON(http.StatusServiceUnavailable, map[string]string{
+		c.JSON(http.StatusServiceUnavailable, map[string]string{
 			"status": "DOWN",
 		})
+
+		return
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusOK, map[string]string{
 		"status": "UP",
 	})
 }

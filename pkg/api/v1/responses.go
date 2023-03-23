@@ -3,12 +3,12 @@ package api
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
-func v1DeletedResponse(c echo.Context) error {
-	return c.JSON(http.StatusOK, struct {
+func v1DeletedResponse(c *gin.Context) {
+	c.JSON(http.StatusOK, struct {
 		Message string `json:"message"`
 		Status  int    `json:"status"`
 		Version string `json:"version"`
@@ -19,8 +19,8 @@ func v1DeletedResponse(c echo.Context) error {
 	})
 }
 
-func v1AssignmentsCreatedResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusOK, struct {
+func v1AssignmentsCreatedResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusOK, struct {
 		Version      string `json:"version"`
 		Message      string `json:"message"`
 		Status       int    `json:"status"`
@@ -33,8 +33,8 @@ func v1AssignmentsCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1LoadBalancerCreatedResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusOK, struct {
+func v1LoadBalancerCreatedResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusOK, struct {
 		Version        string `json:"version"`
 		Message        string `json:"message"`
 		Status         int    `json:"status"`
@@ -47,8 +47,8 @@ func v1LoadBalancerCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1FrontendCreatedResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusOK, struct {
+func v1FrontendCreatedResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusOK, struct {
 		Version    string `json:"version"`
 		Message    string `json:"message"`
 		Status     int    `json:"status"`
@@ -61,8 +61,8 @@ func v1FrontendCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1OriginCreatedResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusOK, struct {
+func v1OriginCreatedResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusOK, struct {
 		Version  string `json:"version"`
 		Message  string `json:"message"`
 		Status   int    `json:"status"`
@@ -75,8 +75,8 @@ func v1OriginCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1PoolCreatedResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusOK, struct {
+func v1PoolCreatedResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusOK, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Status  int    `json:"status"`
@@ -89,8 +89,8 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1UpdateFrontendResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusAccepted, struct {
+func v1UpdateFrontendResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusAccepted, struct {
 		Version    string `json:"version"`
 		Message    string `json:"message"`
 		Status     int    `json:"status"`
@@ -103,8 +103,8 @@ func v1UpdateFrontendResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1UpdateLoadBalancerResponse(c echo.Context, id string) error {
-	return c.JSON(http.StatusAccepted, struct {
+func v1UpdateLoadBalancerResponse(c *gin.Context, id string) {
+	c.JSON(http.StatusAccepted, struct {
 		Version        string `json:"version"`
 		Message        string `json:"message"`
 		Status         int    `json:"status"`
@@ -117,8 +117,8 @@ func v1UpdateLoadBalancerResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1NotFoundResponse(c echo.Context) error {
-	return c.JSON(http.StatusNotFound, struct {
+func v1NotFoundResponse(c *gin.Context) {
+	c.JSON(http.StatusNotFound, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Status  int    `json:"status"`
@@ -129,8 +129,8 @@ func v1NotFoundResponse(c echo.Context) error {
 	})
 }
 
-func v1BadRequestResponse(c echo.Context, err error) error {
-	return c.JSON(http.StatusBadRequest, struct {
+func v1BadRequestResponse(c *gin.Context, err error) {
+	c.JSON(http.StatusBadRequest, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Error   string `json:"error"`
@@ -143,8 +143,8 @@ func v1BadRequestResponse(c echo.Context, err error) error {
 	})
 }
 
-func v1UnprocessableEntityResponse(c echo.Context, err error) error {
-	return c.JSON(http.StatusUnprocessableEntity, struct {
+func v1UnprocessableEntityResponse(c *gin.Context, err error) {
+	c.JSON(http.StatusUnprocessableEntity, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Error   string `json:"error"`
@@ -157,8 +157,8 @@ func v1UnprocessableEntityResponse(c echo.Context, err error) error {
 	})
 }
 
-func v1InternalServerErrorResponse(c echo.Context, err error) error {
-	return c.JSON(http.StatusInternalServerError, struct {
+func v1InternalServerErrorResponse(c *gin.Context, err error) {
+	c.JSON(http.StatusInternalServerError, struct {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Error   string `json:"error"`
@@ -171,7 +171,7 @@ func v1InternalServerErrorResponse(c echo.Context, err error) error {
 	})
 }
 
-func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
+func v1Assignments(c *gin.Context, as models.AssignmentSlice) {
 	out := assignmentSlice{}
 
 	for _, a := range as {
@@ -185,14 +185,14 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &response{
 		Version:     apiVersion,
 		Kind:        "assignmentsList",
 		Assignments: &out,
 	})
 }
 
-func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
+func v1Frontends(c *gin.Context, fs models.FrontendSlice) {
 	out := frontendSlice{}
 	for _, f := range fs {
 		out = append(out, &frontend{
@@ -207,14 +207,14 @@ func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &response{
 		Version:   apiVersion,
 		Kind:      "frontendsList",
 		Frontends: &out,
 	})
 }
 
-func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
+func v1LoadBalancers(c *gin.Context, lbs models.LoadBalancerSlice) {
 	out := loadBalancerSlice{}
 
 	for _, lb := range lbs {
@@ -231,14 +231,14 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &response{
 		Version:       apiVersion,
 		Kind:          "loadBalancersList",
 		LoadBalancers: &out,
 	})
 }
 
-func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
+func v1OriginsResponse(c *gin.Context, os models.OriginSlice) {
 	out := originSlice{}
 
 	for _, o := range os {
@@ -253,14 +253,14 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "originsList",
 		Origins: &out,
 	})
 }
 
-func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
+func v1PoolsResponse(c *gin.Context, ps models.PoolSlice) {
 	out := poolSlice{}
 
 	for _, p := range ps {
@@ -274,7 +274,7 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, &response{
+	c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "poolsList",
 		Pools:   &out,

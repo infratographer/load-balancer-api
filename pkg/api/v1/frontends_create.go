@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -11,8 +11,8 @@ import (
 )
 
 // frontendCreate creates a new frontend
-func (r *Router) frontendCreate(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) frontendCreate(c *gin.Context) {
+	ctx := c.Request.Context()
 
 	payload := struct {
 		Name string `json:"name"`
@@ -20,13 +20,17 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind frontend create input", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
-	loadBalancerID, err := r.parseUUID(c, "load_balancer_id")
+	loadBalancerID, err := r.parseLoadBalancerID(c)
 	if err != nil {
 		r.logger.Error("bad request", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	loadBalancer, err := models.LoadBalancers(
@@ -34,7 +38,9 @@ func (r *Router) frontendCreate(c echo.Context) error {
 	).One(ctx, r.db)
 	if err != nil {
 		r.logger.Error("error looking up load balancer", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	frontend := models.Frontend{
@@ -47,12 +53,16 @@ func (r *Router) frontendCreate(c echo.Context) error {
 
 	if err := validateFrontend(&frontend); err != nil {
 		r.logger.Error("failed to validate frontend", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	if err := frontend.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to insert frontend", zap.Error(err))
-		return v1InternalServerErrorResponse(c, err)
+		v1InternalServerErrorResponse(c, err)
+
+		return
 	}
 
 	msg, err := pubsub.NewFrontendMessage(
@@ -71,7 +81,7 @@ func (r *Router) frontendCreate(c echo.Context) error {
 		r.logger.Error("failed to publish load balancer frontend message", zap.Error(err))
 	}
 
-	return v1FrontendCreatedResponse(c, frontend.FrontendID)
+	v1FrontendCreatedResponse(c, frontend.FrontendID)
 }
 
 // validateFrontend validates a frontend

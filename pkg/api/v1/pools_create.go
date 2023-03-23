@@ -1,8 +1,8 @@
 package api
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/gosimple/slug"
-	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -10,8 +10,8 @@ import (
 )
 
 // poolCreate creates a new pool
-func (r *Router) poolCreate(c echo.Context) error {
-	ctx := c.Request().Context()
+func (r *Router) poolCreate(c *gin.Context) {
+	ctx := c.Request.Context()
 	payload := struct {
 		Name     string `json:"name"`
 		Protocol string `json:"protocol"`
@@ -19,13 +19,17 @@ func (r *Router) poolCreate(c echo.Context) error {
 
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("error binding payload", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
-	tenantID, err := r.parseUUID(c, "tenant_id")
+	tenantID, err := r.parseTenantID(c)
 	if err != nil {
 		r.logger.Error("error parsing tenant id", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+		v1BadRequestResponse(c, err)
+
+		return
 	}
 
 	pool := &models.Pool{
@@ -37,14 +41,16 @@ func (r *Router) poolCreate(c echo.Context) error {
 
 	if err := validatePool(pool); err != nil {
 		r.logger.Error("error validating pool", zap.Error(err))
+		v1BadRequestResponse(c, err)
 
-		return v1BadRequestResponse(c, err)
+		return
 	}
 
 	if err := pool.Insert(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("error inserting pool", zap.Error(err))
+		v1InternalServerErrorResponse(c, err)
 
-		return v1InternalServerErrorResponse(c, err)
+		return
 	}
 
 	msg, err := pubsub.NewPoolMessage(
@@ -62,7 +68,7 @@ func (r *Router) poolCreate(c echo.Context) error {
 		r.logger.Error("error publishing pool event", zap.Error(err))
 	}
 
-	return v1PoolCreatedResponse(c, pool.PoolID)
+	v1PoolCreatedResponse(c, pool.PoolID)
 }
 
 // validatePool validates a pool

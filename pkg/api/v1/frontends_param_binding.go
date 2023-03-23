@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.uber.org/zap"
 
@@ -15,7 +15,7 @@ import (
 // for the load_balancer_id or frontend_id in the request path. It also iterates the
 // expected query params and appends them to the slice of query mods if they are present
 // in the request.
-func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
+func (r *Router) frontendParamsBinding(c *gin.Context) ([]qm.QueryMod, error) {
 	var (
 		err            error
 		loadBalancerID string
@@ -25,7 +25,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	mods := []qm.QueryMod{}
 
 	// optional load_balancer_id in the request path
-	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {
+	if loadBalancerID, err = r.parseLoadBalancerID(c); err != nil {
 		if !errors.Is(err, ErrUUIDNotFound) {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	}
 
 	// optional frontend_id in the request path
-	if frontendID, err = r.parseUUID(c, "frontend_id"); err != nil {
+	if frontendID, err = r.parseFrontEndID(c); err != nil {
 		if !errors.Is(err, ErrUUIDNotFound) {
 			return nil, err
 		}
@@ -47,16 +47,33 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	}
 
 	// query params
-	queryParams := []string{"port", "load_balancer_id", "slug", "af_inet"}
+	// queryParams := []string{"port", "load_balancer_id", "slug", "af_inet"}
 
-	qpb := echo.QueryParamsBinder(c)
+	query := struct {
+		Port           int64  `form:"port"`
+		LoadBalancerID string `form:"load_balancer_id"`
+		Slug           string `form:"slug"`
+		AFInet         string `form:"af_inet"`
+	}{}
 
-	for _, qp := range queryParams {
-		mods = queryParamsToQueryMods(qpb, qp, mods)
+	if err := c.ShouldBindQuery(&query); err != nil {
+		return nil, err
+	}
 
-		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debug("query param", zap.String("query_param", qp), zap.String("param_vale", c.QueryParam(qp)))
-		}
+	if query.Port != 0 {
+		mods = append(mods, models.FrontendWhere.Port.EQ(query.Port))
+	}
+
+	if query.LoadBalancerID != "" {
+		mods = append(mods, models.FrontendWhere.LoadBalancerID.EQ(query.LoadBalancerID))
+	}
+
+	if query.Slug != "" {
+		mods = append(mods, models.FrontendWhere.Slug.EQ(query.Slug))
+	}
+
+	if query.AFInet != "" {
+		mods = append(mods, models.FrontendWhere.AfInet.EQ(query.AFInet))
 	}
 
 	return mods, nil
