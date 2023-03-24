@@ -19,7 +19,7 @@ func (r *Router) portCreate(c echo.Context) error {
 		Port int64  `json:"port"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Error("failed to bind port create input", zap.Error(err))
+		r.logger.Error("failed to bind payload to port creation input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 

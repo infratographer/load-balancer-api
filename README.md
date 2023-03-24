@@ -14,7 +14,7 @@ Load balancers are the top level component managed by the load balancer API.  Lo
 
 ### Ports
 
-Ports are the listening port of the load balancer. Ports are assigned to a load balancer.
+Ports define the listening port of a load balancer. Ports are assigned to a load balancer.
 
 ### Pools
 
