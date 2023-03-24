@@ -14,8 +14,8 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		FrontendID string `json:"frontend_id"`
-		PoolID     string `json:"pool_id"`
+		PortID string `json:"port_id"`
+		PoolID string `json:"pool_id"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -28,13 +28,13 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return err
 	}
 
-	// validate frontend exists
-	frontend, err := models.Frontends(
-		models.FrontendWhere.FrontendID.EQ(payload.FrontendID),
+	// validate port exists
+	port, err := models.Ports(
+		models.PortWhere.PortID.EQ(payload.PortID),
 		qm.Load("LoadBalancer"),
 	).One(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error fetching frontend", "error", err)
+		r.logger.Errorw("error fetching port", "error", err)
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -48,9 +48,9 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	}
 
 	assignment := models.Assignment{
-		TenantID:   tenantID,
-		FrontendID: frontend.FrontendID,
-		PoolID:     pool.PoolID,
+		TenantID: tenantID,
+		PortID:   port.PortID,
+		PoolID:   pool.PoolID,
 	}
 
 	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
@@ -62,7 +62,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		someTestJWTURN,
 		pubsub.NewTenantURN(tenantID),
 		pubsub.NewAssignmentURN(assignment.AssignmentID),
-		pubsub.NewLoadBalancerURN(frontend.LoadBalancerID),
+		pubsub.NewLoadBalancerURN(port.LoadBalancerID),
 		pubsub.NewPoolURN(pool.PoolID),
 	)
 	if err != nil {

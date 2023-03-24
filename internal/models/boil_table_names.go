@@ -5,16 +5,16 @@ package models
 
 var TableNames = struct {
 	Assignments    string
-	Frontends      string
 	GooseDBVersion string
 	LoadBalancers  string
 	Origins        string
 	Pools          string
+	Ports          string
 }{
 	Assignments:    "assignments",
-	Frontends:      "frontends",
 	GooseDBVersion: "goose_db_version",
 	LoadBalancers:  "load_balancers",
 	Origins:        "origins",
 	Pools:          "pools",
+	Ports:          "ports",
 }

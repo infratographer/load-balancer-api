@@ -67,7 +67,7 @@ func (r *Router) Routes(e *echo.Echo) {
 	v1 := e.Group(apiVersion)
 	{
 		r.addAssignRoutes(v1)
-		r.addFrontendRoutes(v1)
+		r.addPortRoutes(v1)
 		r.addLoadBalancerRoutes(v1)
 		r.addOriginRoutes(v1)
 		r.addPoolsRoutes(v1)

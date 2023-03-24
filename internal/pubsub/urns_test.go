@@ -90,7 +90,7 @@ func TestNewLoadBalancerURN(t *testing.T) {
 	}
 }
 
-func TestNewFrontendURN(t *testing.T) {
+func TestNewPortURN(t *testing.T) {
 	tests := []struct {
 		name string
 		id   string
@@ -99,12 +99,12 @@ func TestNewFrontendURN(t *testing.T) {
 		{
 			name: "example",
 			id:   "8cb89124-7954-4c98-85d5-e1fad6e3d723",
-			want: "urn:infratographer:load-balancer-frontend:8cb89124-7954-4c98-85d5-e1fad6e3d723",
+			want: "urn:infratographer:load-balancer-port:8cb89124-7954-4c98-85d5-e1fad6e3d723",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewFrontendURN(tt.id)
+			got := NewPortURN(tt.id)
 			assert.Equal(t, tt.want, got)
 		})
 	}

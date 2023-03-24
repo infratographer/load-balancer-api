@@ -18,9 +18,9 @@ func NewLoadBalancerURN(id string) string {
 	return newURN("load-balancer", id)
 }
 
-// NewFrontendURN creates a new frontend URN
-func NewFrontendURN(id string) string {
-	return newURN("load-balancer-frontend", id)
+// NewPortURN creates a new port URN
+func NewPortURN(id string) string {
+	return newURN("load-balancer-port", id)
 }
 
 // NewOriginURN creates a new origin URN

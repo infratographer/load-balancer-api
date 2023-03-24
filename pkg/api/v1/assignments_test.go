@@ -25,8 +25,8 @@ func Test_Assignments(t *testing.T) {
 	loadBalancer, cleanupLB := createLoadBalancer(t, srv, tenantID)
 	defer cleanupLB(t)
 
-	// Create a frontend
-	fe, cleanupFE := createFrontend(t, srv, loadBalancer.ID)
+	// Create a port
+	fe, cleanupFE := createPort(t, srv, loadBalancer.ID)
 	defer cleanupFE(t)
 
 	// Create a pool
@@ -50,7 +50,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusOK,
 	})
 
@@ -58,7 +58,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Duplicate assignment",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusInternalServerError,
 	})
 
@@ -66,7 +66,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "create assignment2",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool2.ID),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, pool2.ID),
 		status: http.StatusOK,
 	})
 
@@ -87,10 +87,10 @@ func Test_Assignments(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "Invalid frontend",
+		name:   "Invalid port",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, "invalid", pool.ID),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, "invalid", pool.ID),
 		status: http.StatusBadRequest,
 	})
 
@@ -98,7 +98,7 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid pool",
 		method: http.MethodPost,
 		path:   baseURL,
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, "invalid"),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, "invalid"),
 		status: http.StatusBadRequest,
 	})
 
@@ -106,14 +106,14 @@ func Test_Assignments(t *testing.T) {
 		name:   "Invalid tenant",
 		method: http.MethodPost,
 		path:   srv.URL + "/v1/tenant/invalid/assignments",
-		body:   fmt.Sprintf(`{"frontend_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
+		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
 		status: http.StatusInternalServerError,
 	})
 	// Get the assignments
 	doHTTPTest(t, &httpTest{
 		name:   "get assignments",
 		method: http.MethodGet,
-		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
+		path:   baseURL + "?port_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusOK,
 	})
 
@@ -128,21 +128,21 @@ func Test_Assignments(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "delete assignment",
 		method: http.MethodDelete,
-		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
+		path:   baseURL + "?port_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusOK,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "duplicate delete",
 		method: http.MethodDelete,
-		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool.ID,
+		path:   baseURL + "?port_id=" + fe.ID + "&pool_id=" + pool.ID,
 		status: http.StatusNotFound,
 	})
 
 	doHTTPTest(t, &httpTest{
 		name:   "delete assignment2",
 		method: http.MethodDelete,
-		path:   baseURL + "?frontend_id=" + fe.ID + "&pool_id=" + pool2.ID,
+		path:   baseURL + "?port_id=" + fe.ID + "&pool_id=" + pool2.ID,
 		status: http.StatusOK,
 	})
 }

@@ -12,10 +12,10 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/httptools"
 )
 
-func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (*frontend, func(*testing.T)) {
-	baseURL := srv.URL + "/v1/loadbalancers/" + loadBalancerID + "/frontends"
+func createPort(t *testing.T, srv *httptest.Server, loadBalancerID string) (*port, func(*testing.T)) {
+	baseURL := srv.URL + "/v1/loadbalancers/" + loadBalancerID + "/ports"
 
-	t.Run("create frontend:[POST]_"+baseURL, func(t *testing.T) {
+	t.Run("create port:[POST]_"+baseURL, func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPost, baseURL, httptools.FakeBody(fmt.Sprintf(`{"name": "Ears", "port": 25}`))) //nolint
 		assert.NoError(t, err)
 		resp, err := http.DefaultClient.Do(req)
@@ -24,9 +24,9 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (
 		resp.Body.Close()
 	})
 
-	ret := &frontend{}
+	ret := &port{}
 
-	t.Run("get frontend:[GET]_"+baseURL+"?slug=ears", func(t *testing.T) {
+	t.Run("get port:[GET]_"+baseURL+"?slug=ears", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, baseURL, nil) //nolint
 		assert.NoError(t, err)
 		resp, err := http.DefaultClient.Do(req)
@@ -38,7 +38,7 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (
 
 		resp.Body.Close()
 
-		for _, fe := range *feResp.Frontends {
+		for _, fe := range *feResp.Ports {
 			if fe.Name == "Ears" {
 				ret = fe
 			}
@@ -46,8 +46,8 @@ func createFrontend(t *testing.T, srv *httptest.Server, loadBalancerID string) (
 	})
 
 	return ret, func(t *testing.T) {
-		t.Run("delete frontend:[DELETE]_"+srv.URL+"/v1/frontends/"+ret.ID, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodDelete, srv.URL+"/v1/frontends/"+ret.ID, nil) //nolint
+		t.Run("delete port:[DELETE]_"+srv.URL+"/v1/ports/"+ret.ID, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodDelete, srv.URL+"/v1/ports/"+ret.ID, nil) //nolint
 			assert.NoError(t, err)
 			resp, err := http.DefaultClient.Do(req)
 			assert.NoError(t, err)
@@ -69,8 +69,8 @@ func TestFrondendRoutes(t *testing.T) {
 
 	loadBalancerID := lb.ID
 
-	baseURL := srv.URL + "/v1/frontends"
-	baseURLLoadBalancer := srv.URL + "/v1/loadbalancers/" + loadBalancerID + "/frontends"
+	baseURL := srv.URL + "/v1/ports"
+	baseURLLoadBalancer := srv.URL + "/v1/loadbalancers/" + loadBalancerID + "/ports"
 	missingUUID := uuid.New().String()
 
 	req1, err := http.NewRequest(http.MethodPost, baseURLLoadBalancer, httptools.FakeBody(`{"name": "Ears", "port": 25}`)) //nolint
@@ -100,7 +100,7 @@ func TestFrondendRoutes(t *testing.T) {
 
 	earsID := ""
 
-	for _, fe := range *feResp.Frontends {
+	for _, fe := range *feResp.Ports {
 		if fe.Name == "Ears" {
 			earsID = fe.ID
 		}
@@ -132,7 +132,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "list of frontends",
+		name:   "list of ports",
 		body:   `[{"name": "Mouth", "port": 80},{"name": "Beard", "port": 443}]`,
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
@@ -184,7 +184,7 @@ func TestFrondendRoutes(t *testing.T) {
 		body:   `{"name": "Mouth", "port": 80}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPost,
-		path:   srv.URL + "/v1/loadbalancers/1234/frontends",
+		path:   srv.URL + "/v1/loadbalancers/1234/ports",
 	})
 
 	doHTTPTest(t, &httpTest{
@@ -204,7 +204,7 @@ func TestFrondendRoutes(t *testing.T) {
 
 	// PUT tests
 	doHTTPTest(t, &httpTest{
-		name:   "happy path update frontend",
+		name:   "happy path update port",
 		body:   `{"name": "LeftEar", "port": 8080}`,
 		status: http.StatusAccepted,
 		method: http.MethodPut,
@@ -212,7 +212,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "update frontend port too low",
+		name:   "update port port too low",
 		body:   `{"name": "LeftEar", "port": -1}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPut,
@@ -220,7 +220,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "update frontend port two high",
+		name:   "update port port two high",
 		body:   `{"name": "LeftEar", "port": 131337}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPut,
@@ -228,7 +228,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "update frontend missing display name",
+		name:   "update port missing display name",
 		body:   `{"port": 8080}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPut,
@@ -236,7 +236,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "update frontend missing port",
+		name:   "update port missing port",
 		body:   `{"name": "LeftEar"}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPut,
@@ -244,7 +244,7 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "missing frontend id",
+		name:   "missing port id",
 		body:   `{"name": "LeftEar", "port": 8080}`,
 		status: http.StatusNotFound,
 		method: http.MethodPut,
@@ -311,28 +311,28 @@ func TestFrondendRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "delete frontend with port 80",
+		name:   "delete port with port 80",
 		path:   baseURLLoadBalancer + "?slug=mouth&port=80",
 		status: http.StatusOK,
 		method: http.MethodDelete,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "delete frontend with port 443",
+		name:   "delete port with port 443",
 		path:   baseURLLoadBalancer + "?slug=tls-mouth&port=443",
 		status: http.StatusOK,
 		method: http.MethodDelete,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "delete frontend Ears by id",
+		name:   "delete port Ears by id",
 		path:   baseURL + "/" + earsID,
 		status: http.StatusOK,
 		method: http.MethodDelete,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "delete frontend Eyes by port ",
+		name:   "delete port Eyes by port ",
 		path:   baseURLLoadBalancer + "?port=465&name=Eyes",
 		status: http.StatusOK,
 		method: http.MethodDelete,
