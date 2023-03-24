@@ -29,8 +29,8 @@ type Assignment struct {
 	DeletedAt    null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 	AssignmentID string    `query:"assignment_id" param:"assignment_id" boil:"assignment_id" json:"assignment_id" toml:"assignment_id" yaml:"assignment_id"`
 	PoolID       string    `query:"pool_id" param:"pool_id" boil:"pool_id" json:"pool_id" toml:"pool_id" yaml:"pool_id"`
-	FrontendID   string    `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id" toml:"frontend_id" yaml:"frontend_id"`
 	TenantID     string    `query:"tenant_id" param:"tenant_id" boil:"tenant_id" json:"tenant_id" toml:"tenant_id" yaml:"tenant_id"`
+	PortID       string    `query:"port_id" param:"port_id" boil:"port_id" json:"port_id" toml:"port_id" yaml:"port_id"`
 
 	R *assignmentR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L assignmentL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,16 +42,16 @@ var AssignmentColumns = struct {
 	DeletedAt    string
 	AssignmentID string
 	PoolID       string
-	FrontendID   string
 	TenantID     string
+	PortID       string
 }{
 	CreatedAt:    "created_at",
 	UpdatedAt:    "updated_at",
 	DeletedAt:    "deleted_at",
 	AssignmentID: "assignment_id",
 	PoolID:       "pool_id",
-	FrontendID:   "frontend_id",
 	TenantID:     "tenant_id",
+	PortID:       "port_id",
 }
 
 var AssignmentTableColumns = struct {
@@ -60,16 +60,16 @@ var AssignmentTableColumns = struct {
 	DeletedAt    string
 	AssignmentID string
 	PoolID       string
-	FrontendID   string
 	TenantID     string
+	PortID       string
 }{
 	CreatedAt:    "assignments.created_at",
 	UpdatedAt:    "assignments.updated_at",
 	DeletedAt:    "assignments.deleted_at",
 	AssignmentID: "assignments.assignment_id",
 	PoolID:       "assignments.pool_id",
-	FrontendID:   "assignments.frontend_id",
 	TenantID:     "assignments.tenant_id",
+	PortID:       "assignments.port_id",
 }
 
 // Generated where
@@ -148,36 +148,43 @@ var AssignmentWhere = struct {
 	DeletedAt    whereHelpernull_Time
 	AssignmentID whereHelperstring
 	PoolID       whereHelperstring
-	FrontendID   whereHelperstring
 	TenantID     whereHelperstring
+	PortID       whereHelperstring
 }{
 	CreatedAt:    whereHelpertime_Time{field: "\"assignments\".\"created_at\""},
 	UpdatedAt:    whereHelpertime_Time{field: "\"assignments\".\"updated_at\""},
 	DeletedAt:    whereHelpernull_Time{field: "\"assignments\".\"deleted_at\""},
 	AssignmentID: whereHelperstring{field: "\"assignments\".\"assignment_id\""},
 	PoolID:       whereHelperstring{field: "\"assignments\".\"pool_id\""},
-	FrontendID:   whereHelperstring{field: "\"assignments\".\"frontend_id\""},
 	TenantID:     whereHelperstring{field: "\"assignments\".\"tenant_id\""},
+	PortID:       whereHelperstring{field: "\"assignments\".\"port_id\""},
 }
 
 // AssignmentRels is where relationship names are stored.
 var AssignmentRels = struct {
-	Pool     string
-	Frontend string
+	Port string
+	Pool string
 }{
-	Pool:     "Pool",
-	Frontend: "Frontend",
+	Port: "Port",
+	Pool: "Pool",
 }
 
 // assignmentR is where relationships are stored.
 type assignmentR struct {
-	Pool     *Pool     `query:"Pool" param:"Pool" boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
-	Frontend *Frontend `query:"Frontend" param:"Frontend" boil:"Frontend" json:"Frontend" toml:"Frontend" yaml:"Frontend"`
+	Port *Port `query:"Port" param:"Port" boil:"Port" json:"Port" toml:"Port" yaml:"Port"`
+	Pool *Pool `query:"Pool" param:"Pool" boil:"Pool" json:"Pool" toml:"Pool" yaml:"Pool"`
 }
 
 // NewStruct creates a new relationship struct
 func (*assignmentR) NewStruct() *assignmentR {
 	return &assignmentR{}
+}
+
+func (r *assignmentR) GetPort() *Port {
+	if r == nil {
+		return nil
+	}
+	return r.Port
 }
 
 func (r *assignmentR) GetPool() *Pool {
@@ -187,19 +194,12 @@ func (r *assignmentR) GetPool() *Pool {
 	return r.Pool
 }
 
-func (r *assignmentR) GetFrontend() *Frontend {
-	if r == nil {
-		return nil
-	}
-	return r.Frontend
-}
-
 // assignmentL is where Load methods for each relationship are stored.
 type assignmentL struct{}
 
 var (
-	assignmentAllColumns            = []string{"created_at", "updated_at", "deleted_at", "assignment_id", "pool_id", "frontend_id", "tenant_id"}
-	assignmentColumnsWithoutDefault = []string{"pool_id", "frontend_id", "tenant_id"}
+	assignmentAllColumns            = []string{"created_at", "updated_at", "deleted_at", "assignment_id", "pool_id", "tenant_id", "port_id"}
+	assignmentColumnsWithoutDefault = []string{"pool_id", "tenant_id", "port_id"}
 	assignmentColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "assignment_id"}
 	assignmentPrimaryKeyColumns     = []string{"assignment_id"}
 	assignmentGeneratedColumns      = []string{}
@@ -480,6 +480,17 @@ func (q assignmentQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
+// Port pointed to by the foreign key.
+func (o *Assignment) Port(mods ...qm.QueryMod) portQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"port_id\" = ?", o.PortID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Ports(queryMods...)
+}
+
 // Pool pointed to by the foreign key.
 func (o *Assignment) Pool(mods ...qm.QueryMod) poolQuery {
 	queryMods := []qm.QueryMod{
@@ -491,15 +502,125 @@ func (o *Assignment) Pool(mods ...qm.QueryMod) poolQuery {
 	return Pools(queryMods...)
 }
 
-// Frontend pointed to by the foreign key.
-func (o *Assignment) Frontend(mods ...qm.QueryMod) frontendQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"frontend_id\" = ?", o.FrontendID),
+// LoadPort allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (assignmentL) LoadPort(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignment interface{}, mods queries.Applicator) error {
+	var slice []*Assignment
+	var object *Assignment
+
+	if singular {
+		var ok bool
+		object, ok = maybeAssignment.(*Assignment)
+		if !ok {
+			object = new(Assignment)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeAssignment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAssignment))
+			}
+		}
+	} else {
+		s, ok := maybeAssignment.(*[]*Assignment)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeAssignment)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAssignment))
+			}
+		}
 	}
 
-	queryMods = append(queryMods, mods...)
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &assignmentR{}
+		}
+		args = append(args, object.PortID)
 
-	return Frontends(queryMods...)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &assignmentR{}
+			}
+
+			for _, a := range args {
+				if a == obj.PortID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.PortID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`ports`),
+		qm.WhereIn(`ports.port_id in ?`, args...),
+		qmhelper.WhereIsNull(`ports.deleted_at`),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Port")
+	}
+
+	var resultSlice []*Port
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Port")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for ports")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for ports")
+	}
+
+	if len(portAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Port = foreign
+		if foreign.R == nil {
+			foreign.R = &portR{}
+		}
+		foreign.R.Assignments = append(foreign.R.Assignments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.PortID == foreign.PortID {
+				local.R.Port = foreign
+				if foreign.R == nil {
+					foreign.R = &portR{}
+				}
+				foreign.R.Assignments = append(foreign.R.Assignments, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadPool allows an eager lookup of values, cached into the
@@ -623,122 +744,48 @@ func (assignmentL) LoadPool(ctx context.Context, e boil.ContextExecutor, singula
 	return nil
 }
 
-// LoadFrontend allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (assignmentL) LoadFrontend(ctx context.Context, e boil.ContextExecutor, singular bool, maybeAssignment interface{}, mods queries.Applicator) error {
-	var slice []*Assignment
-	var object *Assignment
-
-	if singular {
-		var ok bool
-		object, ok = maybeAssignment.(*Assignment)
-		if !ok {
-			object = new(Assignment)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeAssignment)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeAssignment))
-			}
-		}
-	} else {
-		s, ok := maybeAssignment.(*[]*Assignment)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeAssignment)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeAssignment))
-			}
+// SetPort of the assignment to the related item.
+// Sets o.R.Port to related.
+// Adds o to related.R.Assignments.
+func (o *Assignment) SetPort(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Port) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
 
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &assignmentR{}
-		}
-		args = append(args, object.FrontendID)
-
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &assignmentR{}
-			}
-
-			for _, a := range args {
-				if a == obj.FrontendID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.FrontendID)
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`frontends`),
-		qm.WhereIn(`frontends.frontend_id in ?`, args...),
-		qmhelper.WhereIsNull(`frontends.deleted_at`),
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"assignments\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"port_id"}),
+		strmangle.WhereClause("\"", "\"", 2, assignmentPrimaryKeyColumns),
 	)
-	if mods != nil {
-		mods.Apply(query)
+	values := []interface{}{related.PortID, o.AssignmentID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
 	}
 
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Frontend")
-	}
-
-	var resultSlice []*Frontend
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Frontend")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for frontends")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for frontends")
-	}
-
-	if len(frontendAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
+	o.PortID = related.PortID
+	if o.R == nil {
+		o.R = &assignmentR{
+			Port: related,
 		}
+	} else {
+		o.R.Port = related
 	}
 
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Frontend = foreign
-		if foreign.R == nil {
-			foreign.R = &frontendR{}
+	if related.R == nil {
+		related.R = &portR{
+			Assignments: AssignmentSlice{o},
 		}
-		foreign.R.Assignments = append(foreign.R.Assignments, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.FrontendID == foreign.FrontendID {
-				local.R.Frontend = foreign
-				if foreign.R == nil {
-					foreign.R = &frontendR{}
-				}
-				foreign.R.Assignments = append(foreign.R.Assignments, local)
-				break
-			}
-		}
+	} else {
+		related.R.Assignments = append(related.R.Assignments, o)
 	}
 
 	return nil
@@ -782,53 +829,6 @@ func (o *Assignment) SetPool(ctx context.Context, exec boil.ContextExecutor, ins
 
 	if related.R == nil {
 		related.R = &poolR{
-			Assignments: AssignmentSlice{o},
-		}
-	} else {
-		related.R.Assignments = append(related.R.Assignments, o)
-	}
-
-	return nil
-}
-
-// SetFrontend of the assignment to the related item.
-// Sets o.R.Frontend to related.
-// Adds o to related.R.Assignments.
-func (o *Assignment) SetFrontend(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Frontend) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"assignments\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"frontend_id"}),
-		strmangle.WhereClause("\"", "\"", 2, assignmentPrimaryKeyColumns),
-	)
-	values := []interface{}{related.FrontendID, o.AssignmentID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.FrontendID = related.FrontendID
-	if o.R == nil {
-		o.R = &assignmentR{
-			Frontend: related,
-		}
-	} else {
-		o.R.Frontend = related
-	}
-
-	if related.R == nil {
-		related.R = &frontendR{
 			Assignments: AssignmentSlice{o},
 		}
 	} else {

@@ -31,12 +31,12 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 			return v1InternalServerErrorResponse(c, err)
 		}
 
-		feMods := models.FrontendWhere.FrontendID.EQ(assignments[0].FrontendID)
+		feMods := models.PortWhere.PortID.EQ(assignments[0].PortID)
 
-		feModel, err := models.Frontends(feMods).One(ctx, r.db)
+		feModel, err := models.Ports(feMods).One(ctx, r.db)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this
-			r.logger.Errorw("error fetching frontend", "error", err)
+			r.logger.Errorw("error fetching port", "error", err)
 		}
 
 		msg, err := pubsub.NewAssignmentMessage(

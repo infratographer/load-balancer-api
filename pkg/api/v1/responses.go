@@ -47,17 +47,17 @@ func v1LoadBalancerCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1FrontendCreatedResponse(c echo.Context, id string) error {
+func v1PortCreatedResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, struct {
-		Version    string `json:"version"`
-		Message    string `json:"message"`
-		Status     int    `json:"status"`
-		FrontendID string `json:"frontend_id"`
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+		PortID  string `json:"port_id"`
 	}{
-		Message:    "resource created",
-		Version:    apiVersion,
-		Status:     http.StatusOK,
-		FrontendID: id,
+		Message: "resource created",
+		Version: apiVersion,
+		Status:  http.StatusOK,
+		PortID:  id,
 	})
 }
 
@@ -89,17 +89,17 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
-func v1UpdateFrontendResponse(c echo.Context, id string) error {
+func v1UpdatePortResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusAccepted, struct {
-		Version    string `json:"version"`
-		Message    string `json:"message"`
-		Status     int    `json:"status"`
-		FrontendID string `json:"frontend_id"`
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+		PortID  string `json:"port_id"`
 	}{
-		Message:    "resource updated",
-		Version:    apiVersion,
-		Status:     http.StatusAccepted,
-		FrontendID: id,
+		Message: "resource updated",
+		Version: apiVersion,
+		Status:  http.StatusAccepted,
+		PortID:  id,
 	})
 }
 
@@ -176,12 +176,12 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 
 	for _, a := range as {
 		out = append(out, &assignment{
-			CreatedAt:  a.CreatedAt,
-			UpdatedAt:  a.UpdatedAt,
-			ID:         a.AssignmentID,
-			FrontendID: a.FrontendID,
-			PoolID:     a.PoolID,
-			TenantID:   a.TenantID,
+			CreatedAt: a.CreatedAt,
+			UpdatedAt: a.UpdatedAt,
+			ID:        a.AssignmentID,
+			PortID:    a.PortID,
+			PoolID:    a.PoolID,
+			TenantID:  a.TenantID,
 		})
 	}
 
@@ -192,14 +192,14 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	})
 }
 
-func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
-	out := frontendSlice{}
+func v1Ports(c echo.Context, fs models.PortSlice) error {
+	out := portSlice{}
 	for _, f := range fs {
-		out = append(out, &frontend{
+		out = append(out, &port{
 			CreatedAt:      f.CreatedAt,
 			UpdatedAt:      f.UpdatedAt,
 			DeletedAt:      f.DeletedAt.Ptr(),
-			ID:             f.FrontendID,
+			ID:             f.PortID,
 			LoadBalancerID: f.LoadBalancerID,
 			Port:           f.Port,
 			AddressFamily:  f.AfInet,
@@ -208,9 +208,9 @@ func v1Frontends(c echo.Context, fs models.FrontendSlice) error {
 	}
 
 	return c.JSON(http.StatusOK, &response{
-		Version:   apiVersion,
-		Kind:      "frontendsList",
-		Frontends: &out,
+		Version: apiVersion,
+		Kind:    "portsList",
+		Ports:   &out,
 	})
 }
 

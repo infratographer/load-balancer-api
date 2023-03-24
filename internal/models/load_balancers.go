@@ -143,14 +143,14 @@ var LoadBalancerWhere = struct {
 
 // LoadBalancerRels is where relationship names are stored.
 var LoadBalancerRels = struct {
-	Frontends string
+	Ports string
 }{
-	Frontends: "Frontends",
+	Ports: "Ports",
 }
 
 // loadBalancerR is where relationships are stored.
 type loadBalancerR struct {
-	Frontends FrontendSlice `query:"Frontends" param:"Frontends" boil:"Frontends" json:"Frontends" toml:"Frontends" yaml:"Frontends"`
+	Ports PortSlice `query:"Ports" param:"Ports" boil:"Ports" json:"Ports" toml:"Ports" yaml:"Ports"`
 }
 
 // NewStruct creates a new relationship struct
@@ -158,11 +158,11 @@ func (*loadBalancerR) NewStruct() *loadBalancerR {
 	return &loadBalancerR{}
 }
 
-func (r *loadBalancerR) GetFrontends() FrontendSlice {
+func (r *loadBalancerR) GetPorts() PortSlice {
 	if r == nil {
 		return nil
 	}
-	return r.Frontends
+	return r.Ports
 }
 
 // loadBalancerL is where Load methods for each relationship are stored.
@@ -451,23 +451,23 @@ func (q loadBalancerQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
-// Frontends retrieves all the frontend's Frontends with an executor.
-func (o *LoadBalancer) Frontends(mods ...qm.QueryMod) frontendQuery {
+// Ports retrieves all the port's Ports with an executor.
+func (o *LoadBalancer) Ports(mods ...qm.QueryMod) portQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"frontends\".\"load_balancer_id\"=?", o.LoadBalancerID),
+		qm.Where("\"ports\".\"load_balancer_id\"=?", o.LoadBalancerID),
 	)
 
-	return Frontends(queryMods...)
+	return Ports(queryMods...)
 }
 
-// LoadFrontends allows an eager lookup of values, cached into the
+// LoadPorts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
+func (loadBalancerL) LoadPorts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
 	var slice []*LoadBalancer
 	var object *LoadBalancer
 
@@ -521,9 +521,9 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 	}
 
 	query := NewQuery(
-		qm.From(`frontends`),
-		qm.WhereIn(`frontends.load_balancer_id in ?`, args...),
-		qmhelper.WhereIsNull(`frontends.deleted_at`),
+		qm.From(`ports`),
+		qm.WhereIn(`ports.load_balancer_id in ?`, args...),
+		qmhelper.WhereIsNull(`ports.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -531,22 +531,22 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load frontends")
+		return errors.Wrap(err, "failed to eager load ports")
 	}
 
-	var resultSlice []*Frontend
+	var resultSlice []*Port
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice frontends")
+		return errors.Wrap(err, "failed to bind eager loaded slice ports")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on frontends")
+		return errors.Wrap(err, "failed to close results in eager load on ports")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for frontends")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for ports")
 	}
 
-	if len(frontendAfterSelectHooks) != 0 {
+	if len(portAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -554,10 +554,10 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 		}
 	}
 	if singular {
-		object.R.Frontends = resultSlice
+		object.R.Ports = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &frontendR{}
+				foreign.R = &portR{}
 			}
 			foreign.R.LoadBalancer = object
 		}
@@ -567,9 +567,9 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.LoadBalancerID == foreign.LoadBalancerID {
-				local.R.Frontends = append(local.R.Frontends, foreign)
+				local.R.Ports = append(local.R.Ports, foreign)
 				if foreign.R == nil {
-					foreign.R = &frontendR{}
+					foreign.R = &portR{}
 				}
 				foreign.R.LoadBalancer = local
 				break
@@ -580,11 +580,11 @@ func (loadBalancerL) LoadFrontends(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// AddFrontends adds the given related objects to the existing relationships
+// AddPorts adds the given related objects to the existing relationships
 // of the load_balancer, optionally inserting them as new records.
-// Appends related to o.R.Frontends.
+// Appends related to o.R.Ports.
 // Sets related.R.LoadBalancer appropriately.
-func (o *LoadBalancer) AddFrontends(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Frontend) error {
+func (o *LoadBalancer) AddPorts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Port) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -594,11 +594,11 @@ func (o *LoadBalancer) AddFrontends(ctx context.Context, exec boil.ContextExecut
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"frontends\" SET %s WHERE %s",
+				"UPDATE \"ports\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-				strmangle.WhereClause("\"", "\"", 2, frontendPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, portPrimaryKeyColumns),
 			)
-			values := []interface{}{o.LoadBalancerID, rel.FrontendID}
+			values := []interface{}{o.LoadBalancerID, rel.PortID}
 
 			if boil.IsDebug(ctx) {
 				writer := boil.DebugWriterFrom(ctx)
@@ -615,15 +615,15 @@ func (o *LoadBalancer) AddFrontends(ctx context.Context, exec boil.ContextExecut
 
 	if o.R == nil {
 		o.R = &loadBalancerR{
-			Frontends: related,
+			Ports: related,
 		}
 	} else {
-		o.R.Frontends = append(o.R.Frontends, related...)
+		o.R.Ports = append(o.R.Ports, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &frontendR{
+			rel.R = &portR{
 				LoadBalancer: o,
 			}
 		} else {

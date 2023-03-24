@@ -76,9 +76,9 @@ func (r *Router) cleanupLoadBalancer(ctx context.Context, lb *models.LoadBalance
 		return err
 	}
 
-	// Delete frontends assigned to the load balancer
-	if _, err := models.Frontends(qm.Where(models.FrontendColumns.LoadBalancerID+" = ?", lb.LoadBalancerID)).DeleteAll(ctx, r.db, false); err != nil {
-		r.logger.Error("failed to delete frontends", zap.Error(err))
+	// Delete ports assigned to the load balancer
+	if _, err := models.Ports(qm.Where(models.PortColumns.LoadBalancerID+" = ?", lb.LoadBalancerID)).DeleteAll(ctx, r.db, false); err != nil {
+		r.logger.Error("failed to delete ports", zap.Error(err))
 		return err
 	}
 

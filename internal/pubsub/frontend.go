@@ -4,7 +4,7 @@ import (
 	"go.infratographer.com/x/pubsubx"
 )
 
-// NewFrontendMessage creates a new frontend message
-func NewFrontendMessage(actorURN string, tenantURN string, frontendURN string, additionalSubjectURNs ...string) (*pubsubx.Message, error) {
-	return newMessage(actorURN, frontendURN, additionalSubjectURNs...), nil
+// NewPortMessage creates a new port message
+func NewPortMessage(actorURN string, tenantURN string, portURN string, additionalSubjectURNs ...string) (*pubsubx.Message, error) {
+	return newMessage(actorURN, portURN, additionalSubjectURNs...), nil
 }

@@ -22,12 +22,12 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-// Frontend is an object representing the database table.
-type Frontend struct {
+// Port is an object representing the database table.
+type Port struct {
 	CreatedAt      time.Time `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt      time.Time `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt      null.Time `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	FrontendID     string    `query:"frontend_id" param:"frontend_id" boil:"frontend_id" json:"frontend_id" toml:"frontend_id" yaml:"frontend_id"`
+	PortID         string    `query:"port_id" param:"port_id" boil:"port_id" json:"port_id" toml:"port_id" yaml:"port_id"`
 	LoadBalancerID string    `query:"load_balancer_id" param:"load_balancer_id" boil:"load_balancer_id" json:"load_balancer_id" toml:"load_balancer_id" yaml:"load_balancer_id"`
 	Port           int64     `query:"port" param:"port" boil:"port" json:"port" toml:"port" yaml:"port"`
 	AfInet         string    `query:"af_inet" param:"af_inet" boil:"af_inet" json:"af_inet" toml:"af_inet" yaml:"af_inet"`
@@ -37,15 +37,15 @@ type Frontend struct {
 	CurrentState   string    `query:"current_state" param:"current_state" boil:"current_state" json:"current_state" toml:"current_state" yaml:"current_state"`
 	PreviousState  string    `query:"previous_state" param:"previous_state" boil:"previous_state" json:"previous_state" toml:"previous_state" yaml:"previous_state"`
 
-	R *frontendR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
-	L frontendL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *portR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L portL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-var FrontendColumns = struct {
+var PortColumns = struct {
 	CreatedAt      string
 	UpdatedAt      string
 	DeletedAt      string
-	FrontendID     string
+	PortID         string
 	LoadBalancerID string
 	Port           string
 	AfInet         string
@@ -58,7 +58,7 @@ var FrontendColumns = struct {
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
 	DeletedAt:      "deleted_at",
-	FrontendID:     "frontend_id",
+	PortID:         "port_id",
 	LoadBalancerID: "load_balancer_id",
 	Port:           "port",
 	AfInet:         "af_inet",
@@ -69,11 +69,11 @@ var FrontendColumns = struct {
 	PreviousState:  "previous_state",
 }
 
-var FrontendTableColumns = struct {
+var PortTableColumns = struct {
 	CreatedAt      string
 	UpdatedAt      string
 	DeletedAt      string
-	FrontendID     string
+	PortID         string
 	LoadBalancerID string
 	Port           string
 	AfInet         string
@@ -83,50 +83,27 @@ var FrontendTableColumns = struct {
 	CurrentState   string
 	PreviousState  string
 }{
-	CreatedAt:      "frontends.created_at",
-	UpdatedAt:      "frontends.updated_at",
-	DeletedAt:      "frontends.deleted_at",
-	FrontendID:     "frontends.frontend_id",
-	LoadBalancerID: "frontends.load_balancer_id",
-	Port:           "frontends.port",
-	AfInet:         "frontends.af_inet",
-	Name:           "frontends.name",
-	Slug:           "frontends.slug",
-	StateChangedAt: "frontends.state_changed_at",
-	CurrentState:   "frontends.current_state",
-	PreviousState:  "frontends.previous_state",
+	CreatedAt:      "ports.created_at",
+	UpdatedAt:      "ports.updated_at",
+	DeletedAt:      "ports.deleted_at",
+	PortID:         "ports.port_id",
+	LoadBalancerID: "ports.load_balancer_id",
+	Port:           "ports.port",
+	AfInet:         "ports.af_inet",
+	Name:           "ports.name",
+	Slug:           "ports.slug",
+	StateChangedAt: "ports.state_changed_at",
+	CurrentState:   "ports.current_state",
+	PreviousState:  "ports.previous_state",
 }
 
 // Generated where
 
-type whereHelperint64 struct{ field string }
-
-func (w whereHelperint64) EQ(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint64) NEQ(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint64) LT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint64) LTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint64) GT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint64) GTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint64) IN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-var FrontendWhere = struct {
+var PortWhere = struct {
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
 	DeletedAt      whereHelpernull_Time
-	FrontendID     whereHelperstring
+	PortID         whereHelperstring
 	LoadBalancerID whereHelperstring
 	Port           whereHelperint64
 	AfInet         whereHelperstring
@@ -136,22 +113,22 @@ var FrontendWhere = struct {
 	CurrentState   whereHelperstring
 	PreviousState  whereHelperstring
 }{
-	CreatedAt:      whereHelpertime_Time{field: "\"frontends\".\"created_at\""},
-	UpdatedAt:      whereHelpertime_Time{field: "\"frontends\".\"updated_at\""},
-	DeletedAt:      whereHelpernull_Time{field: "\"frontends\".\"deleted_at\""},
-	FrontendID:     whereHelperstring{field: "\"frontends\".\"frontend_id\""},
-	LoadBalancerID: whereHelperstring{field: "\"frontends\".\"load_balancer_id\""},
-	Port:           whereHelperint64{field: "\"frontends\".\"port\""},
-	AfInet:         whereHelperstring{field: "\"frontends\".\"af_inet\""},
-	Name:           whereHelperstring{field: "\"frontends\".\"name\""},
-	Slug:           whereHelperstring{field: "\"frontends\".\"slug\""},
-	StateChangedAt: whereHelpernull_Time{field: "\"frontends\".\"state_changed_at\""},
-	CurrentState:   whereHelperstring{field: "\"frontends\".\"current_state\""},
-	PreviousState:  whereHelperstring{field: "\"frontends\".\"previous_state\""},
+	CreatedAt:      whereHelpertime_Time{field: "\"ports\".\"created_at\""},
+	UpdatedAt:      whereHelpertime_Time{field: "\"ports\".\"updated_at\""},
+	DeletedAt:      whereHelpernull_Time{field: "\"ports\".\"deleted_at\""},
+	PortID:         whereHelperstring{field: "\"ports\".\"port_id\""},
+	LoadBalancerID: whereHelperstring{field: "\"ports\".\"load_balancer_id\""},
+	Port:           whereHelperint64{field: "\"ports\".\"port\""},
+	AfInet:         whereHelperstring{field: "\"ports\".\"af_inet\""},
+	Name:           whereHelperstring{field: "\"ports\".\"name\""},
+	Slug:           whereHelperstring{field: "\"ports\".\"slug\""},
+	StateChangedAt: whereHelpernull_Time{field: "\"ports\".\"state_changed_at\""},
+	CurrentState:   whereHelperstring{field: "\"ports\".\"current_state\""},
+	PreviousState:  whereHelperstring{field: "\"ports\".\"previous_state\""},
 }
 
-// FrontendRels is where relationship names are stored.
-var FrontendRels = struct {
+// PortRels is where relationship names are stored.
+var PortRels = struct {
 	LoadBalancer string
 	Assignments  string
 }{
@@ -159,65 +136,65 @@ var FrontendRels = struct {
 	Assignments:  "Assignments",
 }
 
-// frontendR is where relationships are stored.
-type frontendR struct {
+// portR is where relationships are stored.
+type portR struct {
 	LoadBalancer *LoadBalancer   `query:"LoadBalancer" param:"LoadBalancer" boil:"LoadBalancer" json:"LoadBalancer" toml:"LoadBalancer" yaml:"LoadBalancer"`
 	Assignments  AssignmentSlice `query:"Assignments" param:"Assignments" boil:"Assignments" json:"Assignments" toml:"Assignments" yaml:"Assignments"`
 }
 
 // NewStruct creates a new relationship struct
-func (*frontendR) NewStruct() *frontendR {
-	return &frontendR{}
+func (*portR) NewStruct() *portR {
+	return &portR{}
 }
 
-func (r *frontendR) GetLoadBalancer() *LoadBalancer {
+func (r *portR) GetLoadBalancer() *LoadBalancer {
 	if r == nil {
 		return nil
 	}
 	return r.LoadBalancer
 }
 
-func (r *frontendR) GetAssignments() AssignmentSlice {
+func (r *portR) GetAssignments() AssignmentSlice {
 	if r == nil {
 		return nil
 	}
 	return r.Assignments
 }
 
-// frontendL is where Load methods for each relationship are stored.
-type frontendL struct{}
+// portL is where Load methods for each relationship are stored.
+type portL struct{}
 
 var (
-	frontendAllColumns            = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "load_balancer_id", "port", "af_inet", "name", "slug", "state_changed_at", "current_state", "previous_state"}
-	frontendColumnsWithoutDefault = []string{"load_balancer_id", "port", "name", "slug", "current_state", "previous_state"}
-	frontendColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "frontend_id", "af_inet", "state_changed_at"}
-	frontendPrimaryKeyColumns     = []string{"frontend_id"}
-	frontendGeneratedColumns      = []string{}
+	portAllColumns            = []string{"created_at", "updated_at", "deleted_at", "port_id", "load_balancer_id", "port", "af_inet", "name", "slug", "state_changed_at", "current_state", "previous_state"}
+	portColumnsWithoutDefault = []string{"load_balancer_id", "port", "name", "slug", "current_state", "previous_state"}
+	portColumnsWithDefault    = []string{"created_at", "updated_at", "deleted_at", "port_id", "af_inet", "state_changed_at"}
+	portPrimaryKeyColumns     = []string{"port_id"}
+	portGeneratedColumns      = []string{}
 )
 
 type (
-	// FrontendSlice is an alias for a slice of pointers to Frontend.
-	// This should almost always be used instead of []Frontend.
-	FrontendSlice []*Frontend
-	// FrontendHook is the signature for custom Frontend hook methods
-	FrontendHook func(context.Context, boil.ContextExecutor, *Frontend) error
+	// PortSlice is an alias for a slice of pointers to Port.
+	// This should almost always be used instead of []Port.
+	PortSlice []*Port
+	// PortHook is the signature for custom Port hook methods
+	PortHook func(context.Context, boil.ContextExecutor, *Port) error
 
-	frontendQuery struct {
+	portQuery struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	frontendType                 = reflect.TypeOf(&Frontend{})
-	frontendMapping              = queries.MakeStructMapping(frontendType)
-	frontendPrimaryKeyMapping, _ = queries.BindMapping(frontendType, frontendMapping, frontendPrimaryKeyColumns)
-	frontendInsertCacheMut       sync.RWMutex
-	frontendInsertCache          = make(map[string]insertCache)
-	frontendUpdateCacheMut       sync.RWMutex
-	frontendUpdateCache          = make(map[string]updateCache)
-	frontendUpsertCacheMut       sync.RWMutex
-	frontendUpsertCache          = make(map[string]insertCache)
+	portType                 = reflect.TypeOf(&Port{})
+	portMapping              = queries.MakeStructMapping(portType)
+	portPrimaryKeyMapping, _ = queries.BindMapping(portType, portMapping, portPrimaryKeyColumns)
+	portInsertCacheMut       sync.RWMutex
+	portInsertCache          = make(map[string]insertCache)
+	portUpdateCacheMut       sync.RWMutex
+	portUpdateCache          = make(map[string]updateCache)
+	portUpsertCacheMut       sync.RWMutex
+	portUpsertCache          = make(map[string]insertCache)
 )
 
 var (
@@ -228,27 +205,27 @@ var (
 	_ = qmhelper.Where
 )
 
-var frontendAfterSelectHooks []FrontendHook
+var portAfterSelectHooks []PortHook
 
-var frontendBeforeInsertHooks []FrontendHook
-var frontendAfterInsertHooks []FrontendHook
+var portBeforeInsertHooks []PortHook
+var portAfterInsertHooks []PortHook
 
-var frontendBeforeUpdateHooks []FrontendHook
-var frontendAfterUpdateHooks []FrontendHook
+var portBeforeUpdateHooks []PortHook
+var portAfterUpdateHooks []PortHook
 
-var frontendBeforeDeleteHooks []FrontendHook
-var frontendAfterDeleteHooks []FrontendHook
+var portBeforeDeleteHooks []PortHook
+var portAfterDeleteHooks []PortHook
 
-var frontendBeforeUpsertHooks []FrontendHook
-var frontendAfterUpsertHooks []FrontendHook
+var portBeforeUpsertHooks []PortHook
+var portAfterUpsertHooks []PortHook
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *Frontend) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendAfterSelectHooks {
+	for _, hook := range portAfterSelectHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -258,12 +235,12 @@ func (o *Frontend) doAfterSelectHooks(ctx context.Context, exec boil.ContextExec
 }
 
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Frontend) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendBeforeInsertHooks {
+	for _, hook := range portBeforeInsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -273,12 +250,12 @@ func (o *Frontend) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Frontend) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendAfterInsertHooks {
+	for _, hook := range portAfterInsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -288,12 +265,12 @@ func (o *Frontend) doAfterInsertHooks(ctx context.Context, exec boil.ContextExec
 }
 
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Frontend) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendBeforeUpdateHooks {
+	for _, hook := range portBeforeUpdateHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -303,12 +280,12 @@ func (o *Frontend) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Frontend) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendAfterUpdateHooks {
+	for _, hook := range portAfterUpdateHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -318,12 +295,12 @@ func (o *Frontend) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExec
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Frontend) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendBeforeDeleteHooks {
+	for _, hook := range portBeforeDeleteHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -333,12 +310,12 @@ func (o *Frontend) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Frontend) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendAfterDeleteHooks {
+	for _, hook := range portAfterDeleteHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -348,12 +325,12 @@ func (o *Frontend) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExec
 }
 
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Frontend) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendBeforeUpsertHooks {
+	for _, hook := range portBeforeUpsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -363,12 +340,12 @@ func (o *Frontend) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Frontend) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Port) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range frontendAfterUpsertHooks {
+	for _, hook := range portAfterUpsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -377,39 +354,39 @@ func (o *Frontend) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExec
 	return nil
 }
 
-// AddFrontendHook registers your hook function for all future operations.
-func AddFrontendHook(hookPoint boil.HookPoint, frontendHook FrontendHook) {
+// AddPortHook registers your hook function for all future operations.
+func AddPortHook(hookPoint boil.HookPoint, portHook PortHook) {
 	switch hookPoint {
 	case boil.AfterSelectHook:
-		frontendAfterSelectHooks = append(frontendAfterSelectHooks, frontendHook)
+		portAfterSelectHooks = append(portAfterSelectHooks, portHook)
 	case boil.BeforeInsertHook:
-		frontendBeforeInsertHooks = append(frontendBeforeInsertHooks, frontendHook)
+		portBeforeInsertHooks = append(portBeforeInsertHooks, portHook)
 	case boil.AfterInsertHook:
-		frontendAfterInsertHooks = append(frontendAfterInsertHooks, frontendHook)
+		portAfterInsertHooks = append(portAfterInsertHooks, portHook)
 	case boil.BeforeUpdateHook:
-		frontendBeforeUpdateHooks = append(frontendBeforeUpdateHooks, frontendHook)
+		portBeforeUpdateHooks = append(portBeforeUpdateHooks, portHook)
 	case boil.AfterUpdateHook:
-		frontendAfterUpdateHooks = append(frontendAfterUpdateHooks, frontendHook)
+		portAfterUpdateHooks = append(portAfterUpdateHooks, portHook)
 	case boil.BeforeDeleteHook:
-		frontendBeforeDeleteHooks = append(frontendBeforeDeleteHooks, frontendHook)
+		portBeforeDeleteHooks = append(portBeforeDeleteHooks, portHook)
 	case boil.AfterDeleteHook:
-		frontendAfterDeleteHooks = append(frontendAfterDeleteHooks, frontendHook)
+		portAfterDeleteHooks = append(portAfterDeleteHooks, portHook)
 	case boil.BeforeUpsertHook:
-		frontendBeforeUpsertHooks = append(frontendBeforeUpsertHooks, frontendHook)
+		portBeforeUpsertHooks = append(portBeforeUpsertHooks, portHook)
 	case boil.AfterUpsertHook:
-		frontendAfterUpsertHooks = append(frontendAfterUpsertHooks, frontendHook)
+		portAfterUpsertHooks = append(portAfterUpsertHooks, portHook)
 	}
 }
 
-// One returns a single frontend record from the query.
-func (q frontendQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Frontend, error) {
-	o := &Frontend{}
+// One returns a single port record from the query.
+func (q portQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Port, error) {
+	o := &Port{}
 
 	queries.SetLimit(q.Query, 1)
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		return nil, errors.Wrap(err, "models: failed to execute a one query for frontends")
+		return nil, errors.Wrap(err, "models: failed to execute a one query for ports")
 	}
 
 	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
@@ -419,16 +396,16 @@ func (q frontendQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Fro
 	return o, nil
 }
 
-// All returns all Frontend records from the query.
-func (q frontendQuery) All(ctx context.Context, exec boil.ContextExecutor) (FrontendSlice, error) {
-	var o []*Frontend
+// All returns all Port records from the query.
+func (q portQuery) All(ctx context.Context, exec boil.ContextExecutor) (PortSlice, error) {
+	var o []*Port
 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
-		return nil, errors.Wrap(err, "models: failed to assign all query results to Frontend slice")
+		return nil, errors.Wrap(err, "models: failed to assign all query results to Port slice")
 	}
 
-	if len(frontendAfterSelectHooks) != 0 {
+	if len(portAfterSelectHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
 				return o, err
@@ -439,8 +416,8 @@ func (q frontendQuery) All(ctx context.Context, exec boil.ContextExecutor) (Fron
 	return o, nil
 }
 
-// Count returns the count of all Frontend records in the query.
-func (q frontendQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+// Count returns the count of all Port records in the query.
+func (q portQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -448,14 +425,14 @@ func (q frontendQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to count frontends rows")
+		return 0, errors.Wrap(err, "models: failed to count ports rows")
 	}
 
 	return count, nil
 }
 
 // Exists checks if the row exists in the table.
-func (q frontendQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q portQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -464,14 +441,14 @@ func (q frontendQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "models: failed to check if frontends exists")
+		return false, errors.Wrap(err, "models: failed to check if ports exists")
 	}
 
 	return count > 0, nil
 }
 
 // LoadBalancer pointed to by the foreign key.
-func (o *Frontend) LoadBalancer(mods ...qm.QueryMod) loadBalancerQuery {
+func (o *Port) LoadBalancer(mods ...qm.QueryMod) loadBalancerQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("\"load_balancer_id\" = ?", o.LoadBalancerID),
 	}
@@ -482,14 +459,14 @@ func (o *Frontend) LoadBalancer(mods ...qm.QueryMod) loadBalancerQuery {
 }
 
 // Assignments retrieves all the assignment's Assignments with an executor.
-func (o *Frontend) Assignments(mods ...qm.QueryMod) assignmentQuery {
+func (o *Port) Assignments(mods ...qm.QueryMod) assignmentQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"assignments\".\"frontend_id\"=?", o.FrontendID),
+		qm.Where("\"assignments\".\"port_id\"=?", o.PortID),
 	)
 
 	return Assignments(queryMods...)
@@ -497,28 +474,28 @@ func (o *Frontend) Assignments(mods ...qm.QueryMod) assignmentQuery {
 
 // LoadLoadBalancer allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, singular bool, maybeFrontend interface{}, mods queries.Applicator) error {
-	var slice []*Frontend
-	var object *Frontend
+func (portL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, singular bool, maybePort interface{}, mods queries.Applicator) error {
+	var slice []*Port
+	var object *Port
 
 	if singular {
 		var ok bool
-		object, ok = maybeFrontend.(*Frontend)
+		object, ok = maybePort.(*Port)
 		if !ok {
-			object = new(Frontend)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeFrontend)
+			object = new(Port)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePort)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFrontend))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePort))
 			}
 		}
 	} else {
-		s, ok := maybeFrontend.(*[]*Frontend)
+		s, ok := maybePort.(*[]*Port)
 		if ok {
 			slice = *s
 		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeFrontend)
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePort)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFrontend))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePort))
 			}
 		}
 	}
@@ -526,7 +503,7 @@ func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, s
 	args := make([]interface{}, 0, 1)
 	if singular {
 		if object.R == nil {
-			object.R = &frontendR{}
+			object.R = &portR{}
 		}
 		args = append(args, object.LoadBalancerID)
 
@@ -534,7 +511,7 @@ func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, s
 	Outer:
 		for _, obj := range slice {
 			if obj.R == nil {
-				obj.R = &frontendR{}
+				obj.R = &portR{}
 			}
 
 			for _, a := range args {
@@ -596,7 +573,7 @@ func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, s
 		if foreign.R == nil {
 			foreign.R = &loadBalancerR{}
 		}
-		foreign.R.Frontends = append(foreign.R.Frontends, object)
+		foreign.R.Ports = append(foreign.R.Ports, object)
 		return nil
 	}
 
@@ -607,7 +584,7 @@ func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, s
 				if foreign.R == nil {
 					foreign.R = &loadBalancerR{}
 				}
-				foreign.R.Frontends = append(foreign.R.Frontends, local)
+				foreign.R.Ports = append(foreign.R.Ports, local)
 				break
 			}
 		}
@@ -618,28 +595,28 @@ func (frontendL) LoadLoadBalancer(ctx context.Context, e boil.ContextExecutor, s
 
 // LoadAssignments allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (frontendL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeFrontend interface{}, mods queries.Applicator) error {
-	var slice []*Frontend
-	var object *Frontend
+func (portL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, singular bool, maybePort interface{}, mods queries.Applicator) error {
+	var slice []*Port
+	var object *Port
 
 	if singular {
 		var ok bool
-		object, ok = maybeFrontend.(*Frontend)
+		object, ok = maybePort.(*Port)
 		if !ok {
-			object = new(Frontend)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeFrontend)
+			object = new(Port)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybePort)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeFrontend))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybePort))
 			}
 		}
 	} else {
-		s, ok := maybeFrontend.(*[]*Frontend)
+		s, ok := maybePort.(*[]*Port)
 		if ok {
 			slice = *s
 		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeFrontend)
+			ok = queries.SetFromEmbeddedStruct(&slice, maybePort)
 			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeFrontend))
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybePort))
 			}
 		}
 	}
@@ -647,23 +624,23 @@ func (frontendL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, si
 	args := make([]interface{}, 0, 1)
 	if singular {
 		if object.R == nil {
-			object.R = &frontendR{}
+			object.R = &portR{}
 		}
-		args = append(args, object.FrontendID)
+		args = append(args, object.PortID)
 	} else {
 	Outer:
 		for _, obj := range slice {
 			if obj.R == nil {
-				obj.R = &frontendR{}
+				obj.R = &portR{}
 			}
 
 			for _, a := range args {
-				if a == obj.FrontendID {
+				if a == obj.PortID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.FrontendID)
+			args = append(args, obj.PortID)
 		}
 	}
 
@@ -673,7 +650,7 @@ func (frontendL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, si
 
 	query := NewQuery(
 		qm.From(`assignments`),
-		qm.WhereIn(`assignments.frontend_id in ?`, args...),
+		qm.WhereIn(`assignments.port_id in ?`, args...),
 		qmhelper.WhereIsNull(`assignments.deleted_at`),
 	)
 	if mods != nil {
@@ -710,19 +687,19 @@ func (frontendL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, si
 			if foreign.R == nil {
 				foreign.R = &assignmentR{}
 			}
-			foreign.R.Frontend = object
+			foreign.R.Port = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if local.FrontendID == foreign.FrontendID {
+			if local.PortID == foreign.PortID {
 				local.R.Assignments = append(local.R.Assignments, foreign)
 				if foreign.R == nil {
 					foreign.R = &assignmentR{}
 				}
-				foreign.R.Frontend = local
+				foreign.R.Port = local
 				break
 			}
 		}
@@ -731,10 +708,10 @@ func (frontendL) LoadAssignments(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// SetLoadBalancer of the frontend to the related item.
+// SetLoadBalancer of the port to the related item.
 // Sets o.R.LoadBalancer to related.
-// Adds o to related.R.Frontends.
-func (o *Frontend) SetLoadBalancer(ctx context.Context, exec boil.ContextExecutor, insert bool, related *LoadBalancer) error {
+// Adds o to related.R.Ports.
+func (o *Port) SetLoadBalancer(ctx context.Context, exec boil.ContextExecutor, insert bool, related *LoadBalancer) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -743,11 +720,11 @@ func (o *Frontend) SetLoadBalancer(ctx context.Context, exec boil.ContextExecuto
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"frontends\" SET %s WHERE %s",
+		"UPDATE \"ports\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-		strmangle.WhereClause("\"", "\"", 2, frontendPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, portPrimaryKeyColumns),
 	)
-	values := []interface{}{related.LoadBalancerID, o.FrontendID}
+	values := []interface{}{related.LoadBalancerID, o.PortID}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -760,7 +737,7 @@ func (o *Frontend) SetLoadBalancer(ctx context.Context, exec boil.ContextExecuto
 
 	o.LoadBalancerID = related.LoadBalancerID
 	if o.R == nil {
-		o.R = &frontendR{
+		o.R = &portR{
 			LoadBalancer: related,
 		}
 	} else {
@@ -769,34 +746,34 @@ func (o *Frontend) SetLoadBalancer(ctx context.Context, exec boil.ContextExecuto
 
 	if related.R == nil {
 		related.R = &loadBalancerR{
-			Frontends: FrontendSlice{o},
+			Ports: PortSlice{o},
 		}
 	} else {
-		related.R.Frontends = append(related.R.Frontends, o)
+		related.R.Ports = append(related.R.Ports, o)
 	}
 
 	return nil
 }
 
 // AddAssignments adds the given related objects to the existing relationships
-// of the frontend, optionally inserting them as new records.
+// of the port, optionally inserting them as new records.
 // Appends related to o.R.Assignments.
-// Sets related.R.Frontend appropriately.
-func (o *Frontend) AddAssignments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Assignment) error {
+// Sets related.R.Port appropriately.
+func (o *Port) AddAssignments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Assignment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.FrontendID = o.FrontendID
+			rel.PortID = o.PortID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE \"assignments\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"frontend_id"}),
+				strmangle.SetParamNames("\"", "\"", 1, []string{"port_id"}),
 				strmangle.WhereClause("\"", "\"", 2, assignmentPrimaryKeyColumns),
 			)
-			values := []interface{}{o.FrontendID, rel.AssignmentID}
+			values := []interface{}{o.PortID, rel.AssignmentID}
 
 			if boil.IsDebug(ctx) {
 				writer := boil.DebugWriterFrom(ctx)
@@ -807,12 +784,12 @@ func (o *Frontend) AddAssignments(ctx context.Context, exec boil.ContextExecutor
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.FrontendID = o.FrontendID
+			rel.PortID = o.PortID
 		}
 	}
 
 	if o.R == nil {
-		o.R = &frontendR{
+		o.R = &portR{
 			Assignments: related,
 		}
 	} else {
@@ -822,58 +799,58 @@ func (o *Frontend) AddAssignments(ctx context.Context, exec boil.ContextExecutor
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &assignmentR{
-				Frontend: o,
+				Port: o,
 			}
 		} else {
-			rel.R.Frontend = o
+			rel.R.Port = o
 		}
 	}
 	return nil
 }
 
-// Frontends retrieves all the records using an executor.
-func Frontends(mods ...qm.QueryMod) frontendQuery {
-	mods = append(mods, qm.From("\"frontends\""), qmhelper.WhereIsNull("\"frontends\".\"deleted_at\""))
+// Ports retrieves all the records using an executor.
+func Ports(mods ...qm.QueryMod) portQuery {
+	mods = append(mods, qm.From("\"ports\""), qmhelper.WhereIsNull("\"ports\".\"deleted_at\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"frontends\".*"})
+		queries.SetSelect(q, []string{"\"ports\".*"})
 	}
 
-	return frontendQuery{q}
+	return portQuery{q}
 }
 
-// FindFrontend retrieves a single record by ID with an executor.
+// FindPort retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindFrontend(ctx context.Context, exec boil.ContextExecutor, frontendID string, selectCols ...string) (*Frontend, error) {
-	frontendObj := &Frontend{}
+func FindPort(ctx context.Context, exec boil.ContextExecutor, portID string, selectCols ...string) (*Port, error) {
+	portObj := &Port{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"frontends\" where \"frontend_id\"=$1 and \"deleted_at\" is null", sel,
+		"select %s from \"ports\" where \"port_id\"=$1 and \"deleted_at\" is null", sel,
 	)
 
-	q := queries.Raw(query, frontendID)
+	q := queries.Raw(query, portID)
 
-	err := q.Bind(ctx, exec, frontendObj)
+	err := q.Bind(ctx, exec, portObj)
 	if err != nil {
-		return nil, errors.Wrap(err, "models: unable to select from frontends")
+		return nil, errors.Wrap(err, "models: unable to select from ports")
 	}
 
-	if err = frontendObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return frontendObj, err
+	if err = portObj.doAfterSelectHooks(ctx, exec); err != nil {
+		return portObj, err
 	}
 
-	return frontendObj, nil
+	return portObj, nil
 }
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Frontend) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Port) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no frontends provided for insertion")
+		return errors.New("models: no ports provided for insertion")
 	}
 
 	var err error
@@ -892,33 +869,33 @@ func (o *Frontend) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(frontendColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(portColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
-	frontendInsertCacheMut.RLock()
-	cache, cached := frontendInsertCache[key]
-	frontendInsertCacheMut.RUnlock()
+	portInsertCacheMut.RLock()
+	cache, cached := portInsertCache[key]
+	portInsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			frontendAllColumns,
-			frontendColumnsWithDefault,
-			frontendColumnsWithoutDefault,
+			portAllColumns,
+			portColumnsWithDefault,
+			portColumnsWithoutDefault,
 			nzDefaults,
 		)
 
-		cache.valueMapping, err = queries.BindMapping(frontendType, frontendMapping, wl)
+		cache.valueMapping, err = queries.BindMapping(portType, portMapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping(frontendType, frontendMapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping(portType, portMapping, returnColumns)
 		if err != nil {
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"frontends\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"ports\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"frontends\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"ports\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -946,22 +923,22 @@ func (o *Frontend) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to insert into frontends")
+		return errors.Wrap(err, "models: unable to insert into ports")
 	}
 
 	if !cached {
-		frontendInsertCacheMut.Lock()
-		frontendInsertCache[key] = cache
-		frontendInsertCacheMut.Unlock()
+		portInsertCacheMut.Lock()
+		portInsertCache[key] = cache
+		portInsertCacheMut.Unlock()
 	}
 
 	return o.doAfterInsertHooks(ctx, exec)
 }
 
-// Update uses an executor to update the Frontend.
+// Update uses an executor to update the Port.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Frontend) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Port) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
 
@@ -973,28 +950,28 @@ func (o *Frontend) Update(ctx context.Context, exec boil.ContextExecutor, column
 		return 0, err
 	}
 	key := makeCacheKey(columns, nil)
-	frontendUpdateCacheMut.RLock()
-	cache, cached := frontendUpdateCache[key]
-	frontendUpdateCacheMut.RUnlock()
+	portUpdateCacheMut.RLock()
+	cache, cached := portUpdateCache[key]
+	portUpdateCacheMut.RUnlock()
 
 	if !cached {
 		wl := columns.UpdateColumnSet(
-			frontendAllColumns,
-			frontendPrimaryKeyColumns,
+			portAllColumns,
+			portPrimaryKeyColumns,
 		)
 
 		if !columns.IsWhitelist() {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		if len(wl) == 0 {
-			return 0, errors.New("models: unable to update frontends, could not build whitelist")
+			return 0, errors.New("models: unable to update ports, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"frontends\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"ports\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
-			strmangle.WhereClause("\"", "\"", len(wl)+1, frontendPrimaryKeyColumns),
+			strmangle.WhereClause("\"", "\"", len(wl)+1, portPrimaryKeyColumns),
 		)
-		cache.valueMapping, err = queries.BindMapping(frontendType, frontendMapping, append(wl, frontendPrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping(portType, portMapping, append(wl, portPrimaryKeyColumns...))
 		if err != nil {
 			return 0, err
 		}
@@ -1010,42 +987,42 @@ func (o *Frontend) Update(ctx context.Context, exec boil.ContextExecutor, column
 	var result sql.Result
 	result, err = exec.ExecContext(ctx, cache.query, values...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update frontends row")
+		return 0, errors.Wrap(err, "models: unable to update ports row")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by update for frontends")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by update for ports")
 	}
 
 	if !cached {
-		frontendUpdateCacheMut.Lock()
-		frontendUpdateCache[key] = cache
-		frontendUpdateCacheMut.Unlock()
+		portUpdateCacheMut.Lock()
+		portUpdateCache[key] = cache
+		portUpdateCacheMut.Unlock()
 	}
 
 	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q frontendQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q portQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all for frontends")
+		return 0, errors.Wrap(err, "models: unable to update all for ports")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for frontends")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for ports")
 	}
 
 	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o FrontendSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o PortSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -1067,13 +1044,13 @@ func (o FrontendSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 	// Append all of the primary key values for each column
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), frontendPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), portPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"frontends\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"ports\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, frontendPrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, portPrimaryKeyColumns, len(o)))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1082,21 +1059,21 @@ func (o FrontendSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all in frontend slice")
+		return 0, errors.Wrap(err, "models: unable to update all in port slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all frontend")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all port")
 	}
 	return rowsAff, nil
 }
 
-// Delete deletes a single Frontend record with an executor.
+// Delete deletes a single Port record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Frontend) Delete(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
+func (o *Port) Delete(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if o == nil {
-		return 0, errors.New("models: no Frontend provided for delete")
+		return 0, errors.New("models: no Port provided for delete")
 	}
 
 	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
@@ -1108,16 +1085,16 @@ func (o *Frontend) Delete(ctx context.Context, exec boil.ContextExecutor, hardDe
 		args []interface{}
 	)
 	if hardDelete {
-		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), frontendPrimaryKeyMapping)
-		sql = "DELETE FROM \"frontends\" WHERE \"frontend_id\"=$1"
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), portPrimaryKeyMapping)
+		sql = "DELETE FROM \"ports\" WHERE \"port_id\"=$1"
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
 		o.DeletedAt = null.TimeFrom(currTime)
 		wl := []string{"deleted_at"}
-		sql = fmt.Sprintf("UPDATE \"frontends\" SET %s WHERE \"frontend_id\"=$2",
+		sql = fmt.Sprintf("UPDATE \"ports\" SET %s WHERE \"port_id\"=$2",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 		)
-		valueMapping, err := queries.BindMapping(frontendType, frontendMapping, append(wl, frontendPrimaryKeyColumns...))
+		valueMapping, err := queries.BindMapping(portType, portMapping, append(wl, portPrimaryKeyColumns...))
 		if err != nil {
 			return 0, err
 		}
@@ -1131,12 +1108,12 @@ func (o *Frontend) Delete(ctx context.Context, exec boil.ContextExecutor, hardDe
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete from frontends")
+		return 0, errors.Wrap(err, "models: unable to delete from ports")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for frontends")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for ports")
 	}
 
 	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
@@ -1147,9 +1124,9 @@ func (o *Frontend) Delete(ctx context.Context, exec boil.ContextExecutor, hardDe
 }
 
 // DeleteAll deletes all matching rows.
-func (q frontendQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
+func (q portQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if q.Query == nil {
-		return 0, errors.New("models: no frontendQuery provided for delete all")
+		return 0, errors.New("models: no portQuery provided for delete all")
 	}
 
 	if hardDelete {
@@ -1161,24 +1138,24 @@ func (q frontendQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor,
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from frontends")
+		return 0, errors.Wrap(err, "models: unable to delete all from ports")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for frontends")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for ports")
 	}
 
 	return rowsAff, nil
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o FrontendSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
+func (o PortSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
 
-	if len(frontendBeforeDeleteHooks) != 0 {
+	if len(portBeforeDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
 				return 0, err
@@ -1192,21 +1169,21 @@ func (o FrontendSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor,
 	)
 	if hardDelete {
 		for _, obj := range o {
-			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), frontendPrimaryKeyMapping)
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), portPrimaryKeyMapping)
 			args = append(args, pkeyArgs...)
 		}
-		sql = "DELETE FROM \"frontends\" WHERE " +
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, frontendPrimaryKeyColumns, len(o))
+		sql = "DELETE FROM \"ports\" WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, portPrimaryKeyColumns, len(o))
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
 		for _, obj := range o {
-			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), frontendPrimaryKeyMapping)
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), portPrimaryKeyMapping)
 			args = append(args, pkeyArgs...)
 			obj.DeletedAt = null.TimeFrom(currTime)
 		}
 		wl := []string{"deleted_at"}
-		sql = fmt.Sprintf("UPDATE \"frontends\" SET %s WHERE "+
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 2, frontendPrimaryKeyColumns, len(o)),
+		sql = fmt.Sprintf("UPDATE \"ports\" SET %s WHERE "+
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 2, portPrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 		)
 		args = append([]interface{}{currTime}, args...)
@@ -1219,15 +1196,15 @@ func (o FrontendSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor,
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from frontend slice")
+		return 0, errors.Wrap(err, "models: unable to delete all from port slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for frontends")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for ports")
 	}
 
-	if len(frontendAfterDeleteHooks) != 0 {
+	if len(portAfterDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
 				return 0, err
@@ -1240,8 +1217,8 @@ func (o FrontendSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor,
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Frontend) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindFrontend(ctx, exec, o.FrontendID)
+func (o *Port) Reload(ctx context.Context, exec boil.ContextExecutor) error {
+	ret, err := FindPort(ctx, exec, o.PortID)
 	if err != nil {
 		return err
 	}
@@ -1252,27 +1229,27 @@ func (o *Frontend) Reload(ctx context.Context, exec boil.ContextExecutor) error 
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *FrontendSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *PortSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
 
-	slice := FrontendSlice{}
+	slice := PortSlice{}
 	var args []interface{}
 	for _, obj := range *o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), frontendPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), portPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"frontends\".* FROM \"frontends\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, frontendPrimaryKeyColumns, len(*o)) +
+	sql := "SELECT \"ports\".* FROM \"ports\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, portPrimaryKeyColumns, len(*o)) +
 		"and \"deleted_at\" is null"
 
 	q := queries.Raw(sql, args...)
 
 	err := q.Bind(ctx, exec, &slice)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to reload all in FrontendSlice")
+		return errors.Wrap(err, "models: unable to reload all in PortSlice")
 	}
 
 	*o = slice
@@ -1280,36 +1257,36 @@ func (o *FrontendSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 	return nil
 }
 
-// FrontendExists checks if the Frontend row exists.
-func FrontendExists(ctx context.Context, exec boil.ContextExecutor, frontendID string) (bool, error) {
+// PortExists checks if the Port row exists.
+func PortExists(ctx context.Context, exec boil.ContextExecutor, portID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"frontends\" where \"frontend_id\"=$1 and \"deleted_at\" is null limit 1)"
+	sql := "select exists(select 1 from \"ports\" where \"port_id\"=$1 and \"deleted_at\" is null limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, frontendID)
+		fmt.Fprintln(writer, portID)
 	}
-	row := exec.QueryRowContext(ctx, sql, frontendID)
+	row := exec.QueryRowContext(ctx, sql, portID)
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "models: unable to check if frontends exists")
+		return false, errors.Wrap(err, "models: unable to check if ports exists")
 	}
 
 	return exists, nil
 }
 
-// Exists checks if the Frontend row exists.
-func (o *Frontend) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return FrontendExists(ctx, exec, o.FrontendID)
+// Exists checks if the Port row exists.
+func (o *Port) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+	return PortExists(ctx, exec, o.PortID)
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Frontend) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *Port) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no frontends provided for upsert")
+		return errors.New("models: no ports provided for upsert")
 	}
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
@@ -1324,7 +1301,7 @@ func (o *Frontend) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(frontendColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(portColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -1354,41 +1331,41 @@ func (o *Frontend) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	frontendUpsertCacheMut.RLock()
-	cache, cached := frontendUpsertCache[key]
-	frontendUpsertCacheMut.RUnlock()
+	portUpsertCacheMut.RLock()
+	cache, cached := portUpsertCache[key]
+	portUpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, ret := insertColumns.InsertColumnSet(
-			frontendAllColumns,
-			frontendColumnsWithDefault,
-			frontendColumnsWithoutDefault,
+			portAllColumns,
+			portColumnsWithDefault,
+			portColumnsWithoutDefault,
 			nzDefaults,
 		)
 		update := updateColumns.UpdateColumnSet(
-			frontendAllColumns,
-			frontendPrimaryKeyColumns,
+			portAllColumns,
+			portPrimaryKeyColumns,
 		)
 
 		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert frontends, could not build update column list")
+			return errors.New("models: unable to upsert ports, could not build update column list")
 		}
 
 		conflict := conflictColumns
 		if len(conflict) == 0 {
-			conflict = make([]string, len(frontendPrimaryKeyColumns))
-			copy(conflict, frontendPrimaryKeyColumns)
+			conflict = make([]string, len(portPrimaryKeyColumns))
+			copy(conflict, portPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryCockroachDB(dialect, "\"frontends\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = buildUpsertQueryCockroachDB(dialect, "\"ports\"", updateOnConflict, ret, update, conflict, insert)
 
-		cache.valueMapping, err = queries.BindMapping(frontendType, frontendMapping, insert)
+		cache.valueMapping, err = queries.BindMapping(portType, portMapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(frontendType, frontendMapping, ret)
+			cache.retMapping, err = queries.BindMapping(portType, portMapping, ret)
 			if err != nil {
 				return err
 			}
@@ -1416,13 +1393,13 @@ func (o *Frontend) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		_, err = exec.ExecContext(ctx, cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert frontends")
+		return errors.Wrap(err, "models: unable to upsert ports")
 	}
 
 	if !cached {
-		frontendUpsertCacheMut.Lock()
-		frontendUpsertCache[key] = cache
-		frontendUpsertCacheMut.Unlock()
+		portUpsertCacheMut.Lock()
+		portUpsertCache[key] = cache
+		portUpsertCacheMut.Unlock()
 	}
 
 	return o.doAfterUpsertHooks(ctx, exec)

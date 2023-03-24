@@ -7,7 +7,7 @@ type assignment struct {
 	UpdatedAt      time.Time  `json:"updated_at"`
 	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
 	ID             string     `json:"id"`
-	FrontendID     string     `json:"frontend_id"`
+	PortID         string     `json:"port_id"`
 	LoadBalancerID string     `json:"load_balancer_id"`
 	PoolID         string     `json:"pool_id"`
 	TenantID       string     `json:"tenant_id"`
@@ -15,7 +15,7 @@ type assignment struct {
 
 type assignmentSlice []*assignment
 
-type frontend struct {
+type port struct {
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
 	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
@@ -27,7 +27,7 @@ type frontend struct {
 	Port           int64      `json:"port"`
 }
 
-type frontendSlice []*frontend
+type portSlice []*port
 
 type loadBalancer struct {
 	CreatedAt   time.Time  `json:"created_at"`
@@ -84,7 +84,7 @@ type response struct {
 	Version       string             `json:"version"`
 	Kind          string             `json:"kind"`
 	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
-	Frontends     *frontendSlice     `json:"frontends,omitempty"`
+	Ports         *portSlice         `json:"ports,omitempty"`
 	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
 	Locations     *locationSlice     `json:"locations,omitempty"`
 	Origins       *originSlice       `json:"origins,omitempty"`

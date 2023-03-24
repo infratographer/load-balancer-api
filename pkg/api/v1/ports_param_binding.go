@@ -10,16 +10,16 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
-// frontendParamsBinding binds the request path and query params to a slice of query mods
+// portParamsBinding binds the request path and query params to a slice of query mods
 // for use with sqlboiler. It returns an error if an invalid uuid is provided
-// for the load_balancer_id or frontend_id in the request path. It also iterates the
+// for the load_balancer_id or port_id in the request path. It also iterates the
 // expected query params and appends them to the slice of query mods if they are present
 // in the request.
-func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
+func (r *Router) portParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	var (
 		err            error
 		loadBalancerID string
-		frontendID     string
+		portID         string
 	)
 
 	mods := []qm.QueryMod{}
@@ -31,19 +31,19 @@ func (r *Router) frontendParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		}
 	} else {
 		// found load_balancer_id in path so add to query mods
-		mods = append(mods, models.FrontendWhere.LoadBalancerID.EQ(loadBalancerID))
+		mods = append(mods, models.PortWhere.LoadBalancerID.EQ(loadBalancerID))
 		r.logger.Debug("path param", zap.String("load_balancer_id", loadBalancerID))
 	}
 
-	// optional frontend_id in the request path
-	if frontendID, err = r.parseUUID(c, "frontend_id"); err != nil {
+	// optional port_id in the request path
+	if portID, err = r.parseUUID(c, "port_id"); err != nil {
 		if !errors.Is(err, ErrUUIDNotFound) {
 			return nil, err
 		}
 	} else {
-		// found frontend_id in path so add to query mods
-		mods = append(mods, models.FrontendWhere.FrontendID.EQ(frontendID))
-		r.logger.Debug("path param", zap.String("frontend_id", frontendID))
+		// found port_id in path so add to query mods
+		mods = append(mods, models.PortWhere.PortID.EQ(portID))
+		r.logger.Debug("path param", zap.String("port_id", portID))
 	}
 
 	// query params
