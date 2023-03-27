@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.uber.org/zap"
 )
 
 // assignmentsGet handles the GET /assignments route
@@ -11,13 +12,13 @@ func (r *Router) assignmentsGet(c echo.Context) error {
 
 	mods, err := r.assignmentParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("error parsing query params", "error", err)
+		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	assignments, err := models.Assignments(mods...).All(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error getting assignments", "error", err)
+		r.logger.Error("error getting assignments", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 

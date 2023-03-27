@@ -51,7 +51,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		return nil, ErrIDRequired
 	}
 	// query params
-	queryParams := []string{"load_balancer_size", "load_balancer_type", "ip_address_id", "location_id", "slug", "name"}
+	queryParams := []string{"load_balancer_id", "load_balancer_size", "load_balancer_type", "ip_address_id", "location_id", "slug", "name"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -59,7 +59,7 @@ func (r *Router) loadBalancerParamsBinding(c echo.Context) ([]qm.QueryMod, error
 		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debugw("query param", "query_param", qp, "param_vale", c.QueryParam(qp))
+			r.logger.Debug("load balancer query parameters", zap.String("query.key", qp), zap.String("query.value", c.QueryParam(qp)))
 		}
 	}
 

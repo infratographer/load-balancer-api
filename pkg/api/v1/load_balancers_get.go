@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.uber.org/zap"
 )
@@ -16,7 +17,7 @@ func (r *Router) loadBalancerList(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	lbs, err := models.LoadBalancers(mods...).All(ctx, r.db)
+	lbs, err := models.LoadBalancers(append(mods, qm.Load("Ports"))...).All(ctx, r.db)
 	if err != nil {
 		return v1InternalServerErrorResponse(c, err)
 	}
@@ -34,7 +35,7 @@ func (r *Router) loadBalancerGet(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	lbs, err := models.LoadBalancers(mods...).All(ctx, r.db)
+	lbs, err := models.LoadBalancers(append(mods, qm.Load("Ports"))...).All(ctx, r.db)
 	if err != nil {
 		return v1InternalServerErrorResponse(c, err)
 	}

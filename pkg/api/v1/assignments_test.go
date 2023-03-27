@@ -30,7 +30,7 @@ func Test_Assignments(t *testing.T) {
 	defer cleanupFE(t)
 
 	// Create a pool
-	pool, cleanupPool := createPool(t, srv, "marlin", loadBalancer.TenantID)
+	pool, cleanupPool := createPool(t, srv, "marlin", tenantID)
 	defer cleanupPool(t)
 
 	// Create an origin in the pool
@@ -38,7 +38,7 @@ func Test_Assignments(t *testing.T) {
 	defer cleanupOrigin(t)
 
 	// poll2
-	pool2, cleanupPool2 := createPool(t, srv, "dory", loadBalancer.TenantID)
+	pool2, cleanupPool2 := createPool(t, srv, "dory", tenantID)
 	defer cleanupPool2(t)
 
 	// origin2

@@ -13,6 +13,150 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/httptools"
 )
 
+func TestCreateLoadBalancer(t *testing.T) {
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
+	defer srv.Close()
+
+	tenantID := uuid.New().String()
+	locationID := uuid.New().String()
+	ipID := uuid.New().String()
+	sizeName := "small"
+	typeName := "layer-3"
+
+	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/loadbalancers"
+
+	// create a pool for testing
+	pool, cleanupPool := createPool(t, srv, "testPool01", tenantID)
+	defer cleanupPool(t)
+
+	tests := []struct {
+		name       string
+		fakeBody   string
+		tenant     string
+		lbType     string
+		wantStatus int
+	}{
+		{
+			name: "happy path no ports",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testlb01",
+					"location_id": "%s",
+					"ip_address_id": "%s",
+					"load_balancer_size": "%s",
+					"load_balancer_type": "%s"
+				}`, locationID, ipID, sizeName, typeName),
+			tenant:     tenantID,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "happy path ports no pools",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testlb02",
+					"location_id": "%s",
+					"ip_address_id": "%s",
+					"load_balancer_size": "%s",
+					"load_balancer_type": "%s",
+					"ports": [
+						{
+							"name": "testlb02-https",
+							"port": 443
+						}
+					]
+				}`, locationID, ipID, sizeName, typeName),
+			tenant:     tenantID,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "happy path ports with pool",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testlb03",
+					"location_id": "%s",
+					"ip_address_id": "%s",
+					"load_balancer_size": "%s",
+					"load_balancer_type": "%s",
+					"ports": [
+						{
+							"name": "testlb03-https",
+							"port": 443,
+							"pools": ["%s"]
+						}
+					]
+				}`, locationID, ipID, sizeName, typeName, pool.ID),
+			tenant:     tenantID,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "sad path ports with nonexistent pool",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testlb04",
+					"location_id": "%s",
+					"ip_address_id": "%s",
+					"load_balancer_size": "%s",
+					"load_balancer_type": "%s",
+					"ports": [
+						{
+							"name": "testlb04-https",
+							"port": 443,
+							"pools": ["%s"]
+						}
+					]
+				}`, locationID, ipID, sizeName, typeName, uuid.New().String()),
+			tenant:     tenantID,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			createReq, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodPost,
+				baseURL,
+				httptools.FakeBody(tt.fakeBody),
+			)
+			assert.NoError(t, err)
+
+			createResp, err := http.DefaultClient.Do(createReq)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, createResp.StatusCode)
+			defer createResp.Body.Close()
+
+			// if we're testing a non-2xx resp, stop testing here
+			if tt.wantStatus > 299 {
+				return
+			}
+
+			testLoadBalancer := struct {
+				Version        string `json:"version"`
+				Message        string `json:"message"`
+				Status         int    `json:"status"`
+				LoadBalancerID string `json:"load_balancer_id"`
+			}{}
+
+			err = json.NewDecoder(createResp.Body).Decode(&testLoadBalancer)
+
+			assert.NoError(t, err)
+
+			deleteRequest, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodDelete,
+				fmt.Sprintf("%s?load_balancer_id=%s", baseURL, testLoadBalancer.LoadBalancerID),
+				nil,
+			)
+
+			assert.NoError(t, err)
+
+			deleteResp, err := http.DefaultClient.Do(deleteRequest)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, deleteResp.StatusCode)
+			defer deleteResp.Body.Close()
+		})
+	}
+}
+
 func TestLoadBalancerRoutes(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()

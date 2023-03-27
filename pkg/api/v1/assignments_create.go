@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
@@ -19,7 +20,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Errorw("error binding payload", "error", err)
+		r.logger.Error("error binding payload", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
@@ -34,18 +35,21 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		qm.Load("LoadBalancer"),
 	).One(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error fetching port", "error", err)
+		r.logger.Error("error fetching port", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	// validate pool exists
 	pool, err := models.Pools(
 		models.PoolWhere.PoolID.EQ(payload.PoolID),
+		models.PoolWhere.TenantID.EQ(tenantID),
 	).One(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error fetching pool", "error", err)
+		r.logger.Error("error fetching pool", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
+
+	r.logger.Debug("validated pool exists", zap.Any("pool", pool))
 
 	assignment := models.Assignment{
 		TenantID: tenantID,
@@ -54,7 +58,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	}
 
 	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Errorw("error inserting assignment", "error", err)
+		r.logger.Error("error inserting assignment", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -67,12 +71,12 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error creating assignment message", "error", err)
+		r.logger.Error("error creating assignment message", zap.Error(err))
 	}
 
 	if err := r.pubsub.PublishCreate(ctx, "load-balancer-assignment", "global", msg); err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Errorw("error publishing assignment event", "error", err)
+		r.logger.Error("error publishing assignment event", zap.Error(err))
 	}
 
 	return v1AssignmentsCreatedResponse(c, assignment.AssignmentID)
