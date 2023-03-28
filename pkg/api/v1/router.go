@@ -64,7 +64,14 @@ func (r *Router) Routes(e *echo.Echo) {
 	e.GET("/healthz", r.livenessCheck)
 	e.GET("/readyz", r.readinessCheck)
 
-	r.v1Routes(e.Group(apiVersion))
+	v1 := e.Group(apiVersion)
+	{
+		r.addAssignRoutes(v1)
+		r.addPortRoutes(v1)
+		r.addLoadBalancerRoutes(v1)
+		r.addOriginRoutes(v1)
+		r.addPoolsRoutes(v1)
+	}
 
 	_, err := r.pubsub.AddStream()
 	if err != nil {
