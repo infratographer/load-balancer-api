@@ -77,7 +77,6 @@ func (r *Router) poolCreate(c echo.Context) error {
 			}
 
 			return v1BadRequestResponse(c, err)
-
 		}
 
 		additionalURNs = append(additionalURNs, pubsub.NewPortURN(originID))
