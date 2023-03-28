@@ -15,8 +15,9 @@ func (r *Router) portCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		Name string `json:"name"`
-		Port int64  `json:"port"`
+		Name  string   `json:"name"`
+		Port  int64    `json:"port"`
+		Pools []string `json:"pools"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind payload to port creation input", zap.Error(err))
@@ -29,7 +30,7 @@ func (r *Router) portCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	loadBalancer, err := models.LoadBalancers(
+	lb, err := models.LoadBalancers(
 		models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID),
 	).One(ctx, r.db)
 	if err != nil {
@@ -40,7 +41,7 @@ func (r *Router) portCreate(c echo.Context) error {
 	port := models.Port{
 		Name:           payload.Name,
 		Port:           payload.Port,
-		LoadBalancerID: loadBalancer.LoadBalancerID,
+		LoadBalancerID: lb.LoadBalancerID,
 		Slug:           slug.Make(payload.Name),
 		CurrentState:   "pending",
 	}
@@ -50,20 +51,67 @@ func (r *Router) portCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	if err := port.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Error("failed to insert port", zap.Error(err))
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		r.logger.Error("failed to begin transaction", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
+	if err := port.Insert(ctx, tx, boil.Infer()); err != nil {
+		r.logger.Error("failed to create port, rolling back transaction", zap.Error(err))
+
+		if err := tx.Rollback(); err != nil {
+			r.logger.Error("error rolling back transaction", zap.Error(err))
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	additionalURNs := []string{
+		pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
+	}
+
+	for _, poolID := range payload.Pools {
+		if _, err := uuid.Parse(poolID); err != nil {
+			r.logger.Error("invalid uuid in port payload", zap.Error(err))
+			return v1BadRequestResponse(c, err)
+		}
+
+		assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, lb.LoadBalancerID, poolID, port.PortID)
+		if err != nil {
+			r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
+
+			if err := tx.Rollback(); err != nil {
+				r.logger.Error("error rolling back transaction", zap.Error(err))
+				return v1InternalServerErrorResponse(c, err)
+			}
+
+			return v1BadRequestResponse(c, err)
+		}
+
+		additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.logger.Error("failed to commit transaction", zap.Error(err))
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	r.logger.Info("created new port for load balancer",
+		zap.String("port.id", port.PortID),
+		zap.String("loadbalancer.id", lb.LoadBalancerID),
+	)
+
 	msg, err := pubsub.NewPortMessage(
 		someTestJWTURN,
-		pubsub.NewTenantURN(loadBalancer.TenantID),
+		pubsub.NewTenantURN(lb.TenantID),
 		pubsub.NewPortURN(port.PortID),
-		pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID),
+		additionalURNs...,
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
-		r.logger.Error("failed to create load balancer message", zap.Error(err))
+		r.logger.Error("failed to create load balancer port message", zap.Error(err))
 	}
 
 	if err := r.pubsub.PublishCreate(ctx, "load-balancer-port", "global", msg); err != nil {

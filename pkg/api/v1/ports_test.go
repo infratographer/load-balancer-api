@@ -1,15 +1,26 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	nats "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.infratographer.com/x/pubsubx"
+)
+
+const (
+	loadBalancerPortSubjectCreate = "com.infratographer.events.load-balancer-port.create.global"
+	loadBalancerPortSubjectDelete = "com.infratographer.events.load-balancer-port.delete.global"
+	loadBalancerPortBaseUrn       = "urn:infratographer:load-balancer-port:"
 )
 
 func createPort(t *testing.T, srv *httptest.Server, loadBalancerID string) (*port, func(*testing.T)) {
@@ -53,6 +64,150 @@ func createPort(t *testing.T, srv *httptest.Server, loadBalancerID string) (*por
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			resp.Body.Close()
+		})
+	}
+}
+
+func TestCreatePorts(t *testing.T) {
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
+	defer srv.Close()
+
+	testLb, cleanupLb := createLoadBalancer(t, srv, uuid.New().String())
+	defer cleanupLb(t)
+
+	// create a pool for testing
+	testPool, cleanupPool := createPool(t, srv, "testPool01", testLb.TenantID)
+	defer cleanupPool(t)
+
+	// create a pubsub client for subscribing to NATS events
+	subscriber := newPubSubClient(t, nsrv.ClientURL())
+	msgChan := make(chan *nats.Msg, 10)
+
+	// create a new nats subscription on the server created above
+	subscription, err := subscriber.ChanSubscribe(
+		context.TODO(),
+		"com.infratographer.events.load-balancer-port.>",
+		msgChan,
+		"load-balancer-api-test",
+	)
+
+	assert.NoError(t, err)
+
+	defer func() {
+		if err := subscription.Unsubscribe(); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	baseURL := srv.URL + "/v1/loadbalancers/" + testLb.ID + "/ports"
+
+	tests := []struct {
+		name       string
+		fakeBody   string
+		tenant     string
+		wantStatus int
+	}{
+		{
+			name: "happy path no pools",
+			fakeBody: `{
+					"name": "testport01",
+					"port": 443
+				}`,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "happy path with pools",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testport01",
+					"port": 443,
+					"pools": ["%s"]
+				}`, testPool.ID),
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "sad path nonexistent pools",
+			fakeBody: fmt.Sprintf(`{
+					"name": "testport01",
+					"port": 443,
+					"pools": ["%s"]
+				}`, uuid.New().String()),
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			createReq, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodPost,
+				baseURL,
+				httptools.FakeBody(tt.fakeBody),
+			)
+			assert.NoError(t, err)
+
+			createResp, err := http.DefaultClient.Do(createReq)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, createResp.StatusCode)
+			defer createResp.Body.Close()
+
+			// if we're testing a non-2xx resp, stop testing here
+			if tt.wantStatus > 299 {
+				return
+			}
+
+			testPort := struct {
+				Version string `json:"version"`
+				Message string `json:"message"`
+				Status  int    `json:"status"`
+				PortID  string `json:"port_id"`
+			}{}
+
+			err = json.NewDecoder(createResp.Body).Decode(&testPort)
+
+			assert.NoError(t, err)
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerPortSubjectCreate, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for create")
+			}
+
+			deleteRequest, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodDelete,
+				fmt.Sprintf("%s?port_id=%s", baseURL, testPort.PortID),
+				nil,
+			)
+
+			assert.NoError(t, err)
+
+			deleteResp, err := http.DefaultClient.Do(deleteRequest)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, deleteResp.StatusCode)
+			defer deleteResp.Body.Close()
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerPortSubjectDelete, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.DeleteEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
 		})
 	}
 }
@@ -261,15 +416,36 @@ func TestPortRoutes(t *testing.T) {
 
 	// Get Tests
 	doHTTPTest(t, &httpTest{
-		name:   "happy path",
+		name:   "happy path get by id",
 		path:   baseURL + "/" + earsID,
 		status: http.StatusOK,
 		method: http.MethodGet,
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "happy path with id",
+		name:   "happy path list with loadbalancer id",
 		path:   baseURLLoadBalancer,
+		status: http.StatusOK,
+		method: http.MethodGet,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list ports by slug",
+		path:   baseURLLoadBalancer + "?slug=ears",
+		status: http.StatusOK,
+		method: http.MethodGet,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list ports by name",
+		path:   baseURLLoadBalancer + "?name=ears",
+		status: http.StatusOK,
+		method: http.MethodGet,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "list ports by name",
+		path:   baseURLLoadBalancer + "?port=25",
 		status: http.StatusOK,
 		method: http.MethodGet,
 	})

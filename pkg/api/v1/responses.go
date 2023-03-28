@@ -230,16 +230,28 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 			Type:        lb.LoadBalancerType,
 		}
 
-		pSumSlice := make(portSummarySlice, len(lb.R.Ports))
+		pSlice := make(portSlice, len(lb.R.Ports))
+
 		for j, p := range lb.R.Ports {
-			pSumSlice[j] = &portSummary{
-				Port:          p.Port,
-				AddressFamily: p.AfInet,
-				Name:          p.Name,
+			pools := make([]string, len(p.R.Assignments))
+			for k, a := range p.R.Assignments {
+				pools[k] = a.PoolID
+			}
+
+			pSlice[j] = &port{
+				CreatedAt:      p.CreatedAt,
+				UpdatedAt:      p.UpdatedAt,
+				TenantID:       p.R.LoadBalancer.TenantID,
+				LoadBalancerID: p.R.LoadBalancer.LoadBalancerID,
+				ID:             p.PortID,
+				Port:           p.Port,
+				AddressFamily:  p.AfInet,
+				Name:           p.Name,
+				Pools:          pools,
 			}
 		}
 
-		l.Ports = pSumSlice
+		l.Ports = pSlice
 
 		out[i] = l
 	}
@@ -274,17 +286,31 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 }
 
 func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
-	out := poolSlice{}
+	out := make(poolSlice, len(ps))
 
-	for _, p := range ps {
-		out = append(out, &pool{
+	for i, p := range ps {
+		originSlice := make(originSlice, len(p.R.Origins))
+		for j, o := range p.R.Origins {
+			originSlice[j] = &origin{
+				CreatedAt:      o.CreatedAt,
+				UpdatedAt:      o.UpdatedAt,
+				ID:             o.OriginID,
+				Name:           o.Name,
+				Port:           o.Port,
+				OriginTarget:   o.OriginTarget,
+				OriginDisabled: o.OriginUserSettingDisabled,
+			}
+		}
+
+		out[i] = &pool{
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
 			ID:        p.PoolID,
 			Name:      p.Name,
 			Protocol:  p.Protocol,
 			TenantID:  p.TenantID,
-		})
+			Origins:   &originSlice,
+		}
 	}
 
 	return c.JSON(http.StatusOK, &response{

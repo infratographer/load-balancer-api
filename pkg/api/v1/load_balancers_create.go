@@ -104,7 +104,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		additionalURNs = append(additionalURNs, pubsub.NewPortURN(portID))
 
 		for _, pool := range p.Pools {
-			assignmentID, err := r.loadBalancerAssignmentCreate(ctx, tx, tenantID, lb.LoadBalancerID, pool, portID)
+			assignmentID, err := r.createAssignment(ctx, tx, tenantID, lb.LoadBalancerID, pool, portID)
 			if err != nil {
 				r.logger.Error("failed to create load balancer assignment, rolling back transaction", zap.Error(err))
 
@@ -172,36 +172,4 @@ func (r *Router) loadBalancerPortCreate(ctx context.Context, tx *sql.Tx, loadBal
 	}
 
 	return port.PortID, nil
-}
-
-func (r *Router) loadBalancerAssignmentCreate(ctx context.Context, tx *sql.Tx, tenantID, loadBalancerID, poolID, portID string) (string, error) {
-	r.logger.Debug("creating loadbalancer assignment",
-		zap.String("tenant.id", tenantID),
-		zap.String("loadbalancer.id", loadBalancerID),
-		zap.String("pool.id", poolID),
-		zap.String("port.id", portID),
-	)
-
-	// validate pool exists
-	pool, err := models.Pools(
-		models.PoolWhere.PoolID.EQ(poolID),
-		models.PoolWhere.TenantID.EQ(tenantID),
-	).One(ctx, r.db)
-	if err != nil {
-		r.logger.Error("error fetching pool", zap.Error(err))
-		return "", err
-	}
-
-	assignment := models.Assignment{
-		TenantID: tenantID,
-		PortID:   portID,
-		PoolID:   pool.PoolID,
-	}
-
-	if err := assignment.Insert(ctx, tx, boil.Infer()); err != nil {
-		r.logger.Error("error inserting assignment", zap.Error(err))
-		return "", err
-	}
-
-	return assignment.AssignmentID, nil
 }

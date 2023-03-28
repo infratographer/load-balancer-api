@@ -15,6 +15,12 @@ func (r *Router) poolCreate(c echo.Context) error {
 	payload := struct {
 		Name     string `json:"name"`
 		Protocol string `json:"protocol"`
+		Origins  []struct {
+			Disabled bool   `json:"disabled"`
+			Name     string `json:"name"`
+			Target   string `json:"target"`
+			Port     int64  `json:"port"`
+		} `json:"origins"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -41,9 +47,44 @@ func (r *Router) poolCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	if err := pool.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Error("error inserting pool", zap.Error(err))
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		r.logger.Error("failed to begin transaction", zap.Error(err))
+		return v1InternalServerErrorResponse(c, err)
+	}
 
+	if err := pool.Insert(ctx, tx, boil.Infer()); err != nil {
+		r.logger.Error("failed to create pool, rolling back transaction", zap.Error(err))
+
+		if err := tx.Rollback(); err != nil {
+			r.logger.Error("error rolling back transaction", zap.Error(err))
+			return v1InternalServerErrorResponse(c, err)
+		}
+
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	additionalURNs := []string{}
+
+	for _, o := range payload.Origins {
+		originID, err := r.createOrigin(ctx, tx, pool.PoolID, o.Name, o.Target, o.Port, o.Disabled)
+		if err != nil {
+			r.logger.Error("failed to create pool origin, rolling back transaction", zap.Error(err))
+
+			if err := tx.Rollback(); err != nil {
+				r.logger.Error("error rolling back transaction", zap.Error(err))
+				return v1InternalServerErrorResponse(c, err)
+			}
+
+			return v1BadRequestResponse(c, err)
+
+		}
+
+		additionalURNs = append(additionalURNs, pubsub.NewPortURN(originID))
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.logger.Error("failed to commit transaction", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -51,6 +92,7 @@ func (r *Router) poolCreate(c echo.Context) error {
 		someTestJWTURN,
 		pubsub.NewTenantURN(tenantID),
 		pubsub.NewPoolURN(pool.PoolID),
+		additionalURNs...,
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

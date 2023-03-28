@@ -37,7 +37,7 @@ func (r *Router) poolsParamsBinding(c echo.Context, relationships ...string) ([]
 		r.logger.Debug("path param", zap.String("pool_id", poolID))
 	}
 
-	queryParams := []string{"slug", "protocol", "name"}
+	queryParams := []string{"slug", "protocol", "name", "pool_id"}
 
 	qpb := echo.QueryParamsBinder(c)
 
