@@ -604,7 +604,7 @@ func createLoadBalancer(t *testing.T, srv *httptest.Server, locationID string) (
 		resp.Body.Close()
 	})
 
-	return (*loadbalancer.LoadBalancers)[0], func(t *testing.T) {
+	return (loadbalancer.LoadBalancers)[0], func(t *testing.T) {
 		test := &httpTest{
 			name:   "delete nemo",
 			path:   baseURL + "?slug=nemo",

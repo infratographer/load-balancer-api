@@ -188,7 +188,7 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:     apiVersion,
 		Kind:        "assignmentsList",
-		Assignments: &out,
+		Assignments: out,
 	})
 }
 
@@ -217,7 +217,7 @@ func v1Ports(c echo.Context, ps models.PortSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "portsList",
-		Ports:   &out,
+		Ports:   out,
 	})
 }
 
@@ -268,7 +268,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:       apiVersion,
 		Kind:          "loadBalancersList",
-		LoadBalancers: &out,
+		LoadBalancers: out,
 	})
 }
 
@@ -291,7 +291,7 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "originsList",
-		Origins: &out,
+		Origins: out,
 	})
 }
 
@@ -321,13 +321,13 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 			Name:      p.Name,
 			Protocol:  p.Protocol,
 			TenantID:  p.TenantID,
-			Origins:   &originSlice,
+			Origins:   originSlice,
 		}
 	}
 
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "poolsList",
-		Pools:   &out,
+		Pools:   out,
 	})
 }

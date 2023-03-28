@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
@@ -146,7 +145,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	return v1LoadBalancerCreatedResponse(c, lb.LoadBalancerID)
 }
 
-func (r *Router) loadBalancerPortCreate(ctx context.Context, tx *sql.Tx, loadBalancerID string, portName string, portNumber int64) (string, error) {
+func (r *Router) loadBalancerPortCreate(ctx context.Context, exec boil.ContextExecutor, loadBalancerID string, portName string, portNumber int64) (string, error) {
 	r.logger.Debug("creating loadbalancer port",
 		zap.String("loadbalancer.id", loadBalancerID),
 		zap.String("port.name", portName),
@@ -166,7 +165,7 @@ func (r *Router) loadBalancerPortCreate(ctx context.Context, tx *sql.Tx, loadBal
 		return "", err
 	}
 
-	if err := port.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := port.Insert(ctx, exec, boil.Infer()); err != nil {
 		r.logger.Error("failed to insert port", zap.Error(err))
 		return "", err
 	}

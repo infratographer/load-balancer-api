@@ -70,25 +70,25 @@ type origin struct {
 type originSlice []*origin
 
 type pool struct {
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
-	DeletedAt *time.Time   `json:"deleted_at,omitempty"`
-	ID        string       `json:"id"`
-	TenantID  string       `json:"tenant_id"`
-	Name      string       `json:"name"`
-	Protocol  string       `json:"protocol"`
-	Origins   *originSlice `json:"origins"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	DeletedAt *time.Time  `json:"deleted_at,omitempty"`
+	ID        string      `json:"id"`
+	TenantID  string      `json:"tenant_id"`
+	Name      string      `json:"name"`
+	Protocol  string      `json:"protocol"`
+	Origins   originSlice `json:"origins"`
 }
 
 type poolSlice []*pool
 
 type response struct {
-	Version       string             `json:"version"`
-	Kind          string             `json:"kind"`
-	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
-	Ports         *portSlice         `json:"ports,omitempty"`
-	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
-	Locations     *locationSlice     `json:"locations,omitempty"`
-	Origins       *originSlice       `json:"origins,omitempty"`
-	Pools         *poolSlice         `json:"pools,omitempty"`
+	Version       string            `json:"version"`
+	Kind          string            `json:"kind"`
+	Assignments   assignmentSlice   `json:"assignments,omitempty"`
+	Ports         portSlice         `json:"ports,omitempty"`
+	LoadBalancers loadBalancerSlice `json:"load_balancers,omitempty"`
+	Locations     locationSlice     `json:"locations,omitempty"`
+	Origins       originSlice       `json:"origins,omitempty"`
+	Pools         poolSlice         `json:"pools,omitempty"`
 }
