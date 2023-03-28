@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.uber.org/zap"
 )
@@ -15,6 +16,11 @@ func (r *Router) portList(c echo.Context) error {
 		r.logger.Error("failed to bind port params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
+
+	mods = append(
+		mods,
+		qm.Load("Assignments"),
+	)
 
 	ports, err := models.Ports(mods...).All(ctx, r.db)
 	if err != nil {
@@ -34,6 +40,11 @@ func (r *Router) portGet(c echo.Context) error {
 		r.logger.Error("failed to bind port params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
+
+	mods = append(
+		mods,
+		qm.Load("Assignments"),
+	)
 
 	ports, err := models.Ports(mods...).All(ctx, r.db)
 	if err != nil {

@@ -192,10 +192,16 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	})
 }
 
-func v1Ports(c echo.Context, fs models.PortSlice) error {
-	out := portSlice{}
-	for _, p := range fs {
-		out = append(out, &port{
+func v1Ports(c echo.Context, ps models.PortSlice) error {
+	out := make(portSlice, len(ps))
+
+	for i, p := range ps {
+		pools := make([]string, len(p.R.Assignments))
+		for k, a := range p.R.Assignments {
+			pools[k] = a.PoolID
+		}
+
+		out[i] = &port{
 			CreatedAt:      p.CreatedAt,
 			UpdatedAt:      p.UpdatedAt,
 			DeletedAt:      p.DeletedAt.Ptr(),
@@ -204,7 +210,8 @@ func v1Ports(c echo.Context, fs models.PortSlice) error {
 			Port:           p.Port,
 			AddressFamily:  p.AfInet,
 			Name:           p.Name,
-		})
+			Pools:          pools,
+		}
 	}
 
 	return c.JSON(http.StatusOK, &response{
@@ -221,6 +228,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 		l := &loadBalancer{
 			CreatedAt:   lb.CreatedAt,
 			UpdatedAt:   lb.UpdatedAt,
+			DeletedAt:   lb.DeletedAt.Ptr(),
 			ID:          lb.LoadBalancerID,
 			Name:        lb.Name,
 			IPAddressID: lb.IPAddressID,
@@ -241,6 +249,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 			pSlice[j] = &port{
 				CreatedAt:      p.CreatedAt,
 				UpdatedAt:      p.UpdatedAt,
+				DeletedAt:      p.DeletedAt.Ptr(),
 				TenantID:       p.R.LoadBalancer.TenantID,
 				LoadBalancerID: p.R.LoadBalancer.LoadBalancerID,
 				ID:             p.PortID,
@@ -270,6 +279,7 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 		out = append(out, &origin{
 			CreatedAt:      o.CreatedAt,
 			UpdatedAt:      o.UpdatedAt,
+			DeletedAt:      o.DeletedAt.Ptr(),
 			ID:             o.OriginID,
 			Name:           o.Name,
 			OriginDisabled: o.OriginUserSettingDisabled,
@@ -294,6 +304,7 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 			originSlice[j] = &origin{
 				CreatedAt:      o.CreatedAt,
 				UpdatedAt:      o.UpdatedAt,
+				DeletedAt:      o.DeletedAt.Ptr(),
 				ID:             o.OriginID,
 				Name:           o.Name,
 				Port:           o.Port,
@@ -305,6 +316,7 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 		out[i] = &pool{
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
+			DeletedAt: p.DeletedAt.Ptr(),
 			ID:        p.PoolID,
 			Name:      p.Name,
 			Protocol:  p.Protocol,
