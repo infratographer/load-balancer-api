@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.uber.org/zap"
 )
 
 // assignmentsDelete handles the DELETE /assignments route
@@ -12,13 +13,13 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 
 	mods, err := r.assignmentParamsBinding(c)
 	if err != nil {
-		r.logger.Errorw("error parsing query params", "error", err)
+		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
 	assignments, err := models.Assignments(mods...).All(ctx, r.db)
 	if err != nil {
-		r.logger.Errorw("error getting assignments", "error", err)
+		r.logger.Error("error getting assignments", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
@@ -27,7 +28,7 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 		return v1NotFoundResponse(c)
 	case 1:
 		if _, err := assignments[0].Delete(ctx, r.db, false); err != nil {
-			r.logger.Errorw("error deleting assignment", "error", err)
+			r.logger.Error("error deleting assignment", zap.Error(err))
 			return v1InternalServerErrorResponse(c, err)
 		}
 
@@ -36,7 +37,7 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 		feModel, err := models.Ports(feMods).One(ctx, r.db)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this
-			r.logger.Errorw("error fetching port", "error", err)
+			r.logger.Error("error fetching port", zap.Error(err))
 		}
 
 		msg, err := pubsub.NewAssignmentMessage(
@@ -47,12 +48,12 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this
-			r.logger.Errorw("error creating message", "error", err)
+			r.logger.Error("error creating message", zap.Error(err))
 		}
 
 		if err := r.pubsub.PublishDelete(ctx, "assignment", "global", msg); err != nil {
 			// TODO: add status to reconcile and requeue this
-			r.logger.Errorw("error publishing event", "error", err)
+			r.logger.Error("error publishing event", zap.Error(err))
 		}
 
 		return v1DeletedResponse(c)

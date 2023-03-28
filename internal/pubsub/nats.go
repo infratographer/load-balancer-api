@@ -10,7 +10,7 @@ import (
 // Client is an event bus client with some configuration
 type Client struct {
 	js             nats.JetStreamContext
-	logger         *zap.SugaredLogger
+	logger         *zap.Logger
 	prefix, stream string
 }
 
@@ -20,7 +20,7 @@ type Option func(c *Client)
 // NewClient configures and establishes a new event bus client connection
 func NewClient(opts ...Option) *Client {
 	client := Client{
-		logger: zap.NewNop().Sugar(),
+		logger: zap.NewNop(),
 	}
 
 	for _, opt := range opts {
@@ -54,7 +54,7 @@ func WithSubjectPrefix(p string) Option {
 // WithLogger sets the client logger
 func WithLogger(l *zap.SugaredLogger) Option {
 	return func(c *Client) {
-		c.logger = l
+		c.logger = l.Desugar()
 	}
 }
 

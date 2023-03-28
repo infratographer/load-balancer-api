@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// loadBalancerUpdate updates a load balancer
+// loadBalancerUpdate updates a load balancer's name, size and type
 func (r *Router) loadBalancerUpdate(c echo.Context) error {
 	ctx := c.Request().Context()
 

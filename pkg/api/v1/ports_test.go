@@ -57,7 +57,7 @@ func createPort(t *testing.T, srv *httptest.Server, loadBalancerID string) (*por
 	}
 }
 
-func TestFrondendRoutes(t *testing.T) {
+func TestPortRoutes(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 

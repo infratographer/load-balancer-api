@@ -194,16 +194,16 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 
 func v1Ports(c echo.Context, fs models.PortSlice) error {
 	out := portSlice{}
-	for _, f := range fs {
+	for _, p := range fs {
 		out = append(out, &port{
-			CreatedAt:      f.CreatedAt,
-			UpdatedAt:      f.UpdatedAt,
-			DeletedAt:      f.DeletedAt.Ptr(),
-			ID:             f.PortID,
-			LoadBalancerID: f.LoadBalancerID,
-			Port:           f.Port,
-			AddressFamily:  f.AfInet,
-			Name:           f.Name,
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+			DeletedAt:      p.DeletedAt.Ptr(),
+			ID:             p.PortID,
+			LoadBalancerID: p.LoadBalancerID,
+			Port:           p.Port,
+			AddressFamily:  p.AfInet,
+			Name:           p.Name,
 		})
 	}
 
@@ -215,10 +215,10 @@ func v1Ports(c echo.Context, fs models.PortSlice) error {
 }
 
 func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
-	out := loadBalancerSlice{}
+	out := make(loadBalancerSlice, len(lbs))
 
-	for _, lb := range lbs {
-		out = append(out, &loadBalancer{
+	for i, lb := range lbs {
+		l := &loadBalancer{
 			CreatedAt:   lb.CreatedAt,
 			UpdatedAt:   lb.UpdatedAt,
 			ID:          lb.LoadBalancerID,
@@ -228,7 +228,20 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 			LocationID:  lb.LocationID,
 			Size:        lb.LoadBalancerSize,
 			Type:        lb.LoadBalancerType,
-		})
+		}
+
+		pSumSlice := make(portSummarySlice, len(lb.R.Ports))
+		for j, p := range lb.R.Ports {
+			pSumSlice[j] = &portSummary{
+				Port:          p.Port,
+				AddressFamily: p.AfInet,
+				Name:          p.Name,
+			}
+		}
+
+		l.Ports = pSumSlice
+
+		out[i] = l
 	}
 
 	return c.JSON(http.StatusOK, &response{

@@ -19,7 +19,7 @@ const (
 type Router struct {
 	db     *sqlx.DB
 	pubsub *pubsub.Client
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 // NewRouter creates a new router for the API
@@ -27,7 +27,7 @@ func NewRouter(db *sqlx.DB, l *zap.SugaredLogger, ps *pubsub.Client) *Router {
 	return &Router{
 		db:     db,
 		pubsub: ps,
-		logger: l.Named("api"),
+		logger: l.Named("api").Desugar(),
 	}
 }
 
@@ -92,7 +92,7 @@ func (r *Router) readinessCheck(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if err := r.db.PingContext(ctx); err != nil {
-		r.logger.Errorf("readiness check db ping failed", "err", err)
+		r.logger.Error("readiness check db ping failed", zap.Error(err))
 
 		return c.JSON(http.StatusServiceUnavailable, map[string]string{
 			"status": "DOWN",

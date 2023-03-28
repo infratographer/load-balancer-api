@@ -3,14 +3,13 @@ package api
 import "time"
 
 type assignment struct {
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
-	DeletedAt      *time.Time `json:"deleted_at,omitempty"`
-	ID             string     `json:"id"`
-	PortID         string     `json:"port_id"`
-	LoadBalancerID string     `json:"load_balancer_id"`
-	PoolID         string     `json:"pool_id"`
-	TenantID       string     `json:"tenant_id"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	ID        string     `json:"id"`
+	PortID    string     `json:"port_id"`
+	PoolID    string     `json:"pool_id"`
+	TenantID  string     `json:"tenant_id"`
 }
 
 type assignmentSlice []*assignment
@@ -29,17 +28,26 @@ type port struct {
 
 type portSlice []*port
 
+type portSummary struct {
+	Name          string `json:"name"`
+	AddressFamily string `json:"address_family"`
+	Port          int64  `json:"port"`
+}
+
+type portSummarySlice []*portSummary
+
 type loadBalancer struct {
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
-	ID          string     `json:"id"`
-	IPAddressID string     `json:"ip_address_id"`
-	TenantID    string     `json:"tenant_id"`
-	Name        string     `json:"name"`
-	LocationID  string     `json:"location_id"`
-	Size        string     `json:"load_balancer_size"`
-	Type        string     `json:"load_balancer_type"`
+	CreatedAt   time.Time        `json:"created_at"`
+	UpdatedAt   time.Time        `json:"updated_at"`
+	DeletedAt   *time.Time       `json:"deleted_at,omitempty"`
+	ID          string           `json:"id"`
+	IPAddressID string           `json:"ip_address_id"`
+	TenantID    string           `json:"tenant_id"`
+	Name        string           `json:"name"`
+	LocationID  string           `json:"location_id"`
+	Size        string           `json:"load_balancer_size"`
+	Type        string           `json:"load_balancer_type"`
+	Ports       portSummarySlice `json:"ports"`
 }
 
 type loadBalancerSlice []*loadBalancer
