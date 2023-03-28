@@ -86,8 +86,6 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	r.logger.Info("created new load balancer", zap.Any("loadbalancer.id", lb.LoadBalancerID))
-
 	additionalURNs := []string{}
 
 	for _, p := range payload.Ports {
@@ -105,22 +103,20 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 		additionalURNs = append(additionalURNs, pubsub.NewPortURN(portID))
 
-		if len(p.Pools) > 0 {
-			for _, pool := range p.Pools {
-				assignmentID, err := r.loadBalancerAssignmentCreate(ctx, tx, tenantID, lb.LoadBalancerID, pool, portID)
-				if err != nil {
-					r.logger.Error("failed to create load balancer assignment, rolling back transaction", zap.Error(err))
+		for _, pool := range p.Pools {
+			assignmentID, err := r.loadBalancerAssignmentCreate(ctx, tx, tenantID, lb.LoadBalancerID, pool, portID)
+			if err != nil {
+				r.logger.Error("failed to create load balancer assignment, rolling back transaction", zap.Error(err))
 
-					if err := tx.Rollback(); err != nil {
-						r.logger.Error("error rolling back transaction", zap.Error(err))
-						return v1InternalServerErrorResponse(c, err)
-					}
-
-					return v1BadRequestResponse(c, err)
+				if err := tx.Rollback(); err != nil {
+					r.logger.Error("error rolling back transaction", zap.Error(err))
+					return v1InternalServerErrorResponse(c, err)
 				}
 
-				additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+				return v1BadRequestResponse(c, err)
 			}
+
+			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
 		}
 	}
 
@@ -128,6 +124,8 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		r.logger.Error("failed to commit transaction", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
+
+	r.logger.Info("created new load balancer", zap.Any("loadbalancer.id", lb.LoadBalancerID))
 
 	msg, err := pubsub.NewLoadBalancerMessage(
 		someTestJWTURN,
