@@ -47,7 +47,7 @@ func (r *Router) portParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 	}
 
 	// query params
-	queryParams := []string{"port", "load_balancer_id", "slug", "af_inet"}
+	queryParams := []string{"port", "load_balancer_id", "slug", "af_inet", "port_id", "name"}
 
 	qpb := echo.QueryParamsBinder(c)
 
@@ -55,7 +55,7 @@ func (r *Router) portParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debug("query param", zap.String("query_param", qp), zap.String("param_vale", c.QueryParam(qp)))
+			r.logger.Debug("query param", zap.String("query_param", qp), zap.String("param_value", c.QueryParam(qp)))
 		}
 	}
 

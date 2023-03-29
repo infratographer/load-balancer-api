@@ -24,30 +24,23 @@ type port struct {
 	Name           string     `json:"name"`
 	AddressFamily  string     `json:"address_family"`
 	Port           int64      `json:"port"`
+	Pools          []string   `json:"pools"`
 }
 
 type portSlice []*port
 
-type portSummary struct {
-	Name          string `json:"name"`
-	AddressFamily string `json:"address_family"`
-	Port          int64  `json:"port"`
-}
-
-type portSummarySlice []*portSummary
-
 type loadBalancer struct {
-	CreatedAt   time.Time        `json:"created_at"`
-	UpdatedAt   time.Time        `json:"updated_at"`
-	DeletedAt   *time.Time       `json:"deleted_at,omitempty"`
-	ID          string           `json:"id"`
-	IPAddressID string           `json:"ip_address_id"`
-	TenantID    string           `json:"tenant_id"`
-	Name        string           `json:"name"`
-	LocationID  string           `json:"location_id"`
-	Size        string           `json:"load_balancer_size"`
-	Type        string           `json:"load_balancer_type"`
-	Ports       portSummarySlice `json:"ports"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	ID          string     `json:"id"`
+	IPAddressID string     `json:"ip_address_id"`
+	TenantID    string     `json:"tenant_id"`
+	Name        string     `json:"name"`
+	LocationID  string     `json:"location_id"`
+	Size        string     `json:"load_balancer_size"`
+	Type        string     `json:"load_balancer_type"`
+	Ports       portSlice  `json:"ports"`
 }
 
 type loadBalancerSlice []*loadBalancer
@@ -77,24 +70,25 @@ type origin struct {
 type originSlice []*origin
 
 type pool struct {
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	ID        string     `json:"id"`
-	TenantID  string     `json:"tenant_id"`
-	Name      string     `json:"name"`
-	Protocol  string     `json:"protocol"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	DeletedAt *time.Time  `json:"deleted_at,omitempty"`
+	ID        string      `json:"id"`
+	TenantID  string      `json:"tenant_id"`
+	Name      string      `json:"name"`
+	Protocol  string      `json:"protocol"`
+	Origins   originSlice `json:"origins"`
 }
 
 type poolSlice []*pool
 
 type response struct {
-	Version       string             `json:"version"`
-	Kind          string             `json:"kind"`
-	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
-	Ports         *portSlice         `json:"ports,omitempty"`
-	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
-	Locations     *locationSlice     `json:"locations,omitempty"`
-	Origins       *originSlice       `json:"origins,omitempty"`
-	Pools         *poolSlice         `json:"pools,omitempty"`
+	Version       string            `json:"version"`
+	Kind          string            `json:"kind"`
+	Assignments   assignmentSlice   `json:"assignments,omitempty"`
+	Ports         portSlice         `json:"ports,omitempty"`
+	LoadBalancers loadBalancerSlice `json:"load_balancers,omitempty"`
+	Locations     locationSlice     `json:"locations,omitempty"`
+	Origins       originSlice       `json:"origins,omitempty"`
+	Pools         poolSlice         `json:"pools,omitempty"`
 }

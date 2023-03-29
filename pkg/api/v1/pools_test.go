@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +14,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
+	"go.infratographer.com/load-balancer-api/internal/httptools"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/x/pubsubx"
 )
@@ -23,6 +25,174 @@ const (
 	loadBalancerPoolSubjectDelete = "com.infratographer.events.load-balancer-pool.delete.global"
 	loadBalancerPoolBaseUrn       = "urn:infratographer:load-balancer-pool:"
 )
+
+func TestCreatePool(t *testing.T) {
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
+	defer srv.Close()
+
+	// create a pubsub client for subscribing to NATS events
+	subscriber := newPubSubClient(t, nsrv.ClientURL())
+	msgChan := make(chan *nats.Msg, 10)
+
+	// create a new nats subscription on the server created above
+	subscription, err := subscriber.ChanSubscribe(
+		context.TODO(),
+		"com.infratographer.events.load-balancer-pool.>",
+		msgChan,
+		"load-balancer-api-test",
+	)
+
+	assert.NoError(t, err)
+
+	defer func() {
+		if err := subscription.Unsubscribe(); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	tenantID := uuid.New().String()
+
+	baseURL := srv.URL + "/v1/tenant/" + tenantID + "/pools"
+
+	tests := []struct {
+		name       string
+		fakeBody   string
+		tenant     string
+		wantStatus int
+	}{
+		{
+			name: "happy path no origins",
+			fakeBody: `{
+				"name": "testOrigin01",
+				"protocol": "tcp"
+			}`,
+			tenant:     tenantID,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "happy path with origins",
+			fakeBody: `{
+				"name": "testOrigin01",
+				"protocol": "tcp",
+				"origins": [
+					{
+						"disabled": false,
+						"name": "testOrigin01",
+						"target": "1.2.3.4",
+						"port": 8443
+					},
+					{
+						"disabled": false,
+						"name": "testOrigin02",
+						"target": "1.2.3.5",
+						"port": 8443
+					}
+				]
+			}`,
+			tenant:     tenantID,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "sad path conflicting origin targets",
+			fakeBody: `{
+				"name": "testOrigin01",
+				"protocol": "tcp",
+				"origins": [
+					{
+						"disabled": false,
+						"name": "testOrigin01",
+						"target": "1.2.3.4",
+						"port": 8443
+					},
+					{
+						"disabled": false,
+						"name": "testOrigin02",
+						"target": "1.2.3.4",
+						"port": 8443
+					}
+				]
+			}`,
+			tenant:     tenantID,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			createReq, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodPost,
+				baseURL,
+				httptools.FakeBody(tt.fakeBody),
+			)
+			assert.NoError(t, err)
+
+			createResp, err := http.DefaultClient.Do(createReq)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, createResp.StatusCode)
+			defer createResp.Body.Close()
+
+			// if we're testing a non-2xx resp, stop testing here
+			if tt.wantStatus > 299 {
+				return
+			}
+
+			testPool := struct {
+				Version string `json:"version"`
+				Message string `json:"message"`
+				Status  int    `json:"status"`
+				PoolID  string `json:"load_balancer_id"`
+			}{}
+
+			err = json.NewDecoder(createResp.Body).Decode(&testPool)
+
+			assert.NoError(t, err)
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerPoolSubjectCreate, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
+
+			deleteRequest, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodDelete,
+				fmt.Sprintf("%s?pool_id=%s", baseURL, testPool.PoolID),
+				nil,
+			)
+
+			assert.NoError(t, err)
+
+			deleteResp, err := http.DefaultClient.Do(deleteRequest)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, deleteResp.StatusCode)
+			defer deleteResp.Body.Close()
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerPoolSubjectDelete, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.DeleteEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
+		})
+	}
+}
 
 // createPool creates a pool with the given display name and protocol.
 func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string) (*pool, func(t *testing.T)) {
@@ -57,10 +227,10 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 
 	res.Body.Close()
 
-	return (*pool.Pools)[0], func(t *testing.T) {
+	return (pool.Pools)[0], func(t *testing.T) {
 		t.Helper()
 
-		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+(*pool.Pools)[0].ID, nil) //nolint
+		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+pool.Pools[0].ID, nil) //nolint
 		assert.NoError(t, err)
 
 		res, err := http.DefaultClient.Do(req)

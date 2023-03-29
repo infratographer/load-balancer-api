@@ -59,7 +59,7 @@ func Test_Assignments(t *testing.T) {
 		method: http.MethodPost,
 		path:   baseURL,
 		body:   fmt.Sprintf(`{"port_id": "%s", "pool_id": "%s"}`, fe.ID, pool.ID),
-		status: http.StatusInternalServerError,
+		status: http.StatusBadRequest,
 	})
 
 	doHTTPTest(t, &httpTest{

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.uber.org/zap"
 )
@@ -15,6 +16,10 @@ func (r *Router) poolsList(c echo.Context) error {
 		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
+
+	mods = append(mods,
+		qm.Load("Origins"),
+	)
 
 	ps, err := models.Pools(mods...).All(ctx, r.db)
 	if err != nil {
@@ -34,6 +39,10 @@ func (r *Router) poolsGet(c echo.Context) error {
 		r.logger.Error("error parsing query params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
+
+	mods = append(mods,
+		qm.Load("Origins"),
+	)
 
 	ps, err := models.Pools(mods...).All(ctx, r.db)
 	if err != nil {

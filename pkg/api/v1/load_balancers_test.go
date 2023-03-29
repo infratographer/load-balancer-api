@@ -7,10 +7,20 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	nats "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.infratographer.com/x/pubsubx"
+)
+
+const (
+	loadBalancerSubjectCreate = "com.infratographer.events.load-balancer.create.global"
+	loadBalancerSubjectDelete = "com.infratographer.events.load-balancer.delete.global"
+	loadBalancerBaseUrn       = "urn:infratographer:load-balancer:"
 )
 
 func TestCreateLoadBalancer(t *testing.T) {
@@ -19,6 +29,26 @@ func TestCreateLoadBalancer(t *testing.T) {
 
 	srv := newTestServer(t, nsrv.ClientURL())
 	defer srv.Close()
+
+	// create a pubsub client for subscribing to NATS events
+	subscriber := newPubSubClient(t, nsrv.ClientURL())
+	msgChan := make(chan *nats.Msg, 10)
+
+	// create a new nats subscription on the server created above
+	subscription, err := subscriber.ChanSubscribe(
+		context.TODO(),
+		"com.infratographer.events.load-balancer.>",
+		msgChan,
+		"load-balancer-api-test",
+	)
+
+	assert.NoError(t, err)
+
+	defer func() {
+		if err := subscription.Unsubscribe(); err != nil {
+			t.Error(err)
+		}
+	}()
 
 	tenantID := uuid.New().String()
 	locationID := uuid.New().String()
@@ -140,6 +170,19 @@ func TestCreateLoadBalancer(t *testing.T) {
 
 			assert.NoError(t, err)
 
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerSubjectCreate, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
+
 			deleteRequest, err := http.NewRequestWithContext(
 				context.TODO(),
 				http.MethodDelete,
@@ -153,6 +196,19 @@ func TestCreateLoadBalancer(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, deleteResp.StatusCode)
 			defer deleteResp.Body.Close()
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerSubjectDelete, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.DeleteEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
 		})
 	}
 }
@@ -548,7 +604,7 @@ func createLoadBalancer(t *testing.T, srv *httptest.Server, locationID string) (
 		resp.Body.Close()
 	})
 
-	return (*loadbalancer.LoadBalancers)[0], func(t *testing.T) {
+	return (loadbalancer.LoadBalancers)[0], func(t *testing.T) {
 		test := &httpTest{
 			name:   "delete nemo",
 			path:   baseURL + "?slug=nemo",

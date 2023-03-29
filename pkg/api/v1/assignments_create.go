@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -39,35 +41,18 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	// validate pool exists
-	pool, err := models.Pools(
-		models.PoolWhere.PoolID.EQ(payload.PoolID),
-		models.PoolWhere.TenantID.EQ(tenantID),
-	).One(ctx, r.db)
+	assignmentID, err := r.createAssignment(ctx, r.db, tenantID, port.LoadBalancerID, payload.PoolID, port.PortID)
 	if err != nil {
-		r.logger.Error("error fetching pool", zap.Error(err))
+		r.logger.Error("failed to create assignment", zap.Error(err))
 		return v1BadRequestResponse(c, err)
-	}
-
-	r.logger.Debug("validated pool exists", zap.Any("pool", pool))
-
-	assignment := models.Assignment{
-		TenantID: tenantID,
-		PortID:   port.PortID,
-		PoolID:   pool.PoolID,
-	}
-
-	if err := assignment.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Error("error inserting assignment", zap.Error(err))
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	msg, err := pubsub.NewAssignmentMessage(
 		someTestJWTURN,
 		pubsub.NewTenantURN(tenantID),
-		pubsub.NewAssignmentURN(assignment.AssignmentID),
+		pubsub.NewAssignmentURN(assignmentID),
 		pubsub.NewLoadBalancerURN(port.LoadBalancerID),
-		pubsub.NewPoolURN(pool.PoolID),
+		pubsub.NewPoolURN(payload.PoolID),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
@@ -79,5 +64,37 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		r.logger.Error("error publishing assignment event", zap.Error(err))
 	}
 
-	return v1AssignmentsCreatedResponse(c, assignment.AssignmentID)
+	return v1AssignmentsCreatedResponse(c, assignmentID)
+}
+
+func (r *Router) createAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, loadBalancerID, poolID, portID string) (string, error) {
+	r.logger.Debug("creating assignment",
+		zap.String("tenant.id", tenantID),
+		zap.String("loadbalancer.id", loadBalancerID),
+		zap.String("pool.id", poolID),
+		zap.String("port.id", portID),
+	)
+
+	// validate pool exists
+	pool, err := models.Pools(
+		models.PoolWhere.PoolID.EQ(poolID),
+		models.PoolWhere.TenantID.EQ(tenantID),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Error("error fetching pool", zap.Error(err))
+		return "", err
+	}
+
+	assignment := models.Assignment{
+		TenantID: tenantID,
+		PortID:   portID,
+		PoolID:   pool.PoolID,
+	}
+
+	if err := assignment.Insert(ctx, exec, boil.Infer()); err != nil {
+		r.logger.Error("error inserting assignment", zap.Error(err))
+		return "", err
+	}
+
+	return assignment.AssignmentID, nil
 }

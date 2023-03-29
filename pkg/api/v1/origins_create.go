@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -16,7 +18,7 @@ func (r *Router) originsCreate(c echo.Context) error {
 		Disabled bool   `json:"disabled"`
 		Name     string `json:"name"`
 		Target   string `json:"target"`
-		Port     int    `json:"port"`
+		Port     int64  `json:"port"`
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
@@ -38,31 +40,16 @@ func (r *Router) originsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	origin := models.Origin{
-		Name:                      payload.Name,
-		OriginUserSettingDisabled: payload.Disabled,
-		OriginTarget:              payload.Target,
-		PoolID:                    pool.PoolID,
-		Port:                      int64(payload.Port),
-		Slug:                      slug.Make(payload.Name),
-		CurrentState:              "configuring",
-	}
-
-	if err := validateOrigin(origin); err != nil {
-		r.logger.Error("error validating origins", zap.Error(err))
+	originID, err := r.createOrigin(ctx, r.db, pool.PoolID, payload.Name, payload.Target, payload.Port, payload.Disabled)
+	if err != nil {
+		r.logger.Error("failed to create origins", zap.Error(err))
 		return v1BadRequestResponse(c, err)
-	}
-
-	if err := origin.Insert(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Error("error inserting origins", zap.Error(err))
-
-		return v1InternalServerErrorResponse(c, err)
 	}
 
 	msg, err := pubsub.NewOriginMessage(
 		someTestJWTURN,
 		pubsub.NewTenantURN(pool.TenantID),
-		pubsub.NewOriginURN(origin.OriginID),
+		pubsub.NewOriginURN(originID),
 		pubsub.NewPoolURN(pool.PoolID),
 	)
 	if err != nil {
@@ -75,7 +62,7 @@ func (r *Router) originsCreate(c echo.Context) error {
 		r.logger.Error("error publishing origin event", zap.Error(err))
 	}
 
-	return v1OriginCreatedResponse(c, origin.OriginID)
+	return v1OriginCreatedResponse(c, originID)
 }
 
 func validateOrigin(o models.Origin) error {
@@ -88,4 +75,36 @@ func validateOrigin(o models.Origin) error {
 	}
 
 	return nil
+}
+
+func (r *Router) createOrigin(ctx context.Context, exec boil.ContextExecutor, poolID, name, target string, port int64, disabled bool) (string, error) {
+	r.logger.Debug("creating pool origin",
+		zap.String("pool.id", poolID),
+		zap.String("origin.name", name),
+		zap.String("origin.target", target),
+		zap.Int64("origin.port", port),
+		zap.Bool("origin.disabled", disabled),
+	)
+
+	origin := models.Origin{
+		Name:                      name,
+		OriginUserSettingDisabled: disabled,
+		OriginTarget:              target,
+		PoolID:                    poolID,
+		Port:                      port,
+		Slug:                      slug.Make(name),
+		CurrentState:              "configuring",
+	}
+
+	if err := validateOrigin(origin); err != nil {
+		r.logger.Error("error validating origins", zap.Error(err))
+		return "", err
+	}
+
+	if err := origin.Insert(ctx, exec, boil.Infer()); err != nil {
+		r.logger.Error("error inserting origins", zap.Error(err))
+		return "", err
+	}
+
+	return origin.OriginID, nil
 }

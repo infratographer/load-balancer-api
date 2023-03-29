@@ -188,14 +188,20 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:     apiVersion,
 		Kind:        "assignmentsList",
-		Assignments: &out,
+		Assignments: out,
 	})
 }
 
-func v1Ports(c echo.Context, fs models.PortSlice) error {
-	out := portSlice{}
-	for _, p := range fs {
-		out = append(out, &port{
+func v1Ports(c echo.Context, ps models.PortSlice) error {
+	out := make(portSlice, len(ps))
+
+	for i, p := range ps {
+		pools := make([]string, len(p.R.Assignments))
+		for k, a := range p.R.Assignments {
+			pools[k] = a.PoolID
+		}
+
+		out[i] = &port{
 			CreatedAt:      p.CreatedAt,
 			UpdatedAt:      p.UpdatedAt,
 			DeletedAt:      p.DeletedAt.Ptr(),
@@ -204,13 +210,14 @@ func v1Ports(c echo.Context, fs models.PortSlice) error {
 			Port:           p.Port,
 			AddressFamily:  p.AfInet,
 			Name:           p.Name,
-		})
+			Pools:          pools,
+		}
 	}
 
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "portsList",
-		Ports:   &out,
+		Ports:   out,
 	})
 }
 
@@ -221,6 +228,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 		l := &loadBalancer{
 			CreatedAt:   lb.CreatedAt,
 			UpdatedAt:   lb.UpdatedAt,
+			DeletedAt:   lb.DeletedAt.Ptr(),
 			ID:          lb.LoadBalancerID,
 			Name:        lb.Name,
 			IPAddressID: lb.IPAddressID,
@@ -230,16 +238,29 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 			Type:        lb.LoadBalancerType,
 		}
 
-		pSumSlice := make(portSummarySlice, len(lb.R.Ports))
+		pSlice := make(portSlice, len(lb.R.Ports))
+
 		for j, p := range lb.R.Ports {
-			pSumSlice[j] = &portSummary{
-				Port:          p.Port,
-				AddressFamily: p.AfInet,
-				Name:          p.Name,
+			pools := make([]string, len(p.R.Assignments))
+			for k, a := range p.R.Assignments {
+				pools[k] = a.PoolID
+			}
+
+			pSlice[j] = &port{
+				CreatedAt:      p.CreatedAt,
+				UpdatedAt:      p.UpdatedAt,
+				DeletedAt:      p.DeletedAt.Ptr(),
+				TenantID:       p.R.LoadBalancer.TenantID,
+				LoadBalancerID: p.R.LoadBalancer.LoadBalancerID,
+				ID:             p.PortID,
+				Port:           p.Port,
+				AddressFamily:  p.AfInet,
+				Name:           p.Name,
+				Pools:          pools,
 			}
 		}
 
-		l.Ports = pSumSlice
+		l.Ports = pSlice
 
 		out[i] = l
 	}
@@ -247,7 +268,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:       apiVersion,
 		Kind:          "loadBalancersList",
-		LoadBalancers: &out,
+		LoadBalancers: out,
 	})
 }
 
@@ -258,6 +279,7 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 		out = append(out, &origin{
 			CreatedAt:      o.CreatedAt,
 			UpdatedAt:      o.UpdatedAt,
+			DeletedAt:      o.DeletedAt.Ptr(),
 			ID:             o.OriginID,
 			Name:           o.Name,
 			OriginDisabled: o.OriginUserSettingDisabled,
@@ -269,27 +291,43 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "originsList",
-		Origins: &out,
+		Origins: out,
 	})
 }
 
 func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
-	out := poolSlice{}
+	out := make(poolSlice, len(ps))
 
-	for _, p := range ps {
-		out = append(out, &pool{
+	for i, p := range ps {
+		originSlice := make(originSlice, len(p.R.Origins))
+		for j, o := range p.R.Origins {
+			originSlice[j] = &origin{
+				CreatedAt:      o.CreatedAt,
+				UpdatedAt:      o.UpdatedAt,
+				DeletedAt:      o.DeletedAt.Ptr(),
+				ID:             o.OriginID,
+				Name:           o.Name,
+				Port:           o.Port,
+				OriginTarget:   o.OriginTarget,
+				OriginDisabled: o.OriginUserSettingDisabled,
+			}
+		}
+
+		out[i] = &pool{
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
+			DeletedAt: p.DeletedAt.Ptr(),
 			ID:        p.PoolID,
 			Name:      p.Name,
 			Protocol:  p.Protocol,
 			TenantID:  p.TenantID,
-		})
+			Origins:   originSlice,
+		}
 	}
 
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "poolsList",
-		Pools:   &out,
+		Pools:   out,
 	})
 }
