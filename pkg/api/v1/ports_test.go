@@ -49,7 +49,7 @@ func createPort(t *testing.T, srv *httptest.Server, loadBalancerID string) (*por
 
 		resp.Body.Close()
 
-		for _, fe := range feResp.Ports {
+		for _, fe := range *feResp.Ports {
 			if fe.Name == "Ears" {
 				ret = fe
 			}
@@ -255,7 +255,7 @@ func TestPortRoutes(t *testing.T) {
 
 	earsID := ""
 
-	for _, fe := range feResp.Ports {
+	for _, fe := range *feResp.Ports {
 		if fe.Name == "Ears" {
 			earsID = fe.ID
 		}

@@ -188,7 +188,7 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:     apiVersion,
 		Kind:        "assignmentsList",
-		Assignments: out,
+		Assignments: &out,
 	})
 }
 
@@ -217,7 +217,49 @@ func v1Ports(c echo.Context, ps models.PortSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "portsList",
-		Ports:   out,
+		Ports:   &out,
+	})
+}
+
+func v1LoadBalancer(c echo.Context, lb *models.LoadBalancer) error {
+	pSlice := make(portSlice, len(lb.R.Ports))
+
+	for j, p := range lb.R.Ports {
+		pools := make([]string, len(p.R.Assignments))
+		for k, a := range p.R.Assignments {
+			pools[k] = a.PoolID
+		}
+
+		pSlice[j] = &port{
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+			DeletedAt:      p.DeletedAt.Ptr(),
+			TenantID:       p.R.LoadBalancer.TenantID,
+			LoadBalancerID: p.R.LoadBalancer.LoadBalancerID,
+			ID:             p.PortID,
+			Port:           p.Port,
+			AddressFamily:  p.AfInet,
+			Name:           p.Name,
+			Pools:          pools,
+		}
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "loadBalancersGet",
+		LoadBalancer: &loadBalancer{
+			CreatedAt:   lb.CreatedAt,
+			UpdatedAt:   lb.UpdatedAt,
+			DeletedAt:   lb.DeletedAt.Ptr(),
+			ID:          lb.LoadBalancerID,
+			Name:        lb.Name,
+			IPAddressID: lb.IPAddressID,
+			TenantID:    lb.TenantID,
+			LocationID:  lb.LocationID,
+			Size:        lb.LoadBalancerSize,
+			Type:        lb.LoadBalancerType,
+			Ports:       pSlice,
+		},
 	})
 }
 
@@ -268,7 +310,7 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version:       apiVersion,
 		Kind:          "loadBalancersList",
-		LoadBalancers: out,
+		LoadBalancers: &out,
 	})
 }
 
@@ -291,7 +333,38 @@ func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "originsList",
-		Origins: out,
+		Origins: &out,
+	})
+}
+
+func v1PoolResponse(c echo.Context, p *models.Pool) error {
+	originSlice := make(originSlice, len(p.R.Origins))
+	for j, o := range p.R.Origins {
+		originSlice[j] = &origin{
+			CreatedAt:      o.CreatedAt,
+			UpdatedAt:      o.UpdatedAt,
+			DeletedAt:      o.DeletedAt.Ptr(),
+			ID:             o.OriginID,
+			Name:           o.Name,
+			Port:           o.Port,
+			OriginTarget:   o.OriginTarget,
+			OriginDisabled: o.OriginUserSettingDisabled,
+		}
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "poolsList",
+		Pool: &pool{
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
+			DeletedAt: p.DeletedAt.Ptr(),
+			ID:        p.PoolID,
+			Name:      p.Name,
+			Protocol:  p.Protocol,
+			TenantID:  p.TenantID,
+			Origins:   originSlice,
+		},
 	})
 }
 
@@ -328,6 +401,6 @@ func v1PoolsResponse(c echo.Context, ps models.PoolSlice) error {
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
 		Kind:    "poolsList",
-		Pools:   out,
+		Pools:   &out,
 	})
 }

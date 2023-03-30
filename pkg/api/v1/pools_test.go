@@ -227,10 +227,10 @@ func createPool(t *testing.T, srv *httptest.Server, name string, tenantID string
 
 	res.Body.Close()
 
-	return (pool.Pools)[0], func(t *testing.T) {
+	return (*pool.Pools)[0], func(t *testing.T) {
 		t.Helper()
 
-		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+pool.Pools[0].ID, nil) //nolint
+		req, err := http.NewRequest(http.MethodDelete, baseURL+"/"+(*pool.Pools)[0].ID, nil) //nolint
 		assert.NoError(t, err)
 
 		res, err := http.DefaultClient.Do(req)

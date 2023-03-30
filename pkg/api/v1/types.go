@@ -83,12 +83,14 @@ type pool struct {
 type poolSlice []*pool
 
 type response struct {
-	Version       string            `json:"version"`
-	Kind          string            `json:"kind"`
-	Assignments   assignmentSlice   `json:"assignments,omitempty"`
-	Ports         portSlice         `json:"ports,omitempty"`
-	LoadBalancers loadBalancerSlice `json:"load_balancers,omitempty"`
-	Locations     locationSlice     `json:"locations,omitempty"`
-	Origins       originSlice       `json:"origins,omitempty"`
-	Pools         poolSlice         `json:"pools,omitempty"`
+	Version       string             `json:"version"`
+	Kind          string             `json:"kind"`
+	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
+	Ports         *portSlice         `json:"ports,omitempty"`
+	LoadBalancer  *loadBalancer      `json:"load_balancer,omitempty"`
+	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
+	Locations     *locationSlice     `json:"locations,omitempty"`
+	Origins       *originSlice       `json:"origins,omitempty"`
+	Pool          *pool              `json:"pool,omitempty"`
+	Pools         *poolSlice         `json:"pools,omitempty"`
 }
