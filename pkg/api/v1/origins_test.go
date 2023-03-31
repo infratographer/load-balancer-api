@@ -40,7 +40,7 @@ func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID string
 	err = json.NewDecoder(res.Body).Decode(&origin)
 	assert.NoError(t, err)
 
-	return (origin.Origins)[0], func(t *testing.T) {
+	return (*origin.Origins)[0], func(t *testing.T) {
 		t.Helper()
 
 		// Delete the origin

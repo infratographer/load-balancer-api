@@ -1,6 +1,9 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
@@ -34,26 +37,25 @@ func (r *Router) loadBalancerList(c echo.Context) error {
 func (r *Router) loadBalancerGet(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	mods, err := r.loadBalancerParamsBinding(c)
+	loadBalancerID, err := r.parseUUID(c, "load_balancer_id")
 	if err != nil {
-		r.logger.Error("failed to bind params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
-	mods = append(mods,
+	mods := []qm.QueryMod{
+		models.LoadBalancerWhere.LoadBalancerID.EQ(loadBalancerID),
 		qm.Load("Ports"),
 		qm.Load("Ports.Assignments"),
-	)
+	}
 
-	lbs, err := models.LoadBalancers(mods...).All(ctx, r.db)
+	lb, err := models.LoadBalancers(mods...).One(ctx, r.db)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return v1NotFoundResponse(c)
+		}
+
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	switch len(lbs) {
-	case 0:
-		return v1NotFoundResponse(c)
-	default:
-		return v1LoadBalancers(c, lbs)
-	}
+	return v1LoadBalancer(c, lb)
 }
