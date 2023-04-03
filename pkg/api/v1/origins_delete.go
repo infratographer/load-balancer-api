@@ -56,5 +56,4 @@ func (r *Router) originsDelete(c echo.Context) error {
 	}
 
 	return v1DeletedResponse(c)
-
 }
