@@ -1,15 +1,28 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	nats "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
+	"go.infratographer.com/load-balancer-api/internal/httptools"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.infratographer.com/x/pubsubx"
+)
+
+const (
+	loadBalancerOriginSubjectCreate = "com.infratographer.events.load-balancer-origin.create.global"
+	loadBalancerOriginSubjectDelete = "com.infratographer.events.load-balancer-origin.delete.global"
+	loadBalancerOriginBaseUrn       = "urn:infratographer:load-balancer-origin:"
 )
 
 func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID string) (*origin, func(*testing.T)) {
@@ -51,6 +64,131 @@ func createOrigin(t *testing.T, srv *httptest.Server, name string, poolID string
 		assert.NoError(t, err)
 
 		defer res.Body.Close()
+	}
+}
+
+func TestCreateOrigins(t *testing.T) {
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
+	defer srv.Close()
+
+	// create a pool for testing
+	testPool, cleanupPool := createPool(t, srv, "testPool01", uuid.New().String())
+	defer cleanupPool(t)
+
+	// create a pubsub client for subscribing to NATS events
+	subscriber := newPubSubClient(t, nsrv.ClientURL())
+	msgChan := make(chan *nats.Msg, 10)
+
+	// create a new nats subscription on the server created above
+	subscription, err := subscriber.ChanSubscribe(
+		context.TODO(),
+		"com.infratographer.events.load-balancer-origin.>",
+		msgChan,
+		"load-balancer-api-test",
+	)
+
+	assert.NoError(t, err)
+
+	defer func() {
+		if err := subscription.Unsubscribe(); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	baseURL := srv.URL + "/v1/pools/" + testPool.ID + "/origins"
+
+	tests := []struct {
+		name       string
+		fakeBody   string
+		tenant     string
+		wantStatus int
+	}{
+		{
+			name: "happy path",
+			fakeBody: `{
+					"disabled": false,
+					"name": "testorigin01",
+					"target": "1.1.1.1",
+					"port": 31337
+				}`,
+			wantStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			createReq, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodPost,
+				baseURL,
+				httptools.FakeBody(tt.fakeBody),
+			)
+			assert.NoError(t, err)
+
+			createResp, err := http.DefaultClient.Do(createReq)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, createResp.StatusCode)
+			defer createResp.Body.Close()
+
+			// if we're testing a non-2xx resp, stop testing here
+			if tt.wantStatus > 299 {
+				return
+			}
+
+			testOrigin := struct {
+				Version  string `json:"version"`
+				Message  string `json:"message"`
+				Status   int    `json:"status"`
+				OriginID string `json:"origin_id"`
+			}{}
+
+			err = json.NewDecoder(createResp.Body).Decode(&testOrigin)
+
+			assert.NoError(t, err)
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerOriginSubjectCreate, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for create")
+			}
+
+			deleteRequest, err := http.NewRequestWithContext(
+				context.TODO(),
+				http.MethodDelete,
+				fmt.Sprintf("%s?origin_id=%s", baseURL, testOrigin.OriginID),
+				nil,
+			)
+
+			assert.NoError(t, err)
+
+			deleteResp, err := http.DefaultClient.Do(deleteRequest)
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusOK, deleteResp.StatusCode)
+			defer deleteResp.Body.Close()
+
+			select {
+			case msg := <-msgChan:
+				pMsg := &pubsubx.Message{}
+				err = json.Unmarshal(msg.Data, pMsg)
+				assert.NoError(t, err)
+
+				assert.Equal(t, loadBalancerOriginSubjectDelete, msg.Subject)
+				assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+				assert.Equal(t, pubsub.DeleteEventType, pMsg.EventType)
+			case <-time.After(natsMsgSubTimeout):
+				t.Error("failed to receive nats message for delete")
+			}
+		})
 	}
 }
 
@@ -213,8 +351,6 @@ func TestOriginsBalancerGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	baseURL := srv.URL + "/v1/origins"
-
 	// Create a load balancer
 	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
 	defer cleanupLB(t)
@@ -227,19 +363,68 @@ func TestOriginsBalancerGet(t *testing.T) {
 	origin, cleanupOrigin := createOrigin(t, srv, "bruce", pool.ID)
 	defer cleanupOrigin(t)
 
-	// Get the origin
+	baseURL := srv.URL + "/v1/pools/" + pool.ID + "/origins"
+
 	doHTTPTest(t, &httpTest{
 		name:   "get origin by id",
 		method: http.MethodGet,
-		path:   baseURL + "/" + origin.ID,
+		path:   baseURL + "?origin_id=" + origin.ID,
 		status: http.StatusOK,
 	})
 
-	// Get an unknown origin
+	doHTTPTest(t, &httpTest{
+		name:   "get missing origin by query param id",
+		method: http.MethodGet,
+		path:   baseURL + "?origin_id=bfad65a9-abe3-44af-82ce-64331c84b2ad",
+		status: http.StatusOK,
+	})
+
 	doHTTPTest(t, &httpTest{
 		name:   "get missing origin by id",
 		method: http.MethodGet,
-		path:   baseURL + "/bfad65a9-abe3-44af-82ce-64331c84b2ad",
+		path:   srv.URL + "/v1/origins/bfad65a9-abe3-44af-82ce-64331c84b2ad",
 		status: http.StatusNotFound,
 	})
+
+	// Test origins list response
+	listReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	listResp, err := http.DefaultClient.Do(listReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, listResp.StatusCode)
+
+	defer listResp.Body.Close()
+
+	ca := origin.CreatedAt.Format(time.RFC3339Nano)
+	ua := origin.UpdatedAt.Format(time.RFC3339Nano)
+	testOriginsListExpected := fmt.Sprintf(`{"version":"v1","kind":"originsList","origins":[{"created_at":"%s","updated_at":"%s","id":"%s","name":"%s","port":%d,"origin_target":"%s","origin_disabled":%t}]}`+"\n", ca, ua, origin.ID, origin.Name, origin.Port, origin.OriginTarget, origin.OriginDisabled)
+	testOriginsList, err := io.ReadAll(listResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testOriginsListExpected, string(testOriginsList))
+
+	// Test origin get by id response
+	getReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL+"?origin_id="+origin.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getResp, err := http.DefaultClient.Do(getReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getResp.StatusCode)
+
+	defer getResp.Body.Close()
+
+	testOriginsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"originsList","origins":[{"created_at":"%s","updated_at":"%s","id":"%s","name":"%s","port":%d,"origin_target":"%s","origin_disabled":%t}]}`+"\n", ca, ua, origin.ID, origin.Name, origin.Port, origin.OriginTarget, origin.OriginDisabled)
+	testOriginsGet, err := io.ReadAll(getResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testOriginsGetExpected, string(testOriginsGet))
 }

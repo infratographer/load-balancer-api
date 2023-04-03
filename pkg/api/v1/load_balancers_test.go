@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -533,19 +534,19 @@ func TestLoadBalancerGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	tenantID := uuid.New().String()
+	locationID := uuid.New().String()
 	baseURL := srv.URL + "/v1/loadbalancers"
 	missingUUID := uuid.New().String()
 
 	// Create a load balancer
-	loadBalancer, cleanupLB := createLoadBalancer(t, srv, tenantID)
+	lb, cleanupLB := createLoadBalancer(t, srv, locationID)
 	defer cleanupLB(t)
 
 	// Get the load balancer
 	doHTTPTest(t, &httpTest{
 		name:   "get loadblancer by id",
 		method: http.MethodGet,
-		path:   baseURL + "/" + loadBalancer.ID,
+		path:   baseURL + "/" + lb.ID,
 		status: http.StatusOK,
 	})
 
@@ -561,7 +562,7 @@ func TestLoadBalancerGet(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "get missing loadblancer by id",
 		method: http.MethodGet,
-		path:   srv.URL + "/v1/tenant/" + missingUUID + "/loadbalancers/" + loadBalancer.ID,
+		path:   srv.URL + "/v1/tenant/" + missingUUID + "/loadbalancers/" + lb.ID,
 		status: http.StatusNotFound,
 	})
 
@@ -572,6 +573,48 @@ func TestLoadBalancerGet(t *testing.T) {
 		path:   baseURL,
 		status: http.StatusNotFound,
 	})
+
+	// Test loadbalancer list response
+	listReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		srv.URL+"/v1/tenant/"+lb.TenantID+"/loadbalancers",
+		nil,
+	)
+	assert.NoError(t, err)
+
+	listResp, err := http.DefaultClient.Do(listReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, listResp.StatusCode)
+
+	defer listResp.Body.Close()
+
+	ca := lb.CreatedAt.Format(time.RFC3339Nano)
+	ua := lb.UpdatedAt.Format(time.RFC3339Nano)
+	testLBListExpected := fmt.Sprintf(`{"version":"v1","kind":"loadBalancersList","load_balancers":[{"created_at":"%s","updated_at":"%s","id":"%s","ip_address_id":"%s","tenant_id":"%s","name":"%s","location_id":"%s","load_balancer_size":"%s","load_balancer_type":"%s","ports":[]}]}`+"\n", ca, ua, lb.ID, lb.IPAddressID, lb.TenantID, lb.Name, lb.LocationID, lb.Size, lb.Type)
+	testLBList, err := io.ReadAll(listResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testLBListExpected, string(testLBList))
+
+	// Test loadbalancer get by id response
+	getReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL+"/"+lb.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getResp, err := http.DefaultClient.Do(getReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, listResp.StatusCode)
+
+	defer getResp.Body.Close()
+
+	testLBGetExpected := fmt.Sprintf(`{"version":"v1","kind":"loadBalancersGet","load_balancer":{"created_at":"%s","updated_at":"%s","id":"%s","ip_address_id":"%s","tenant_id":"%s","name":"%s","location_id":"%s","load_balancer_size":"%s","load_balancer_type":"%s","ports":[]}}`+"\n", ca, ua, lb.ID, lb.IPAddressID, lb.TenantID, lb.Name, lb.LocationID, lb.Size, lb.Type)
+	testLBGet, err := io.ReadAll(getResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testLBGetExpected, string(testLBGet))
 }
 
 func createLoadBalancer(t *testing.T, srv *httptest.Server, locationID string) (*loadBalancer, func(t *testing.T)) {

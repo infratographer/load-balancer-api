@@ -2,7 +2,9 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.uber.org/zap"
 )
 
@@ -16,23 +18,43 @@ func (r *Router) originsDelete(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
+	mods = append(mods, qm.Load("Pool"))
+
 	os, err := models.Origins(mods...).All(ctx, r.db)
 	if err != nil {
 		r.logger.Error("error getting origins", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	switch len(os) {
-	case 0:
+	if len(os) == 0 {
 		return v1NotFoundResponse(c)
-	case 1:
-		if _, err := os[0].Delete(ctx, r.db, false); err != nil {
-			r.logger.Error("error deleting origin", zap.Error(err))
-			return v1InternalServerErrorResponse(c, err)
-		}
-
-		return v1DeletedResponse(c)
-	default:
+	} else if len(os) != 1 {
 		return v1BadRequestResponse(c, ErrAmbiguous)
 	}
+
+	origin := os[0]
+
+	if _, err := origin.Delete(ctx, r.db, false); err != nil {
+		r.logger.Error("error deleting origin", zap.Error(err))
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	msg, err := pubsub.NewOriginMessage(
+		someTestJWTURN,
+		pubsub.NewTenantURN(origin.R.Pool.TenantID),
+		pubsub.NewOriginURN(origin.OriginID),
+		pubsub.NewPoolURN(origin.R.Pool.PoolID),
+	)
+	if err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Error("error creating origin message", zap.Error(err))
+	}
+
+	if err := r.pubsub.PublishDelete(ctx, "load-balancer-origin", "global", msg); err != nil {
+		// TODO: add status to reconcile and requeue this
+		r.logger.Error("error publishing origin event", zap.Error(err))
+	}
+
+	return v1DeletedResponse(c)
+
 }

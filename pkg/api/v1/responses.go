@@ -314,6 +314,23 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 	})
 }
 
+func v1OriginResponse(c echo.Context, o *models.Origin) error {
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "originsGet",
+		Origin: &origin{
+			CreatedAt:      o.CreatedAt,
+			UpdatedAt:      o.UpdatedAt,
+			DeletedAt:      o.DeletedAt.Ptr(),
+			ID:             o.OriginID,
+			Name:           o.Name,
+			OriginDisabled: o.OriginUserSettingDisabled,
+			OriginTarget:   o.OriginTarget,
+			Port:           o.Port,
+		},
+	})
+}
+
 func v1OriginsResponse(c echo.Context, os models.OriginSlice) error {
 	out := originSlice{}
 
