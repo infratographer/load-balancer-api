@@ -496,31 +496,97 @@ func TestPoolsGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	baseURL := srv.URL + "/v1/pools"
-
-	// Create a load balancer
-	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
-	defer cleanupLB(t)
-
 	// Create a pool
-	pool, cleanupPool := createPool(t, srv, "marlin", loadBalancer.TenantID)
+	pool, cleanupPool := createPool(t, srv, "marlin", uuid.NewString())
 	defer cleanupPool(t)
+
+	baseURL := srv.URL + "/v1/tenant/" + pool.TenantID + "/pools"
 
 	// Get the pool
 	doHTTPTest(t, &httpTest{
 		name:   "get pool by id",
 		method: http.MethodGet,
-		path:   baseURL + "/" + pool.ID,
+		path:   srv.URL + "/v1/pools/" + pool.ID,
 		status: http.StatusOK,
-		tenant: loadBalancer.TenantID,
+		tenant: pool.TenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "get pool by query param id",
+		method: http.MethodGet,
+		path:   baseURL + "?pool_id=" + pool.ID,
+		status: http.StatusOK,
+		tenant: pool.TenantID,
 	})
 
 	// Get an unknown pool
 	doHTTPTest(t, &httpTest{
 		name:   "pool not found",
 		method: http.MethodGet,
-		path:   baseURL + "/bfad65a9-abe3-44af-82ce-64331c84b2ad",
+		path:   srv.URL + "/v1/pools/bfad65a9-abe3-44af-82ce-64331c84b2ad",
 		status: http.StatusNotFound,
-		tenant: loadBalancer.TenantID,
+		tenant: pool.TenantID,
 	})
+
+	// Test pool list response
+	listReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	listResp, err := http.DefaultClient.Do(listReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, listResp.StatusCode)
+
+	defer listResp.Body.Close()
+
+	ca := pool.CreatedAt.Format(time.RFC3339Nano)
+	ua := pool.UpdatedAt.Format(time.RFC3339Nano)
+	testPoolsListExpected := fmt.Sprintf(`{"version":"v1","kind":"poolsList","pools":[{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"%s","name":"%s","protocol":"%s","origins":[]}]}`+"\n", ca, ua, pool.ID, pool.TenantID, pool.Name, pool.Protocol)
+	testPoolsList, err := io.ReadAll(listResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPoolsListExpected, string(testPoolsList))
+
+	// Test pool get by id from list endpoint response
+	getListReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL+"?pool_id="+pool.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getListResp, err := http.DefaultClient.Do(getListReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getListResp.StatusCode)
+
+	defer getListResp.Body.Close()
+
+	testPoolsGetListExpected := fmt.Sprintf(`{"version":"v1","kind":"poolsList","pools":[{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"%s","name":"%s","protocol":"%s","origins":[]}]}`+"\n", ca, ua, pool.ID, pool.TenantID, pool.Name, pool.Protocol)
+	testPoolsGetList, err := io.ReadAll(getListResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPoolsGetListExpected, string(testPoolsGetList))
+
+	// Test origin get by id from top level response
+	getReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		srv.URL+"/v1/pools/"+pool.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getResp, err := http.DefaultClient.Do(getReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getResp.StatusCode)
+
+	defer getResp.Body.Close()
+
+	testPoolsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"poolsList","pool":{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"%s","name":"%s","protocol":"%s","origins":[]}}`+"\n", ca, ua, pool.ID, pool.TenantID, pool.Name, pool.Protocol)
+	testPoolsGet, err := io.ReadAll(getResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPoolsGetExpected, string(testPoolsGet))
 }

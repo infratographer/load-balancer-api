@@ -408,11 +408,31 @@ func TestOriginsBalancerGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, testOriginsListExpected, string(testOriginsList))
 
-	// Test origin get by id response
-	getReq, err := http.NewRequestWithContext(
+	// Test origin get by id from list endpoint response
+	getListReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
 		baseURL+"?origin_id="+origin.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getListResp, err := http.DefaultClient.Do(getListReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getListResp.StatusCode)
+
+	defer getListResp.Body.Close()
+
+	testOriginsGetListExpected := fmt.Sprintf(`{"version":"v1","kind":"originsList","origins":[{"created_at":"%s","updated_at":"%s","id":"%s","name":"%s","port":%d,"origin_target":"%s","origin_disabled":%t}]}`+"\n", ca, ua, origin.ID, origin.Name, origin.Port, origin.OriginTarget, origin.OriginDisabled)
+	testOriginsGetList, err := io.ReadAll(getListResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testOriginsGetListExpected, string(testOriginsGetList))
+
+	// Test origin get by id from top level response
+	getReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		srv.URL+"/v1/origins/"+origin.ID,
 		nil,
 	)
 	assert.NoError(t, err)
@@ -423,7 +443,7 @@ func TestOriginsBalancerGet(t *testing.T) {
 
 	defer getResp.Body.Close()
 
-	testOriginsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"originsList","origins":[{"created_at":"%s","updated_at":"%s","id":"%s","name":"%s","port":%d,"origin_target":"%s","origin_disabled":%t}]}`+"\n", ca, ua, origin.ID, origin.Name, origin.Port, origin.OriginTarget, origin.OriginDisabled)
+	testOriginsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"originsGet","origin":{"created_at":"%s","updated_at":"%s","id":"%s","name":"%s","port":%d,"origin_target":"%s","origin_disabled":%t}}`+"\n", ca, ua, origin.ID, origin.Name, origin.Port, origin.OriginTarget, origin.OriginDisabled)
 	testOriginsGet, err := io.ReadAll(getResp.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, testOriginsGetExpected, string(testOriginsGet))
