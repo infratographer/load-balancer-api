@@ -496,13 +496,12 @@ func TestPoolsGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	// Create a pool
+	// Create a pool to use for testing
 	pool, cleanupPool := createPool(t, srv, "marlin", uuid.NewString())
 	defer cleanupPool(t)
 
 	baseURL := srv.URL + "/v1/tenant/" + pool.TenantID + "/pools"
 
-	// Get the pool
 	doHTTPTest(t, &httpTest{
 		name:   "get pool by id",
 		method: http.MethodGet,
@@ -519,7 +518,6 @@ func TestPoolsGet(t *testing.T) {
 		tenant: pool.TenantID,
 	})
 
-	// Get an unknown pool
 	doHTTPTest(t, &httpTest{
 		name:   "pool not found",
 		method: http.MethodGet,
@@ -550,7 +548,7 @@ func TestPoolsGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, testPoolsListExpected, string(testPoolsList))
 
-	// Test pool get by id from list endpoint response
+	// Test getting pool by id from list endpoint response
 	getListReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
@@ -570,7 +568,7 @@ func TestPoolsGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, testPoolsGetListExpected, string(testPoolsGetList))
 
-	// Test origin get by id from top level response
+	// Test getting pool by id from top level response
 	getReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,

@@ -525,18 +525,18 @@ func TestPortssGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	// Create a load balancer
+	// Create a load balancer to use for testing
 	lb, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
 	defer cleanupLB(t)
 
 	// TODO create test port with pools
 
+	// Create a port to use for testing
 	port, cleanupPort := createPort(t, srv, lb.ID)
 	defer cleanupPort(t)
 
 	baseURL := srv.URL + "/v1/loadbalancers/" + lb.ID + "/ports"
 
-	// Get the pool
 	doHTTPTest(t, &httpTest{
 		name:   "get port by id",
 		method: http.MethodGet,
@@ -544,7 +544,6 @@ func TestPortssGet(t *testing.T) {
 		status: http.StatusOK,
 	})
 
-	// Get an unknown pool
 	doHTTPTest(t, &httpTest{
 		name:   "port not found",
 		method: http.MethodGet,
@@ -552,7 +551,7 @@ func TestPortssGet(t *testing.T) {
 		status: http.StatusNotFound,
 	})
 
-	// Test origins list response
+	// Test port list response
 	listReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
@@ -574,7 +573,7 @@ func TestPortssGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, testPortsListExpected, string(testPortsList))
 
-	// Test origin get by id from list endpoint response
+	// Test ports get by id from list endpoint response
 	getListReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
@@ -594,7 +593,7 @@ func TestPortssGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, testPortsGetListExpected, string(testPortsGetList))
 
-	// Test origin get by id from top level response
+	// Test ports get by id from top level response
 	getReq, err := http.NewRequestWithContext(
 		context.TODO(),
 		http.MethodGet,
@@ -609,7 +608,7 @@ func TestPortssGet(t *testing.T) {
 
 	defer getResp.Body.Close()
 
-	testPortsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"portsList","ports":[{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"","load_balancer_id":"%s","name":"%s","address_family":"%s","port":%d,"pools":[]}]}`+"\n", ca, ua, port.ID, lb.ID, port.Name, port.AddressFamily, port.Port)
+	testPortsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"portsGet","port":{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"","load_balancer_id":"%s","name":"%s","address_family":"%s","port":%d,"pools":[]}}`+"\n", ca, ua, port.ID, lb.ID, port.Name, port.AddressFamily, port.Port)
 	testPortsGet, err := io.ReadAll(getResp.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, testPortsGetExpected, string(testPortsGet))

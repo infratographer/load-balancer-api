@@ -538,11 +538,17 @@ func TestLoadBalancerGet(t *testing.T) {
 	baseURL := srv.URL + "/v1/loadbalancers"
 	missingUUID := uuid.New().String()
 
-	// Create a load balancer
+	// Create a load balancer to use for testing
 	lb, cleanupLB := createLoadBalancer(t, srv, locationID)
 	defer cleanupLB(t)
 
-	// Get the load balancer
+	doHTTPTest(t, &httpTest{
+		name:   "get a list of loadblancer in the tenant",
+		method: http.MethodGet,
+		path:   srv.URL + "/v1/tenant/" + lb.TenantID + "/loadbalancers",
+		status: http.StatusOK,
+	})
+
 	doHTTPTest(t, &httpTest{
 		name:   "get loadblancer by id",
 		method: http.MethodGet,
@@ -550,7 +556,6 @@ func TestLoadBalancerGet(t *testing.T) {
 		status: http.StatusOK,
 	})
 
-	// Get an unknown load balancer
 	doHTTPTest(t, &httpTest{
 		name:   "get missing loadblancer by id",
 		method: http.MethodGet,
@@ -558,15 +563,13 @@ func TestLoadBalancerGet(t *testing.T) {
 		status: http.StatusNotFound,
 	})
 
-	// Get an unknown tenant
 	doHTTPTest(t, &httpTest{
-		name:   "get missing loadblancer by id",
+		name:   "get loadblancer by id on unknown tenant",
 		method: http.MethodGet,
 		path:   srv.URL + "/v1/tenant/" + missingUUID + "/loadbalancers/" + lb.ID,
 		status: http.StatusNotFound,
 	})
 
-	// Get the load balancer without id
 	doHTTPTest(t, &httpTest{
 		name:   "get loadblancer without id",
 		method: http.MethodGet,

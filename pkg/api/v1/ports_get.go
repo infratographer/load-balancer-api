@@ -1,6 +1,9 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.infratographer.com/load-balancer-api/internal/models"
@@ -28,34 +31,31 @@ func (r *Router) portList(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	return v1Ports(c, ports)
+	return v1PortsResponse(c, ports)
 }
 
-// portGet returns a list of ports for a given load balancer
+// portGet returns a port by ID
 func (r *Router) portGet(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	mods, err := r.portParamsBinding(c)
+	portID, err := r.parseUUID(c, "port_id")
 	if err != nil {
-		r.logger.Error("failed to bind port params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
-	mods = append(
-		mods,
+	mods := []qm.QueryMod{
+		models.PortWhere.PortID.EQ(portID),
 		qm.Load("Assignments"),
-	)
+	}
 
-	ports, err := models.Ports(mods...).All(ctx, r.db)
+	port, err := models.Ports(mods...).One(ctx, r.db)
 	if err != nil {
-		r.logger.Error("failed to get ports", zap.Error(err))
+		if errors.Is(err, sql.ErrNoRows) {
+			return v1NotFoundResponse(c)
+		}
+
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	switch len(ports) {
-	case 0:
-		return v1NotFoundResponse(c)
-	default:
-		return v1Ports(c, ports)
-	}
+	return v1PortResponse(c, port)
 }

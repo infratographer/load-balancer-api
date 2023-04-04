@@ -192,7 +192,30 @@ func v1Assignments(c echo.Context, as models.AssignmentSlice) error {
 	})
 }
 
-func v1Ports(c echo.Context, ps models.PortSlice) error {
+func v1PortResponse(c echo.Context, p *models.Port) error {
+	pools := make([]string, len(p.R.Assignments))
+	for k, a := range p.R.Assignments {
+		pools[k] = a.PoolID
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "portsGet",
+		Port: &port{
+			CreatedAt:      p.CreatedAt,
+			UpdatedAt:      p.UpdatedAt,
+			DeletedAt:      p.DeletedAt.Ptr(),
+			ID:             p.PortID,
+			LoadBalancerID: p.LoadBalancerID,
+			Port:           p.Port,
+			AddressFamily:  p.AfInet,
+			Name:           p.Name,
+			Pools:          pools,
+		},
+	})
+}
+
+func v1PortsResponse(c echo.Context, ps models.PortSlice) error {
 	out := make(portSlice, len(ps))
 
 	for i, p := range ps {

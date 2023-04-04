@@ -351,15 +351,15 @@ func TestOriginsBalancerGet(t *testing.T) {
 
 	assert.NotNil(t, srv)
 
-	// Create a load balancer
+	// Create a load balancer to use for testing
 	loadBalancer, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
 	defer cleanupLB(t)
 
-	// Create a pool
+	// Create a pool in the same tenant to use for testing
 	pool, cleanupPool := createPool(t, srv, "marlin", loadBalancer.TenantID)
 	defer cleanupPool(t)
 
-	// Create an origin in the pool
+	// Create an origin (in the pool) to use for testing
 	origin, cleanupOrigin := createOrigin(t, srv, "bruce", pool.ID)
 	defer cleanupOrigin(t)
 
