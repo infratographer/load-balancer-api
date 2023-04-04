@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -513,4 +514,102 @@ func TestPortRoutes(t *testing.T) {
 		status: http.StatusOK,
 		method: http.MethodDelete,
 	})
+}
+
+func TestPortssGet(t *testing.T) {
+	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
+	defer nsrv.Shutdown()
+
+	srv := newTestServer(t, nsrv.ClientURL())
+	defer srv.Close()
+
+	assert.NotNil(t, srv)
+
+	// Create a load balancer to use for testing
+	lb, cleanupLB := createLoadBalancer(t, srv, uuid.NewString())
+	defer cleanupLB(t)
+
+	// TODO create test port with pools
+
+	// Create a port to use for testing
+	port, cleanupPort := createPort(t, srv, lb.ID)
+	defer cleanupPort(t)
+
+	baseURL := srv.URL + "/v1/loadbalancers/" + lb.ID + "/ports"
+
+	doHTTPTest(t, &httpTest{
+		name:   "get port by id",
+		method: http.MethodGet,
+		path:   baseURL + "?port_id=" + port.ID,
+		status: http.StatusOK,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "port not found",
+		method: http.MethodGet,
+		path:   baseURL + "/bfad65a9-abe3-44af-82ce-64331c84b2ad",
+		status: http.StatusNotFound,
+	})
+
+	// Test port list response
+	listReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	listResp, err := http.DefaultClient.Do(listReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, listResp.StatusCode)
+
+	defer listResp.Body.Close()
+
+	ca := port.CreatedAt.Format(time.RFC3339Nano)
+	ua := port.UpdatedAt.Format(time.RFC3339Nano)
+	testPortsListExpected := fmt.Sprintf(`{"version":"v1","kind":"portsList","ports":[{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"","load_balancer_id":"%s","name":"%s","address_family":"%s","port":%d,"pools":[]}]}`+"\n", ca, ua, port.ID, lb.ID, port.Name, port.AddressFamily, port.Port)
+	testPortsList, err := io.ReadAll(listResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPortsListExpected, string(testPortsList))
+
+	// Test ports get by id from list endpoint response
+	getListReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		baseURL+"?port_id="+port.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getListResp, err := http.DefaultClient.Do(getListReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getListResp.StatusCode)
+
+	defer getListResp.Body.Close()
+
+	testPortsGetListExpected := fmt.Sprintf(`{"version":"v1","kind":"portsList","ports":[{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"","load_balancer_id":"%s","name":"%s","address_family":"%s","port":%d,"pools":[]}]}`+"\n", ca, ua, port.ID, lb.ID, port.Name, port.AddressFamily, port.Port)
+	testPortsGetList, err := io.ReadAll(getListResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPortsGetListExpected, string(testPortsGetList))
+
+	// Test ports get by id from top level response
+	getReq, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		srv.URL+"/v1/ports/"+port.ID,
+		nil,
+	)
+	assert.NoError(t, err)
+
+	getResp, err := http.DefaultClient.Do(getReq)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, getResp.StatusCode)
+
+	defer getResp.Body.Close()
+
+	testPortsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"portsGet","port":{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"","load_balancer_id":"%s","name":"%s","address_family":"%s","port":%d,"pools":[]}}`+"\n", ca, ua, port.ID, lb.ID, port.Name, port.AddressFamily, port.Port)
+	testPortsGet, err := io.ReadAll(getResp.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, testPortsGetExpected, string(testPortsGet))
 }

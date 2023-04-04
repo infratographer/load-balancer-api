@@ -6,8 +6,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// assignmentsGet handles the GET /assignments route
-func (r *Router) assignmentsGet(c echo.Context) error {
+// assignmentsList handles the GET /assignments route and lists assignments for a tenant
+func (r *Router) assignmentsList(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	mods, err := r.assignmentParamsBinding(c)
