@@ -425,6 +425,14 @@ func TestPortRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
+		name:   "patch port wrong type",
+		body:   `{"port": "foobar"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + earsID,
+	})
+
+	doHTTPTest(t, &httpTest{
 		name:   "patch port port too low",
 		body:   `{"port": -1}`,
 		status: http.StatusBadRequest,

@@ -162,33 +162,11 @@ func (r *Router) updatePort(c echo.Context, port *models.Port, origPools, newPoo
 		pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
 	}
 
-	// add new assignments
-	for _, poolID := range newPools {
-		if _, err := uuid.Parse(poolID); err != nil {
-			r.logger.Error("invalid uuid in port payload", zap.Error(err))
-			return "", v1BadRequestResponse(c, err)
-		}
+	diff := sliceCompare(origPools, newPools)
 
-		if !contains(origPools, poolID) {
-			assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
-			if err != nil {
-				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
-
-				if err := tx.Rollback(); err != nil {
-					r.logger.Error("error rolling back transaction", zap.Error(err))
-					return "", v1InternalServerErrorResponse(c, err)
-				}
-
-				return "", v1BadRequestResponse(c, err)
-			}
-
-			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
-		}
-	}
-
-	// remove missing assignments
-	for _, poolID := range origPools {
-		if !contains(newPools, poolID) {
+	for poolID, v := range diff {
+		switch {
+		case v < 0:
 			assignmentID, err := r.deleteAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
 			if err != nil {
 				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
@@ -202,6 +180,27 @@ func (r *Router) updatePort(c echo.Context, port *models.Port, origPools, newPoo
 			}
 
 			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+		case v >= 1:
+			if _, err := uuid.Parse(poolID); err != nil {
+				r.logger.Error("invalid uuid in port payload", zap.Error(err))
+				return "", v1BadRequestResponse(c, err)
+			}
+
+			assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
+			if err != nil {
+				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
+
+				if err := tx.Rollback(); err != nil {
+					r.logger.Error("error rolling back transaction", zap.Error(err))
+					return "", v1InternalServerErrorResponse(c, err)
+				}
+
+				return "", v1BadRequestResponse(c, err)
+			}
+
+			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+		default:
+			r.logger.Debug("assignment for pool already exists, skipping", zap.String("pool.id", poolID), zap.String("port.id", port.PortID))
 		}
 	}
 
