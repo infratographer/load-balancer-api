@@ -78,7 +78,7 @@ func (r *Router) portCreate(c echo.Context) error {
 			return v1BadRequestResponse(c, err)
 		}
 
-		assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, lb.LoadBalancerID, poolID, port.PortID)
+		assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
 		if err != nil {
 			r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
 

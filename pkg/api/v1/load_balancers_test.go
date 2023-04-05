@@ -381,7 +381,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	// PUT tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path update load balancer",
-		body:   `{"name": "Bruce", "load_balancer_size": "x-large","load_balancer_type": "layer-3"}`,
+		body:   fmt.Sprintf(`{"name": "Bruce", "load_balancer_size": "x-large","load_balancer_type": "layer-3","location_id": "%s","ip_address_id": "%s"}`, locationID, uuid.NewString()),
 		status: http.StatusAccepted,
 		method: http.MethodPut,
 		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
@@ -389,7 +389,7 @@ func TestLoadBalancerRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "update load balancer missing display name",
+		name:   "update load balancer missing name",
 		body:   `{"load_balancer_size": "x-large","load_balancer_type": "layer-3"}`,
 		status: http.StatusBadRequest,
 		method: http.MethodPut,
@@ -421,6 +421,97 @@ func TestLoadBalancerRoutes(t *testing.T) {
 		status: http.StatusNotFound,
 		method: http.MethodPut,
 		path:   baseURL,
+		tenant: tenantID,
+	})
+
+	// PATCH endpoints
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch update load balancer name",
+		body:   `{"name": "Brucey"}`,
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path patch update load balancer name",
+		body:   `{"name": ""}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch update load balancer size",
+		body:   `{"load_balancer_size": "x-x-large"}`,
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path patch update load balancer size",
+		body:   `{"load_balancer_size": ""}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch update load balancer size",
+		body:   `{"load_balancer_type": "layer-3"}`, // only allowed type is layer-3
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path patch update load balancer size",
+		body:   `{"load_balancer_type": ""}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch update load balancer size",
+		body:   fmt.Sprintf(`{"location_id": "%s"}`, uuid.NewString()),
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path patch update load balancer size",
+		body:   `{"location_id": ""}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch update load balancer size",
+		body:   fmt.Sprintf(`{"ip_address_id": "%s"}`, uuid.NewString()),
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
+		tenant: tenantID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path patch update load balancer size",
+		body:   `{"ip_address_id": ""}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + testLoadBalancer.LoadBalancerID,
 		tenant: tenantID,
 	})
 

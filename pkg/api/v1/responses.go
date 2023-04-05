@@ -394,7 +394,7 @@ func v1PoolResponse(c echo.Context, p *models.Pool) error {
 
 	return c.JSON(http.StatusOK, &response{
 		Version: apiVersion,
-		Kind:    "poolsList",
+		Kind:    "poolsGet",
 		Pool: &pool{
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,

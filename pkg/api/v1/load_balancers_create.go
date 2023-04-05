@@ -103,7 +103,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		additionalURNs = append(additionalURNs, pubsub.NewPortURN(portID))
 
 		for _, pool := range p.Pools {
-			assignmentID, err := r.createAssignment(ctx, tx, tenantID, lb.LoadBalancerID, pool, portID)
+			assignmentID, err := r.createAssignment(ctx, tx, tenantID, pool, portID)
 			if err != nil {
 				r.logger.Error("failed to create load balancer assignment, rolling back transaction", zap.Error(err))
 

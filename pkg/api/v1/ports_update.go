@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
@@ -32,18 +33,18 @@ func (r *Router) portUpdate(c echo.Context) error {
 
 	port := ports[0]
 
-	loadBalancer, err := models.LoadBalancers(
-		models.LoadBalancerWhere.LoadBalancerID.EQ(port.LoadBalancerID),
-	).One(ctx, r.db)
-	if err != nil {
-		r.logger.Error("error looking up load balancer for port", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+	// collect original pool ids for the port
+	origPools := make([]string, len(port.R.Assignments))
+	for i, p := range port.R.Assignments {
+		origPools[i] = p.PoolID
 	}
 
 	payload := struct {
-		Name string `json:"name"`
-		Port int64  `json:"port"`
+		Name  string   `json:"name"`
+		Port  int64    `json:"port"`
+		Pools []string `json:"pools"`
 	}{}
+
 	if err := c.Bind(&payload); err != nil {
 		r.logger.Error("failed to bind port update input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
@@ -53,20 +54,167 @@ func (r *Router) portUpdate(c echo.Context) error {
 	port.Port = payload.Port
 	// TODO do we need to update a CurrentState here?
 
-	if err := validatePort(port); err != nil {
+	portID, err := r.updatePort(c, port, origPools, payload.Pools)
+	if err != nil {
+		return err
+	}
+
+	return v1UpdatePortResponse(c, portID)
+}
+
+// portPatch patches a port
+func (r *Router) portPatch(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	mods, err := r.portParamsBinding(c)
+	if err != nil {
+		r.logger.Error("failed to bind port params", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 
-	if _, err := port.Update(ctx, r.db, boil.Infer()); err != nil {
-		r.logger.Error("failed to update port", zap.Error(err))
+	ports, err := models.Ports(mods...).All(ctx, r.db)
+	if err != nil {
+		r.logger.Error("failed to get port", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
+	}
+
+	if len(ports) == 0 {
+		return v1NotFoundResponse(c)
+	} else if len(ports) != 1 {
+		return v1BadRequestResponse(c, ErrAmbiguous)
+	}
+
+	port := ports[0]
+
+	// collect original pool ids for the port
+	origPools := make([]string, len(port.R.Assignments))
+	for i, p := range port.R.Assignments {
+		origPools[i] = p.PoolID
+	}
+
+	payload := struct {
+		Name  *string  `json:"name"`
+		Port  *int64   `json:"port"`
+		Pools []string `json:"pools"`
+	}{}
+
+	if err := c.Bind(&payload); err != nil {
+		r.logger.Error("failed to bind port update input", zap.Error(err))
+		return v1BadRequestResponse(c, err)
+	}
+
+	if payload.Name != nil {
+		port.Name = *payload.Name
+	}
+
+	if payload.Port != nil {
+		port.Port = *payload.Port
+	}
+
+	if payload.Pools == nil {
+		payload.Pools = origPools
+	}
+
+	// TODO do we need to update a CurrentState here?
+
+	portID, err := r.updatePort(c, port, origPools, payload.Pools)
+	if err != nil {
+		return err
+	}
+
+	return v1UpdatePortResponse(c, portID)
+}
+
+func (r *Router) updatePort(c echo.Context, port *models.Port, origPools, newPools []string) (string, error) {
+	ctx := c.Request().Context()
+
+	if err := validatePort(port); err != nil {
+		return "", v1BadRequestResponse(c, err)
+	}
+
+	// validate load balancer
+	lb, err := models.LoadBalancers(
+		models.LoadBalancerWhere.LoadBalancerID.EQ(port.LoadBalancerID),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Error("error looking up load balancer for port", zap.Error(err))
+		return "", v1BadRequestResponse(c, err)
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		r.logger.Error("failed to begin transaction", zap.Error(err))
+		return "", v1InternalServerErrorResponse(c, err)
+	}
+
+	if _, err := port.Update(ctx, tx, boil.Infer()); err != nil {
+		r.logger.Error("failed to update port", zap.Error(err))
+
+		if err := tx.Rollback(); err != nil {
+			r.logger.Error("error rolling back transaction", zap.Error(err))
+			return "", v1InternalServerErrorResponse(c, err)
+		}
+
+		return "", v1InternalServerErrorResponse(c, err)
+	}
+
+	additionalURNs := []string{
+		pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
+	}
+
+	// add new assignments
+	for _, poolID := range newPools {
+		if _, err := uuid.Parse(poolID); err != nil {
+			r.logger.Error("invalid uuid in port payload", zap.Error(err))
+			return "", v1BadRequestResponse(c, err)
+		}
+
+		if !contains(origPools, poolID) {
+			assignmentID, err := r.createAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
+			if err != nil {
+				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
+
+				if err := tx.Rollback(); err != nil {
+					r.logger.Error("error rolling back transaction", zap.Error(err))
+					return "", v1InternalServerErrorResponse(c, err)
+				}
+
+				return "", v1BadRequestResponse(c, err)
+			}
+
+			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+		}
+	}
+
+	// remove missing assignments
+	for _, poolID := range origPools {
+		if !contains(newPools, poolID) {
+			assignmentID, err := r.deleteAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
+			if err != nil {
+				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
+
+				if err := tx.Rollback(); err != nil {
+					r.logger.Error("error rolling back transaction", zap.Error(err))
+					return "", v1InternalServerErrorResponse(c, err)
+				}
+
+				return "", v1BadRequestResponse(c, err)
+			}
+
+			additionalURNs = append(additionalURNs, pubsub.NewAssignmentURN(assignmentID))
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		r.logger.Error("failed to commit transaction", zap.Error(err))
+		return "", v1InternalServerErrorResponse(c, err)
 	}
 
 	msg, err := pubsub.NewPortMessage(
 		someTestJWTURN,
-		pubsub.NewTenantURN(loadBalancer.TenantID),
+		pubsub.NewTenantURN(lb.TenantID),
 		pubsub.NewPortURN(port.PortID),
-		pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID),
+		additionalURNs...,
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
@@ -78,5 +226,5 @@ func (r *Router) portUpdate(c echo.Context) error {
 		r.logger.Error("failed to publish load balancer port message", zap.Error(err))
 	}
 
-	return v1UpdatePortResponse(c, port.PortID)
+	return port.PortID, nil
 }
