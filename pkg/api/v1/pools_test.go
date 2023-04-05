@@ -583,7 +583,7 @@ func TestPoolsGet(t *testing.T) {
 
 	defer getResp.Body.Close()
 
-	testPoolsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"poolsList","pool":{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"%s","name":"%s","protocol":"%s","origins":[]}}`+"\n", ca, ua, pool.ID, pool.TenantID, pool.Name, pool.Protocol)
+	testPoolsGetExpected := fmt.Sprintf(`{"version":"v1","kind":"poolsGet","pool":{"created_at":"%s","updated_at":"%s","id":"%s","tenant_id":"%s","name":"%s","protocol":"%s","origins":[]}}`+"\n", ca, ua, pool.ID, pool.TenantID, pool.Name, pool.Protocol)
 	testPoolsGet, err := io.ReadAll(getResp.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, testPoolsGetExpected, string(testPoolsGet))

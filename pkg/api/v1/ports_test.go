@@ -415,6 +415,47 @@ func TestPortRoutes(t *testing.T) {
 		path:   baseURLLoadBalancer + "?port=80",
 	})
 
+	// PATCH tests
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch port name",
+		body:   `{"name": "LeftEars"}`,
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + earsID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "patch port wrong type",
+		body:   `{"port": "foobar"}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + earsID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "patch port port too low",
+		body:   `{"port": -1}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + earsID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "patch port port two high",
+		body:   `{"port": 131337}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPatch,
+		path:   baseURL + "/" + earsID,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "patch port not found",
+		body:   `{"name": "Plain Mouth", "port": 80}`,
+		status: http.StatusAccepted,
+		method: http.MethodPatch,
+		path:   baseURLLoadBalancer + "?port=80",
+	})
+
 	// Get Tests
 	doHTTPTest(t, &httpTest{
 		name:   "happy path get by id",

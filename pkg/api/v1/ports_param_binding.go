@@ -22,7 +22,7 @@ func (r *Router) portParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		portID         string
 	)
 
-	mods := []qm.QueryMod{}
+	mods := []qm.QueryMod{qm.Load("Assignments")}
 
 	// optional load_balancer_id in the request path
 	if loadBalancerID, err = r.parseUUID(c, "load_balancer_id"); err != nil {

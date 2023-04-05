@@ -1,7 +1,10 @@
 package api
 
 import (
+	"context"
+
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.uber.org/zap"
@@ -61,4 +64,29 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 	default:
 		return v1BadRequestResponse(c, ErrAmbiguous)
 	}
+}
+
+func (r *Router) deleteAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, poolID, portID string) (string, error) {
+	r.logger.Debug("deleting assignment",
+		zap.String("tenant.id", tenantID),
+		zap.String("pool.id", poolID),
+		zap.String("port.id", portID),
+	)
+
+	assignment, err := models.Assignments(
+		models.AssignmentWhere.TenantID.EQ(tenantID),
+		models.AssignmentWhere.PoolID.EQ(poolID),
+		models.AssignmentWhere.PortID.EQ(portID),
+	).One(ctx, r.db)
+	if err != nil {
+		r.logger.Error("error fetching assignment", zap.Error(err))
+		return "", err
+	}
+
+	if _, err := assignment.Delete(ctx, r.db, false); err != nil {
+		r.logger.Error("error deleting assignment", zap.Error(err))
+		return "", err
+	}
+
+	return assignment.AssignmentID, nil
 }

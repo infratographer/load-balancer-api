@@ -41,7 +41,7 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	assignmentID, err := r.createAssignment(ctx, r.db, tenantID, port.LoadBalancerID, payload.PoolID, port.PortID)
+	assignmentID, err := r.createAssignment(ctx, r.db, tenantID, payload.PoolID, port.PortID)
 	if err != nil {
 		r.logger.Error("failed to create assignment", zap.Error(err))
 		return v1BadRequestResponse(c, err)
@@ -67,10 +67,9 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 	return v1AssignmentsCreatedResponse(c, assignmentID)
 }
 
-func (r *Router) createAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, loadBalancerID, poolID, portID string) (string, error) {
+func (r *Router) createAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, poolID, portID string) (string, error) {
 	r.logger.Debug("creating assignment",
 		zap.String("tenant.id", tenantID),
-		zap.String("loadbalancer.id", loadBalancerID),
 		zap.String("pool.id", poolID),
 		zap.String("port.id", portID),
 	)
