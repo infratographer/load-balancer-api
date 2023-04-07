@@ -16,6 +16,7 @@ func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 	g.POST("/tenant/:tenant_id/loadbalancers", r.loadBalancerCreate)
 
 	g.PUT("/loadbalancers/:load_balancer_id", r.loadBalancerUpdate)
+
 	g.PATCH("/loadbalancers/:load_balancer_id", r.loadBalancerPatch)
 
 	g.DELETE("/tenant/:tenant_id/loadbalancers", r.loadBalancerDelete)
@@ -40,6 +41,10 @@ func (r *Router) addPoolsRoutes(g *echo.Group) {
 
 	g.POST("/tenant/:tenant_id/pools", r.poolCreate)
 
+	g.PUT("/pools/:pool_id", r.poolUpdate)
+
+	g.PATCH("/pools/:pool_id", r.poolPatch)
+
 	g.DELETE("/tenant/:tenant_id/pools", r.poolDelete)
 	g.DELETE("/pools/:pool_id", r.poolDelete)
 }
@@ -53,6 +58,7 @@ func (r *Router) addPortRoutes(rg *echo.Group) {
 
 	rg.PUT("/ports/:port_id", r.portUpdate)
 	rg.PUT("/loadbalancers/:load_balancer_id/ports", r.portUpdate)
+
 	rg.PATCH("/ports/:port_id", r.portPatch)
 	rg.PATCH("/loadbalancers/:load_balancer_id/ports", r.portPatch)
 

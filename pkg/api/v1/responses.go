@@ -89,6 +89,20 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 	})
 }
 
+func v1UpdatePoolResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+		PoolID  string `json:"load_balancer_id"`
+	}{
+		Message: "resource updated",
+		Version: apiVersion,
+		Status:  http.StatusAccepted,
+		PoolID:  id,
+	})
+}
+
 func v1UpdatePortResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusAccepted, struct {
 		Version string `json:"version"`

@@ -23,6 +23,7 @@ const (
 	natsMsgSubTimeout             = 2 * time.Second
 	loadBalancerPoolSubjectCreate = "com.infratographer.events.load-balancer-pool.create.global"
 	loadBalancerPoolSubjectDelete = "com.infratographer.events.load-balancer-pool.delete.global"
+	loadBalancerPoolSubjectUpdate = "com.infratographer.events.load-balancer-pool.update.global"
 	loadBalancerPoolBaseUrn       = "urn:infratographer:load-balancer-pool:"
 )
 
@@ -273,6 +274,23 @@ func TestPoolRoutes(t *testing.T) {
 	baseURLTenant := srv.URL + "/v1/tenant/" + tenantID + "/pools"
 	missingUUID := uuid.New().String()
 
+	// create a test pool, but don't cleanup since it will get deleted below by id
+	testPool, _ := createPool(t, srv, "Anchor", tenantID)
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, loadBalancerPoolSubjectCreate, msg.Subject)
+		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+		assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+		assert.Equal(t, loadBalancerPoolBaseUrn+testPool.ID, pMsg.SubjectURN)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
 	// doHTTPTest is a helper function that makes a request to the server and
 	// checks the response.
 	//
@@ -289,6 +307,27 @@ func TestPoolRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
 		body:   `{"name": "Nemo", "protocol": "tcp"}`,
+		status: http.StatusOK,
+		path:   baseURLTenant,
+		method: http.MethodPost,
+	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, loadBalancerPoolSubjectCreate, msg.Subject)
+		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+		assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	doHTTPTest(t, &httpTest{
+		name:   "missing protocol sets to default",
+		body:   `{"name": "Bruce"}`,
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodPost,
@@ -332,27 +371,6 @@ func TestPoolRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
-		name:   "missing protocol",
-		body:   `{"name": "Bruce"}`,
-		status: http.StatusOK,
-		path:   baseURLTenant,
-		method: http.MethodPost,
-	})
-
-	select {
-	case msg := <-msgChan:
-		pMsg := &pubsubx.Message{}
-		err = json.Unmarshal(msg.Data, pMsg)
-		assert.NoError(t, err)
-
-		assert.Equal(t, loadBalancerPoolSubjectCreate, msg.Subject)
-		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
-		assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
-	case <-time.After(natsMsgSubTimeout):
-		t.Error("failed to receive nats message")
-	}
-
-	doHTTPTest(t, &httpTest{
 		name:   "invalid protocol",
 		body:   `{"name": "Nemo", "protocol": "invalid"}`,
 		status: http.StatusBadRequest,
@@ -370,7 +388,7 @@ func TestPoolRoutes(t *testing.T) {
 
 	// GET
 	doHTTPTest(t, &httpTest{
-		name:   "happy path",
+		name:   "happy path list pools in a tenant",
 		status: http.StatusOK,
 		path:   baseURLTenant,
 		method: http.MethodGet,
@@ -427,6 +445,95 @@ func TestPoolRoutes(t *testing.T) {
 		method: http.MethodGet,
 	})
 
+	// PUT
+	doHTTPTest(t, &httpTest{
+		name:   "happy path update a pool",
+		body:   `{"name": "testPool02", "protocol": "tcp"}`,
+		status: http.StatusAccepted,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPut,
+	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, loadBalancerPoolSubjectUpdate, msg.Subject)
+		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+		assert.Equal(t, pubsub.UpdateEventType, pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	doHTTPTest(t, &httpTest{
+		name:   "update a pool, missing name",
+		body:   `{"protocol": "tcp"}`,
+		status: http.StatusBadRequest,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPut,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "update a pool, invalid protocol",
+		body:   `{"name", "testPool02", "protocol": "invalid"}`,
+		status: http.StatusBadRequest,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPut,
+	})
+
+	// PATCH
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch a pool name",
+		body:   `{"name": "testPool01"}`,
+		status: http.StatusAccepted,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPatch,
+	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, loadBalancerPoolSubjectUpdate, msg.Subject)
+		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+		assert.Equal(t, pubsub.UpdateEventType, pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch a pool protocol",
+		body:   `{"protocol": "tcp"}`, // only tcp is valid right now
+		status: http.StatusAccepted,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPatch,
+	})
+
+	select {
+	case msg := <-msgChan:
+		pMsg := &pubsubx.Message{}
+		err = json.Unmarshal(msg.Data, pMsg)
+		assert.NoError(t, err)
+
+		assert.Equal(t, loadBalancerPoolSubjectUpdate, msg.Subject)
+		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
+		assert.Equal(t, pubsub.UpdateEventType, pMsg.EventType)
+	case <-time.After(natsMsgSubTimeout):
+		t.Error("failed to receive nats message")
+	}
+
+	doHTTPTest(t, &httpTest{
+		name:   "patch a pool, invalid protocol",
+		body:   `{"protocol": "invalid"}`,
+		status: http.StatusBadRequest,
+		path:   baseURL + "/" + testPool.ID,
+		method: http.MethodPatch,
+	})
+
 	// DELETE
 	doHTTPTest(t, &httpTest{
 		name:   "happy path",
@@ -444,23 +551,6 @@ func TestPoolRoutes(t *testing.T) {
 		assert.Equal(t, loadBalancerPoolSubjectDelete, msg.Subject)
 		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
 		assert.Equal(t, pubsub.DeleteEventType, pMsg.EventType)
-	case <-time.After(natsMsgSubTimeout):
-		t.Error("failed to receive nats message")
-	}
-
-	// create a test pool, but don't cleanup since it will get deleted below by id
-	testPool, _ := createPool(t, srv, "Anchor", tenantID)
-
-	select {
-	case msg := <-msgChan:
-		pMsg := &pubsubx.Message{}
-		err = json.Unmarshal(msg.Data, pMsg)
-		assert.NoError(t, err)
-
-		assert.Equal(t, loadBalancerPoolSubjectCreate, msg.Subject)
-		assert.Equal(t, someTestJWTURN, pMsg.ActorURN)
-		assert.Equal(t, pubsub.CreateEventType, pMsg.EventType)
-		assert.Equal(t, loadBalancerPoolBaseUrn+testPool.ID, pMsg.SubjectURN)
 	case <-time.After(natsMsgSubTimeout):
 		t.Error("failed to receive nats message")
 	}
