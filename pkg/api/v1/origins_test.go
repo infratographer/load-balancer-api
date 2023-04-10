@@ -202,6 +202,9 @@ func TestOriginRoutes(t *testing.T) {
 	tenantID := uuid.New().String()
 	pool, remove := createPool(t, srv, "squirt", tenantID)
 
+	origin, cleanup := createOrigin(t, srv, "testorigin01", pool.ID)
+	defer cleanup(t)
+
 	baseURL := srv.URL + "/v1/origins"
 	baseURLPool := srv.URL + "/v1/pools/" + pool.ID + "/origins"
 	missingUUID := uuid.New().String()
@@ -265,6 +268,104 @@ func TestOriginRoutes(t *testing.T) {
 		status: http.StatusNotFound,
 		path:   baseURL,
 		method: http.MethodPost,
+	})
+
+	// PUT
+	doHTTPTest(t, &httpTest{
+		name:   "happy path update origin by id",
+		body:   `{"disabled": true,"name": "testorigin01", "target": "2.2.2.2", "port": 8080}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPut,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path update origin by target and port",
+		body:   `{"disabled": false,"name": "testorigin01", "target": "1.1.1.1", "port": 80}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
+		method: http.MethodPut,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path update origin missing target",
+		body:   `{"disabled": true,"name": "testorigin01", "port": 80}`,
+		status: http.StatusBadRequest,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPut,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path update origin missing port",
+		body:   `{"disabled": true,"name": "testorigin01", "target": "1.1.1.1"}`,
+		status: http.StatusBadRequest,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPut,
+	})
+
+	// PATCH
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin name by id",
+		body:   `{"name": "testorigin02"}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin target by id",
+		body:   `{"target": "2.2.2.2"}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin port by id",
+		body:   `{"port": 8080}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin name by target and port",
+		body:   `{"name": "testorigin02"}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin target by target and port",
+		body:   `{"target": "1.1.1.1"}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "happy path patch origin port by target and port",
+		body:   `{"port": 80}`,
+		status: http.StatusAccepted,
+		path:   baseURLPool + "?origin_target=1.1.1.1&port=8080",
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path update origin empty target",
+		body:   `{"target": "", "port": 80}`,
+		status: http.StatusBadRequest,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPatch,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "sad path update origin empty port",
+		body:   `{"target": "1.1.1.1", "port": 0}`,
+		status: http.StatusBadRequest,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPatch,
 	})
 
 	// GET

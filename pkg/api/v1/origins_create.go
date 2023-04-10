@@ -65,13 +65,17 @@ func (r *Router) originsCreate(c echo.Context) error {
 	return v1OriginCreatedResponse(c, originID)
 }
 
-func validateOrigin(o models.Origin) error {
+func validateOrigin(o *models.Origin) error {
 	if o.OriginTarget == "" {
 		return ErrMissingOriginTarget
 	}
 
 	if o.PoolID == "" {
 		return ErrMissingPoolID
+	}
+
+	if o.Port == 0 {
+		return ErrMissingOriginPort
 	}
 
 	return nil
@@ -96,7 +100,7 @@ func (r *Router) createOrigin(ctx context.Context, exec boil.ContextExecutor, po
 		CurrentState:              "configuring",
 	}
 
-	if err := validateOrigin(origin); err != nil {
+	if err := validateOrigin(&origin); err != nil {
 		r.logger.Error("error validating origins", zap.Error(err))
 		return "", err
 	}

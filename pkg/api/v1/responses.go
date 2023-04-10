@@ -24,7 +24,7 @@ func v1AssignmentsCreatedResponse(c echo.Context, id string) error {
 		Version      string `json:"version"`
 		Message      string `json:"message"`
 		Status       int    `json:"status"`
-		AssignmentID string `json:"assignment_id,omitempty"`
+		AssignmentID string `json:"assignment_id"`
 	}{
 		Message:      "resource created",
 		Version:      apiVersion,
@@ -66,11 +66,25 @@ func v1OriginCreatedResponse(c echo.Context, id string) error {
 		Version  string `json:"version"`
 		Message  string `json:"message"`
 		Status   int    `json:"status"`
-		OriginID string `json:"origin_id,omitempty"`
+		OriginID string `json:"origin_id"`
 	}{
 		Message:  "resource created",
 		Version:  apiVersion,
 		Status:   http.StatusOK,
+		OriginID: id,
+	})
+}
+
+func v1UpdateOriginResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version  string `json:"version"`
+		Message  string `json:"message"`
+		Status   int    `json:"status"`
+		OriginID string `json:"origin_id"`
+	}{
+		Message:  "resource updated",
+		Version:  apiVersion,
+		Status:   http.StatusAccepted,
 		OriginID: id,
 	})
 }
@@ -80,11 +94,25 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 		Version string `json:"version"`
 		Message string `json:"message"`
 		Status  int    `json:"status"`
-		PoolID  string `json:"pool_id,omitempty"`
+		PoolID  string `json:"pool_id"`
 	}{
 		Message: "resource created",
 		Version: apiVersion,
 		Status:  http.StatusOK,
+		PoolID:  id,
+	})
+}
+
+func v1UpdatePoolResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+		PoolID  string `json:"pool_id"`
+	}{
+		Message: "resource updated",
+		Version: apiVersion,
+		Status:  http.StatusAccepted,
 		PoolID:  id,
 	})
 }

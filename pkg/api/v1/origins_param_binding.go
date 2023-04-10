@@ -35,7 +35,7 @@ func (r *Router) originsParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		r.logger.Debug("path param", zap.String("origin.id", originID))
 	}
 
-	queryParams := []string{"slug", "target", "port", "origin_id"}
+	queryParams := []string{"name", "slug", "origin_target", "port", "origin_id"}
 
 	qpb := echo.QueryParamsBinder(c)
 
