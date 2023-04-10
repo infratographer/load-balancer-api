@@ -30,6 +30,9 @@ func (r *Router) addOriginRoutes(g *echo.Group) {
 
 	g.POST("/pools/:pool_id/origins", r.originsCreate)
 
+	g.PUT("/pools/:pools/origins", r.originUpdate)
+	g.PATCH("/pools/:pools/origins", r.originPatch)
+
 	g.DELETE("/pools/:pool_id/origins", r.originsDelete)
 	g.DELETE("/origins/:origin_id", r.originsDelete)
 }
@@ -50,18 +53,18 @@ func (r *Router) addPoolsRoutes(g *echo.Group) {
 }
 
 // addPortRoutes adds the port routes to the router
-func (r *Router) addPortRoutes(rg *echo.Group) {
-	rg.GET("/ports/:port_id", r.portGet)
-	rg.GET("/loadbalancers/:load_balancer_id/ports", r.portList)
+func (r *Router) addPortRoutes(g *echo.Group) {
+	g.GET("/ports/:port_id", r.portGet)
+	g.GET("/loadbalancers/:load_balancer_id/ports", r.portList)
 
-	rg.POST("/loadbalancers/:load_balancer_id/ports", r.portCreate)
+	g.POST("/loadbalancers/:load_balancer_id/ports", r.portCreate)
 
-	rg.PUT("/ports/:port_id", r.portUpdate)
-	rg.PUT("/loadbalancers/:load_balancer_id/ports", r.portUpdate)
+	g.PUT("/ports/:port_id", r.portUpdate)
+	g.PUT("/loadbalancers/:load_balancer_id/ports", r.portUpdate)
 
-	rg.PATCH("/ports/:port_id", r.portPatch)
-	rg.PATCH("/loadbalancers/:load_balancer_id/ports", r.portPatch)
+	g.PATCH("/ports/:port_id", r.portPatch)
+	g.PATCH("/loadbalancers/:load_balancer_id/ports", r.portPatch)
 
-	rg.DELETE("/ports/:port_id", r.portDelete)
-	rg.DELETE("/loadbalancers/:load_balancer_id/ports", r.portDelete)
+	g.DELETE("/ports/:port_id", r.portDelete)
+	g.DELETE("/loadbalancers/:load_balancer_id/ports", r.portDelete)
 }

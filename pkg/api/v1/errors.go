@@ -9,6 +9,9 @@ var (
 	// ErrMissingOriginTarget is returned when an origin target is missing
 	ErrMissingOriginTarget = errors.New("origin target is missing")
 
+	// ErrMissingOriginPort is returned when an origin port is missing
+	ErrMissingOriginPort = errors.New("origin port is missing")
+
 	// ErrLoadBalancerIPMissing is returned when a load balancer IP is missing
 	ErrLoadBalancerIPMissing = errors.New("load balancer IP is missing")
 
