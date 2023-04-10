@@ -38,17 +38,17 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	dbx := sqlx.NewDb(db, "postgres")
 	e := echox.NewServer()
 
-	lgrCfg := zap.NewDevelopmentConfig()
-	lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	// lgrCfg := zap.NewDevelopmentConfig()
+	// lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 
-	l, err := lgrCfg.Build()
-	if err != nil {
-		panic(err)
-	}
+	// l, err := lgrCfg.Build()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	r := NewRouter(dbx, l.Sugar(), newPubSubClient(t, natsURL))
+	// r := NewRouter(dbx, l.Sugar(), newPubSubClient(t, natsURL))
 
-	// r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
+	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
 
 	r.Routes(e)
 
