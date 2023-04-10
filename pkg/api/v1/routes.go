@@ -31,6 +31,7 @@ func (r *Router) addOriginRoutes(g *echo.Group) {
 	g.POST("/pools/:pool_id/origins", r.originsCreate)
 
 	g.PUT("/pools/:pools/origins", r.originUpdate)
+
 	g.PATCH("/pools/:pools/origins", r.originPatch)
 
 	g.DELETE("/pools/:pool_id/origins", r.originsDelete)
