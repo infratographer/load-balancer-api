@@ -53,12 +53,7 @@ func (r *Router) originUpdate(c echo.Context) error {
 	origin.OriginTarget = payload.Target
 	origin.Port = payload.Port
 
-	originID, err := r.updateOrigin(c, origin)
-	if err != nil {
-		return err
-	}
-
-	return v1UpdateOriginResponse(c, originID)
+	return r.updateOrigin(c, origin)
 }
 
 // originPatch patches an origin
@@ -115,19 +110,14 @@ func (r *Router) originPatch(c echo.Context) error {
 		origin.Port = *payload.Port
 	}
 
-	originID, err := r.updateOrigin(c, origin)
-	if err != nil {
-		return err
-	}
-
-	return v1UpdateOriginResponse(c, originID)
+	return r.updateOrigin(c, origin)
 }
 
-func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) (string, error) {
+func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) error {
 	ctx := c.Request().Context()
 
 	if err := validateOrigin(origin); err != nil {
-		return "", v1BadRequestResponse(c, err)
+		return v1BadRequestResponse(c, err)
 	}
 
 	additionalURNs := []string{
@@ -136,7 +126,7 @@ func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) (string, er
 
 	if _, err := origin.Update(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to update port", zap.Error(err))
-		return "", v1InternalServerErrorResponse(c, err)
+		return v1InternalServerErrorResponse(c, err)
 	}
 
 	msg, err := pubsub.NewOriginMessage(
@@ -155,5 +145,5 @@ func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) (string, er
 		r.logger.Error("failed to publish load balancer origin message", zap.Error(err))
 	}
 
-	return origin.OriginID, nil
+	return v1UpdateOriginResponse(c, origin.OriginID)
 }
