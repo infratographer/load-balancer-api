@@ -30,6 +30,7 @@ func (r *Router) originUpdate(c echo.Context) error {
 	if len(origins) == 0 {
 		return v1NotFoundResponse(c)
 	} else if len(origins) != 1 {
+		r.logger.Warn("ambiguous query ", zap.Any("origins", origins))
 		return v1BadRequestResponse(c, ErrAmbiguous)
 	}
 
@@ -43,7 +44,6 @@ func (r *Router) originUpdate(c echo.Context) error {
 	}{}
 
 	if err := c.Bind(&payload); err != nil {
-		r.logger.Error("failed to bind origin update input", zap.Error(err))
 		return v1BadRequestResponse(c, err)
 	}
 

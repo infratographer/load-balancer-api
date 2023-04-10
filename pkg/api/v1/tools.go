@@ -99,6 +99,11 @@ func doHTTPTest(t *testing.T, tt *httpTest) {
 
 		defer res.Body.Close()
 
+		resBody, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+
+		t.Logf("response body %s", string(resBody))
+
 		assert.Equal(t, tt.status, res.StatusCode)
 	})
 }

@@ -281,9 +281,9 @@ func TestOriginRoutes(t *testing.T) {
 
 	doHTTPTest(t, &httpTest{
 		name:   "happy path update origin by target and port",
-		body:   `{"disabled": true,"name": "testorigin01", "target": "1.1.1.1", "port": 80}`,
+		body:   `{"disabled": false,"name": "testorigin01", "target": "1.1.1.1", "port": 80}`,
 		status: http.StatusAccepted,
-		path:   baseURLPool + "?target=2.2.2.2&port=8080",
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
 		method: http.MethodPut,
 	})
 
@@ -303,7 +303,7 @@ func TestOriginRoutes(t *testing.T) {
 		method: http.MethodPut,
 	})
 
-	// PATH
+	// PATCH
 	doHTTPTest(t, &httpTest{
 		name:   "happy path patch origin name by id",
 		body:   `{"name": "testorigin02"}`,
@@ -332,7 +332,7 @@ func TestOriginRoutes(t *testing.T) {
 		name:   "happy path patch origin name by target and port",
 		body:   `{"name": "testorigin02"}`,
 		status: http.StatusAccepted,
-		path:   baseURLPool + "?target=2.2.2.2&port=8080",
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
 		method: http.MethodPatch,
 	})
 
@@ -340,7 +340,7 @@ func TestOriginRoutes(t *testing.T) {
 		name:   "happy path patch origin target by target and port",
 		body:   `{"target": "1.1.1.1"}`,
 		status: http.StatusAccepted,
-		path:   baseURLPool + "?target=2.2.2.2&port=8080",
+		path:   baseURLPool + "?origin_target=2.2.2.2&port=8080",
 		method: http.MethodPatch,
 	})
 
@@ -348,7 +348,7 @@ func TestOriginRoutes(t *testing.T) {
 		name:   "happy path patch origin port by target and port",
 		body:   `{"port": 80}`,
 		status: http.StatusAccepted,
-		path:   baseURLPool + "?target=1.1.1.1&port=8080",
+		path:   baseURLPool + "?origin_target=1.1.1.1&port=8080",
 		method: http.MethodPatch,
 	})
 
