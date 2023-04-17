@@ -2,7 +2,7 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
@@ -31,14 +31,6 @@ func NewRouter(db *sqlx.DB, l *zap.SugaredLogger, ps *pubsub.Client) *Router {
 	}
 }
 
-// func notYet(c echo.Context) error {
-// 	return c.JSON(http.StatusOK, map[string]string{"status": "endpoint not implemented yet"})
-// }
-
-func errorHandler(err error, c echo.Context) {
-	c.Echo().DefaultHTTPErrorHandler(err, c)
-}
-
 func defaultRequestType(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		contentType := c.Request().Header.Get("Content-Type")
@@ -51,18 +43,10 @@ func defaultRequestType(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // Routes will add the routes for this API version to a router group
-func (r *Router) Routes(e *echo.Echo) {
+func (r *Router) Routes(e *echo.Group) {
 	// authenticate a request, not included the v1 group since this has custom
 	// authentication as it's accepting external auth
-	e.HideBanner = true
-
-	e.HTTPErrorHandler = errorHandler
-
 	e.Use(defaultRequestType)
-
-	// Health endpoints
-	e.GET("/healthz", r.livenessCheck)
-	e.GET("/readyz", r.readinessCheck)
 
 	v1 := e.Group(apiVersion)
 	{
@@ -79,29 +63,15 @@ func (r *Router) Routes(e *echo.Echo) {
 	}
 }
 
-// livenessCheck ensures that the server is up and responding
-func (r *Router) livenessCheck(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"status": "UP",
-	})
-}
-
-// readinessCheck ensures that the server is up and that we are able to process
-// requests. currently this only checks the database connection.
-func (r *Router) readinessCheck(c echo.Context) error {
-	ctx := c.Request().Context()
-
+// DatabaseCheck implements echox.CheckFunc and ensure the database connection is established.
+func (r *Router) DatabaseCheck(ctx context.Context) error {
 	if err := r.db.PingContext(ctx); err != nil {
 		r.logger.Error("readiness check db ping failed", zap.Error(err))
 
-		return c.JSON(http.StatusServiceUnavailable, map[string]string{
-			"status": "DOWN",
-		})
+		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"status": "UP",
-	})
+	return nil
 }
 
 // sliceCompare takes two slices and returns a map of the slice value as the key
