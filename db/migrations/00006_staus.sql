@@ -1,7 +1,7 @@
 --
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE load_balancers_status (
+CREATE TABLE load_balancer_statuses (
   status_id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
   load_balancer_id UUID NOT NULL REFERENCES load_balancers (load_balancer_id) ON UPDATE CASCADE,
   namespace STRING NOT NULL,
@@ -20,5 +20,5 @@ CREATE TABLE load_balancers_status (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE load_balancers_status
+DROP TABLE load_balancer_statuses
 -- +goose StatementEnd

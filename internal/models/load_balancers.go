@@ -143,20 +143,20 @@ var LoadBalancerWhere = struct {
 
 // LoadBalancerRels is where relationship names are stored.
 var LoadBalancerRels = struct {
-	LoadBalancersMetadata string
-	LoadBalancersStatuses string
-	Ports                 string
+	LoadBalancerMetadata string
+	LoadBalancerStatuses string
+	Ports                string
 }{
-	LoadBalancersMetadata: "LoadBalancersMetadata",
-	LoadBalancersStatuses: "LoadBalancersStatuses",
-	Ports:                 "Ports",
+	LoadBalancerMetadata: "LoadBalancerMetadata",
+	LoadBalancerStatuses: "LoadBalancerStatuses",
+	Ports:                "Ports",
 }
 
 // loadBalancerR is where relationships are stored.
 type loadBalancerR struct {
-	LoadBalancersMetadata LoadBalancersMetadatumSlice `query:"LoadBalancersMetadata" param:"LoadBalancersMetadata" boil:"LoadBalancersMetadata" json:"LoadBalancersMetadata" toml:"LoadBalancersMetadata" yaml:"LoadBalancersMetadata"`
-	LoadBalancersStatuses LoadBalancersStatusSlice    `query:"LoadBalancersStatuses" param:"LoadBalancersStatuses" boil:"LoadBalancersStatuses" json:"LoadBalancersStatuses" toml:"LoadBalancersStatuses" yaml:"LoadBalancersStatuses"`
-	Ports                 PortSlice                   `query:"Ports" param:"Ports" boil:"Ports" json:"Ports" toml:"Ports" yaml:"Ports"`
+	LoadBalancerMetadata LoadBalancerMetadatumSlice `query:"LoadBalancerMetadata" param:"LoadBalancerMetadata" boil:"LoadBalancerMetadata" json:"LoadBalancerMetadata" toml:"LoadBalancerMetadata" yaml:"LoadBalancerMetadata"`
+	LoadBalancerStatuses LoadBalancerStatusSlice    `query:"LoadBalancerStatuses" param:"LoadBalancerStatuses" boil:"LoadBalancerStatuses" json:"LoadBalancerStatuses" toml:"LoadBalancerStatuses" yaml:"LoadBalancerStatuses"`
+	Ports                PortSlice                  `query:"Ports" param:"Ports" boil:"Ports" json:"Ports" toml:"Ports" yaml:"Ports"`
 }
 
 // NewStruct creates a new relationship struct
@@ -164,18 +164,18 @@ func (*loadBalancerR) NewStruct() *loadBalancerR {
 	return &loadBalancerR{}
 }
 
-func (r *loadBalancerR) GetLoadBalancersMetadata() LoadBalancersMetadatumSlice {
+func (r *loadBalancerR) GetLoadBalancerMetadata() LoadBalancerMetadatumSlice {
 	if r == nil {
 		return nil
 	}
-	return r.LoadBalancersMetadata
+	return r.LoadBalancerMetadata
 }
 
-func (r *loadBalancerR) GetLoadBalancersStatuses() LoadBalancersStatusSlice {
+func (r *loadBalancerR) GetLoadBalancerStatuses() LoadBalancerStatusSlice {
 	if r == nil {
 		return nil
 	}
-	return r.LoadBalancersStatuses
+	return r.LoadBalancerStatuses
 }
 
 func (r *loadBalancerR) GetPorts() PortSlice {
@@ -471,32 +471,32 @@ func (q loadBalancerQuery) Exists(ctx context.Context, exec boil.ContextExecutor
 	return count > 0, nil
 }
 
-// LoadBalancersMetadata retrieves all the load_balancers_metadatum's LoadBalancersMetadata with an executor.
-func (o *LoadBalancer) LoadBalancersMetadata(mods ...qm.QueryMod) loadBalancersMetadatumQuery {
+// LoadBalancerMetadata retrieves all the load_balancer_metadatum's LoadBalancerMetadata with an executor.
+func (o *LoadBalancer) LoadBalancerMetadata(mods ...qm.QueryMod) loadBalancerMetadatumQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"load_balancers_metadata\".\"load_balancer_id\"=?", o.LoadBalancerID),
+		qm.Where("\"load_balancer_metadata\".\"load_balancer_id\"=?", o.LoadBalancerID),
 	)
 
-	return LoadBalancersMetadata(queryMods...)
+	return LoadBalancerMetadata(queryMods...)
 }
 
-// LoadBalancersStatuses retrieves all the load_balancers_status's LoadBalancersStatuses with an executor.
-func (o *LoadBalancer) LoadBalancersStatuses(mods ...qm.QueryMod) loadBalancersStatusQuery {
+// LoadBalancerStatuses retrieves all the load_balancer_status's LoadBalancerStatuses with an executor.
+func (o *LoadBalancer) LoadBalancerStatuses(mods ...qm.QueryMod) loadBalancerStatusQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"load_balancers_status\".\"load_balancer_id\"=?", o.LoadBalancerID),
+		qm.Where("\"load_balancer_statuses\".\"load_balancer_id\"=?", o.LoadBalancerID),
 	)
 
-	return LoadBalancersStatuses(queryMods...)
+	return LoadBalancerStatuses(queryMods...)
 }
 
 // Ports retrieves all the port's Ports with an executor.
@@ -513,9 +513,9 @@ func (o *LoadBalancer) Ports(mods ...qm.QueryMod) portQuery {
 	return Ports(queryMods...)
 }
 
-// LoadLoadBalancersMetadata allows an eager lookup of values, cached into the
+// LoadLoadBalancerMetadata allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
+func (loadBalancerL) LoadLoadBalancerMetadata(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
 	var slice []*LoadBalancer
 	var object *LoadBalancer
 
@@ -569,8 +569,8 @@ func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.Conte
 	}
 
 	query := NewQuery(
-		qm.From(`load_balancers_metadata`),
-		qm.WhereIn(`load_balancers_metadata.load_balancer_id in ?`, args...),
+		qm.From(`load_balancer_metadata`),
+		qm.WhereIn(`load_balancer_metadata.load_balancer_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -578,22 +578,22 @@ func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.Conte
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load load_balancers_metadata")
+		return errors.Wrap(err, "failed to eager load load_balancer_metadata")
 	}
 
-	var resultSlice []*LoadBalancersMetadatum
+	var resultSlice []*LoadBalancerMetadatum
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice load_balancers_metadata")
+		return errors.Wrap(err, "failed to bind eager loaded slice load_balancer_metadata")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on load_balancers_metadata")
+		return errors.Wrap(err, "failed to close results in eager load on load_balancer_metadata")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for load_balancers_metadata")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for load_balancer_metadata")
 	}
 
-	if len(loadBalancersMetadatumAfterSelectHooks) != 0 {
+	if len(loadBalancerMetadatumAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -601,10 +601,10 @@ func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.Conte
 		}
 	}
 	if singular {
-		object.R.LoadBalancersMetadata = resultSlice
+		object.R.LoadBalancerMetadata = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &loadBalancersMetadatumR{}
+				foreign.R = &loadBalancerMetadatumR{}
 			}
 			foreign.R.LoadBalancer = object
 		}
@@ -614,9 +614,9 @@ func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.Conte
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.LoadBalancerID == foreign.LoadBalancerID {
-				local.R.LoadBalancersMetadata = append(local.R.LoadBalancersMetadata, foreign)
+				local.R.LoadBalancerMetadata = append(local.R.LoadBalancerMetadata, foreign)
 				if foreign.R == nil {
-					foreign.R = &loadBalancersMetadatumR{}
+					foreign.R = &loadBalancerMetadatumR{}
 				}
 				foreign.R.LoadBalancer = local
 				break
@@ -627,9 +627,9 @@ func (loadBalancerL) LoadLoadBalancersMetadata(ctx context.Context, e boil.Conte
 	return nil
 }
 
-// LoadLoadBalancersStatuses allows an eager lookup of values, cached into the
+// LoadLoadBalancerStatuses allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (loadBalancerL) LoadLoadBalancersStatuses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
+func (loadBalancerL) LoadLoadBalancerStatuses(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLoadBalancer interface{}, mods queries.Applicator) error {
 	var slice []*LoadBalancer
 	var object *LoadBalancer
 
@@ -683,8 +683,8 @@ func (loadBalancerL) LoadLoadBalancersStatuses(ctx context.Context, e boil.Conte
 	}
 
 	query := NewQuery(
-		qm.From(`load_balancers_status`),
-		qm.WhereIn(`load_balancers_status.load_balancer_id in ?`, args...),
+		qm.From(`load_balancer_statuses`),
+		qm.WhereIn(`load_balancer_statuses.load_balancer_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -692,22 +692,22 @@ func (loadBalancerL) LoadLoadBalancersStatuses(ctx context.Context, e boil.Conte
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load load_balancers_status")
+		return errors.Wrap(err, "failed to eager load load_balancer_statuses")
 	}
 
-	var resultSlice []*LoadBalancersStatus
+	var resultSlice []*LoadBalancerStatus
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice load_balancers_status")
+		return errors.Wrap(err, "failed to bind eager loaded slice load_balancer_statuses")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on load_balancers_status")
+		return errors.Wrap(err, "failed to close results in eager load on load_balancer_statuses")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for load_balancers_status")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for load_balancer_statuses")
 	}
 
-	if len(loadBalancersStatusAfterSelectHooks) != 0 {
+	if len(loadBalancerStatusAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -715,10 +715,10 @@ func (loadBalancerL) LoadLoadBalancersStatuses(ctx context.Context, e boil.Conte
 		}
 	}
 	if singular {
-		object.R.LoadBalancersStatuses = resultSlice
+		object.R.LoadBalancerStatuses = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &loadBalancersStatusR{}
+				foreign.R = &loadBalancerStatusR{}
 			}
 			foreign.R.LoadBalancer = object
 		}
@@ -728,9 +728,9 @@ func (loadBalancerL) LoadLoadBalancersStatuses(ctx context.Context, e boil.Conte
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.LoadBalancerID == foreign.LoadBalancerID {
-				local.R.LoadBalancersStatuses = append(local.R.LoadBalancersStatuses, foreign)
+				local.R.LoadBalancerStatuses = append(local.R.LoadBalancerStatuses, foreign)
 				if foreign.R == nil {
-					foreign.R = &loadBalancersStatusR{}
+					foreign.R = &loadBalancerStatusR{}
 				}
 				foreign.R.LoadBalancer = local
 				break
@@ -856,11 +856,11 @@ func (loadBalancerL) LoadPorts(ctx context.Context, e boil.ContextExecutor, sing
 	return nil
 }
 
-// AddLoadBalancersMetadata adds the given related objects to the existing relationships
+// AddLoadBalancerMetadata adds the given related objects to the existing relationships
 // of the load_balancer, optionally inserting them as new records.
-// Appends related to o.R.LoadBalancersMetadata.
+// Appends related to o.R.LoadBalancerMetadata.
 // Sets related.R.LoadBalancer appropriately.
-func (o *LoadBalancer) AddLoadBalancersMetadata(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*LoadBalancersMetadatum) error {
+func (o *LoadBalancer) AddLoadBalancerMetadata(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*LoadBalancerMetadatum) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -870,9 +870,9 @@ func (o *LoadBalancer) AddLoadBalancersMetadata(ctx context.Context, exec boil.C
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"load_balancers_metadata\" SET %s WHERE %s",
+				"UPDATE \"load_balancer_metadata\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-				strmangle.WhereClause("\"", "\"", 2, loadBalancersMetadatumPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, loadBalancerMetadatumPrimaryKeyColumns),
 			)
 			values := []interface{}{o.LoadBalancerID, rel.MetadataID}
 
@@ -891,15 +891,15 @@ func (o *LoadBalancer) AddLoadBalancersMetadata(ctx context.Context, exec boil.C
 
 	if o.R == nil {
 		o.R = &loadBalancerR{
-			LoadBalancersMetadata: related,
+			LoadBalancerMetadata: related,
 		}
 	} else {
-		o.R.LoadBalancersMetadata = append(o.R.LoadBalancersMetadata, related...)
+		o.R.LoadBalancerMetadata = append(o.R.LoadBalancerMetadata, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &loadBalancersMetadatumR{
+			rel.R = &loadBalancerMetadatumR{
 				LoadBalancer: o,
 			}
 		} else {
@@ -909,11 +909,11 @@ func (o *LoadBalancer) AddLoadBalancersMetadata(ctx context.Context, exec boil.C
 	return nil
 }
 
-// AddLoadBalancersStatuses adds the given related objects to the existing relationships
+// AddLoadBalancerStatuses adds the given related objects to the existing relationships
 // of the load_balancer, optionally inserting them as new records.
-// Appends related to o.R.LoadBalancersStatuses.
+// Appends related to o.R.LoadBalancerStatuses.
 // Sets related.R.LoadBalancer appropriately.
-func (o *LoadBalancer) AddLoadBalancersStatuses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*LoadBalancersStatus) error {
+func (o *LoadBalancer) AddLoadBalancerStatuses(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*LoadBalancerStatus) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -923,9 +923,9 @@ func (o *LoadBalancer) AddLoadBalancersStatuses(ctx context.Context, exec boil.C
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"load_balancers_status\" SET %s WHERE %s",
+				"UPDATE \"load_balancer_statuses\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"load_balancer_id"}),
-				strmangle.WhereClause("\"", "\"", 2, loadBalancersStatusPrimaryKeyColumns),
+				strmangle.WhereClause("\"", "\"", 2, loadBalancerStatusPrimaryKeyColumns),
 			)
 			values := []interface{}{o.LoadBalancerID, rel.StatusID}
 
@@ -944,15 +944,15 @@ func (o *LoadBalancer) AddLoadBalancersStatuses(ctx context.Context, exec boil.C
 
 	if o.R == nil {
 		o.R = &loadBalancerR{
-			LoadBalancersStatuses: related,
+			LoadBalancerStatuses: related,
 		}
 	} else {
-		o.R.LoadBalancersStatuses = append(o.R.LoadBalancersStatuses, related...)
+		o.R.LoadBalancerStatuses = append(o.R.LoadBalancerStatuses, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &loadBalancersStatusR{
+			rel.R = &loadBalancerStatusR{
 				LoadBalancer: o,
 			}
 		} else {

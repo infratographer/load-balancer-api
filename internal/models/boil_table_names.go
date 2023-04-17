@@ -4,21 +4,21 @@
 package models
 
 var TableNames = struct {
-	Assignments           string
-	GooseDBVersion        string
-	LoadBalancers         string
-	LoadBalancersMetadata string
-	LoadBalancersStatus   string
-	Origins               string
-	Pools                 string
-	Ports                 string
+	Assignments          string
+	GooseDBVersion       string
+	LoadBalancerMetadata string
+	LoadBalancerStatuses string
+	LoadBalancers        string
+	Origins              string
+	Pools                string
+	Ports                string
 }{
-	Assignments:           "assignments",
-	GooseDBVersion:        "goose_db_version",
-	LoadBalancers:         "load_balancers",
-	LoadBalancersMetadata: "load_balancers_metadata",
-	LoadBalancersStatus:   "load_balancers_status",
-	Origins:               "origins",
-	Pools:                 "pools",
-	Ports:                 "ports",
+	Assignments:          "assignments",
+	GooseDBVersion:       "goose_db_version",
+	LoadBalancerMetadata: "load_balancer_metadata",
+	LoadBalancerStatuses: "load_balancer_statuses",
+	LoadBalancers:        "load_balancers",
+	Origins:              "origins",
+	Pools:                "pools",
+	Ports:                "ports",
 }
