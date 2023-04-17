@@ -9,12 +9,13 @@ import (
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/otelx"
-	"go.infratographer.com/x/viperx"
+	"go.infratographer.com/x/versionx"
+	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
-	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/load-balancer-api/pkg/api/v1"
+	"go.infratographer.com/x/echox"
 )
 
 var defaultLBAPIListenAddr = ":7608"
@@ -30,8 +31,7 @@ var serveCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().StringP("listen", "l", defaultLBAPIListenAddr, "The address to listen on")
-	viperx.MustBindFlag(viper.GetViper(), "listen", serveCmd.Flags().Lookup("listen"))
+	echox.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
 }
 
 func serve(ctx context.Context) {
@@ -54,7 +54,15 @@ func serve(ctx context.Context) {
 
 	defer natsClose()
 
-	e := echox.NewServer()
+	srv := echox.NewServer(
+		logger.Desugar(),
+		echox.Config{
+			Listen:              viper.GetString("server.listen"),
+			ShutdownGracePeriod: viper.GetDuration("server.shutdown-grace-period"),
+		},
+		versionx.BuildDetails(),
+	)
+
 	r := api.NewRouter(
 		dbx,
 		logger,
@@ -66,10 +74,11 @@ func serve(ctx context.Context) {
 		),
 	)
 
-	e.Debug = true
-	r.Routes(e)
+	srv.AddHandler(r).AddReadinessCheck("database", r.DatabaseCheck)
 
-	e.Logger.Fatal(e.Start(viper.GetString("listen")))
+	if err := srv.Run(); err != nil {
+		logger.Fatal("failed to run server", zap.Error(err))
+	}
 }
 
 func newJetstreamConnection() (nats.JetStreamContext, func(), error) {

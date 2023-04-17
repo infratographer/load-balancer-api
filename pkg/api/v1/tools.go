@@ -10,12 +10,12 @@ import (
 	"testing"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/httptools"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
-	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/x/crdbx"
 	"go.uber.org/zap"
 )
@@ -36,7 +36,7 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 	}
 
 	dbx := sqlx.NewDb(db, "postgres")
-	e := echox.NewServer()
+	e := echo.New()
 
 	// lgrCfg := zap.NewDevelopmentConfig()
 	// lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
@@ -50,7 +50,7 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 
 	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
 
-	r.Routes(e)
+	r.Routes(e.Group("/"))
 
 	return httptest.NewServer(e)
 }

@@ -2,8 +2,8 @@
 package config
 
 import (
-	"go.infratographer.com/load-balancer-api/internal/x/echox"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/loggingx"
 	"go.infratographer.com/x/otelx"
 )
