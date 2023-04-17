@@ -303,6 +303,14 @@ func TestOriginRoutes(t *testing.T) {
 		method: http.MethodPut,
 	})
 
+	doHTTPTest(t, &httpTest{
+		name:   "sad path update origin bad port",
+		body:   `{"disabled": true,"name": "testorigin01", "target": "1.1.1.1", "port":-1}`,
+		status: http.StatusBadRequest,
+		path:   baseURLPool + "?origin_id=" + origin.ID,
+		method: http.MethodPut,
+	})
+
 	// PATCH
 	doHTTPTest(t, &httpTest{
 		name:   "happy path patch origin name by id",

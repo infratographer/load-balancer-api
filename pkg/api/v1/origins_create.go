@@ -75,7 +75,11 @@ func validateOrigin(o *models.Origin) error {
 	}
 
 	if o.Port == 0 {
-		return ErrMissingOriginPort
+		return ErrMissingPortValue
+	}
+
+	if o.Port < 1 || o.Port > 65535 {
+		return ErrPortOutOfRange
 	}
 
 	return nil

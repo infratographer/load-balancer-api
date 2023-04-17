@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
@@ -15,7 +16,6 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/load-balancer-api/pkg/api/v1"
-	"go.infratographer.com/x/echox"
 )
 
 var defaultLBAPIListenAddr = ":7608"

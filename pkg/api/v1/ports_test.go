@@ -328,6 +328,14 @@ func TestPortRoutes(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
+		name:   "negative port",
+		body:   `{"name": "Mouth", "port": -1}`,
+		status: http.StatusBadRequest,
+		method: http.MethodPost,
+		path:   baseURLLoadBalancer,
+	})
+
+	doHTTPTest(t, &httpTest{
 		name:   "missing display name",
 		body:   `{"port": 80}`,
 		status: http.StatusBadRequest,
