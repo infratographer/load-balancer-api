@@ -55,7 +55,7 @@ func (r *Router) Routes(e *echo.Group) {
 		r.addLoadBalancerRoutes(v1)
 		r.addOriginRoutes(v1)
 		r.addPoolsRoutes(v1)
-		r.addMetadataRoutes(v1)
+		// r.addMetadataRoutes(v1)
 	}
 
 	_, err := r.pubsub.AddStream()
