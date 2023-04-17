@@ -44,5 +44,6 @@
       "matchDepTypes": ["indirect"],
       "stabilityDays": 3
     }
-  ]
+  ],
+  "postUpdateOptions": ["gomodTidy"]
 }
