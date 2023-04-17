@@ -123,20 +123,24 @@ func (r *Router) portCreate(c echo.Context) error {
 }
 
 // validatePort validates a port
-func validatePort(port *models.Port) error {
-	if port.Port < 1 || port.Port > 65535 {
+func validatePort(p *models.Port) error {
+	if p.Port == 0 {
+		return ErrMissingPortValue
+	}
+
+	if p.Port < 1 || p.Port > 65535 {
 		return ErrPortOutOfRange
 	}
 
-	if port.LoadBalancerID == "" {
+	if p.LoadBalancerID == "" {
 		return ErrLoadBalancerIDMissing
 	}
 
-	if _, err := uuid.Parse(port.LoadBalancerID); err != nil {
+	if _, err := uuid.Parse(p.LoadBalancerID); err != nil {
 		return ErrInvalidUUID
 	}
 
-	if port.Name == "" {
+	if p.Name == "" {
 		// TODO: generate a display name
 		return ErrNameMissing
 	}

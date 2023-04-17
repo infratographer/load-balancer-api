@@ -13,6 +13,7 @@
 			"settings": {
 				"go.toolsManagement.checkForUpdates": "local",
 				"go.useLanguageServer": true,
+				"go.buildTags": "testtools",
 				"go.gopath": "/go"
 			},
 
