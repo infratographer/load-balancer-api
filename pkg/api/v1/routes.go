@@ -23,16 +23,6 @@ func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 	g.DELETE("/loadbalancers/:load_balancer_id", r.loadBalancerDelete)
 }
 
-// addMetadataRoutes adds the metadata routes to the router
-func (r *Router) addMetadataRoutes(g *echo.Group) {
-	g.GET("/loadbalancers/:load_balancer_id/metadatas", r.metadataList)
-	g.GET("/metadatas/:metadata_id", r.metadataGet)
-
-	g.POST("/loadbalancers/:load_balancer_id/metadata", r.metadataCreate)
-
-	g.DELETE("/metadata/:metadata_id", r.metadataDelete)
-}
-
 // addOriginsRoutes adds the origins routes to the router
 func (r *Router) addOriginRoutes(g *echo.Group) {
 	g.GET("/pools/:pool_id/origins", r.originsList)
