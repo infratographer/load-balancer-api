@@ -54,14 +54,14 @@ func serve(ctx context.Context) {
 
 	defer natsClose()
 
-	srv := echox.NewServer(
+	srv, err := echox.NewServer(
 		logger.Desugar(),
-		echox.Config{
-			Listen:              viper.GetString("server.listen"),
-			ShutdownGracePeriod: viper.GetDuration("server.shutdown-grace-period"),
-		},
+		echox.ConfigFromViper(viper.GetViper()),
 		versionx.BuildDetails(),
 	)
+	if err != nil {
+		logger.Fatal("failed to initialize new server", zap.Error(err))
+	}
 
 	r := api.NewRouter(
 		dbx,
