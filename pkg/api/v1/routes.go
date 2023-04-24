@@ -12,6 +12,7 @@ func (r *Router) addAssignRoutes(g *echo.Group) {
 func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 	g.GET("/tenant/:tenant_id/loadbalancers", r.loadBalancerList)
 	g.GET("/loadbalancers/:load_balancer_id", r.loadBalancerGet)
+	g.GET("/loadbalancers/locations/:location_id", r.loadBalancerListByLocation)
 
 	g.POST("/tenant/:tenant_id/loadbalancers", r.loadBalancerCreate)
 
