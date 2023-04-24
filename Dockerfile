@@ -6,7 +6,7 @@ WORKDIR /src
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/loadbalancer-api .
 
-# pass in name as --build-arg
+# Pass in name as --build-arg
 FROM gcr.io/distroless/static:nonroot
 # `nonroot` coming from distroless
 USER 65532:65532
