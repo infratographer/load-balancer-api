@@ -50,5 +50,11 @@ api:
     certSecret: load-balancer-api-db-ca
   migrateOnInit: true
 
+  shutdownGracePeriod: 5s
+  trustedProxies: []
+  # - "1.2.3.4"
+  # - "1.2.3.4/32"
+  # - "1.2.3.0/24"
+
 reloader:
   enabled: false

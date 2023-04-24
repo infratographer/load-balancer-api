@@ -60,6 +60,14 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           env:
+            - name: LOADBALANCERAPI_SERVER_LISTEN
+              value: ":{{ .Values.api.listenPort }}"
+            - name: LOADBALANCERAPI_SERVER_SHUTDOWN_GRACE_PERIOD
+              value: "{{ .Values.api.shutdownGracePeriod }}"
+          {{- with .Values.api.trustedProxies }}
+            - name: LOADBALANCERAPI_SERVER_TRUSTED_PROXIES
+              value: "{{ join " " . }}"
+          {{- end }}
             - name: LOADBALANCERAPI_NATS_URL
               value: "{{ .Values.api.events.connectionURL }}"
             - name: LOADBALANCERAPI_NATS_STREAM_NAME
