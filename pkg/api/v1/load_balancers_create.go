@@ -126,11 +126,14 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 
 	r.logger.Info("created new load balancer", zap.Any("loadbalancer.id", lb.LoadBalancerID))
 
-	msg, err := pubsub.NewLoadBalancerMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(tenantID),
-		pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
-		additionalURNs...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
+		),
+		pubsub.WithAdditionalSubjectURNs(additionalURNs...),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

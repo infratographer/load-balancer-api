@@ -89,11 +89,16 @@ func (r *Router) poolDelete(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewPoolMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(pool.TenantID),
-		pubsub.NewPoolURN(pool.PoolID),
-		append(assignments, origins...)...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewPoolURN(pool.PoolID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			append(assignments, origins...)...,
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

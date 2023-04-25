@@ -47,12 +47,17 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	msg, err := pubsub.NewAssignmentMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(tenantID),
-		pubsub.NewAssignmentURN(assignmentID),
-		pubsub.NewLoadBalancerURN(port.LoadBalancerID),
-		pubsub.NewPoolURN(payload.PoolID),
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewAssignmentURN(assignmentID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			pubsub.NewLoadBalancerURN(port.LoadBalancerID),
+			pubsub.NewPoolURN(payload.PoolID),
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

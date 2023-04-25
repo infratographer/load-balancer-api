@@ -82,11 +82,16 @@ func (r *Router) portDelete(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewPortMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(loadBalancer.TenantID),
-		pubsub.NewPortURN(port.PortID),
-		append(assignments, pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID))...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewPortURN(port.PortID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			append(assignments, pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID))...,
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": loadBalancer.TenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

@@ -46,11 +46,16 @@ func (r *Router) originsCreate(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	msg, err := pubsub.NewOriginMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(pool.TenantID),
-		pubsub.NewOriginURN(originID),
-		pubsub.NewPoolURN(pool.PoolID),
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewOriginURN(originID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			pubsub.NewPoolURN(pool.PoolID),
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

@@ -103,10 +103,13 @@ func (r *Router) updatePool(c echo.Context, pool *models.Pool) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewPoolMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(pool.TenantID),
-		pubsub.NewPoolURN(pool.PoolID),
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewPoolURN(pool.PoolID),
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

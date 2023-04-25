@@ -103,11 +103,16 @@ func (r *Router) portCreate(c echo.Context) error {
 		zap.String("loadbalancer.id", lb.LoadBalancerID),
 	)
 
-	msg, err := pubsub.NewPortMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(lb.TenantID),
-		pubsub.NewPortURN(port.PortID),
-		additionalURNs...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewPortURN(port.PortID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			additionalURNs...,
+		),
+		pubsub.WithSubjectFields(map[string]string{"tenant_id": lb.TenantID}),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
