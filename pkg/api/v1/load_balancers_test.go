@@ -641,6 +641,27 @@ func TestLoadBalancerGet(t *testing.T) {
 	})
 
 	doHTTPTest(t, &httpTest{
+		name:   "get a list of loadblancer in specified location",
+		method: http.MethodGet,
+		path:   baseURL + "/locations/" + locationID,
+		status: http.StatusOK,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "get a list of loadblancer in invalid location",
+		method: http.MethodGet,
+		path:   baseURL + "/locations/bad-uuid",
+		status: http.StatusBadRequest,
+	})
+
+	doHTTPTest(t, &httpTest{
+		name:   "get a list of loadblancer with no location",
+		method: http.MethodGet,
+		path:   baseURL + "/locations/",
+		status: http.StatusNotFound,
+	})
+
+	doHTTPTest(t, &httpTest{
 		name:   "get loadblancer by id",
 		method: http.MethodGet,
 		path:   baseURL + "/" + lb.ID,

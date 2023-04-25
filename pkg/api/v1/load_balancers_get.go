@@ -33,6 +33,29 @@ func (r *Router) loadBalancerList(c echo.Context) error {
 	return v1LoadBalancers(c, lbs)
 }
 
+// loadBalancerListByLocation returns a list of load balancers from specified query param
+func (r *Router) loadBalancerListByLocation(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	locationID, err := r.parseUUID(c, "location_id")
+	if err != nil {
+		return v1BadRequestResponse(c, err)
+	}
+
+	mods := []qm.QueryMod{
+		models.LoadBalancerWhere.LocationID.EQ(locationID),
+		qm.Load("Ports"),
+		qm.Load("Ports.Assignments"),
+	}
+
+	lbs, err := models.LoadBalancers(mods...).All(ctx, r.db)
+	if err != nil {
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	return v1LoadBalancers(c, lbs)
+}
+
 // loadBalancerGet returns a load balancer for a tenant by ID
 func (r *Router) loadBalancerGet(c echo.Context) error {
 	ctx := c.Request().Context()
