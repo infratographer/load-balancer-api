@@ -56,7 +56,12 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			pubsub.WithSubjectURN(
 				pubsub.NewLoadBalancerURN(lbID),
 			),
-			pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
+			pubsub.WithSubjectFields(
+				map[string]string{
+					"tenant_id":  tenantID,
+					"tenant_urn": pubsub.NewTenantURN(tenantID),
+				},
+			),
 		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this

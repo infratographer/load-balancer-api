@@ -138,7 +138,12 @@ func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) error {
 		pubsub.WithAdditionalSubjectURNs(
 			additionalURNs...,
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": origin.R.Pool.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  origin.R.Pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(origin.R.Pool.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

@@ -112,7 +112,12 @@ func (r *Router) portCreate(c echo.Context) error {
 		pubsub.WithAdditionalSubjectURNs(
 			additionalURNs...,
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": lb.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  lb.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(lb.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

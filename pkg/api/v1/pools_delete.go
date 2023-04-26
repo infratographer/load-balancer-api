@@ -98,8 +98,12 @@ func (r *Router) poolDelete(c echo.Context) error {
 		pubsub.WithAdditionalSubjectURNs(
 			append(assignments, origins...)...,
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
-	)
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(pool.TenantID),
+			},
+		))
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
 		r.logger.Error("error creating pool message", zap.Error(err))

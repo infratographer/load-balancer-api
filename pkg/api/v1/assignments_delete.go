@@ -55,7 +55,12 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 			pubsub.WithAdditionalSubjectURNs(
 				pubsub.NewLoadBalancerURN(feModel.LoadBalancerID),
 			),
-			pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
+			pubsub.WithSubjectFields(
+				map[string]string{
+					"tenant_id":  tenantID,
+					"tenant_urn": pubsub.NewTenantURN(tenantID),
+				},
+			),
 		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this

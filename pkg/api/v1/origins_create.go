@@ -55,7 +55,12 @@ func (r *Router) originsCreate(c echo.Context) error {
 		pubsub.WithAdditionalSubjectURNs(
 			pubsub.NewPoolURN(pool.PoolID),
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(pool.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

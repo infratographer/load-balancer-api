@@ -57,7 +57,12 @@ func (r *Router) assignmentsCreate(c echo.Context) error {
 			pubsub.NewLoadBalancerURN(port.LoadBalancerID),
 			pubsub.NewPoolURN(payload.PoolID),
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  tenantID,
+				"tenant_urn": pubsub.NewTenantURN(tenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

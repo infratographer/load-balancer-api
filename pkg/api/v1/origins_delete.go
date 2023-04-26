@@ -48,7 +48,12 @@ func (r *Router) originsDelete(c echo.Context) error {
 		pubsub.WithAdditionalSubjectURNs(
 			pubsub.NewPoolURN(origin.R.Pool.PoolID),
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": origin.R.Pool.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  origin.R.Pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(origin.R.Pool.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

@@ -133,7 +133,12 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 			pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
 		),
 		pubsub.WithAdditionalSubjectURNs(additionalURNs...),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": tenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  tenantID,
+				"tenant_urn": pubsub.NewTenantURN(tenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

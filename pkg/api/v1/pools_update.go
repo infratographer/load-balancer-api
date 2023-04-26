@@ -109,7 +109,12 @@ func (r *Router) updatePool(c echo.Context, pool *models.Pool) error {
 		pubsub.WithSubjectURN(
 			pubsub.NewPoolURN(pool.PoolID),
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": pool.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(pool.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

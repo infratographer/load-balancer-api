@@ -91,7 +91,12 @@ func (r *Router) portDelete(c echo.Context) error {
 		pubsub.WithAdditionalSubjectURNs(
 			append(assignments, pubsub.NewLoadBalancerURN(loadBalancer.LoadBalancerID))...,
 		),
-		pubsub.WithSubjectFields(map[string]string{"tenant_id": loadBalancer.TenantID}),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  loadBalancer.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(loadBalancer.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
