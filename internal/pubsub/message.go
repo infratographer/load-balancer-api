@@ -12,7 +12,7 @@ const (
 )
 
 // NewMessage functionally generates a new pubsub message and appends the tenantURN
-// to the list of aditional subject urns
+// to the list of additional subject urns
 func NewMessage(tenantURN string, opts ...MsgOption) (*pubsubx.Message, error) {
 	msg := pubsubx.Message{
 		Timestamp: time.Now().UTC(),
