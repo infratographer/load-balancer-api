@@ -87,11 +87,21 @@ func (r *Router) poolCreate(c echo.Context) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewPoolMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(tenantID),
-		pubsub.NewPoolURN(pool.PoolID),
-		additionalURNs...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewPoolURN(pool.PoolID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			additionalURNs...,
+		),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  tenantID,
+				"tenant_urn": pubsub.NewTenantURN(tenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

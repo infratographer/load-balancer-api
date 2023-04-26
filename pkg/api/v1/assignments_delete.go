@@ -43,11 +43,24 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 			r.logger.Error("error fetching port", zap.Error(err))
 		}
 
-		msg, err := pubsub.NewAssignmentMessage(
-			someTestJWTURN,
-			pubsub.NewTenantURN(assignments[0].TenantID),
-			pubsub.NewAssignmentURN(assignments[0].AssignmentID),
-			pubsub.NewLoadBalancerURN(feModel.LoadBalancerID),
+		tenantID := assignments[0].TenantID
+		assignmentID := assignments[0].AssignmentID
+
+		msg, err := pubsub.NewMessage(
+			pubsub.NewTenantURN(tenantID),
+			pubsub.WithActorURN(someTestJWTURN),
+			pubsub.WithSubjectURN(
+				pubsub.NewAssignmentURN(assignmentID),
+			),
+			pubsub.WithAdditionalSubjectURNs(
+				pubsub.NewLoadBalancerURN(feModel.LoadBalancerID),
+			),
+			pubsub.WithSubjectFields(
+				map[string]string{
+					"tenant_id":  tenantID,
+					"tenant_urn": pubsub.NewTenantURN(tenantID),
+				},
+			),
 		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this

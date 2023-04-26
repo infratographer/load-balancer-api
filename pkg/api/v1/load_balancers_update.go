@@ -114,10 +114,18 @@ func (r *Router) updateLoadBalancer(c echo.Context, lb *models.LoadBalancer) err
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewLoadBalancerMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(lb.TenantID),
-		pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewLoadBalancerURN(lb.LoadBalancerID),
+		),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  lb.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(lb.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/nats-io/nats.go"
 	"go.infratographer.com/x/pubsubx"
@@ -23,16 +22,6 @@ const (
 
 // May be a config option later
 var prefix = "com.infratographer.events"
-
-func newMessage(actorURN string, subjectURN string, additionalSubjectURNs ...string) *pubsubx.Message {
-	return &pubsubx.Message{
-		SubjectURN:            subjectURN,
-		ActorURN:              actorURN, // comes from the jwt eventually
-		Timestamp:             time.Now().UTC(),
-		Source:                "lbapi",
-		AdditionalSubjectURNs: additionalSubjectURNs,
-	}
-}
 
 // PublishCreate publishes a create event
 func (c *Client) PublishCreate(ctx context.Context, actor, location string, data *pubsubx.Message) error {

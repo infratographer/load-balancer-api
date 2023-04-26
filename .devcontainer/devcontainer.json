@@ -26,7 +26,8 @@
 				"ms-azuretools.vscode-docker",
 				"RemiMarche.cspell-tech",
 				"streetsidesoftware.code-spell-checker",
-				"netcorext.uuid-generator"
+				"netcorext.uuid-generator",
+				"ms-vscode.makefile-tools"
 			]
 		}
 	},

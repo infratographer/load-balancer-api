@@ -47,10 +47,21 @@ func (r *Router) loadBalancerDelete(c echo.Context) error {
 			return v1InternalServerErrorResponse(c, err)
 		}
 
-		msg, err := pubsub.NewLoadBalancerMessage(
-			someTestJWTURN,
-			pubsub.NewLoadBalancerURN(lb[0].TenantID),
-			pubsub.NewLoadBalancerURN(lb[0].LoadBalancerID),
+		tenantID := lb[0].TenantID
+		lbID := lb[0].LoadBalancerID
+
+		msg, err := pubsub.NewMessage(
+			pubsub.NewTenantURN(tenantID),
+			pubsub.WithActorURN(someTestJWTURN),
+			pubsub.WithSubjectURN(
+				pubsub.NewLoadBalancerURN(lbID),
+			),
+			pubsub.WithSubjectFields(
+				map[string]string{
+					"tenant_id":  tenantID,
+					"tenant_urn": pubsub.NewTenantURN(tenantID),
+				},
+			),
 		)
 		if err != nil {
 			// TODO: add status to reconcile and requeue this

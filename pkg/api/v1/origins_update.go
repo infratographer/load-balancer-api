@@ -129,11 +129,21 @@ func (r *Router) updateOrigin(c echo.Context, origin *models.Origin) error {
 		return v1InternalServerErrorResponse(c, err)
 	}
 
-	msg, err := pubsub.NewOriginMessage(
-		someTestJWTURN,
+	msg, err := pubsub.NewMessage(
 		pubsub.NewTenantURN(origin.R.Pool.TenantID),
-		pubsub.NewOriginURN(origin.OriginID),
-		additionalURNs...,
+		pubsub.WithActorURN(someTestJWTURN),
+		pubsub.WithSubjectURN(
+			pubsub.NewOriginURN(origin.OriginID),
+		),
+		pubsub.WithAdditionalSubjectURNs(
+			additionalURNs...,
+		),
+		pubsub.WithSubjectFields(
+			map[string]string{
+				"tenant_id":  origin.R.Pool.TenantID,
+				"tenant_urn": pubsub.NewTenantURN(origin.R.Pool.TenantID),
+			},
+		),
 	)
 	if err != nil {
 		// TODO: add status to reconcile and requeue this
