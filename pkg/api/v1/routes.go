@@ -12,6 +12,7 @@ func (r *Router) addAssignRoutes(g *echo.Group) {
 func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 	g.GET("/tenant/:tenant_id/loadbalancers", r.loadBalancerList)
 	g.GET("/loadbalancers/:load_balancer_id", r.loadBalancerGet)
+	g.GET("/loadbalancers/:load_balancer_id/metadata", r.metadataList)
 	g.GET("/loadbalancers/locations/:location_id", r.loadBalancerListByLocation)
 
 	g.POST("/tenant/:tenant_id/loadbalancers", r.loadBalancerCreate)
@@ -22,6 +23,21 @@ func (r *Router) addLoadBalancerRoutes(g *echo.Group) {
 
 	g.DELETE("/tenant/:tenant_id/loadbalancers", r.loadBalancerDelete)
 	g.DELETE("/loadbalancers/:load_balancer_id", r.loadBalancerDelete)
+}
+
+// addMetadataRoutes adds the metadata routes to the router
+func (r *Router) addMetadataRoutes(g *echo.Group) {
+	g.GET("/metadatas/:metadata_id", r.metadataGet)
+	g.GET("/loadbalancers/:load_balancer_id/metadatas", r.metadataList)
+
+	g.POST("/loadbalancers/:load_balancer_id/metadatas", r.metadataCreate)
+
+	g.PUT("/metadatas/:metadata_id", r.metadataUpdate)
+
+	g.PATCH("/metadatas/:metadata_id", r.metadataPatch)
+
+	g.DELETE("/metadatas/:metadata_id", r.metadataDelete)
+	g.DELETE("/loadbalancers/:load_balancer_id/metadatas", r.metadataDelete)
 }
 
 // addOriginsRoutes adds the origins routes to the router

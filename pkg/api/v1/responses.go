@@ -19,6 +19,20 @@ func v1DeletedResponse(c echo.Context) error {
 	})
 }
 
+func v1MetadataCreatedResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusOK, struct {
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+		MetaID  string `json:"metadata_id"`
+	}{
+		Message: "resource created",
+		Version: apiVersion,
+		Status:  http.StatusOK,
+		MetaID:  id,
+	})
+}
+
 func v1AssignmentsCreatedResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, struct {
 		Version      string `json:"version"`
@@ -89,6 +103,20 @@ func v1UpdateOriginResponse(c echo.Context, id string) error {
 	})
 }
 
+func v1UpdateMetadataResponse(c echo.Context, id string) error {
+	return c.JSON(http.StatusAccepted, struct {
+		Version    string `json:"version"`
+		Message    string `json:"message"`
+		Status     int    `json:"status"`
+		MetadataID string `json:"metadata_id"`
+	}{
+		Message:    "resource updated",
+		Version:    apiVersion,
+		Status:     http.StatusAccepted,
+		MetadataID: id,
+	})
+}
+
 func v1PoolCreatedResponse(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, struct {
 		Version string `json:"version"`
@@ -100,6 +128,18 @@ func v1PoolCreatedResponse(c echo.Context, id string) error {
 		Version: apiVersion,
 		Status:  http.StatusOK,
 		PoolID:  id,
+	})
+}
+
+func v1DeleteMetadataResponse(c echo.Context) error {
+	return c.JSON(http.StatusOK, struct {
+		Version string `json:"version"`
+		Message string `json:"message"`
+		Status  int    `json:"status"`
+	}{
+		Version: apiVersion,
+		Message: "resource deleted",
+		Status:  http.StatusOK,
 	})
 }
 
@@ -362,6 +402,40 @@ func v1LoadBalancers(c echo.Context, lbs models.LoadBalancerSlice) error {
 		Version:       apiVersion,
 		Kind:          "loadBalancersList",
 		LoadBalancers: &out,
+	})
+}
+
+func v1MetadataResponse(c echo.Context, m *models.LoadBalancerMetadatum) error {
+	return c.JSON(http.StatusOK, &response{
+		Version: apiVersion,
+		Kind:    "metadataGet",
+		Metadata: &metadata{
+			CreatedAt: m.CreatedAt,
+			UpdatedAt: m.UpdatedAt,
+			ID:        m.MetadataID,
+			Namespace: m.Namespace,
+			Data:      m.Data,
+		},
+	})
+}
+
+func v1MetadatasResponse(c echo.Context, ms models.LoadBalancerMetadatumSlice) error {
+	out := make(metadataSlice, len(ms))
+
+	for i, m := range ms {
+		out[i] = &metadata{
+			CreatedAt: m.CreatedAt,
+			UpdatedAt: m.UpdatedAt,
+			ID:        m.MetadataID,
+			Namespace: m.Namespace,
+			Data:      m.Data,
+		}
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Version:   apiVersion,
+		Kind:      "metadataList",
+		Metadatas: &out,
 	})
 }
 

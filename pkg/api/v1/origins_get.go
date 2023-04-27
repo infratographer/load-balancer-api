@@ -6,8 +6,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.uber.org/zap"
+
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // originsGet returns an origin by id
