@@ -76,7 +76,7 @@ func serve(ctx context.Context) {
 
 	srv.AddHandler(r).AddReadinessCheck("database", r.DatabaseCheck)
 
-	if err := srv.Run(); err != nil {
+	if err := srv.RunWithContext(ctx); err != nil {
 		logger.Fatal("failed to run server", zap.Error(err))
 	}
 }

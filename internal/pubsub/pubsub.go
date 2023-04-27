@@ -44,7 +44,7 @@ func (c *Client) PublishDelete(ctx context.Context, actor, location string, data
 }
 
 // publish publishes an event
-func (c *Client) publish(ctx context.Context, action, actor, location string, data interface{}) error {
+func (c *Client) publish(_ context.Context, action, actor, location string, data interface{}) error {
 	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
 	c.logger.Debug("publishing nats message", zap.String("nats.subject", subject))
 
@@ -61,6 +61,6 @@ func (c *Client) publish(ctx context.Context, action, actor, location string, da
 }
 
 // ChanSubscribe creates a subcription and returns messages on a channel
-func (c *Client) ChanSubscribe(ctx context.Context, sub string, ch chan *nats.Msg, stream string) (*nats.Subscription, error) {
+func (c *Client) ChanSubscribe(_ context.Context, sub string, ch chan *nats.Msg, stream string) (*nats.Subscription, error) {
 	return c.js.ChanSubscribe(sub, ch, nats.BindStream(stream))
 }
