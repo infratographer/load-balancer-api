@@ -13,7 +13,8 @@ CREATE TABLE load_balancer_metadata (
   INVERTED INDEX idx_metadata_data (metadata_id, namespace, data),
   UNIQUE INDEX idx_namespace_lb_id (namespace, load_balancer_id) WHERE deleted_at IS NULL,
   INDEX idx_load_balancer_created_at (created_at),
-  INDEX idx_load_balancer_updated_at (updated_at)
+  INDEX idx_load_balancer_updated_at (updated_at),
+  INDEX idx_load_balancer_deleted_at (deleted_at)
 );
 
 -- +goose StatementEnd
