@@ -79,7 +79,7 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 	}
 }
 
-func (r *Router) deleteAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, poolID, portID string) (string, error) {
+func (r *Router) deleteAssignment(ctx context.Context, _ boil.ContextExecutor, tenantID, poolID, portID string) (string, error) {
 	r.logger.Debug("deleting assignment",
 		zap.String("tenant.id", tenantID),
 		zap.String("pool.id", poolID),
