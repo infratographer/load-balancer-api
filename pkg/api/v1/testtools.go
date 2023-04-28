@@ -48,7 +48,7 @@ func newTestServer(t *testing.T, natsURL string) *httptest.Server {
 
 	// r := NewRouter(dbx, l.Sugar(), newPubSubClient(t, natsURL))
 
-	r := NewRouter(dbx, zap.NewNop().Sugar(), newPubSubClient(t, natsURL))
+	r := NewRouter(dbx, newPubSubClient(t, natsURL), WithLogger(zap.NewNop()))
 
 	r.Routes(e.Group("/"))
 

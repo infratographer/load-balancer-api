@@ -78,6 +78,23 @@ spec:
             - name: LOADBALANCERAPI_NATS_CREDS_FILE
               value: "{{ .Values.api.events.credsPath }}"
           {{- end }}
+          {- if .Values.api.oidc.enabled }}
+          {{- with .Values.api.oidc.audience }}
+            - name: LOADBALANCERAPI_OIDC_AUDIENCE
+              value: "{{ . }}"
+          {{- end }}
+          {{- with .Values.api.oidc.issuer }}
+            - name: LOADBALANCERAPI_OIDC_ISSUER
+              value: "{{ . }}"
+          {{- end }}
+          {{- with .Values.api.oidc.jwks.remoteTimeout }}
+            - name: LOADBALANCERAPI_OIDC_JWKS_REMOTE_TIMEOUT
+              value: "{{ . }}"
+          {{- end }}
+          {{- else }}
+            - name: LOADBALANCERAPI_OIDC_ENABLED
+              value: "false"
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ .Values.api.db.uriSecret }}

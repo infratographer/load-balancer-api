@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
@@ -35,6 +37,8 @@ func init() {
 }
 
 func serve(ctx context.Context) {
+	var middleware []echo.MiddlewareFunc
+
 	err := otelx.InitTracer(config.AppConfig.Tracing, appName, logger)
 	if err != nil {
 		logger.Fatalw("failed to initialize tracer", "error", err)
@@ -63,15 +67,29 @@ func serve(ctx context.Context) {
 		logger.Fatal("failed to initialize new server", zap.Error(err))
 	}
 
+	if config, err := echojwtx.AuthConfigFromViper(viper.GetViper()); err != nil {
+		logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
+	} else if config != nil {
+		config.JWTConfig.Skipper = echox.SkipDefaultEndpoints
+
+		auth, err := echojwtx.NewAuth(ctx, *config)
+		if err != nil {
+			logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
+		}
+
+		middleware = append(middleware, auth.Middleware())
+	}
+
 	r := api.NewRouter(
 		dbx,
-		logger,
 		pubsub.NewClient(
 			pubsub.WithJetreamContext(js),
 			pubsub.WithLogger(logger),
 			pubsub.WithStreamName(viper.GetString("nats.stream-name")),
 			pubsub.WithSubjectPrefix(viper.GetString("nats.subject-prefix")),
 		),
+		api.WithLogger(logger.Named("api").Desugar()),
+		api.WithMiddleware(middleware...),
 	)
 
 	srv.AddHandler(r).AddReadinessCheck("database", r.DatabaseCheck)

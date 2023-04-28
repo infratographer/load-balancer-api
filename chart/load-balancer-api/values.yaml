@@ -50,6 +50,13 @@ api:
     certSecret: load-balancer-api-db-ca
   migrateOnInit: true
 
+  oidc:
+    enabled: false
+    audience: ""
+    issuer: ""
+    jwks:
+      remoteTimeout: 1m
+
   shutdownGracePeriod: 5s
   trustedProxies: []
   # - "1.2.3.4"
