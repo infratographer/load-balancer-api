@@ -97,10 +97,6 @@ func (r *Router) metadataPatch(c echo.Context) error {
 func (r *Router) updateMetadata(c echo.Context, metadata *models.LoadBalancerMetadatum) error {
 	ctx := c.Request().Context()
 
-	// if err := validateOrigin(origin); err != nil {
-	// 	return v1BadRequestResponse(c, err)
-	// }
-
 	if _, err := metadata.Update(ctx, r.db, boil.Infer()); err != nil {
 		r.logger.Error("failed to update port", zap.Error(err))
 		return v1InternalServerErrorResponse(c, err)
