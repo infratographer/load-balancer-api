@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -30,6 +31,7 @@ type LoadBalancerMetadatum struct {
 	Data           types.JSON `query:"data" param:"data" boil:"data" json:"data" toml:"data" yaml:"data"`
 	CreatedAt      time.Time  `query:"created_at" param:"created_at" boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt      time.Time  `query:"updated_at" param:"updated_at" boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt      null.Time  `query:"deleted_at" param:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *loadBalancerMetadatumR `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loadBalancerMetadatumL  `query:"-" param:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -42,6 +44,7 @@ var LoadBalancerMetadatumColumns = struct {
 	Data           string
 	CreatedAt      string
 	UpdatedAt      string
+	DeletedAt      string
 }{
 	MetadataID:     "metadata_id",
 	LoadBalancerID: "load_balancer_id",
@@ -49,6 +52,7 @@ var LoadBalancerMetadatumColumns = struct {
 	Data:           "data",
 	CreatedAt:      "created_at",
 	UpdatedAt:      "updated_at",
+	DeletedAt:      "deleted_at",
 }
 
 var LoadBalancerMetadatumTableColumns = struct {
@@ -58,6 +62,7 @@ var LoadBalancerMetadatumTableColumns = struct {
 	Data           string
 	CreatedAt      string
 	UpdatedAt      string
+	DeletedAt      string
 }{
 	MetadataID:     "load_balancer_metadata.metadata_id",
 	LoadBalancerID: "load_balancer_metadata.load_balancer_id",
@@ -65,6 +70,7 @@ var LoadBalancerMetadatumTableColumns = struct {
 	Data:           "load_balancer_metadata.data",
 	CreatedAt:      "load_balancer_metadata.created_at",
 	UpdatedAt:      "load_balancer_metadata.updated_at",
+	DeletedAt:      "load_balancer_metadata.deleted_at",
 }
 
 // Generated where
@@ -97,6 +103,7 @@ var LoadBalancerMetadatumWhere = struct {
 	Data           whereHelpertypes_JSON
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
+	DeletedAt      whereHelpernull_Time
 }{
 	MetadataID:     whereHelperstring{field: "\"load_balancer_metadata\".\"metadata_id\""},
 	LoadBalancerID: whereHelperstring{field: "\"load_balancer_metadata\".\"load_balancer_id\""},
@@ -104,6 +111,7 @@ var LoadBalancerMetadatumWhere = struct {
 	Data:           whereHelpertypes_JSON{field: "\"load_balancer_metadata\".\"data\""},
 	CreatedAt:      whereHelpertime_Time{field: "\"load_balancer_metadata\".\"created_at\""},
 	UpdatedAt:      whereHelpertime_Time{field: "\"load_balancer_metadata\".\"updated_at\""},
+	DeletedAt:      whereHelpernull_Time{field: "\"load_balancer_metadata\".\"deleted_at\""},
 }
 
 // LoadBalancerMetadatumRels is where relationship names are stored.
@@ -134,9 +142,9 @@ func (r *loadBalancerMetadatumR) GetLoadBalancer() *LoadBalancer {
 type loadBalancerMetadatumL struct{}
 
 var (
-	loadBalancerMetadatumAllColumns            = []string{"metadata_id", "load_balancer_id", "namespace", "data", "created_at", "updated_at"}
+	loadBalancerMetadatumAllColumns            = []string{"metadata_id", "load_balancer_id", "namespace", "data", "created_at", "updated_at", "deleted_at"}
 	loadBalancerMetadatumColumnsWithoutDefault = []string{"load_balancer_id", "namespace", "data"}
-	loadBalancerMetadatumColumnsWithDefault    = []string{"metadata_id", "created_at", "updated_at"}
+	loadBalancerMetadatumColumnsWithDefault    = []string{"metadata_id", "created_at", "updated_at", "deleted_at"}
 	loadBalancerMetadatumPrimaryKeyColumns     = []string{"metadata_id"}
 	loadBalancerMetadatumGeneratedColumns      = []string{}
 )
@@ -597,7 +605,7 @@ func (o *LoadBalancerMetadatum) SetLoadBalancer(ctx context.Context, exec boil.C
 
 // LoadBalancerMetadata retrieves all the records using an executor.
 func LoadBalancerMetadata(mods ...qm.QueryMod) loadBalancerMetadatumQuery {
-	mods = append(mods, qm.From("\"load_balancer_metadata\""))
+	mods = append(mods, qm.From("\"load_balancer_metadata\""), qmhelper.WhereIsNull("\"load_balancer_metadata\".\"deleted_at\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
 		queries.SetSelect(q, []string{"\"load_balancer_metadata\".*"})
@@ -616,7 +624,7 @@ func FindLoadBalancerMetadatum(ctx context.Context, exec boil.ContextExecutor, m
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"load_balancer_metadata\" where \"metadata_id\"=$1", sel,
+		"select %s from \"load_balancer_metadata\" where \"metadata_id\"=$1 and \"deleted_at\" is null", sel,
 	)
 
 	q := queries.Raw(query, metadataID)
@@ -858,7 +866,7 @@ func (o LoadBalancerMetadatumSlice) UpdateAll(ctx context.Context, exec boil.Con
 
 // Delete deletes a single LoadBalancerMetadatum record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *LoadBalancerMetadatum) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *LoadBalancerMetadatum) Delete(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no LoadBalancerMetadatum provided for delete")
 	}
@@ -867,8 +875,26 @@ func (o *LoadBalancerMetadatum) Delete(ctx context.Context, exec boil.ContextExe
 		return 0, err
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), loadBalancerMetadatumPrimaryKeyMapping)
-	sql := "DELETE FROM \"load_balancer_metadata\" WHERE \"metadata_id\"=$1"
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), loadBalancerMetadatumPrimaryKeyMapping)
+		sql = "DELETE FROM \"load_balancer_metadata\" WHERE \"metadata_id\"=$1"
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		o.DeletedAt = null.TimeFrom(currTime)
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE \"load_balancer_metadata\" SET %s WHERE \"metadata_id\"=$2",
+			strmangle.SetParamNames("\"", "\"", 1, wl),
+		)
+		valueMapping, err := queries.BindMapping(loadBalancerMetadatumType, loadBalancerMetadatumMapping, append(wl, loadBalancerMetadatumPrimaryKeyColumns...))
+		if err != nil {
+			return 0, err
+		}
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), valueMapping)
+	}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -893,12 +919,17 @@ func (o *LoadBalancerMetadatum) Delete(ctx context.Context, exec boil.ContextExe
 }
 
 // DeleteAll deletes all matching rows.
-func (q loadBalancerMetadatumQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q loadBalancerMetadatumQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("models: no loadBalancerMetadatumQuery provided for delete all")
 	}
 
-	queries.SetDelete(q.Query)
+	if hardDelete {
+		queries.SetDelete(q.Query)
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		queries.SetUpdate(q.Query, M{"deleted_at": currTime})
+	}
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
@@ -914,7 +945,7 @@ func (q loadBalancerMetadatumQuery) DeleteAll(ctx context.Context, exec boil.Con
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o LoadBalancerMetadatumSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o LoadBalancerMetadatumSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -927,14 +958,31 @@ func (o LoadBalancerMetadatumSlice) DeleteAll(ctx context.Context, exec boil.Con
 		}
 	}
 
-	var args []interface{}
-	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), loadBalancerMetadatumPrimaryKeyMapping)
-		args = append(args, pkeyArgs...)
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), loadBalancerMetadatumPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+		}
+		sql = "DELETE FROM \"load_balancer_metadata\" WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, loadBalancerMetadatumPrimaryKeyColumns, len(o))
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), loadBalancerMetadatumPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+			obj.DeletedAt = null.TimeFrom(currTime)
+		}
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE \"load_balancer_metadata\" SET %s WHERE "+
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 2, loadBalancerMetadatumPrimaryKeyColumns, len(o)),
+			strmangle.SetParamNames("\"", "\"", 1, wl),
+		)
+		args = append([]interface{}{currTime}, args...)
 	}
-
-	sql := "DELETE FROM \"load_balancer_metadata\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, loadBalancerMetadatumPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -989,7 +1037,8 @@ func (o *LoadBalancerMetadatumSlice) ReloadAll(ctx context.Context, exec boil.Co
 	}
 
 	sql := "SELECT \"load_balancer_metadata\".* FROM \"load_balancer_metadata\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, loadBalancerMetadatumPrimaryKeyColumns, len(*o))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, loadBalancerMetadatumPrimaryKeyColumns, len(*o)) +
+		"and \"deleted_at\" is null"
 
 	q := queries.Raw(sql, args...)
 
@@ -1006,7 +1055,7 @@ func (o *LoadBalancerMetadatumSlice) ReloadAll(ctx context.Context, exec boil.Co
 // LoadBalancerMetadatumExists checks if the LoadBalancerMetadatum row exists.
 func LoadBalancerMetadatumExists(ctx context.Context, exec boil.ContextExecutor, metadataID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"load_balancer_metadata\" where \"metadata_id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"load_balancer_metadata\" where \"metadata_id\"=$1 and \"deleted_at\" is null limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)

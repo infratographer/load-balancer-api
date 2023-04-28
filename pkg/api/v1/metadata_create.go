@@ -1,11 +1,15 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/types"
-	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.uber.org/zap"
+
+	"go.infratographer.com/load-balancer-api/internal/models"
 )
 
 // metadataCreate is the handler for the POST /loadbalancers/:load_balancer_id/metadata route
@@ -30,8 +34,18 @@ func (r *Router) metadataCreate(c echo.Context) error {
 	if _, err = models.LoadBalancers(
 		models.LoadBalancerWhere.LoadBalancerID.EQ(lbID),
 	).One(ctx, r.db); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			r.logger.Error("error fetching load balancer not found by id", zap.Error(err))
+			return v1NotFoundResponse(c)
+		}
+
 		r.logger.Error("error fetching load balancer", zap.Error(err))
-		return v1BadRequestResponse(c, err)
+
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	if payload.Namespace == "" {
+		return v1BadRequestResponse(c, ErrNamespaceRequired)
 	}
 
 	metadataModel := &models.LoadBalancerMetadatum{

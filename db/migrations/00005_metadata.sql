@@ -8,9 +8,10 @@ CREATE TABLE load_balancer_metadata (
   data JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ,
   INDEX idx_metadata_id (metadata_id),
   INVERTED INDEX idx_metadata_data (metadata_id, namespace, data),
-  UNIQUE INDEX idx_namespace_lb_id (namespace, load_balancer_id),
+  UNIQUE INDEX idx_namespace_lb_id (namespace, load_balancer_id) WHERE deleted_at IS NULL,
   INDEX idx_load_balancer_created_at (created_at),
   INDEX idx_load_balancer_updated_at (updated_at)
 );

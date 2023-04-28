@@ -3,6 +3,9 @@ package api
 import "errors"
 
 var (
+	// ErrNamespaceRequired is returned when a namespace is required
+	ErrNamespaceRequired = errors.New("namespace is required")
+
 	// ErrMissingPoolID is returned when a pool ID is missing
 	ErrMissingPoolID = errors.New("pool ID is missing")
 

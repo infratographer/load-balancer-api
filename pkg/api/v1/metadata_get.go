@@ -32,7 +32,7 @@ func (r *Router) metadataGet(c echo.Context) error {
 	return v1MetadataResponse(c, metadata)
 }
 
-// metadataList is the handler for the GET /loadbalancers/:load_balancer_id/metadatas route
+// metadataList is the handler for the GET /loadbalancers/:load_balancer_id/metadata route
 func (r *Router) metadataList(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -42,11 +42,21 @@ func (r *Router) metadataList(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
+	// mods := []qm.QueryMod{models.LoadBalancerMetadatumWhere.LoadBalancerID.EQ(ldID)}
+
 	mds, err := models.LoadBalancerMetadata(mods...).All(ctx, r.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return v1InternalServerErrorResponse(c, err)
+			return v1NotFoundResponse(c)
 		}
+
+		r.logger.Error("error loading metadata", zap.Error(err))
+
+		return v1InternalServerErrorResponse(c, err)
+	}
+
+	if len(mds) == 0 {
+		return v1NotFoundResponse(c)
 	}
 
 	return v1MetadatasResponse(c, mds)

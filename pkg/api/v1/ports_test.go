@@ -565,7 +565,7 @@ func TestPortRoutes(t *testing.T) {
 	})
 }
 
-func TestPortssGet(t *testing.T) {
+func TestPortsGet(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
