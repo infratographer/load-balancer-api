@@ -42,7 +42,6 @@ func (r *Router) metadataList(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-	// mods := []qm.QueryMod{models.LoadBalancerMetadatumWhere.LoadBalancerID.EQ(ldID)}
 
 	mds, err := models.LoadBalancerMetadata(mods...).All(ctx, r.db)
 	if err != nil {
