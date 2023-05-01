@@ -7,9 +7,11 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"go.infratographer.com/x/gidx"
+	"go.uber.org/zap"
+
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
-	"go.uber.org/zap"
 )
 
 // loadBalancerCreate creates a new load balancer for a tenant
@@ -17,11 +19,11 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	payload := struct {
-		Name             string `json:"name"`
-		LoadBalancerSize string `json:"load_balancer_size"`
-		LoadBalancerType string `json:"load_balancer_type"`
-		IPAddressID      string `json:"ip_address_id"`
-		LocationID       string `json:"location_id"`
+		Name             string          `json:"name"`
+		LoadBalancerSize string          `json:"load_balancer_size"`
+		LoadBalancerType string          `json:"load_balancer_type"`
+		IPAddressID      string          `json:"ip_address_id"`
+		LocationID       gidx.PrefixedID `json:"location_id"`
 		Ports            []struct {
 			Name  string   `json:"name"`
 			Port  int64    `json:"port"`
@@ -57,8 +59,7 @@ func (r *Router) loadBalancerCreate(c echo.Context) error {
 		Name:             payload.Name,
 		LoadBalancerSize: payload.LoadBalancerSize,
 		LoadBalancerType: payload.LoadBalancerType,
-		IPAddressID:      payload.IPAddressID,
-		LocationID:       payload.LocationID,
+		LocationID:       payload.LocationID.String(),
 		Slug:             slug.Make(payload.Name),
 		CurrentState:     "provisioning",
 	}

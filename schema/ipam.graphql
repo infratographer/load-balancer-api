@@ -1,0 +1,3 @@
+extend interface IPv4Addressable {
+  id: ID!
+}

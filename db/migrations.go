@@ -7,5 +7,5 @@ import (
 
 // Migrations contain an embedded filesystem with all the sql migration files
 //
-//go:embed migrations/*.sql
+//go:embed goose-migrations/*.sql
 var Migrations embed.FS
