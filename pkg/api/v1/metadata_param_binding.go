@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -56,15 +55,13 @@ func (r *Router) metadataParamsBinding(c echo.Context) ([]qm.QueryMod, error) {
 		mods = queryParamsToQueryMods(qpb, qp, mods)
 
 		if len(c.QueryParam(qp)) > 0 {
-			r.logger.Debug("load balancer query parameters", zap.String("query.key", qp), zap.String("query.value", c.QueryParam(qp)))
+			r.logger.Debug("load balancer metadata query parameters", zap.String("query.key", qp), zap.String("query.value", c.QueryParam(qp)))
 		}
 	}
 
 	if err := qpb.BindError(); err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("mods: %+v\n", mods)
 
 	return mods, nil
 }

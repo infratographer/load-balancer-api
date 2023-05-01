@@ -42,7 +42,6 @@ func (r *Router) metadataList(c echo.Context) error {
 		return v1BadRequestResponse(c, err)
 	}
 
-
 	mds, err := models.LoadBalancerMetadata(mods...).All(ctx, r.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -52,10 +51,6 @@ func (r *Router) metadataList(c echo.Context) error {
 		r.logger.Error("error loading metadata", zap.Error(err))
 
 		return v1InternalServerErrorResponse(c, err)
-	}
-
-	if len(mds) == 0 {
-		return v1NotFoundResponse(c)
 	}
 
 	return v1MetadatasResponse(c, mds)
