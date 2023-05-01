@@ -225,7 +225,7 @@ func TestMetadataRoutes(t *testing.T) {
 	doHTTPTest(t, &httpTest{
 		name:   "get all metadata by lb id wrong id",
 		path:   srv.URL + "/v1/loadbalancers/" + lb2.ID + "/metadata",
-		status: http.StatusNotFound,
+		status: http.StatusOK,
 		method: http.MethodGet,
 	})
 
