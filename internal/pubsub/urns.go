@@ -28,6 +28,11 @@ func NewOriginURN(id string) string {
 	return newURN("load-balancer-origin", id)
 }
 
+// NewMetadataURN creates a new metadata URN
+func NewMetadataURN(id string) string {
+	return newURN("load-balancer-metadata", id)
+}
+
 // NewPoolURN creates a new pool URN
 func NewPoolURN(id string) string {
 	return newURN("load-balancer-pool", id)

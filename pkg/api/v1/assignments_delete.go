@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.infratographer.com/load-balancer-api/internal/models"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.uber.org/zap"
@@ -79,7 +78,7 @@ func (r *Router) assignmentsDelete(c echo.Context) error {
 	}
 }
 
-func (r *Router) deleteAssignment(ctx context.Context, exec boil.ContextExecutor, tenantID, poolID, portID string) (string, error) {
+func (r *Router) deleteAssignment(ctx context.Context, tenantID, poolID, portID string) (string, error) {
 	r.logger.Debug("deleting assignment",
 		zap.String("tenant.id", tenantID),
 		zap.String("pool.id", poolID),
