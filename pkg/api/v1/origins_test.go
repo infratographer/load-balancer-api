@@ -71,7 +71,7 @@ func TestCreateOrigins(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	// create a pool for testing
@@ -196,7 +196,7 @@ func TestOriginRoutes(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	tenantID := uuid.New().String()
@@ -455,7 +455,7 @@ func TestOriginsBalancerGet(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

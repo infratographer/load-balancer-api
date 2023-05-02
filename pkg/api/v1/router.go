@@ -17,18 +17,24 @@ const (
 
 // Router provides a router for the API
 type Router struct {
-	db     *sqlx.DB
-	pubsub *pubsub.Client
-	logger *zap.Logger
+	db         *sqlx.DB
+	pubsub     *pubsub.Client
+	logger     *zap.Logger
+	middleware []echo.MiddlewareFunc
 }
 
 // NewRouter creates a new router for the API
-func NewRouter(db *sqlx.DB, l *zap.SugaredLogger, ps *pubsub.Client) *Router {
-	return &Router{
+func NewRouter(db *sqlx.DB, ps *pubsub.Client, options ...RouterOption) *Router {
+	router := &Router{
 		db:     db,
 		pubsub: ps,
-		logger: l.Named("api").Desugar(),
 	}
+
+	for _, opt := range options {
+		opt(router)
+	}
+
+	return router
 }
 
 func defaultRequestType(next echo.HandlerFunc) echo.HandlerFunc {
@@ -47,6 +53,7 @@ func (r *Router) Routes(e *echo.Group) {
 	// authenticate a request, not included the v1 group since this has custom
 	// authentication as it's accepting external auth
 	e.Use(defaultRequestType)
+	e.Use(r.middleware...)
 
 	v1 := e.Group(apiVersion)
 	{

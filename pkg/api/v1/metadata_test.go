@@ -34,7 +34,7 @@ func TestMetadataRoutes(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	lb, cleanupLoadBalancers := createLoadBalancer(t, srv, uuid.New().String())
