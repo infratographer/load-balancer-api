@@ -167,7 +167,7 @@ func (r *Router) updatePort(c echo.Context, port *models.Port, origPools, newPoo
 	for poolID, v := range diff {
 		switch {
 		case v < 0:
-			assignmentID, err := r.deleteAssignment(ctx, tx, lb.TenantID, poolID, port.PortID)
+			assignmentID, err := r.deleteAssignment(ctx, lb.TenantID, poolID, port.PortID)
 			if err != nil {
 				r.logger.Error("failed to create port assignment, rolling back transaction", zap.Error(err))
 

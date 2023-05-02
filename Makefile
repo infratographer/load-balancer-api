@@ -18,7 +18,7 @@ ci: | dev-database test
 
 test: | unit-test
 
-unit-test: ## Runs unit testts
+unit-test: ## Runs unit tests
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
 	@go test -race -cover -failfast -tags testtools -p 1 -v ./...

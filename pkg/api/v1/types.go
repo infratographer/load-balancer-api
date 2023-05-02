@@ -82,17 +82,30 @@ type pool struct {
 
 type poolSlice []*pool
 
+type metadata struct {
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	DeletedAt *time.Time  `json:"deleted_at,omitempty"`
+	ID        string      `json:"id"`
+	Namespace string      `json:"namespace"`
+	Data      interface{} `json:"data"`
+}
+
+type metadataSlice []*metadata
+
 type response struct {
 	Version       string             `json:"version"`
 	Kind          string             `json:"kind"`
 	Assignments   *assignmentSlice   `json:"assignments,omitempty"`
-	Port          *port              `json:"port,omitempty"`
-	Ports         *portSlice         `json:"ports,omitempty"`
 	LoadBalancer  *loadBalancer      `json:"load_balancer,omitempty"`
 	LoadBalancers *loadBalancerSlice `json:"load_balancers,omitempty"`
 	Locations     *locationSlice     `json:"locations,omitempty"`
+	Metadata      *metadata          `json:"metadata,omitempty"`
+	Metadatas     *metadataSlice     `json:"metadatas,omitempty"`
 	Origin        *origin            `json:"origin,omitempty"`
 	Origins       *originSlice       `json:"origins,omitempty"`
 	Pool          *pool              `json:"pool,omitempty"`
 	Pools         *poolSlice         `json:"pools,omitempty"`
+	Port          *port              `json:"port,omitempty"`
+	Ports         *portSlice         `json:"ports,omitempty"`
 }

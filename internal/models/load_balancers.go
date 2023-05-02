@@ -571,6 +571,7 @@ func (loadBalancerL) LoadLoadBalancerMetadata(ctx context.Context, e boil.Contex
 	query := NewQuery(
 		qm.From(`load_balancer_metadata`),
 		qm.WhereIn(`load_balancer_metadata.load_balancer_id in ?`, args...),
+		qmhelper.WhereIsNull(`load_balancer_metadata.deleted_at`),
 	)
 	if mods != nil {
 		mods.Apply(query)
