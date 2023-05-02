@@ -31,7 +31,7 @@ func TestCreatePool(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	// create a pubsub client for subscribing to NATS events
@@ -246,7 +246,7 @@ func TestPoolRoutes(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	// create a pubsub client for subscribing to NATS events
@@ -581,7 +581,7 @@ func TestPoolsGet(t *testing.T) {
 	nsrv := newNatsTestServer(t, "load-balancer-api-test", "com.infratographer.events.>")
 	defer nsrv.Shutdown()
 
-	srv := newTestServer(t, nsrv.ClientURL())
+	srv, _ := newTestServer(t, nsrv.ClientURL(), nil)
 	defer srv.Close()
 
 	assert.NotNil(t, srv)

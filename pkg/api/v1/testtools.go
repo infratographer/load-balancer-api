@@ -4,6 +4,7 @@
 package api
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,10 +18,12 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/httptools"
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/echojwtx"
 	"go.uber.org/zap"
 )
 
 type httpTest struct {
+	client *http.Client
 	name   string
 	body   string
 	tenant string
@@ -29,30 +32,37 @@ type httpTest struct {
 	status int
 }
 
-func newTestServer(t *testing.T, natsURL string) *httptest.Server {
+func newTestServer(t *testing.T, natsURL string, authConfig *echojwtx.AuthConfig) (*httptest.Server, error) {
+	var middleware []echo.MiddlewareFunc
+
 	db, err := crdbx.NewDB(config.AppConfig.CRDB, false)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	dbx := sqlx.NewDb(db, "postgres")
+
 	e := echo.New()
 
-	// lgrCfg := zap.NewDevelopmentConfig()
-	// lgrCfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	if authConfig != nil {
+		auth, err := echojwtx.NewAuth(context.Background(), *authConfig)
+		if err != nil {
+			return nil, err
+		}
 
-	// l, err := lgrCfg.Build()
-	// if err != nil {
-	// 	panic(err)
-	// }
+		middleware = append(middleware, auth.Middleware())
+	}
 
-	// r := NewRouter(dbx, l.Sugar(), newPubSubClient(t, natsURL))
-
-	r := NewRouter(dbx, newPubSubClient(t, natsURL), WithLogger(zap.NewNop()))
+	r := NewRouter(
+		dbx,
+		newPubSubClient(t, natsURL),
+		WithLogger(zap.NewNop()),
+		WithMiddleware(middleware...),
+	)
 
 	r.Routes(e.Group("/"))
 
-	return httptest.NewServer(e)
+	return httptest.NewServer(e), nil
 }
 
 func newPubSubClient(t *testing.T, url string) *pubsub.Client {
@@ -80,7 +90,14 @@ func newPubSubClient(t *testing.T, url string) *pubsub.Client {
 func doHTTPTest(t *testing.T, tt *httpTest) {
 	t.Helper()
 
-	var body io.Reader
+	var (
+		body   io.Reader
+		client = http.DefaultClient
+	)
+
+	if tt.client != nil {
+		client = tt.client
+	}
 
 	t.Run(tt.name+":["+tt.method+"] "+tt.path, func(t *testing.T) {
 		t.Helper()
@@ -90,11 +107,11 @@ func doHTTPTest(t *testing.T, tt *httpTest) {
 			body = nil
 		}
 
-		req, err := http.NewRequest(tt.method, tt.path, body) //nolint
+		req, err := http.NewRequestWithContext(context.Background(), tt.method, tt.path, body) //nolint
 
 		req.Header.Set("Content-Type", "application/json")
 
-		res, err := http.DefaultClient.Do(req)
+		res, err := client.Do(req)
 		assert.NoError(t, err)
 
 		defer res.Body.Close()

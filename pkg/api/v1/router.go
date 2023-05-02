@@ -53,6 +53,7 @@ func (r *Router) Routes(e *echo.Group) {
 	// authenticate a request, not included the v1 group since this has custom
 	// authentication as it's accepting external auth
 	e.Use(defaultRequestType)
+	e.Use(r.middleware...)
 
 	v1 := e.Group(apiVersion)
 	{
