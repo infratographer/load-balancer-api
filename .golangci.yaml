@@ -3,6 +3,10 @@ run:
     - testtools
   skip-dirs:
     - internal/models
+    # Exclude generated ent code
+    - internal/ent/generated
+    - internal/ent/generated/*
+    - internal/graphql/gen_*
 
 linters-settings:
   goimports:
