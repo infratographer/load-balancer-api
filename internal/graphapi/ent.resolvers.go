@@ -12,11 +12,6 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// LoadBalancers is the resolver for the loadBalancers field.
-func (r *queryResolver) LoadBalancers(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
-	return r.client.LoadBalancer.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
-}
-
 // LoadBalancerPools is the resolver for the loadBalancerPools field.
 func (r *queryResolver) LoadBalancerPools(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error) {
 	return r.client.Pool.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerPoolOrder(orderBy), generated.WithLoadBalancerPoolFilter(where.Filter))
@@ -39,3 +34,13 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 type loadBalancerResolver struct{ *Resolver }
 type loadBalancerPoolResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) LoadBalancers(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
+	return r.client.LoadBalancer.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
+}

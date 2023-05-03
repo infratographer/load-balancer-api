@@ -61,11 +61,11 @@ type LoadBalancerMutation struct {
 	op                 Op
 	typ                string
 	id                 *gidx.PrefixedID
-	created_at         *time.Time
-	updated_at         *time.Time
 	name               *string
 	tenant_id          *gidx.PrefixedID
 	location_id        *gidx.PrefixedID
+	created_at         *time.Time
+	updated_at         *time.Time
 	clearedFields      map[string]struct{}
 	annotations        map[gidx.PrefixedID]struct{}
 	removedannotations map[gidx.PrefixedID]struct{}
@@ -182,78 +182,6 @@ func (m *LoadBalancerMutation) IDs(ctx context.Context) ([]gidx.PrefixedID, erro
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *LoadBalancerMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *LoadBalancerMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the LoadBalancer entity.
-// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *LoadBalancerMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *LoadBalancerMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *LoadBalancerMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the LoadBalancer entity.
-// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *LoadBalancerMutation) ResetUpdatedAt() {
-	m.updated_at = nil
 }
 
 // SetName sets the "name" field.
@@ -398,6 +326,78 @@ func (m *LoadBalancerMutation) OldProviderID(ctx context.Context) (v gidx.Prefix
 // ResetProviderID resets all changes to the "provider_id" field.
 func (m *LoadBalancerMutation) ResetProviderID() {
 	m.provider = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *LoadBalancerMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *LoadBalancerMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *LoadBalancerMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *LoadBalancerMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *LoadBalancerMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *LoadBalancerMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the LoadBalancerAnnotation entity by ids.
@@ -569,12 +569,6 @@ func (m *LoadBalancerMutation) Type() string {
 // AddedFields().
 func (m *LoadBalancerMutation) Fields() []string {
 	fields := make([]string, 0, 6)
-	if m.created_at != nil {
-		fields = append(fields, loadbalancer.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, loadbalancer.FieldUpdatedAt)
-	}
 	if m.name != nil {
 		fields = append(fields, loadbalancer.FieldName)
 	}
@@ -587,6 +581,12 @@ func (m *LoadBalancerMutation) Fields() []string {
 	if m.provider != nil {
 		fields = append(fields, loadbalancer.FieldProviderID)
 	}
+	if m.created_at != nil {
+		fields = append(fields, loadbalancer.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, loadbalancer.FieldUpdatedAt)
+	}
 	return fields
 }
 
@@ -595,10 +595,6 @@ func (m *LoadBalancerMutation) Fields() []string {
 // schema.
 func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case loadbalancer.FieldCreatedAt:
-		return m.CreatedAt()
-	case loadbalancer.FieldUpdatedAt:
-		return m.UpdatedAt()
 	case loadbalancer.FieldName:
 		return m.Name()
 	case loadbalancer.FieldTenantID:
@@ -607,6 +603,10 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 		return m.LocationID()
 	case loadbalancer.FieldProviderID:
 		return m.ProviderID()
+	case loadbalancer.FieldCreatedAt:
+		return m.CreatedAt()
+	case loadbalancer.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -616,10 +616,6 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case loadbalancer.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case loadbalancer.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	case loadbalancer.FieldName:
 		return m.OldName(ctx)
 	case loadbalancer.FieldTenantID:
@@ -628,6 +624,10 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldLocationID(ctx)
 	case loadbalancer.FieldProviderID:
 		return m.OldProviderID(ctx)
+	case loadbalancer.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case loadbalancer.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown LoadBalancer field %s", name)
 }
@@ -637,20 +637,6 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 // type.
 func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case loadbalancer.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case loadbalancer.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	case loadbalancer.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -678,6 +664,20 @@ func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProviderID(v)
+		return nil
+	case loadbalancer.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case loadbalancer.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LoadBalancer field %s", name)
@@ -728,12 +728,6 @@ func (m *LoadBalancerMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *LoadBalancerMutation) ResetField(name string) error {
 	switch name {
-	case loadbalancer.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case loadbalancer.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
 	case loadbalancer.FieldName:
 		m.ResetName()
 		return nil
@@ -745,6 +739,12 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 		return nil
 	case loadbalancer.FieldProviderID:
 		m.ResetProviderID()
+		return nil
+	case loadbalancer.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case loadbalancer.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown LoadBalancer field %s", name)

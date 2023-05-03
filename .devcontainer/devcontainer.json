@@ -1,10 +1,9 @@
 // Config reference, https://containers.dev/implementors/json_reference/
 {
-	"name": "loadbalancer-api",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspace",
 	"shutdownAction": "stopCompose",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -27,9 +26,8 @@
 			]
 		}
 	},
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
-	"remoteEnv": {
-		"PATH": "${containerEnv:PATH}:/home/vscode/.nsccli/bin"
-	}
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"postStartCommand": "/workspaces/${localWorkspaceFolderBasename}/.devcontainer/scripts/nats_account.sh"
 }

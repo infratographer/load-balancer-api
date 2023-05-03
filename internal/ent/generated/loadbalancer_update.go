@@ -188,11 +188,11 @@ func (lbu *LoadBalancerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := lbu.mutation.UpdatedAt(); ok {
-		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if value, ok := lbu.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
+	}
+	if value, ok := lbu.mutation.UpdatedAt(); ok {
+		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if lbu.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -478,11 +478,11 @@ func (lbuo *LoadBalancerUpdateOne) sqlSave(ctx context.Context) (_node *LoadBala
 			}
 		}
 	}
-	if value, ok := lbuo.mutation.UpdatedAt(); ok {
-		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
-	}
 	if value, ok := lbuo.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
+	}
+	if value, ok := lbuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if lbuo.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{

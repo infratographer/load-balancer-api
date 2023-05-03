@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -20,7 +22,7 @@ type LoadBalancer struct {
 // Mixin to use for LoadBalancer type
 func (LoadBalancer) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.TimestampsMixin{},
+		// entx.TimestampsMixin{},
 		// softdelete.Mixin{},
 	}
 }
@@ -32,7 +34,10 @@ func (LoadBalancer) Fields() []ent.Field {
 			GoType(gidx.PrefixedID("")).
 			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerPrefix) }).
 			Unique().
-			Immutable(),
+			Immutable().
+			Annotations(
+				entgql.OrderField("ID"),
+			),
 		field.Text("name").
 			NotEmpty().
 			Annotations(
@@ -53,6 +58,7 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				entgql.OrderField("LOCATION"),
 			),
 		field.String("provider_id").
 			GoType(gidx.PrefixedID("")).
@@ -61,6 +67,22 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(^entgql.SkipMutationUpdateInput),
+				entgql.OrderField("PROVIDER"),
+			),
+		field.Time("created_at").
+			Default(time.Now).
+			Immutable().
+			Annotations(
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+				entgql.OrderField("CREATED_AT"),
+			),
+		field.Time("updated_at").
+			Default(time.Now).
+			UpdateDefault(time.Now).
+			Immutable().
+			Annotations(
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+				entgql.OrderField("UPDATED_AT"),
 			),
 	}
 }
@@ -95,6 +117,8 @@ func (LoadBalancer) Indexes() []ent.Index {
 		index.Fields("provider_id"),
 		index.Fields("location_id"),
 		index.Fields("tenant_id"),
+		index.Fields("created_at"),
+		index.Fields("updated_at"),
 	}
 }
 
@@ -103,7 +127,6 @@ func (LoadBalancer) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
 		entgql.RelayConnection(),
-		entgql.QueryField(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 		entgql.Implements("IPv4Addressable"),
 	}

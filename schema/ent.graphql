@@ -62,11 +62,11 @@ scalar Cursor
 scalar JSON
 type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
   id: ID!
-  createdAt: Time!
-  updatedAt: Time!
   name: String!
   tenantID: ID!
   locationID: ID!
+  createdAt: Time!
+  updatedAt: Time!
   annotations(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -221,7 +221,11 @@ input LoadBalancerOrder {
 }
 """Properties by which LoadBalancer connections can be ordered."""
 enum LoadBalancerOrderField {
+  ID
   NAME
+  LOCATION
+  CREATED_AT
+  UPDATED_AT
 }
 type LoadBalancerOrigin implements Node @key(fields: "id") @goModel(model: "go.infratographer.com/load-balancer-api/internal/ent/generated.Origin") {
   id: ID!
@@ -784,6 +788,20 @@ input LoadBalancerWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time
@@ -802,20 +820,6 @@ input LoadBalancerWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """name field predicates"""
-  name: String
-  nameNEQ: String
-  nameIn: [String!]
-  nameNotIn: [String!]
-  nameGT: String
-  nameGTE: String
-  nameLT: String
-  nameLTE: String
-  nameContains: String
-  nameHasPrefix: String
-  nameHasSuffix: String
-  nameEqualFold: String
-  nameContainsFold: String
   """annotations edge predicates"""
   hasAnnotations: Boolean
   hasAnnotationsWith: [LoadBalancerAnnotationWhereInput!]
@@ -856,25 +860,6 @@ type PageInfo {
   endCursor: Cursor
 }
 type Query {
-  loadBalancers(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for LoadBalancers returned from the connection."""
-    orderBy: LoadBalancerOrder
-
-    """Filtering options for LoadBalancers returned from the connection."""
-    where: LoadBalancerWhereInput
-  ): LoadBalancerConnection!
   loadBalancerPools(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor

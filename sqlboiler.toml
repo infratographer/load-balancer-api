@@ -1,7 +1,0 @@
-[crdb]
-user="root"
-pass=""
-host="crdb"
-dbname="load_balancer_api_dev"
-port=26257
-sslmode="disable"

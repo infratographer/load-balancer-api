@@ -36,14 +36,12 @@ func main() {
 	if len(os.Args) != 2 {
 		log.Fatalln("migration name is required. Use: 'go run -mod=mod db/create_migration.go <name>'")
 	}
-	// dbURI, ok := os.LookupEnv("INSTANCEAPI_CRDB_URI")
-	// if !ok {
-	// 	log.Fatalln("failed to load the INSTANCEAPI_CRDB_URI env var")
-	// }
+	dbURI, ok := os.LookupEnv("ATLAS_DB_URI")
+	if !ok {
+		log.Fatalln("failed to load the ATLAS_DB_URI env var")
+	}
 
-	dbURI := "postgresql://root@crdb:26257/defaultdb?sslmode=disable"
-	// dbURI = "docker://postgres"
-	// Generate migrations using Atlas support for MySQL (note the Ent dialect option passed above).
+	// Generate migrations using Atlas support for postgres (note the Ent dialect option passed above).
 	err = migrate.NamedDiff(ctx, dbURI, os.Args[1], opts...)
 	if err != nil {
 		log.Fatalf("failed generating migration file: %v", err)

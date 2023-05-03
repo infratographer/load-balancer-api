@@ -19,6 +19,13 @@ type Resolver struct {
 	client *ent.Client
 }
 
+// NewResolver returns a resolver configured with the given ent client
+func NewResolver(client *ent.Client) *Resolver {
+	return &Resolver{
+		client: client,
+	}
+}
+
 // Handler is an http handler wrapping a Resolver
 type Handler struct {
 	r                 *Resolver

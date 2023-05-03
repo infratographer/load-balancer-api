@@ -325,6 +325,20 @@ func (lb *LoadBalancerQuery) Paginate(
 }
 
 var (
+	// LoadBalancerOrderFieldID orders LoadBalancer by id.
+	LoadBalancerOrderFieldID = &LoadBalancerOrderField{
+		Value: func(lb *LoadBalancer) (ent.Value, error) {
+			return lb.ID, nil
+		},
+		column: loadbalancer.FieldID,
+		toTerm: loadbalancer.ByID,
+		toCursor: func(lb *LoadBalancer) Cursor {
+			return Cursor{
+				ID:    lb.ID,
+				Value: lb.ID,
+			}
+		},
+	}
 	// LoadBalancerOrderFieldName orders LoadBalancer by name.
 	LoadBalancerOrderFieldName = &LoadBalancerOrderField{
 		Value: func(lb *LoadBalancer) (ent.Value, error) {
@@ -339,14 +353,64 @@ var (
 			}
 		},
 	}
+	// LoadBalancerOrderFieldLocationID orders LoadBalancer by location_id.
+	LoadBalancerOrderFieldLocationID = &LoadBalancerOrderField{
+		Value: func(lb *LoadBalancer) (ent.Value, error) {
+			return lb.LocationID, nil
+		},
+		column: loadbalancer.FieldLocationID,
+		toTerm: loadbalancer.ByLocationID,
+		toCursor: func(lb *LoadBalancer) Cursor {
+			return Cursor{
+				ID:    lb.ID,
+				Value: lb.LocationID,
+			}
+		},
+	}
+	// LoadBalancerOrderFieldCreatedAt orders LoadBalancer by created_at.
+	LoadBalancerOrderFieldCreatedAt = &LoadBalancerOrderField{
+		Value: func(lb *LoadBalancer) (ent.Value, error) {
+			return lb.CreatedAt, nil
+		},
+		column: loadbalancer.FieldCreatedAt,
+		toTerm: loadbalancer.ByCreatedAt,
+		toCursor: func(lb *LoadBalancer) Cursor {
+			return Cursor{
+				ID:    lb.ID,
+				Value: lb.CreatedAt,
+			}
+		},
+	}
+	// LoadBalancerOrderFieldUpdatedAt orders LoadBalancer by updated_at.
+	LoadBalancerOrderFieldUpdatedAt = &LoadBalancerOrderField{
+		Value: func(lb *LoadBalancer) (ent.Value, error) {
+			return lb.UpdatedAt, nil
+		},
+		column: loadbalancer.FieldUpdatedAt,
+		toTerm: loadbalancer.ByUpdatedAt,
+		toCursor: func(lb *LoadBalancer) Cursor {
+			return Cursor{
+				ID:    lb.ID,
+				Value: lb.UpdatedAt,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
 func (f LoadBalancerOrderField) String() string {
 	var str string
 	switch f.column {
+	case LoadBalancerOrderFieldID.column:
+		str = "ID"
 	case LoadBalancerOrderFieldName.column:
 		str = "NAME"
+	case LoadBalancerOrderFieldLocationID.column:
+		str = "LOCATION"
+	case LoadBalancerOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case LoadBalancerOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
 	}
 	return str
 }
@@ -363,8 +427,16 @@ func (f *LoadBalancerOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("LoadBalancerOrderField %T must be a string", v)
 	}
 	switch str {
+	case "ID":
+		*f = *LoadBalancerOrderFieldID
 	case "NAME":
 		*f = *LoadBalancerOrderFieldName
+	case "LOCATION":
+		*f = *LoadBalancerOrderFieldLocationID
+	case "CREATED_AT":
+		*f = *LoadBalancerOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *LoadBalancerOrderFieldUpdatedAt
 	default:
 		return fmt.Errorf("%s is not a valid LoadBalancerOrderField", str)
 	}
