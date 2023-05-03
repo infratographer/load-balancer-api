@@ -14,16 +14,19 @@ import (
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
+// Resolver provides a graph response resolver
 type Resolver struct {
 	client *ent.Client
 }
 
+// Handler is an http handler wrapping a Resolver
 type Handler struct {
 	r                 *Resolver
 	graphqlHandler    http.Handler
 	playgroundHandler http.Handler
 }
 
+// NewHandler returns an http handler for a graph resolver
 func NewHandler(client *ent.Client) *Handler {
 	h := &Handler{
 		r: &Resolver{
@@ -43,6 +46,7 @@ func NewHandler(client *ent.Client) *Handler {
 	return h
 }
 
+// Routes ...
 func (h *Handler) Routes(e *echo.Group) {
 	e.POST("/query", func(c echo.Context) error {
 		h.graphqlHandler.ServeHTTP(c.Response(), c.Request())
