@@ -1,0 +1,32 @@
+name: Lint :: DB Migrations
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'db/migrations/*'
+# Permissions to write comments on the pull request.
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  atlas-db-migrations:
+    services:
+      crdb:
+        image: cockroachdb/cockroach:latest-v22.1
+        env:
+          CRDB_ARGS: start-single-node --insecure
+        ports:
+          - 26257:26257
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ariga/atlas-action@v0
+        with:
+          dir: db/migrations
+          dir-format: atlas
+          dev-url: postgres://root@localhost:26257/defaultdb
+          cloud-public: true
