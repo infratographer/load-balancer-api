@@ -5,7 +5,7 @@ go 1.20
 replace go.infratographer.com/x => github.com/nicolerenee/x v0.0.0-20230503165615-b0431ca853f6
 
 require (
-	entgo.io/contrib v0.4.4
+	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.2
 	github.com/99designs/gqlgen v0.17.30
 	github.com/google/uuid v1.3.0
