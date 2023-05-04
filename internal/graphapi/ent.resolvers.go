@@ -18,7 +18,7 @@ func (r *queryResolver) LoadBalancerPools(ctx context.Context, after *entgql.Cur
 }
 
 // LoadBalancerProviders is the resolver for the loadBalancerProviders field.
-func (r *queryResolver) LoadBalancerProviders(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error) {
+func (r *queryResolver) LoadBalancerProviders(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerProviderOrder, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error) {
 	return r.client.Provider.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerProviderFilter(where.Filter))
 }
 

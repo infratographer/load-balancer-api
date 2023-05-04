@@ -19,7 +19,7 @@ type Provider struct {
 // Mixin of the Provider
 func (Provider) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 	}
 }
 

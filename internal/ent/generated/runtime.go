@@ -34,8 +34,21 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	loadbalancerMixin := schema.LoadBalancer{}.Mixin()
+	loadbalancerMixinFields0 := loadbalancerMixin[0].Fields()
+	_ = loadbalancerMixinFields0
 	loadbalancerFields := schema.LoadBalancer{}.Fields()
 	_ = loadbalancerFields
+	// loadbalancerDescCreatedAt is the schema descriptor for created_at field.
+	loadbalancerDescCreatedAt := loadbalancerMixinFields0[0].Descriptor()
+	// loadbalancer.DefaultCreatedAt holds the default value on creation for the created_at field.
+	loadbalancer.DefaultCreatedAt = loadbalancerDescCreatedAt.Default.(func() time.Time)
+	// loadbalancerDescUpdatedAt is the schema descriptor for updated_at field.
+	loadbalancerDescUpdatedAt := loadbalancerMixinFields0[1].Descriptor()
+	// loadbalancer.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	loadbalancer.DefaultUpdatedAt = loadbalancerDescUpdatedAt.Default.(func() time.Time)
+	// loadbalancer.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	loadbalancer.UpdateDefaultUpdatedAt = loadbalancerDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// loadbalancerDescName is the schema descriptor for name field.
 	loadbalancerDescName := loadbalancerFields[1].Descriptor()
 	// loadbalancer.NameValidator is a validator for the "name" field. It is called by the builders before save.
@@ -48,16 +61,6 @@ func init() {
 	loadbalancerDescProviderID := loadbalancerFields[4].Descriptor()
 	// loadbalancer.ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
 	loadbalancer.ProviderIDValidator = loadbalancerDescProviderID.Validators[0].(func(string) error)
-	// loadbalancerDescCreatedAt is the schema descriptor for created_at field.
-	loadbalancerDescCreatedAt := loadbalancerFields[5].Descriptor()
-	// loadbalancer.DefaultCreatedAt holds the default value on creation for the created_at field.
-	loadbalancer.DefaultCreatedAt = loadbalancerDescCreatedAt.Default.(func() time.Time)
-	// loadbalancerDescUpdatedAt is the schema descriptor for updated_at field.
-	loadbalancerDescUpdatedAt := loadbalancerFields[6].Descriptor()
-	// loadbalancer.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	loadbalancer.DefaultUpdatedAt = loadbalancerDescUpdatedAt.Default.(func() time.Time)
-	// loadbalancer.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	loadbalancer.UpdateDefaultUpdatedAt = loadbalancerDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// loadbalancerDescID is the schema descriptor for id field.
 	loadbalancerDescID := loadbalancerFields[0].Descriptor()
 	// loadbalancer.DefaultID holds the default value on creation for the id field.

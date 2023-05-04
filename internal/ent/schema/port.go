@@ -24,7 +24,7 @@ type Port struct {
 // Mixin to use for Port type
 func (Port) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 	}
 }
 

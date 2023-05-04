@@ -1,9 +1,8 @@
-name: Lint - DB Migrations
+name: Atlas
 on:
   push:
     branches:
       - main
-      - releases/*
   pull_request:
     paths:
       - "db/migrations/*"
@@ -23,6 +22,7 @@ jobs:
           dir: db/migrations
           driver: postgres
           cloud-public: true
+          cloud-token: ${{secrets.ATLAS_CLOUD_TOKEN}}
   lint:
     permissions:
       contents: read
@@ -63,3 +63,4 @@ jobs:
           dir: db/migrations
           dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
           cloud-public: true
+          cloud-token: ${{secrets.ATLAS_CLOUD_TOKEN}}

@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -22,7 +20,7 @@ type LoadBalancer struct {
 // Mixin to use for LoadBalancer type
 func (LoadBalancer) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		// entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 		// softdelete.Mixin{},
 	}
 }
@@ -69,21 +67,6 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.Skip(^entgql.SkipMutationUpdateInput),
 				entgql.OrderField("PROVIDER"),
 			),
-		field.Time("created_at").
-			Default(time.Now).
-			Immutable().
-			Annotations(
-				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
-				entgql.OrderField("CREATED_AT"),
-			),
-		field.Time("updated_at").
-			Default(time.Now).
-			UpdateDefault(time.Now).
-			Immutable().
-			Annotations(
-				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
-				entgql.OrderField("UPDATED_AT"),
-			),
 	}
 }
 
@@ -117,8 +100,6 @@ func (LoadBalancer) Indexes() []ent.Index {
 		index.Fields("provider_id"),
 		index.Fields("location_id"),
 		index.Fields("tenant_id"),
-		index.Fields("created_at"),
-		index.Fields("updated_at"),
 	}
 }
 

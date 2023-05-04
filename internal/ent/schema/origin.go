@@ -20,7 +20,7 @@ type Origin struct {
 // Mixin to use for Origin type
 func (Origin) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 	}
 }
 

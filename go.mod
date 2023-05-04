@@ -2,7 +2,7 @@ module go.infratographer.com/load-balancer-api
 
 go 1.20
 
-replace go.infratographer.com/x => github.com/nicolerenee/x v0.0.0-20230503165615-b0431ca853f6
+replace go.infratographer.com/x => github.com/nicolerenee/x v0.0.0-20230504213710-69127ba3a498
 
 replace github.com/testcontainers/testcontainers-go => github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8
 
