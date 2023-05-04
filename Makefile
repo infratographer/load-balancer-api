@@ -14,7 +14,7 @@ APP_NAME=loadbalancer-api
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
 
-ci: | dev-database test
+ci: | lint
 
 test: | unit-test
 
@@ -44,10 +44,6 @@ clean: ## Clean up all the things
 	@rm -rf coverage.out
 	@go clean -testcache
 
-models: dev-database ## Generates database models
-	@echo -- Generating models...
-	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models --no-tests --tag query,param
-	@go mod tidy
 
 binary: | models ## Builds the binary
 	@echo --- Building binary...
