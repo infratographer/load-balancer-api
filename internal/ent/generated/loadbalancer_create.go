@@ -38,30 +38,6 @@ type LoadBalancerCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the "name" field.
-func (lbc *LoadBalancerCreate) SetName(s string) *LoadBalancerCreate {
-	lbc.mutation.SetName(s)
-	return lbc
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (lbc *LoadBalancerCreate) SetTenantID(gi gidx.PrefixedID) *LoadBalancerCreate {
-	lbc.mutation.SetTenantID(gi)
-	return lbc
-}
-
-// SetLocationID sets the "location_id" field.
-func (lbc *LoadBalancerCreate) SetLocationID(gi gidx.PrefixedID) *LoadBalancerCreate {
-	lbc.mutation.SetLocationID(gi)
-	return lbc
-}
-
-// SetProviderID sets the "provider_id" field.
-func (lbc *LoadBalancerCreate) SetProviderID(gi gidx.PrefixedID) *LoadBalancerCreate {
-	lbc.mutation.SetProviderID(gi)
-	return lbc
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (lbc *LoadBalancerCreate) SetCreatedAt(t time.Time) *LoadBalancerCreate {
 	lbc.mutation.SetCreatedAt(t)
@@ -87,6 +63,30 @@ func (lbc *LoadBalancerCreate) SetNillableUpdatedAt(t *time.Time) *LoadBalancerC
 	if t != nil {
 		lbc.SetUpdatedAt(*t)
 	}
+	return lbc
+}
+
+// SetName sets the "name" field.
+func (lbc *LoadBalancerCreate) SetName(s string) *LoadBalancerCreate {
+	lbc.mutation.SetName(s)
+	return lbc
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (lbc *LoadBalancerCreate) SetTenantID(gi gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.SetTenantID(gi)
+	return lbc
+}
+
+// SetLocationID sets the "location_id" field.
+func (lbc *LoadBalancerCreate) SetLocationID(gi gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.SetLocationID(gi)
+	return lbc
+}
+
+// SetProviderID sets the "provider_id" field.
+func (lbc *LoadBalancerCreate) SetProviderID(gi gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.SetProviderID(gi)
 	return lbc
 }
 
@@ -190,6 +190,12 @@ func (lbc *LoadBalancerCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lbc *LoadBalancerCreate) check() error {
+	if _, ok := lbc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`generated: missing required field "LoadBalancer.created_at"`)}
+	}
+	if _, ok := lbc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`generated: missing required field "LoadBalancer.updated_at"`)}
+	}
 	if _, ok := lbc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "LoadBalancer.name"`)}
 	}
@@ -216,12 +222,6 @@ func (lbc *LoadBalancerCreate) check() error {
 		if err := loadbalancer.ProviderIDValidator(string(v)); err != nil {
 			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`generated: validator failed for field "LoadBalancer.provider_id": %w`, err)}
 		}
-	}
-	if _, ok := lbc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`generated: missing required field "LoadBalancer.created_at"`)}
-	}
-	if _, ok := lbc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`generated: missing required field "LoadBalancer.updated_at"`)}
 	}
 	if _, ok := lbc.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`generated: missing required edge "LoadBalancer.provider"`)}
@@ -261,6 +261,14 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := lbc.mutation.CreatedAt(); ok {
+		_spec.SetField(loadbalancer.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := lbc.mutation.UpdatedAt(); ok {
+		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := lbc.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -272,14 +280,6 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 	if value, ok := lbc.mutation.LocationID(); ok {
 		_spec.SetField(loadbalancer.FieldLocationID, field.TypeString, value)
 		_node.LocationID = value
-	}
-	if value, ok := lbc.mutation.CreatedAt(); ok {
-		_spec.SetField(loadbalancer.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := lbc.mutation.UpdatedAt(); ok {
-		_spec.SetField(loadbalancer.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := lbc.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

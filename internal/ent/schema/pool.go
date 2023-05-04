@@ -20,7 +20,7 @@ type Pool struct {
 // Mixin to use for Pool type
 func (Pool) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 	}
 }
 

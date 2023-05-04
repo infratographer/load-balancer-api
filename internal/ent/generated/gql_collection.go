@@ -237,6 +237,16 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldProviderID)
 				fieldSeen[loadbalancer.FieldProviderID] = struct{}{}
 			}
+		case "createdAt":
+			if _, ok := fieldSeen[loadbalancer.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldCreatedAt)
+				fieldSeen[loadbalancer.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[loadbalancer.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedAt)
+				fieldSeen[loadbalancer.FieldUpdatedAt] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[loadbalancer.FieldName]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldName)
@@ -251,16 +261,6 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 			if _, ok := fieldSeen[loadbalancer.FieldLocationID]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldLocationID)
 				fieldSeen[loadbalancer.FieldLocationID] = struct{}{}
-			}
-		case "createdAt":
-			if _, ok := fieldSeen[loadbalancer.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldCreatedAt)
-				fieldSeen[loadbalancer.FieldCreatedAt] = struct{}{}
-			}
-		case "updatedAt":
-			if _, ok := fieldSeen[loadbalancer.FieldUpdatedAt]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedAt)
-				fieldSeen[loadbalancer.FieldUpdatedAt] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -1208,6 +1208,28 @@ func newLoadBalancerProviderPaginateArgs(rv map[string]interface{}) *loadbalance
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]interface{}:
+			var (
+				err1, err2 error
+				order      = &LoadBalancerProviderOrder{Field: &LoadBalancerProviderOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithLoadBalancerProviderOrder(order))
+			}
+		case *LoadBalancerProviderOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithLoadBalancerProviderOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*LoadBalancerProviderWhereInput); ok {
 		args.opts = append(args.opts, WithLoadBalancerProviderFilter(v.Filter))

@@ -22,7 +22,7 @@ type LoadBalancerAnnotation struct {
 func (LoadBalancerAnnotation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NamespacedDataMixin{},
-		entx.TimestampsMixin{},
+		entx.NewTimestampMixin(),
 	}
 }
 
