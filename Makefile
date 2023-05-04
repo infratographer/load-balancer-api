@@ -14,7 +14,7 @@ APP_NAME=loadbalancer-api
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
 
-ci: | dev-database test
+ci: | lint
 
 test: | unit-test
 
