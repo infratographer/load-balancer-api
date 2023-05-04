@@ -26,7 +26,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN curl -o /tmp/install.sh  https://raw.githubusercontent.com/nats-io/nsc/main/install.sh \
     && chmod +x /tmp/install.sh \
     && su vscode -c "/tmp/install.sh -s /usr/local/bin" \
-    && rm -f /tmp/install.sh \
+    && rm -f /tmp/install.sh
 
 # [Optional] Uncomment the next lines to use go get to install anything else you need
 USER vscode

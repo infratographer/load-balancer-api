@@ -44,10 +44,6 @@ clean: ## Clean up all the things
 	@rm -rf coverage.out
 	@go clean -testcache
 
-models: dev-database ## Generates database models
-	@echo -- Generating models...
-	@sqlboiler crdb --add-soft-deletes --config sqlboiler.toml --always-wrap-errors --wipe --output internal/models --no-tests --tag query,param
-	@go mod tidy
 
 binary: | models ## Builds the binary
 	@echo --- Building binary...

@@ -1,3 +1,4 @@
+// Package softdelete adds the soft delete pattern to the ent schemas.
 package softdelete
 
 import (

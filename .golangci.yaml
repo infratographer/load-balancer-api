@@ -1,12 +1,14 @@
 run:
   build-tags:
     - testtools
+  skip-files:
+    - internal/pubsub/*
   skip-dirs:
-    - internal/models
     # Exclude generated ent code
     - internal/ent/generated
     - internal/ent/generated/*
     - internal/graphql/gen_*
+    - internal/pubsubx/
 
 linters-settings:
   goimports:
@@ -25,24 +27,23 @@ linters:
     - typecheck
     - unused
 
+    # Currently brekaks with generated code
+    # - bodyclose
+    # - noctx
+
     # additional linters
-    - bodyclose
     - gocritic
     - gocyclo
     - goerr113
     - gofmt
-    # - gofumpt
     - goimports
     - gomnd
     - govet
     - misspell
-    - noctx
     - revive
     - stylecheck
     - whitespace
     - wsl
-
-    # - bod
 issues:
   exclude:
     # Default excludes from `golangci-lint run --help` with EXC0002 removed
