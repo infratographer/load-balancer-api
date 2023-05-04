@@ -33,10 +33,6 @@ type LoadBalancer struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID gidx.PrefixedID `json:"id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
@@ -45,6 +41,10 @@ type LoadBalancer struct {
 	LocationID gidx.PrefixedID `json:"location_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID gidx.PrefixedID `json:"provider_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoadBalancerQuery when eager-loading is set.
 	Edges        LoadBalancerEdges `json:"edges"`
@@ -132,18 +132,6 @@ func (lb *LoadBalancer) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				lb.ID = *value
 			}
-		case loadbalancer.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				lb.CreatedAt = value.Time
-			}
-		case loadbalancer.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				lb.UpdatedAt = value.Time
-			}
 		case loadbalancer.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -167,6 +155,18 @@ func (lb *LoadBalancer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value != nil {
 				lb.ProviderID = *value
+			}
+		case loadbalancer.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				lb.CreatedAt = value.Time
+			}
+		case loadbalancer.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				lb.UpdatedAt = value.Time
 			}
 		default:
 			lb.selectValues.Set(columns[i], values[i])
@@ -219,12 +219,6 @@ func (lb *LoadBalancer) String() string {
 	var builder strings.Builder
 	builder.WriteString("LoadBalancer(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", lb.ID))
-	builder.WriteString("created_at=")
-	builder.WriteString(lb.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(lb.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(lb.Name)
 	builder.WriteString(", ")
@@ -236,6 +230,12 @@ func (lb *LoadBalancer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", lb.ProviderID))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(lb.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(lb.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

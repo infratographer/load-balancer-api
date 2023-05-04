@@ -237,16 +237,6 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldProviderID)
 				fieldSeen[loadbalancer.FieldProviderID] = struct{}{}
 			}
-		case "createdAt":
-			if _, ok := fieldSeen[loadbalancer.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldCreatedAt)
-				fieldSeen[loadbalancer.FieldCreatedAt] = struct{}{}
-			}
-		case "updatedAt":
-			if _, ok := fieldSeen[loadbalancer.FieldUpdatedAt]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedAt)
-				fieldSeen[loadbalancer.FieldUpdatedAt] = struct{}{}
-			}
 		case "name":
 			if _, ok := fieldSeen[loadbalancer.FieldName]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldName)
@@ -261,6 +251,16 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 			if _, ok := fieldSeen[loadbalancer.FieldLocationID]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldLocationID)
 				fieldSeen[loadbalancer.FieldLocationID] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[loadbalancer.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldCreatedAt)
+				fieldSeen[loadbalancer.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[loadbalancer.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedAt)
+				fieldSeen[loadbalancer.FieldUpdatedAt] = struct{}{}
 			}
 		case "id":
 		case "__typename":

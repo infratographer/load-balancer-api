@@ -2,7 +2,6 @@ all: lint test
 
 PHONY: help all test coverage lint golint clean vendor docker-up docker-down unit-test
 GOOS=linux
-DB_STRING=host=crdb port=26257 user=root sslmode=disable
 DB=load_balancer_api
 DEV_DB=${DB}_dev
 TEST_DB=${DB}_test
@@ -66,4 +65,11 @@ dev-database: | vendor ## Initializes the dev database
 	@date --rfc-3339=seconds
 	@cockroach sql -e "drop database if exists ${DEV_DB}"
 	@cockroach sql -e "create database ${DEV_DB}"
+	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
+
+test-database: | vendor ## Initializes the test database
+	@echo --- Creating test database...
+	@date --rfc-3339=seconds
+	@cockroach sql -e "drop database if exists ${TEST_DB}"
+	@cockroach sql -e "create database ${TEST_DB}"
 	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up

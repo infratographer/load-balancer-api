@@ -246,7 +246,6 @@ type ComplexityRoot struct {
 	Query struct {
 		LoadBalancerPools     func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) int
 		LoadBalancerProviders func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, where *generated.LoadBalancerProviderWhereInput) int
-		LoadBalancers         func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) int
 		__resolve__service    func(childComplexity int) int
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
@@ -290,7 +289,6 @@ type MutationResolver interface {
 	UpdateLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*generated.Provider, error)
 }
 type QueryResolver interface {
-	LoadBalancers(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error)
 	LoadBalancerPools(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error)
 	LoadBalancerProviders(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error)
 }
@@ -1212,18 +1210,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.LoadBalancerProviders(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["where"].(*generated.LoadBalancerProviderWhereInput)), true
 
-	case "Query.loadBalancers":
-		if e.complexity.Query.LoadBalancers == nil {
-			break
-		}
-
-		args, err := ec.field_Query_loadBalancers_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LoadBalancers(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerWhereInput)), true
-
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
 			break
@@ -1436,11 +1422,11 @@ scalar Cursor
 scalar JSON
 type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
   id: ID!
-  createdAt: Time!
-  updatedAt: Time!
   name: String!
   tenantID: ID!
   locationID: ID!
+  createdAt: Time!
+  updatedAt: Time!
   annotations(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -1595,7 +1581,11 @@ input LoadBalancerOrder {
 }
 """Properties by which LoadBalancer connections can be ordered."""
 enum LoadBalancerOrderField {
+  ID
   NAME
+  LOCATION
+  CREATED_AT
+  UPDATED_AT
 }
 type LoadBalancerOrigin implements Node @key(fields: "id") @goModel(model: "go.infratographer.com/load-balancer-api/internal/ent/generated.Origin") {
   id: ID!
@@ -2158,6 +2148,20 @@ input LoadBalancerWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """name field predicates"""
+  name: String
+  nameNEQ: String
+  nameIn: [String!]
+  nameNotIn: [String!]
+  nameGT: String
+  nameGTE: String
+  nameLT: String
+  nameLTE: String
+  nameContains: String
+  nameHasPrefix: String
+  nameHasSuffix: String
+  nameEqualFold: String
+  nameContainsFold: String
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time
@@ -2176,20 +2180,6 @@ input LoadBalancerWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """name field predicates"""
-  name: String
-  nameNEQ: String
-  nameIn: [String!]
-  nameNotIn: [String!]
-  nameGT: String
-  nameGTE: String
-  nameLT: String
-  nameLTE: String
-  nameContains: String
-  nameHasPrefix: String
-  nameHasSuffix: String
-  nameEqualFold: String
-  nameContainsFold: String
   """annotations edge predicates"""
   hasAnnotations: Boolean
   hasAnnotationsWith: [LoadBalancerAnnotationWhereInput!]
@@ -2230,25 +2220,6 @@ type PageInfo {
   endCursor: Cursor
 }
 type Query {
-  loadBalancers(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for LoadBalancers returned from the connection."""
-    orderBy: LoadBalancerOrder
-
-    """Filtering options for LoadBalancers returned from the connection."""
-    where: LoadBalancerWhereInput
-  ): LoadBalancerConnection!
   loadBalancerPools(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -3140,66 +3111,6 @@ func (ec *executionContext) field_Query_loadBalancerProviders_args(ctx context.C
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_loadBalancers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *generated.LoadBalancerOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *generated.LoadBalancerWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOLoadBalancerWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
-	return args, nil
-}
-
 func (ec *executionContext) field_Tenant_loadBalancerPools_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3399,16 +3310,16 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerByID(ctx context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -4041,94 +3952,6 @@ func (ec *executionContext) fieldContext_LoadBalancer_id(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _LoadBalancer_createdAt(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LoadBalancer_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LoadBalancer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _LoadBalancer_updatedAt(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LoadBalancer_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LoadBalancer",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _LoadBalancer_name(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoadBalancer_name(ctx, field)
 	if err != nil {
@@ -4256,6 +4079,94 @@ func (ec *executionContext) fieldContext_LoadBalancer_locationID(ctx context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancer_createdAt(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancer_updatedAt(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4852,16 +4763,16 @@ func (ec *executionContext) fieldContext_LoadBalancerAnnotation_loadBalancer(ctx
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -5308,16 +5219,16 @@ func (ec *executionContext) fieldContext_LoadBalancerEdge_node(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -7099,16 +7010,16 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_loadBalancer(ctx conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -8250,16 +8161,16 @@ func (ec *executionContext) fieldContext_LoadBalancerStatus_loadBalancer(ctx con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -8673,16 +8584,16 @@ func (ec *executionContext) fieldContext_Mutation_createLoadBalancer(ctx context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -8752,16 +8663,16 @@ func (ec *executionContext) fieldContext_Mutation_updateLoadBalancer(ctx context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_LoadBalancer_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
 			case "tenantID":
 				return ec.fieldContext_LoadBalancer_tenantID(ctx, field)
 			case "locationID":
 				return ec.fieldContext_LoadBalancer_locationID(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -9094,69 +9005,6 @@ func (ec *executionContext) fieldContext_PageInfo_endCursor(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_loadBalancers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_loadBalancers(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LoadBalancers(rctx, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*generated.LoadBalancerConnection)
-	fc.Result = res
-	return ec.marshalNLoadBalancerConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_loadBalancers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_LoadBalancerConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_LoadBalancerConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_LoadBalancerConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_loadBalancers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -14586,7 +14434,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerWhereInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasAnnotations", "hasAnnotationsWith", "hasStatuses", "hasStatusesWith", "hasProvider", "hasProviderWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "hasAnnotations", "hasAnnotationsWith", "hasStatuses", "hasStatusesWith", "hasProvider", "hasProviderWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14678,6 +14526,110 @@ func (ec *executionContext) unmarshalInputLoadBalancerWhereInput(ctx context.Con
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
 			it.IDLTE, err = ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
+			it.NameNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
+			it.NameIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
+			it.NameNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
+			it.NameGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
+			it.NameGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
+			it.NameLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
+			it.NameLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
+			it.NameContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
+			it.NameHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
+			it.NameHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
+			it.NameEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "nameContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
+			it.NameContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14806,110 +14758,6 @@ func (ec *executionContext) unmarshalInputLoadBalancerWhereInput(ctx context.Con
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLTE"))
 			it.UpdatedAtLTE, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
-			it.NameNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
-			it.NameIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
-			it.NameNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
-			it.NameGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
-			it.NameGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
-			it.NameLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
-			it.NameLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameContains":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
-			it.NameContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameHasPrefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
-			it.NameHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameHasSuffix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
-			it.NameHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameEqualFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
-			it.NameEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "nameContainsFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
-			it.NameContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15685,20 +15533,6 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "createdAt":
-
-			out.Values[i] = ec._LoadBalancer_createdAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "updatedAt":
-
-			out.Values[i] = ec._LoadBalancer_updatedAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "name":
 
 			out.Values[i] = ec._LoadBalancer_name(ctx, field, obj)
@@ -15716,6 +15550,20 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 		case "locationID":
 
 			out.Values[i] = ec._LoadBalancer_locationID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "createdAt":
+
+			out.Values[i] = ec._LoadBalancer_createdAt(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updatedAt":
+
+			out.Values[i] = ec._LoadBalancer_updatedAt(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -17070,29 +16918,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "loadBalancers":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_loadBalancers(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "loadBalancerPools":
 			field := field
 

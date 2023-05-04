@@ -1,11 +1,7 @@
 version: "3.9"
 
-networks:
-  infradev:
-
 volumes:
-  crdb:
-    null
+  crdb: null
 
 services:
   app:
@@ -15,36 +11,31 @@ services:
       args:
         VARIANT: 1.20-bullseye
         NODE_VERSION: "none"
-    command:
-      - .devcontainer/scripts/app-entrypoint.sh
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
     env_file:
       - .env
-      - .env.go
     depends_on:
       - crdb
       - nats
     volumes:
       - ./nsc:/nsc
-      - ..:/workspace
-    networks:
-      - infradev
+      - ../..:/workspaces:cached
     # Port forwarded for local development with emacs tramp
     # ports:
     #   - "127.0.0.1:2222:2222"
     # Use "forwardPorts" in **devcontainer.json** to forward a port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
-  # Environment setup
+    # Environment setup
   create_databases:
     image: cockroachdb/cockroach:latest-v22.2
     restart: on-failure:5
-    command: "sql --insecure -e 'CREATE DATABASE IF NOT EXISTS load_balancer_api_dev;'"
+    command: "sql --insecure -e 'CREATE DATABASE IF NOT EXISTS load_balancer_api_dev; CREATE DATABASE IF NOT EXISTS load_balancer_api_test; CREATE DATABASE IF NOT EXISTS atlas_migrations;'"
     env_file:
       - .env
     depends_on:
       - crdb
-    networks:
-      - infradev
 
   # Required services (databases, etc)
   crdb:
@@ -61,8 +52,6 @@ services:
       retries: 3
       start_period: "15s"
       timeout: "5s"
-    networks:
-      - infradev
 
   nats-init:
     image: natsio/nats-box
@@ -86,5 +75,3 @@ services:
     volumes:
       - ./nats/:/etc/nats
     restart: unless-stopped
-    networks:
-      - infradev
