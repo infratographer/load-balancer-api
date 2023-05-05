@@ -8,8 +8,9 @@ import (
 	"context"
 
 	"entgo.io/contrib/entgql"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerPools is the resolver for the loadBalancerPools field.
@@ -31,9 +32,11 @@ func (r *Resolver) LoadBalancerPool() LoadBalancerPoolResolver { return &loadBal
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type loadBalancerResolver struct{ *Resolver }
-type loadBalancerPoolResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
+type (
+	loadBalancerResolver     struct{ *Resolver }
+	loadBalancerPoolResolver struct{ *Resolver }
+	queryResolver            struct{ *Resolver }
+)
 
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have

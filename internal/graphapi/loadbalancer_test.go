@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.infratographer.com/x/gidx"
+	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
@@ -16,7 +17,7 @@ import (
 
 func TestQuery_loadBalancer(t *testing.T) {
 	ctx := context.Background()
-	graphClient := graphclient.New(graphapi.NewResolver(EntClient))
+	graphClient := graphclient.New(graphapi.NewResolver(EntClient, zap.NewNop().Sugar()))
 
 	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
 	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
@@ -65,7 +66,7 @@ func TestQuery_loadBalancer(t *testing.T) {
 
 func TestFullLoadBalancerLifecycle(t *testing.T) {
 	ctx := context.Background()
-	graphClient := graphclient.New(graphapi.NewResolver(EntClient))
+	graphClient := graphclient.New(graphapi.NewResolver(EntClient, zap.NewNop().Sugar()))
 
 	prov := (&ProviderBuilder{}).MustNew(ctx)
 	tenantID := gidx.MustNewID(tenantPrefix)
