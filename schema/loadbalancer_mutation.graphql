@@ -1,4 +1,0 @@
-extend type Mutation {
-  createLoadBalancer(input: CreateLoadBalancerInput!): LoadBalancer!
-  updateLoadBalancer(id: ID!, input: UpdateLoadBalancerInput!): LoadBalancer!
-}

@@ -1,0 +1,54 @@
+extend type Query {
+  """
+  Lookup a load balancer by ID.
+  """
+  loadBalancer(
+    """The load balancer ID."""
+    id: ID!
+  ): LoadBalancer!
+}
+
+extend type Mutation {
+  """
+  Create a load balancer.
+  """
+  loadBalancerCreate(input: CreateLoadBalancerInput!): LoadBalancerCreatePayload!
+  """
+  Update a load balancer.
+  """
+  loadBalancerUpdate(id: ID!, input: UpdateLoadBalancerInput!): LoadBalancerUpdatePayload!
+  """
+  Delete a load balancer.
+  """
+  loadBalancerDelete(id: ID!): LoadBalancerDeletePayload!
+}
+
+"""
+Return response from loadBalancerCreate
+"""
+type LoadBalancerCreatePayload {
+  """
+  The created load balancer.
+  """
+  loadBalancer: LoadBalancer!
+}
+
+"""
+Return response from loadBalancerDelete
+"""
+type LoadBalancerDeletePayload {
+  """
+  The ID of the deleted load balancer.
+  """
+  deletedID: ID
+}
+
+"""
+Return response from loadBalancerUpdate
+"""
+type LoadBalancerUpdatePayload {
+  """
+  The updated load balancer.
+  """
+  loadBalancer: LoadBalancer!
+}
