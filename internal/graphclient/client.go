@@ -553,3 +553,173 @@ func (c *Client) LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, inp
 
 	return &res, nil
 }
+
+/*
+ * LoadBalancerPools
+ */
+
+// MustGetTenantLoadBalancerPools will return the loadbalancers for a tenant id. If an orderBy option is provided the returned
+// load balancers will be sorted
+func (c *Client) MustGetTenantLoadBalancerPools(id gidx.PrefixedID, orderBy *OrderBy) []*ent.Pool {
+	// TODO: @rizzza verify this
+	q := `
+	query ($_representations: [_Any!]!, $orderBy: LoadBalancerOrder) {
+		_entities(representations: $_representations) {
+			... on Tenant {
+				loadBalancerPools(orderBy: $orderBy) {
+					edges {
+						node {
+							id
+							name
+						}
+					}
+				}
+			}
+		}
+	}`
+
+	var resp struct {
+		Entities []struct {
+			LoadBalancerPools ent.LoadBalancerPoolConnection `json:"loadBalancerPools"`
+		} `json:"_entities"`
+	}
+
+	variables := []client.Option{
+		client.Var("_representations", map[string]string{"__typename": "Tenant", "id": id.String()}),
+	}
+
+	if orderBy != nil {
+		variables = append(variables, client.Var("orderBy", orderBy))
+	}
+
+	c.graphClient.MustPost(q, &resp, variables...)
+
+	pools := []*ent.Pool{}
+
+	for _, edge := range resp.Entities[0].LoadBalancerPools.Edges {
+		pools = append(pools, edge.Node)
+	}
+
+	return pools
+}
+
+// QueryPool will return the results from a query pool with a given id.
+func (c *Client) QueryPool(id gidx.PrefixedID) (*Pool, error) {
+	// TODO: @rizzza verify this
+	// ideal query with external references, but these aren't all setup yet
+	// q := `
+	// query ($id: ID!) {
+	// 	loadBalancerPool(id: $id) {
+	// 		id
+	// 		name
+	// 		tenant {
+	// 			id
+	// 		}
+	//      protocol
+	// 		createdAt
+	// 		updatedAt
+	// 	}
+	// }`
+	q := `
+	query ($id: ID!) {
+		loadBalancerPool(id: $id) {
+			id
+			name
+			protocol
+			tenantID
+			createdAt
+			updatedAt
+		}
+	}`
+
+	var resp struct {
+		Pool *Pool `json:"pool"`
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.Pool, err
+}
+
+// PoolCreate will return the results from a mutation poolCreate request
+func (c *Client) PoolCreate(input ent.CreateLoadBalancerPoolInput) (*Pool, error) {
+	q := `
+	mutation ($input: CreateLoadBalancerPoolInput!) {
+		loadBalancerPoolCreate(input: $input) {
+			loadBalancerPool {
+				name
+				protocol
+				tenantID
+				originIDs
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{
+		client.Var("input", map[string]string{
+			"name":     input.Name,
+			"protocol": input.Protocol.String(),
+			"tenantID": input.TenantID.String(),
+		}),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.PoolCreate.Pool, err
+}
+
+// PoolUpdate will return the results from a mutation poolUpdate request
+func (c *Client) PoolUpdate(id gidx.PrefixedID, input ent.UpdateLoadBalancerPoolInput) (*Pool, error) {
+	// TODO: @rizzza verify this
+	q := `
+	mutation ($id: ID!, $input: UpdateLoadBalancerInput!) {
+		poolUpdate(id: $id, input: $input) {
+			loadBalancerPool {
+				id
+				name
+				createdAt
+				updatedAt
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	inputAsMap := map[string]string{}
+
+	if input.Name != nil {
+		inputAsMap["name"] = *input.Name
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+		client.Var("input", inputAsMap),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.PoolUpdate.Pool, err
+}
+
+// PoolDelete will return the results from a mutation poolDelete request
+func (c *Client) PoolDelete(id gidx.PrefixedID) (gidx.PrefixedID, error) {
+	q := `
+	mutation ($id: ID!) {
+		poolDelete(id: $id) {
+			deletedID
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{client.Var("id", id.String())}
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.PoolDelete.DeletedID, err
+}

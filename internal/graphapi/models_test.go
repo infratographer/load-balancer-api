@@ -7,6 +7,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 )
 
 type ProviderBuilder struct {
@@ -74,4 +75,26 @@ func (p PortBuilder) MustNew(ctx context.Context) *ent.Port {
 	}
 
 	return EntClient.Port.Create().SetName(p.Name).SetLoadBalancerID(p.LoadBalancerID).SetNumber(p.Number).SaveX(ctx)
+}
+
+type PoolBuilder struct {
+	Name     string
+	TenantID gidx.PrefixedID
+	Protocol pool.Protocol
+}
+
+func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
+	if p.Name == "" {
+		p.Name = gofakeit.JobTitle()
+	}
+
+	if p.TenantID == "" {
+		p.TenantID = gidx.MustNewID(tenantPrefix)
+	}
+
+	if p.Protocol == "" {
+		p.Protocol = pool.Protocol(gofakeit.RandomString([]string{"tcp", "udp"}))
+	}
+
+	return EntClient.Pool.Create().SetName(p.Name).SetTenantID(p.TenantID).SetProtocol(p.Protocol).SaveX(ctx)
 }

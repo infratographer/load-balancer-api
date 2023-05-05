@@ -1,0 +1,54 @@
+extend type Query {
+  """
+  Lookup a pool by ID.
+  """
+  loadBalancerPool(
+    """The pool ID."""
+    id: ID!
+  ): LoadBalancerPool!
+}
+
+extend type Mutation {
+  """
+  Create a pool.
+  """
+  poolCreate(input: CreateLoadBalancerPoolInput!): PoolCreatePayload!
+  """
+  Update a pool.
+  """
+  poolUpdate(id: ID!, input: UpdateLoadBalancerPoolInput!): PoolUpdatePayload!
+  """
+  Delete a pool.
+  """
+  poolDelete(id: ID!): PoolDeletePayload!
+}
+
+"""
+Return response from loadBalancerCreate
+"""
+type PoolCreatePayload {
+  """
+  The created pool.
+  """
+  pool: LoadBalancerPool!
+}
+
+"""
+Return response from poolDelete
+"""
+type PoolDeletePayload {
+  """
+  The ID of the deleted pool.
+  """
+  deletedID: ID
+}
+
+"""
+Return response from poolUpdate
+"""
+type PoolUpdatePayload {
+  """
+  The updated pool.
+  """
+  pool: LoadBalancerPool!
+}

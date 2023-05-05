@@ -16,25 +16,35 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// CreatePool is the resolver for the createPool field.
-func (r *mutationResolver) CreatePool(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*generated.Pool, error) {
+// PoolCreate is the resolver for the poolCreate field.
+func (r *mutationResolver) PoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*PoolCreatePayload, error) {
 	// TODO: authz check here
-	return r.client.Pool.Create().SetInput(input).Save(ctx)
+	pool, err := r.client.Pool.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PoolCreatePayload{Pool: pool}, nil
 }
 
-// UpdatePool is the resolver for the updatePool field.
-func (r *mutationResolver) UpdatePool(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*generated.Pool, error) {
+// PoolUpdate is the resolver for the poolUpdate field.
+func (r *mutationResolver) PoolUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*PoolUpdatePayload, error) {
 	// TODO: authz check here
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return pool.Update().SetInput(input).Save(ctx)
+	pool, err = pool.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PoolUpdatePayload{Pool: pool}, nil
 }
 
-// DeletePool is the resolver for the deletePool field.
-func (r *mutationResolver) DeletePool(ctx context.Context, id gidx.PrefixedID) (gidx.PrefixedID, error) {
+// PoolDelete is the resolver for the poolDelete field.
+func (r *mutationResolver) PoolDelete(ctx context.Context, id gidx.PrefixedID) (*PoolDeletePayload, error) {
 	// TODO: return the requestID echo generates or we could use the root trace id
 	var (
 		err error
@@ -51,7 +61,7 @@ func (r *mutationResolver) DeletePool(ctx context.Context, id gidx.PrefixedID) (
 
 	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// todo: cleanup pool assigments
@@ -59,17 +69,22 @@ func (r *mutationResolver) DeletePool(ctx context.Context, id gidx.PrefixedID) (
 	// cleanup origins associated with pool
 	_, err = tx.Origin.Delete().Where(predicate.Origin(pool.IDEQ(id))).Exec(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// delete pool
 	if err = tx.Pool.DeleteOneID(id).Exec(ctx); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return id, nil
+	return &PoolDeletePayload{DeletedID: &id}, nil
+}
+
+// LoadBalancerPool is the resolver for the loadBalancerPool field.
+func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID) (*generated.Pool, error) {
+	return r.client.Pool.Get(ctx, id)
 }
