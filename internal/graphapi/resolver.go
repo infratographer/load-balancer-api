@@ -20,8 +20,7 @@ var (
 	graphPath      = "query"
 	playgroundPath = "playground"
 
-	graphFullPath      = fmt.Sprintf("/%s", graphPath)
-	playgroundFullPath = fmt.Sprintf("/%s", playgroundPath)
+	graphFullPath = fmt.Sprintf("/%s", graphPath)
 )
 
 // Resolver provides a graph response resolver
