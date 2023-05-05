@@ -402,6 +402,18 @@ type LoadBalancerPoolConnection struct {
 	TotalCount int64 `json:"totalCount"`
 }
 
+// Return response from LoadBalancerPoolCreate
+type LoadBalancerPoolCreatePayload struct {
+	// The created pool.
+	LoadBalancerPool LoadBalancerPool `json:"loadBalancerPool"`
+}
+
+// Return response from LoadBalancerPoolDelete
+type LoadBalancerPoolDeletePayload struct {
+	// The ID of the deleted pool.
+	DeletedID *gidx.PrefixedID `json:"deletedID,omitempty"`
+}
+
 // An edge in a connection.
 type LoadBalancerPoolEdge struct {
 	// The item at the end of the edge.
@@ -416,6 +428,12 @@ type LoadBalancerPoolOrder struct {
 	Direction OrderDirection `json:"direction"`
 	// The field by which to order LoadBalancerPools.
 	Field LoadBalancerPoolOrderField `json:"field"`
+}
+
+// Return response from LoadBalancerPoolUpdate
+type LoadBalancerPoolUpdatePayload struct {
+	// The updated pool.
+	LoadBalancerPool LoadBalancerPool `json:"loadBalancerPool"`
 }
 
 // LoadBalancerPoolWhereInput is used for filtering Pool objects.

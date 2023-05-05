@@ -12,43 +12,43 @@ extend type Mutation {
   """
   Create a pool.
   """
-  poolCreate(input: CreateLoadBalancerPoolInput!): PoolCreatePayload!
+  loadBalancerPoolCreate(input: CreateLoadBalancerPoolInput!): LoadBalancerPoolCreatePayload!
   """
   Update a pool.
   """
-  poolUpdate(id: ID!, input: UpdateLoadBalancerPoolInput!): PoolUpdatePayload!
+  loadBalancerPoolUpdate(id: ID!, input: UpdateLoadBalancerPoolInput!): LoadBalancerPoolUpdatePayload!
   """
   Delete a pool.
   """
-  poolDelete(id: ID!): PoolDeletePayload!
+  loadBalancerPoolDelete(id: ID!): LoadBalancerPoolDeletePayload!
 }
 
 """
-Return response from loadBalancerCreate
+Return response from LoadBalancerPoolCreate
 """
-type PoolCreatePayload {
+type LoadBalancerPoolCreatePayload {
   """
   The created pool.
   """
-  pool: LoadBalancerPool!
+  loadBalancerPool: LoadBalancerPool!
 }
 
 """
-Return response from poolDelete
+Return response from LoadBalancerPoolUpdate
 """
-type PoolDeletePayload {
+type LoadBalancerPoolUpdatePayload {
+  """
+  The updated pool.
+  """
+  loadBalancerPool: LoadBalancerPool!
+}
+
+"""
+Return response from LoadBalancerPoolDelete
+"""
+type LoadBalancerPoolDeletePayload {
   """
   The ID of the deleted pool.
   """
   deletedID: ID
-}
-
-"""
-Return response from poolUpdate
-"""
-type PoolUpdatePayload {
-  """
-  The updated pool.
-  """
-  pool: LoadBalancerPool!
 }

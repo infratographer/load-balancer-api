@@ -19,6 +19,24 @@ type LoadBalancerDeletePayload struct {
 	DeletedID gidx.PrefixedID `json:"deletedID"`
 }
 
+// Return response from LoadBalancerPoolCreate
+type LoadBalancerPoolCreatePayload struct {
+	// The created pool.
+	LoadBalancerPool *generated.Pool `json:"loadBalancerPool"`
+}
+
+// Return response from LoadBalancerPoolDelete
+type LoadBalancerPoolDeletePayload struct {
+	// The ID of the deleted pool.
+	DeletedID *gidx.PrefixedID `json:"deletedID,omitempty"`
+}
+
+// Return response from LoadBalancerPoolUpdate
+type LoadBalancerPoolUpdatePayload struct {
+	// The updated pool.
+	LoadBalancerPool *generated.Pool `json:"loadBalancerPool"`
+}
+
 // Return response from loadBalancerPortCreate
 type LoadBalancerPortCreatePayload struct {
 	// The created load balancer port.
@@ -59,22 +77,4 @@ type LoadBalancerProviderUpdatePayload struct {
 type LoadBalancerUpdatePayload struct {
 	// The updated load balancer.
 	LoadBalancer *generated.LoadBalancer `json:"loadBalancer"`
-}
-
-// Return response from loadBalancerCreate
-type PoolCreatePayload struct {
-	// The created pool.
-	Pool *generated.Pool `json:"pool"`
-}
-
-// Return response from poolDelete
-type PoolDeletePayload struct {
-	// The ID of the deleted pool.
-	DeletedID *gidx.PrefixedID `json:"deletedID,omitempty"`
-}
-
-// Return response from poolUpdate
-type PoolUpdatePayload struct {
-	// The updated pool.
-	Pool *generated.Pool `json:"pool"`
 }

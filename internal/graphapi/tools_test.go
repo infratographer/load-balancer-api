@@ -26,7 +26,7 @@ import (
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 )
 
-var (
+const (
 	tenantPrefix   = "testtnt"
 	locationPrefix = "testloc"
 	lbPrefix       = "loadbal"
@@ -161,4 +161,8 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	l.handler.ServeHTTP(w, req)
 
 	return w.Result(), nil
+}
+
+func newString(s string) *string {
+	return &s
 }
