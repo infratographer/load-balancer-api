@@ -8,21 +8,23 @@ on:
       - "db/migrations/*"
 # Permissions to write comments on the pull request.
 jobs:
-  sync:
-    permissions:
-      contents: read
-      id-token: write
-    needs: lint
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ariga/atlas-sync-action@v0
-        with:
-          dir: db/migrations
-          driver: postgres
-          cloud-public: true
-          cloud-token: ${{secrets.ATLAS_CLOUD_TOKEN}}
+  # Disabling the sync process since it doesn't appear to be working right now
+  # the lint part is what we are really after anyway
+  # sync:
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   needs: lint
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: ariga/atlas-sync-action@v0
+  #       with:
+  #         dir: db/migrations
+  #         driver: postgres
+  #         cloud-public: true
+  #         cloud-token: ${{secrets.ATLAS_CLOUD_TOKEN}}
   lint:
     permissions:
       contents: read
@@ -63,4 +65,3 @@ jobs:
           dir: db/migrations
           dev-url: postgres://postgres:pass@localhost:5432/test?sslmode=disable
           cloud-public: true
-          cloud-token: ${{secrets.ATLAS_CLOUD_TOKEN}}
