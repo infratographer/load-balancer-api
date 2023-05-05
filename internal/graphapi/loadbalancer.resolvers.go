@@ -20,6 +20,7 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: input.LocationID},
 	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: input.ProviderID},
 	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: config.ResourceProvider.Name},
+	// 	authzclient.Check{Subject: config.ResourceProvider.Name, Action: "enabled", On: input.LocationID},
 	// )
 	lb, err := r.client.LoadBalancer.Create().SetInput(input).Save(ctx)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"entgo.io/ent/dialect"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,21 +19,37 @@ import (
 
 const defaultLBAPIListenAddr = ":7608"
 
-var serveGraphCmd = &cobra.Command{
-	Use:   "serve-graph",
+var (
+	enablePlayground bool
+	serveDevMode     bool
+)
+
+var serveCmd = &cobra.Command{
+	Use:   "serve",
 	Short: "Start the load balancer Graph API",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return servegraph(cmd.Context())
+		return serve(cmd.Context())
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(serveGraphCmd)
+	rootCmd.AddCommand(serveCmd)
 
-	echox.MustViperFlags(viper.GetViper(), serveGraphCmd.Flags(), defaultLBAPIListenAddr)
+	echox.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
+
+	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
+	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
+	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
 }
 
-func servegraph(ctx context.Context) error {
+func serve(ctx context.Context) error {
+	if serveDevMode {
+		enablePlayground = true
+		config.AppConfig.Logging.Debug = true
+		config.AppConfig.Logging.Pretty = true
+		config.AppConfig.Server.WithMiddleware(middleware.CORS())
+	}
+
 	cOpts := []ent.Option{}
 
 	if config.AppConfig.Logging.Debug {
@@ -55,19 +72,13 @@ func servegraph(ctx context.Context) error {
 		return err
 	}
 
-	srv, err := echox.NewServer(
-		logger.Desugar(),
-		echox.Config{
-			Listen:              viper.GetString("server.listen"),
-			ShutdownGracePeriod: viper.GetDuration("server.shutdown-grace-period"),
-		},
-		versionx.BuildDetails(),
-	)
+	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
 	if err != nil {
 		logger.Error("failed to create server", zap.Error(err))
 	}
 
-	handler := graphapi.NewHandler(client)
+	r := graphapi.NewResolver(client, logger.Named("resolvers"))
+	handler := r.Handler(enablePlayground)
 
 	srv.AddHandler(handler)
 

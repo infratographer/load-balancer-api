@@ -1,11 +1,13 @@
 package graphapi
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
+	"github.com/wundergraph/graphql-go-tools/pkg/playground"
+	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
@@ -14,54 +16,81 @@ import (
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
+var (
+	graphPath      = "query"
+	playgroundPath = "playground"
+
+	graphFullPath = fmt.Sprintf("/%s", graphPath)
+)
+
 // Resolver provides a graph response resolver
 type Resolver struct {
 	client *ent.Client
+	logger *zap.SugaredLogger
 }
 
 // NewResolver returns a resolver configured with the given ent client
-func NewResolver(client *ent.Client) *Resolver {
+func NewResolver(client *ent.Client, logger *zap.SugaredLogger) *Resolver {
 	return &Resolver{
 		client: client,
+		logger: logger,
 	}
 }
 
 // Handler is an http handler wrapping a Resolver
 type Handler struct {
-	r                 *Resolver
-	graphqlHandler    http.Handler
-	playgroundHandler http.Handler
+	r              *Resolver
+	graphqlHandler http.Handler
+	playground     *playground.Playground
 }
 
-// NewHandler returns an http handler for a graph resolver
-func NewHandler(client *ent.Client) *Handler {
+// Handler returns an http handler for a graph resolver
+func (r *Resolver) Handler(withPlayground bool) *Handler {
 	h := &Handler{
-		r: &Resolver{
-			client: client,
-		},
+		r: r,
+		graphqlHandler: handler.NewDefaultServer(
+			NewExecutableSchema(
+				Config{
+					Resolvers: r,
+				},
+			),
+		),
 	}
 
-	h.graphqlHandler = handler.NewDefaultServer(
-		NewExecutableSchema(
-			Config{
-				Resolvers: h.r,
-			},
-		),
-	)
-	h.playgroundHandler = playground.Handler("GraphQL", "/query")
+	if withPlayground {
+		h.playground = playground.New(playground.Config{
+			PathPrefix:          "/",
+			PlaygroundPath:      playgroundPath,
+			GraphqlEndpointPath: graphFullPath,
+		})
+	}
 
 	return h
 }
 
 // Routes ...
 func (h *Handler) Routes(e *echo.Group) {
-	e.POST("/query", func(c echo.Context) error {
+	e.POST("/"+graphPath, func(c echo.Context) error {
 		h.graphqlHandler.ServeHTTP(c.Response(), c.Request())
 		return nil
 	})
 
-	e.GET("/playground", func(c echo.Context) error {
-		h.playgroundHandler.ServeHTTP(c.Response(), c.Request())
-		return nil
-	})
+	if h.playground != nil {
+		handlers, err := h.playground.Handlers()
+		if err != nil {
+			h.r.logger.Fatal("error configuring playground handlers", "error", err)
+			return
+		}
+
+		for i := range handlers {
+			// with the function we need to dereference the handler so that it remains
+			// the same in the function below
+			hCopy := handlers[i].Handler
+
+			e.GET(handlers[i].Path, func(c echo.Context) error {
+				hCopy.ServeHTTP(c.Response(), c.Request())
+				return nil
+			})
+		}
+	}
 }
