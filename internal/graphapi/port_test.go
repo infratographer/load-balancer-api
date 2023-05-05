@@ -10,11 +10,12 @@ import (
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.uber.org/zap"
 )
 
 func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx := context.Background()
-	graphClient := graphclient.New(graphapi.NewResolver(EntClient))
+	graphClient := graphclient.New(graphapi.NewResolver(EntClient, zap.NewNop().Sugar()))
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
