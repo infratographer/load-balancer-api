@@ -2577,7 +2577,34 @@ type LoadBalancerUpdatePayload {
   loadBalancer: LoadBalancer!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/loadbalancerport.graphql", Input: `extend type Mutation {
+	{Name: "../../schema/location.graphql", Input: `extend type Location @key(fields: "id") {
+  id: ID! @external
+  loadBalancers(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: Cursor
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the elements in the list that come before the specified cursor."""
+    before: Cursor
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+
+    """Ordering options for LoadBalancers returned from the connection."""
+    orderBy: LoadBalancerOrder
+
+    """Filtering options for LoadBalancers returned from the connection."""
+    where: LoadBalancerWhereInput
+  ): LoadBalancerConnection! @goField(forceResolver: true)
+}
+
+extend type LoadBalancer {
+  location: Location!
+}
+`, BuiltIn: false},
+	{Name: "../../schema/port.graphql", Input: `extend type Mutation {
   """
   Create a load balancer port.
   """
@@ -2623,33 +2650,6 @@ type LoadBalancerPortDeletePayload {
   """
   deletedID: ID
 }`, BuiltIn: false},
-	{Name: "../../schema/location.graphql", Input: `extend type Location @key(fields: "id") {
-  id: ID! @external
-  loadBalancers(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for LoadBalancers returned from the connection."""
-    orderBy: LoadBalancerOrder
-
-    """Filtering options for LoadBalancers returned from the connection."""
-    where: LoadBalancerWhereInput
-  ): LoadBalancerConnection! @goField(forceResolver: true)
-}
-
-extend type LoadBalancer {
-  location: Location!
-}
-`, BuiltIn: false},
 	{Name: "../../schema/provider.graphql", Input: `extend type Mutation {
   createLoadBalancerProvider(input: CreateLoadBalancerProviderInput!): LoadBalancerProvider!
   updateLoadBalancerProvider(id: ID!, input: UpdateLoadBalancerProviderInput!): LoadBalancerProvider!
