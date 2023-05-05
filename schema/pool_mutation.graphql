@@ -1,0 +1,5 @@
+extend type Mutation {
+  createPool(input: CreateLoadBalancerPoolInput!): LoadBalancerPool!
+  updatePool(id: ID!, input: UpdateLoadBalancerPoolInput!): LoadBalancerPool!
+  deletePool(id: ID!): ID!
+}
