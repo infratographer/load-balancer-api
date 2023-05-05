@@ -1,8 +1,9 @@
 package graphapi
 
 import (
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // Location represents a Location in the graph for the bits load-balancer-api is able to return

@@ -28,22 +28,23 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// LoadBalancer is the model entity for the LoadBalancer schema.
+// Representation of a load balancer.
 type LoadBalancer struct {
 	config `json:"-"`
 	// ID of the ent.
+	// The ID for the load balancer.
 	ID gidx.PrefixedID `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Name holds the value of the "name" field.
+	// The name of the load balancer.
 	Name string `json:"name,omitempty"`
-	// TenantID holds the value of the "tenant_id" field.
+	// The ID for the tenant for this load balancer.
 	TenantID gidx.PrefixedID `json:"tenant_id,omitempty"`
-	// LocationID holds the value of the "location_id" field.
+	// The ID for the location of this load balancer.
 	LocationID gidx.PrefixedID `json:"location_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
+	// The ID for the load balancer provider for this load balancer.
 	ProviderID gidx.PrefixedID `json:"provider_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoadBalancerQuery when eager-loading is set.
@@ -53,13 +54,13 @@ type LoadBalancer struct {
 
 // LoadBalancerEdges holds the relations/edges for other nodes in the graph.
 type LoadBalancerEdges struct {
-	// Annotations holds the value of the annotations edge.
+	// Annotations for the load balancer.
 	Annotations []*LoadBalancerAnnotation `json:"annotations,omitempty"`
-	// Statuses holds the value of the statuses edge.
+	// Statuses for the load balancer.
 	Statuses []*LoadBalancerStatus `json:"statuses,omitempty"`
 	// Ports holds the value of the ports edge.
 	Ports []*Port `json:"ports,omitempty"`
-	// Provider holds the value of the provider edge.
+	// The load balancer provider for the load balancer.
 	Provider *Provider `json:"provider,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.

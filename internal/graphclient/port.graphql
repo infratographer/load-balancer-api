@@ -1,0 +1,53 @@
+query GetLoadBalancerPort($id: ID!, $portid: ID!) {
+  loadBalancer(id: $id) {
+    ports(where: { id: $portid }) {
+      edges {
+        node {
+          id
+          number
+          loadBalancer {
+            id
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+}
+
+mutation LoadBalancerPortCreate($input: CreateLoadBalancerPortInput!) {
+  loadBalancerPortCreate(input: $input) {
+    loadBalancerPort {
+      id
+      name
+      number
+      loadBalancer {
+        id
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerPortDelete($id: ID!) {
+  loadBalancerPortDelete(id: $id) {
+    deletedID
+  }
+}
+
+mutation LoadBalancerPortUpdate(
+  $id: ID!
+  $input: UpdateLoadBalancerPortInput!
+) {
+  loadBalancerPortUpdate(id: $id, input: $input) {
+    loadBalancerPort {
+      id
+      name
+      number
+      createdAt
+      updatedAt
+    }
+  }
+}

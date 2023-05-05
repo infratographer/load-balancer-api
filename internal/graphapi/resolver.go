@@ -68,6 +68,11 @@ func (r *Resolver) Handler(withPlayground bool) *Handler {
 	return h
 }
 
+// Handler returns the http.HandlerFunc for the GraphAPI
+func (h *Handler) Handler() http.HandlerFunc {
+	return h.graphqlHandler.ServeHTTP
+}
+
 // Routes ...
 func (h *Handler) Routes(e *echo.Group) {
 	e.POST("/"+graphPath, func(c echo.Context) error {

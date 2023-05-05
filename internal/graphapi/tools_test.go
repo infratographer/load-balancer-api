@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,11 +14,15 @@ import (
 	"testing"
 
 	"entgo.io/ent/dialect"
+	"github.com/99designs/gqlgen/graphql/handler"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/graphapi"
+	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 )
 
@@ -135,4 +141,24 @@ func errPanic(msg string, err error) {
 	if err != nil {
 		log.Panicf("%s err: %s", msg, err.Error())
 	}
+}
+
+func graphTestClient() graphclient.GraphClient {
+	return graphclient.NewClient(&http.Client{Transport: localRoundTripper{handler: handler.NewDefaultServer(
+		graphapi.NewExecutableSchema(
+			graphapi.Config{Resolvers: graphapi.NewResolver(EntClient, zap.NewNop().Sugar())},
+		))}}, "graph")
+}
+
+// localRoundTripper is an http.RoundTripper that executes HTTP transactions
+// by using handler directly, instead of going over an HTTP connection.
+type localRoundTripper struct {
+	handler http.Handler
+}
+
+func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	w := httptest.NewRecorder()
+	l.handler.ServeHTTP(w, req)
+
+	return w.Result(), nil
 }

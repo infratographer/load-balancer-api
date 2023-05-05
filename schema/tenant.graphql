@@ -1,49 +1,117 @@
 extend type Tenant @key(fields: "id") {
   id: ID! @external
   loadBalancers(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for LoadBalancers returned from the connection."""
+    """
+    Ordering options for LoadBalancers returned from the connection.
+    """
     orderBy: LoadBalancerOrder
 
-    """Filtering options for LoadBalancers returned from the connection."""
+    """
+    Filtering options for LoadBalancers returned from the connection.
+    """
     where: LoadBalancerWhereInput
   ): LoadBalancerConnection! @goField(forceResolver: true)
   loadBalancerPools(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for LoadBalancerPools returned from the connection."""
+    """
+    Ordering options for LoadBalancerPools returned from the connection.
+    """
     orderBy: LoadBalancerPoolOrder
 
-    """Filtering options for LoadBalancerPools returned from the connection."""
+    """
+    Filtering options for LoadBalancerPools returned from the connection.
+    """
     where: LoadBalancerPoolWhereInput
   ): LoadBalancerPoolConnection! @goField(forceResolver: true)
+  loadBalancersProviders(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for LoadBalancerProviders returned from the connection.
+    """
+    orderBy: LoadBalancerOrder
+
+    """
+    Filtering options for LoadBalancerProviders returned from the connection.
+    """
+    where: LoadBalancerProviderWhereInput
+  ): LoadBalancerProviderConnection! @goField(forceResolver: true)
 }
 
 extend type LoadBalancer {
-  tenant: Tenant!
+  """
+  The tenant of the load balancer.
+  """
+  tenant: Tenant! @goField(forceResolver: true)
 }
 
 extend type LoadBalancerPool {
-  tenant: Tenant!
+  """
+  The tenant of the load balancer pool.
+  """
+  tenant: Tenant! @goField(forceResolver: true)
+}
+
+extend type LoadBalancerProvider {
+  """
+  The tenant of the load balancer provider.
+  """
+  tenant: Tenant! @goField(forceResolver: true)
 }

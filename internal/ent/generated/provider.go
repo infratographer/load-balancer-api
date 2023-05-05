@@ -27,18 +27,19 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// Provider is the model entity for the Provider schema.
+// Representation of a load balancer provider. Load balancer providers are responsible for provisioning and managing load balancers
 type Provider struct {
 	config `json:"-"`
 	// ID of the ent.
+	// The ID for the load balancer provider.
 	ID gidx.PrefixedID `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Name holds the value of the "name" field.
+	// The name of the load balancer provider.
 	Name string `json:"name,omitempty"`
-	// TenantID holds the value of the "tenant_id" field.
+	// The ID for the tenant for this load balancer.
 	TenantID gidx.PrefixedID `json:"tenant_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProviderQuery when eager-loading is set.

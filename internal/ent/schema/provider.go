@@ -30,15 +30,26 @@ func (Provider) Fields() []ent.Field {
 			GoType(gidx.PrefixedID("")).
 			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerProviderPrefix) }).
 			Unique().
-			Immutable(),
+			Immutable().
+			Comment("The ID for the load balancer provider.").
+			Annotations(
+				entgql.OrderField("ID"),
+			),
 		field.String("name").
-			NotEmpty(),
+			NotEmpty().
+			Comment("The name of the load balancer provider.").
+			Annotations(
+				entgql.OrderField("NAME"),
+			),
 		field.String("tenant_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
+			Comment("The ID for the tenant for this load balancer.").
 			Annotations(
+				entgql.QueryField(),
 				entgql.Type("ID"),
-				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
+				entgql.OrderField("TENANT"),
 			),
 	}
 }
@@ -57,6 +68,7 @@ func (Provider) Edges() []ent.Edge {
 			Ref("provider").
 			Annotations(
 				entgql.RelayConnection(),
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
 			),
 	}
 }
@@ -65,9 +77,12 @@ func (Provider) Edges() []ent.Edge {
 func (Provider) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
+		schema.Comment("Representation of a load balancer provider. Load balancer providers are responsible for provisioning and managing load balancers"),
 		entgql.Type("LoadBalancerProvider"),
 		entgql.RelayConnection(),
-		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.Mutations(
+			entgql.MutationCreate().Description("Input information to create a load balancer provider."),
+			entgql.MutationUpdate().Description("Input information to update a load balancer provider."),
+		),
 	}
 }

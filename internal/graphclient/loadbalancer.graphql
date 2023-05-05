@@ -1,0 +1,69 @@
+query GetLoadBalancer($id: ID!) {
+  loadBalancer(id: $id) {
+    id
+    name
+    location {
+      id
+    }
+    loadBalancerProvider {
+      id
+    }
+    tenant {
+      id
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetTenantLoadBalancers($id: ID!, $orderBy: LoadBalancerOrder) {
+  _entities(representations: { __typename: "Tenant", id: $id }) {
+    ... on Tenant {
+      loadBalancers(orderBy: $orderBy) {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+}
+
+mutation LoadBalancerCreate($input: CreateLoadBalancerInput!) {
+  loadBalancerCreate(input: $input) {
+    loadBalancer {
+      id
+      name
+      loadBalancerProvider {
+        id
+      }
+      tenant {
+        id
+      }
+      location {
+        id
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerUpdate($id: ID!, $input: UpdateLoadBalancerInput!) {
+  loadBalancerUpdate(id: $id, input: $input) {
+    loadBalancer {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerDelete($id: ID!) {
+  loadBalancerDelete(id: $id) {
+    deletedID
+  }
+}

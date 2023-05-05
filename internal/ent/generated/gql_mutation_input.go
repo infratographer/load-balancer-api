@@ -23,13 +23,11 @@ import (
 
 // CreateLoadBalancerInput represents a mutation input for creating loadbalancers.
 type CreateLoadBalancerInput struct {
-	Name          string
-	TenantID      gidx.PrefixedID
-	LocationID    gidx.PrefixedID
-	AnnotationIDs []gidx.PrefixedID
-	StatusIDs     []gidx.PrefixedID
-	PortIDs       []gidx.PrefixedID
-	ProviderID    gidx.PrefixedID
+	Name       string
+	TenantID   gidx.PrefixedID
+	LocationID gidx.PrefixedID
+	PortIDs    []gidx.PrefixedID
+	ProviderID gidx.PrefixedID
 }
 
 // Mutate applies the CreateLoadBalancerInput on the LoadBalancerMutation builder.
@@ -37,12 +35,6 @@ func (i *CreateLoadBalancerInput) Mutate(m *LoadBalancerMutation) {
 	m.SetName(i.Name)
 	m.SetTenantID(i.TenantID)
 	m.SetLocationID(i.LocationID)
-	if v := i.AnnotationIDs; len(v) > 0 {
-		m.AddAnnotationIDs(v...)
-	}
-	if v := i.StatusIDs; len(v) > 0 {
-		m.AddStatusIDs(v...)
-	}
 	if v := i.PortIDs; len(v) > 0 {
 		m.AddPortIDs(v...)
 	}
@@ -57,40 +49,16 @@ func (c *LoadBalancerCreate) SetInput(i CreateLoadBalancerInput) *LoadBalancerCr
 
 // UpdateLoadBalancerInput represents a mutation input for updating loadbalancers.
 type UpdateLoadBalancerInput struct {
-	Name                *string
-	ClearAnnotations    bool
-	AddAnnotationIDs    []gidx.PrefixedID
-	RemoveAnnotationIDs []gidx.PrefixedID
-	ClearStatuses       bool
-	AddStatusIDs        []gidx.PrefixedID
-	RemoveStatusIDs     []gidx.PrefixedID
-	ClearPorts          bool
-	AddPortIDs          []gidx.PrefixedID
-	RemovePortIDs       []gidx.PrefixedID
+	Name          *string
+	ClearPorts    bool
+	AddPortIDs    []gidx.PrefixedID
+	RemovePortIDs []gidx.PrefixedID
 }
 
 // Mutate applies the UpdateLoadBalancerInput on the LoadBalancerMutation builder.
 func (i *UpdateLoadBalancerInput) Mutate(m *LoadBalancerMutation) {
 	if v := i.Name; v != nil {
 		m.SetName(*v)
-	}
-	if i.ClearAnnotations {
-		m.ClearAnnotations()
-	}
-	if v := i.AddAnnotationIDs; len(v) > 0 {
-		m.AddAnnotationIDs(v...)
-	}
-	if v := i.RemoveAnnotationIDs; len(v) > 0 {
-		m.RemoveAnnotationIDs(v...)
-	}
-	if i.ClearStatuses {
-		m.ClearStatuses()
-	}
-	if v := i.AddStatusIDs; len(v) > 0 {
-		m.AddStatusIDs(v...)
-	}
-	if v := i.RemoveStatusIDs; len(v) > 0 {
-		m.RemoveStatusIDs(v...)
 	}
 	if i.ClearPorts {
 		m.ClearPorts()
@@ -323,18 +291,14 @@ func (c *PortUpdateOne) SetInput(i UpdateLoadBalancerPortInput) *PortUpdateOne {
 
 // CreateLoadBalancerProviderInput represents a mutation input for creating loadbalancerproviders.
 type CreateLoadBalancerProviderInput struct {
-	Name            string
-	TenantID        gidx.PrefixedID
-	LoadBalancerIDs []gidx.PrefixedID
+	Name     string
+	TenantID gidx.PrefixedID
 }
 
 // Mutate applies the CreateLoadBalancerProviderInput on the ProviderMutation builder.
 func (i *CreateLoadBalancerProviderInput) Mutate(m *ProviderMutation) {
 	m.SetName(i.Name)
 	m.SetTenantID(i.TenantID)
-	if v := i.LoadBalancerIDs; len(v) > 0 {
-		m.AddLoadBalancerIDs(v...)
-	}
 }
 
 // SetInput applies the change-set in the CreateLoadBalancerProviderInput on the ProviderCreate builder.
@@ -345,25 +309,13 @@ func (c *ProviderCreate) SetInput(i CreateLoadBalancerProviderInput) *ProviderCr
 
 // UpdateLoadBalancerProviderInput represents a mutation input for updating loadbalancerproviders.
 type UpdateLoadBalancerProviderInput struct {
-	Name                  *string
-	ClearLoadBalancers    bool
-	AddLoadBalancerIDs    []gidx.PrefixedID
-	RemoveLoadBalancerIDs []gidx.PrefixedID
+	Name *string
 }
 
 // Mutate applies the UpdateLoadBalancerProviderInput on the ProviderMutation builder.
 func (i *UpdateLoadBalancerProviderInput) Mutate(m *ProviderMutation) {
 	if v := i.Name; v != nil {
 		m.SetName(*v)
-	}
-	if i.ClearLoadBalancers {
-		m.ClearLoadBalancers()
-	}
-	if v := i.AddLoadBalancerIDs; len(v) > 0 {
-		m.AddLoadBalancerIDs(v...)
-	}
-	if v := i.RemoveLoadBalancerIDs; len(v) > 0 {
-		m.RemoveLoadBalancerIDs(v...)
 	}
 }
 

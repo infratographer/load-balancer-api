@@ -58,7 +58,7 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		return nil, err
 	}
 
-	return &LoadBalancerDeletePayload{DeletedID: &id}, nil
+	return &LoadBalancerDeletePayload{DeletedID: id}, nil
 }
 
 // LoadBalancer is the resolver for the loadBalancer field.

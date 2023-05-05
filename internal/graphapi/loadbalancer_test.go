@@ -8,17 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.infratographer.com/x/gidx"
-	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 )
 
 func TestQuery_loadBalancer(t *testing.T) {
 	ctx := context.Background()
-	graphClient := graphclient.New(graphapi.NewResolver(EntClient, zap.NewNop().Sugar()))
-
 	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
 	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
 
@@ -47,7 +43,7 @@ func TestQuery_loadBalancer(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphClient.QueryLoadBalancer(tt.QueryID)
+			resp, err := graphTestClient().GetLoadBalancer(ctx, tt.QueryID)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -59,22 +55,21 @@ func TestQuery_loadBalancer(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, resp)
-			assert.EqualValues(t, tt.ExpectedLB.Name, resp.Name)
+			require.NotNil(t, resp.LoadBalancer)
+			assert.EqualValues(t, tt.ExpectedLB.Name, resp.LoadBalancer.Name)
 		})
 	}
 }
 
 func TestFullLoadBalancerLifecycle(t *testing.T) {
 	ctx := context.Background()
-	graphClient := graphclient.New(graphapi.NewResolver(EntClient, zap.NewNop().Sugar()))
-
 	prov := (&ProviderBuilder{}).MustNew(ctx)
 	tenantID := gidx.MustNewID(tenantPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
 
 	// create the LB
-	createdLB, err := graphClient.LoadBalancerCreate(ent.CreateLoadBalancerInput{
+	createdLBResp, err := graphTestClient().LoadBalancerCreate(ctx, graphclient.CreateLoadBalancerInput{
 		Name:       name,
 		ProviderID: prov.ID,
 		TenantID:   tenantID,
@@ -82,37 +77,45 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.NotNil(t, createdLB)
+	require.NotNil(t, createdLBResp)
+	require.NotNil(t, createdLBResp.LoadBalancerCreate.LoadBalancer)
+
+	createdLB := createdLBResp.LoadBalancerCreate.LoadBalancer
 	require.NotNil(t, createdLB.ID)
 	require.Equal(t, name, createdLB.Name)
 	assert.Equal(t, "loadbal", createdLB.ID.Prefix())
-	assert.Equal(t, prov.ID, createdLB.Provider.ID)
-	assert.Equal(t, locationID, createdLB.LocationID)
-	assert.Equal(t, tenantID, createdLB.TenantID)
+	assert.Equal(t, prov.ID, createdLB.LoadBalancerProvider.ID)
+	assert.Equal(t, locationID, createdLB.Location.ID)
+	assert.Equal(t, tenantID, createdLB.Tenant.ID)
 
 	// Update the LB
 	newName := gofakeit.DomainName()
-	updatedLB, err := graphClient.LoadBalancerUpdate(createdLB.ID, ent.UpdateLoadBalancerInput{Name: &newName})
+	updatedLBResp, err := graphTestClient().LoadBalancerUpdate(ctx, createdLB.ID, graphclient.UpdateLoadBalancerInput{Name: &newName})
 
 	require.NoError(t, err)
-	require.NotNil(t, updatedLB)
+	require.NotNil(t, updatedLBResp)
+	require.NotNil(t, updatedLBResp.LoadBalancerUpdate.LoadBalancer)
+
+	updatedLB := updatedLBResp.LoadBalancerUpdate.LoadBalancer
 	require.EqualValues(t, createdLB.ID, updatedLB.ID)
 	require.Equal(t, newName, updatedLB.Name)
 
 	// Query the LB
-	queryLB, err := graphClient.QueryLoadBalancer(createdLB.ID)
+	queryLB, err := graphTestClient().GetLoadBalancer(ctx, createdLB.ID)
 	require.NoError(t, err)
 	require.NotNil(t, queryLB)
-	require.Equal(t, newName, queryLB.Name)
+	require.NotNil(t, queryLB.LoadBalancer)
+	require.Equal(t, newName, queryLB.LoadBalancer.Name)
 
 	// Delete the LB
-	deletedID, err := graphClient.LoadBalancerDelete(createdLB.ID)
+	deletedResp, err := graphTestClient().LoadBalancerDelete(ctx, createdLB.ID)
 	require.NoError(t, err)
-	require.NotNil(t, deletedID)
-	require.Equal(t, createdLB.ID, deletedID)
+	require.NotNil(t, deletedResp)
+	require.NotNil(t, deletedResp.LoadBalancerDelete)
+	require.EqualValues(t, createdLB.ID, deletedResp.LoadBalancerDelete.DeletedID.String())
 
 	// Query the LB to ensure it's no longer available
-	deletedLB, err := graphClient.QueryLoadBalancer(createdLB.ID)
+	deletedLB, err := graphTestClient().GetLoadBalancer(ctx, createdLB.ID)
 	require.Error(t, err)
 	require.Nil(t, deletedLB)
 	require.ErrorContains(t, err, "load_balancer not found")

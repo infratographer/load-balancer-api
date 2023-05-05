@@ -381,17 +381,17 @@ var (
 			}
 		},
 	}
-	// LoadBalancerOrderFieldLocationID orders LoadBalancer by location_id.
-	LoadBalancerOrderFieldLocationID = &LoadBalancerOrderField{
+	// LoadBalancerOrderFieldTenantID orders LoadBalancer by tenant_id.
+	LoadBalancerOrderFieldTenantID = &LoadBalancerOrderField{
 		Value: func(lb *LoadBalancer) (ent.Value, error) {
-			return lb.LocationID, nil
+			return lb.TenantID, nil
 		},
-		column: loadbalancer.FieldLocationID,
-		toTerm: loadbalancer.ByLocationID,
+		column: loadbalancer.FieldTenantID,
+		toTerm: loadbalancer.ByTenantID,
 		toCursor: func(lb *LoadBalancer) Cursor {
 			return Cursor{
 				ID:    lb.ID,
-				Value: lb.LocationID,
+				Value: lb.TenantID,
 			}
 		},
 	}
@@ -409,8 +409,8 @@ func (f LoadBalancerOrderField) String() string {
 		str = "UPDATED_AT"
 	case LoadBalancerOrderFieldName.column:
 		str = "NAME"
-	case LoadBalancerOrderFieldLocationID.column:
-		str = "LOCATION"
+	case LoadBalancerOrderFieldTenantID.column:
+		str = "TENANT"
 	}
 	return str
 }
@@ -435,8 +435,8 @@ func (f *LoadBalancerOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *LoadBalancerOrderFieldUpdatedAt
 	case "NAME":
 		*f = *LoadBalancerOrderFieldName
-	case "LOCATION":
-		*f = *LoadBalancerOrderFieldLocationID
+	case "TENANT":
+		*f = *LoadBalancerOrderFieldTenantID
 	default:
 		return fmt.Errorf("%s is not a valid LoadBalancerOrderField", str)
 	}
@@ -2437,6 +2437,20 @@ func (pr *ProviderQuery) Paginate(
 }
 
 var (
+	// ProviderOrderFieldID orders Provider by id.
+	ProviderOrderFieldID = &LoadBalancerProviderOrderField{
+		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
+			return pr.ID, nil
+		},
+		column: provider.FieldID,
+		toTerm: provider.ByID,
+		toCursor: func(pr *LoadBalancerProvider) Cursor {
+			return Cursor{
+				ID:    pr.ID,
+				Value: pr.ID,
+			}
+		},
+	}
 	// ProviderOrderFieldCreatedAt orders Provider by created_at.
 	ProviderOrderFieldCreatedAt = &LoadBalancerProviderOrderField{
 		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
@@ -2465,16 +2479,50 @@ var (
 			}
 		},
 	}
+	// ProviderOrderFieldName orders Provider by name.
+	ProviderOrderFieldName = &LoadBalancerProviderOrderField{
+		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
+			return pr.Name, nil
+		},
+		column: provider.FieldName,
+		toTerm: provider.ByName,
+		toCursor: func(pr *LoadBalancerProvider) Cursor {
+			return Cursor{
+				ID:    pr.ID,
+				Value: pr.Name,
+			}
+		},
+	}
+	// ProviderOrderFieldTenantID orders Provider by tenant_id.
+	ProviderOrderFieldTenantID = &LoadBalancerProviderOrderField{
+		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
+			return pr.TenantID, nil
+		},
+		column: provider.FieldTenantID,
+		toTerm: provider.ByTenantID,
+		toCursor: func(pr *LoadBalancerProvider) Cursor {
+			return Cursor{
+				ID:    pr.ID,
+				Value: pr.TenantID,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
 func (f LoadBalancerProviderOrderField) String() string {
 	var str string
 	switch f.column {
+	case ProviderOrderFieldID.column:
+		str = "ID"
 	case ProviderOrderFieldCreatedAt.column:
 		str = "CREATED_AT"
 	case ProviderOrderFieldUpdatedAt.column:
 		str = "UPDATED_AT"
+	case ProviderOrderFieldName.column:
+		str = "NAME"
+	case ProviderOrderFieldTenantID.column:
+		str = "TENANT"
 	}
 	return str
 }
@@ -2491,10 +2539,16 @@ func (f *LoadBalancerProviderOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("LoadBalancerProviderOrderField %T must be a string", v)
 	}
 	switch str {
+	case "ID":
+		*f = *ProviderOrderFieldID
 	case "CREATED_AT":
 		*f = *ProviderOrderFieldCreatedAt
 	case "UPDATED_AT":
 		*f = *ProviderOrderFieldUpdatedAt
+	case "NAME":
+		*f = *ProviderOrderFieldName
+	case "TENANT":
+		*f = *ProviderOrderFieldTenantID
 	default:
 		return fmt.Errorf("%s is not a valid LoadBalancerProviderOrderField", str)
 	}

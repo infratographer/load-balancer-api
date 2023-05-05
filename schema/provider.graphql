@@ -1,4 +1,61 @@
+extend type Query {
+  """
+  Lookup a load balancer provider by ID.
+  """
+  loadBalancerProvider(
+    """
+    The load balancer provider ID.
+    """
+    id: ID!
+  ): LoadBalancerProvider!
+}
+
 extend type Mutation {
-  createLoadBalancerProvider(input: CreateLoadBalancerProviderInput!): LoadBalancerProvider!
-  updateLoadBalancerProvider(id: ID!, input: UpdateLoadBalancerProviderInput!): LoadBalancerProvider!
+  """
+  Create a load balancer provider.
+  """
+  loadBalancerProviderCreate(
+    input: CreateLoadBalancerProviderInput!
+  ): LoadBalancerProviderCreatePayload!
+  """
+  Update a load balancer provider.
+  """
+  loadBalancerProviderUpdate(
+    id: ID!
+    input: UpdateLoadBalancerProviderInput!
+  ): LoadBalancerProviderUpdatePayload!
+  """
+  Delete a load balancer provider.
+  """
+  loadBalancerProviderDelete(id: ID!): LoadBalancerProviderDeletePayload!
+}
+
+"""
+Return response from loadBalancerProviderCreate
+"""
+type LoadBalancerProviderCreatePayload {
+  """
+  The created load balancer provider.
+  """
+  loadBalancerProvider: LoadBalancerProvider!
+}
+
+"""
+Return response from loadBalancerProviderDelete
+"""
+type LoadBalancerProviderDeletePayload {
+  """
+  The ID of the deleted load balancer provider.
+  """
+  deletedID: ID!
+}
+
+"""
+Return response from loadBalancerProviderUpdate
+"""
+type LoadBalancerProviderUpdatePayload {
+  """
+  The updated load balancer provider.
+  """
+  loadBalancerProvider: LoadBalancerProvider!
 }

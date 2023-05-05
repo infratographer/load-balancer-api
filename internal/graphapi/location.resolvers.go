@@ -6,7 +6,6 @@ package graphapi
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -16,7 +15,7 @@ import (
 
 // Location is the resolver for the location field.
 func (r *loadBalancerResolver) Location(ctx context.Context, obj *generated.LoadBalancer) (*Location, error) {
-	return &Location{ID: obj.ID, scopedToTenantID: obj.TenantID}, nil
+	return &Location{ID: obj.LocationID, scopedToTenantID: obj.TenantID}, nil
 }
 
 // LoadBalancers is the resolver for the loadBalancers field.
@@ -28,16 +27,3 @@ func (r *locationResolver) LoadBalancers(ctx context.Context, obj *Location, aft
 func (r *Resolver) Location() LocationResolver { return &locationResolver{r} }
 
 type locationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *locationResolver) Name(ctx context.Context, obj *Location) (string, error) {
-	panic(fmt.Errorf("not implemented: Name - name"))
-}
-func (r *tenantResolver) Name(ctx context.Context, obj *Tenant) (string, error) {
-	panic(fmt.Errorf("not implemented: Name - name"))
-}
