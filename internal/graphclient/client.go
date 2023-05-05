@@ -1,6 +1,8 @@
 package graphclient
 
 import (
+	"fmt"
+
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"go.infratographer.com/x/gidx"
@@ -205,4 +207,131 @@ func (c *Client) LoadBalancerDelete(id gidx.PrefixedID) (gidx.PrefixedID, error)
 	err := c.graphClient.Post(q, &resp, variables...)
 
 	return resp.LoadBalancerDelete.DeletedID, err
+}
+
+// LoadBalancerPortCreate will return the results from a mutation loadBalancerPortCreate request
+func (c *Client) LoadBalancerPortCreate(input ent.CreateLoadBalancerPortInput) (*LoadBalancerPort, error) {
+	q := `
+	mutation ($input: CreateLoadBalancerPortInput!) {
+		loadBalancerPortCreate(input: $input) {
+			loadBalancerPort {
+				id
+				name
+				number
+				loadBalancer {
+					id
+				}
+				createdAt
+				updatedAt
+
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{
+		client.Var("input", map[string]string{
+			"name":           input.Name,
+			"number":         fmt.Sprint(input.Number),
+			"loadBalancerID": input.LoadBalancerID.String(),
+		}),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerPortCreate.LoadBalancerPort, err
+}
+
+// LoadBalancerPortDelete will return the results from a mutation loadBalancerDelete request
+func (c *Client) LoadBalancerPortDelete(id gidx.PrefixedID) (gidx.PrefixedID, error) {
+	q := `
+	mutation ($id: ID!) {
+		loadBalancerPortDelete(id: $id) {
+			deletedID
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{client.Var("id", id.String())}
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerPortDelete.DeletedID, err
+}
+
+// LoadBalancerPortUpdate will return the results from a mutation loadBalancerPortUpdate request
+func (c *Client) LoadBalancerPortUpdate(id gidx.PrefixedID, input ent.UpdateLoadBalancerPortInput) (*LoadBalancerPort, error) {
+	q := `
+	mutation ($id: ID!, $input: UpdateLoadBalancerPortInput!) {
+		loadBalancerPortUpdate(id: $id, input: $input) {
+			loadBalancerPort {
+				id
+				name
+				number
+				createdAt
+				updatedAt
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	inputAsMap := map[string]interface{}{}
+
+	if input.Name != nil {
+		inputAsMap["name"] = *input.Name
+	}
+
+	if input.Number != nil {
+		inputAsMap["number"] = *input.Number
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+		client.Var("input", inputAsMap),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerPortUpdate.LoadBalancerPort, err
+}
+
+// QueryLoadBalancerPortByID will return the results from a query loadBalancer with a given id.
+func (c *Client) QueryLoadBalancerPortByID(id gidx.PrefixedID, portid gidx.PrefixedID) (*LoadBalancerPort, error) {
+	q := `
+	query ($id: ID!, $portid: ID!) {
+		loadBalancer(id: $id) {
+			ports(where: {id: $portid}) {
+        		edges{
+          			node{
+            			id
+            			number
+            			loadBalancer {
+              				id
+            			}
+            			createdAt
+            			updatedAt
+          			}
+        		}
+			}
+		}
+	}`
+
+	var resp struct {
+		LoadBalancer *LoadBalancer `json:"loadBalancer"`
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+		client.Var("portid", portid.String()),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	if len(resp.LoadBalancer.Ports["edges"]) == 1 {
+		return resp.LoadBalancer.Ports["edges"][0]["node"], err
+	}
+
+	return nil, err
 }

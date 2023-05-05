@@ -501,6 +501,29 @@ func HasStatusesWith(preds ...predicate.LoadBalancerStatus) predicate.LoadBalanc
 	})
 }
 
+// HasPorts applies the HasEdge predicate on the "ports" edge.
+func HasPorts() predicate.LoadBalancer {
+	return predicate.LoadBalancer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, PortsTable, PortsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPortsWith applies the HasEdge predicate on the "ports" edge with a given conditions (other predicates).
+func HasPortsWith(preds ...predicate.Port) predicate.LoadBalancer {
+	return predicate.LoadBalancer(func(s *sql.Selector) {
+		step := newPortsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasProvider applies the HasEdge predicate on the "provider" edge.
 func HasProvider() predicate.LoadBalancer {
 	return predicate.LoadBalancer(func(s *sql.Selector) {

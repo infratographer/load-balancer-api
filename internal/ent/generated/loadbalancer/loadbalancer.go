@@ -45,6 +45,8 @@ const (
 	EdgeAnnotations = "annotations"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
 	EdgeStatuses = "statuses"
+	// EdgePorts holds the string denoting the ports edge name in mutations.
+	EdgePorts = "ports"
 	// EdgeProvider holds the string denoting the provider edge name in mutations.
 	EdgeProvider = "provider"
 	// Table holds the table name of the loadbalancer in the database.
@@ -63,6 +65,13 @@ const (
 	StatusesInverseTable = "load_balancer_status"
 	// StatusesColumn is the table column denoting the statuses relation/edge.
 	StatusesColumn = "load_balancer_id"
+	// PortsTable is the table that holds the ports relation/edge.
+	PortsTable = "ports"
+	// PortsInverseTable is the table name for the Port entity.
+	// It exists in this package in order to avoid circular dependency with the "port" package.
+	PortsInverseTable = "ports"
+	// PortsColumn is the table column denoting the ports relation/edge.
+	PortsColumn = "load_balancer_id"
 	// ProviderTable is the table that holds the provider relation/edge.
 	ProviderTable = "load_balancers"
 	// ProviderInverseTable is the table name for the Provider entity.
@@ -176,6 +185,20 @@ func ByStatuses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByPortsCount orders the results by ports count.
+func ByPortsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPortsStep(), opts...)
+	}
+}
+
+// ByPorts orders the results by ports terms.
+func ByPorts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPortsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByProviderField orders the results by provider field.
 func ByProviderField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -194,6 +217,13 @@ func newStatusesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StatusesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, StatusesTable, StatusesColumn),
+	)
+}
+func newPortsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PortsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, PortsTable, PortsColumn),
 	)
 }
 func newProviderStep() *sqlgraph.Step {

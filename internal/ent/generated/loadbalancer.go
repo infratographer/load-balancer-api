@@ -57,16 +57,19 @@ type LoadBalancerEdges struct {
 	Annotations []*LoadBalancerAnnotation `json:"annotations,omitempty"`
 	// Statuses holds the value of the statuses edge.
 	Statuses []*LoadBalancerStatus `json:"statuses,omitempty"`
+	// Ports holds the value of the ports edge.
+	Ports []*Port `json:"ports,omitempty"`
 	// Provider holds the value of the provider edge.
 	Provider *Provider `json:"provider,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
 
 	namedAnnotations map[string][]*LoadBalancerAnnotation
 	namedStatuses    map[string][]*LoadBalancerStatus
+	namedPorts       map[string][]*Port
 }
 
 // AnnotationsOrErr returns the Annotations value or an error if the edge
@@ -87,10 +90,19 @@ func (e LoadBalancerEdges) StatusesOrErr() ([]*LoadBalancerStatus, error) {
 	return nil, &NotLoadedError{edge: "statuses"}
 }
 
+// PortsOrErr returns the Ports value or an error if the edge
+// was not loaded in eager-loading.
+func (e LoadBalancerEdges) PortsOrErr() ([]*Port, error) {
+	if e.loadedTypes[2] {
+		return e.Ports, nil
+	}
+	return nil, &NotLoadedError{edge: "ports"}
+}
+
 // ProviderOrErr returns the Provider value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e LoadBalancerEdges) ProviderOrErr() (*Provider, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		if e.Provider == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: provider.Label}
@@ -189,6 +201,11 @@ func (lb *LoadBalancer) QueryAnnotations() *LoadBalancerAnnotationQuery {
 // QueryStatuses queries the "statuses" edge of the LoadBalancer entity.
 func (lb *LoadBalancer) QueryStatuses() *LoadBalancerStatusQuery {
 	return NewLoadBalancerClient(lb.config).QueryStatuses(lb)
+}
+
+// QueryPorts queries the "ports" edge of the LoadBalancer entity.
+func (lb *LoadBalancer) QueryPorts() *PortQuery {
+	return NewLoadBalancerClient(lb.config).QueryPorts(lb)
 }
 
 // QueryProvider queries the "provider" edge of the LoadBalancer entity.
@@ -291,6 +308,30 @@ func (lb *LoadBalancer) appendNamedStatuses(name string, edges ...*LoadBalancerS
 		lb.Edges.namedStatuses[name] = []*LoadBalancerStatus{}
 	} else {
 		lb.Edges.namedStatuses[name] = append(lb.Edges.namedStatuses[name], edges...)
+	}
+}
+
+// NamedPorts returns the Ports named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (lb *LoadBalancer) NamedPorts(name string) ([]*Port, error) {
+	if lb.Edges.namedPorts == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := lb.Edges.namedPorts[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (lb *LoadBalancer) appendNamedPorts(name string, edges ...*Port) {
+	if lb.Edges.namedPorts == nil {
+		lb.Edges.namedPorts = make(map[string][]*Port)
+	}
+	if len(edges) == 0 {
+		lb.Edges.namedPorts[name] = []*Port{}
+	} else {
+		lb.Edges.namedPorts[name] = append(lb.Edges.namedPorts[name], edges...)
 	}
 }
 

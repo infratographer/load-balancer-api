@@ -10,6 +10,7 @@ input CreateLoadBalancerInput {
   locationID: ID!
   annotationIDs: [ID!]
   statusIDs: [ID!]
+  portIDs: [ID!]
   providerID: ID!
 }
 """
@@ -105,6 +106,25 @@ type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
     """Filtering options for LoadBalancerStatusSlice returned from the connection."""
     where: LoadBalancerStatusWhereInput
   ): LoadBalancerStatusConnection!
+  ports(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: Cursor
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the elements in the list that come before the specified cursor."""
+    before: Cursor
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+
+    """Ordering options for LoadBalancerPorts returned from the connection."""
+    orderBy: LoadBalancerPortOrder
+
+    """Filtering options for LoadBalancerPorts returned from the connection."""
+    where: LoadBalancerPortWhereInput
+  ): LoadBalancerPortConnection!
   loadBalancerProvider: LoadBalancerProvider! @goField(name: "Provider", forceResolver: false)
 }
 type LoadBalancerAnnotation implements Node @key(fields: "id") {
@@ -848,6 +868,9 @@ input LoadBalancerWhereInput {
   """statuses edge predicates"""
   hasStatuses: Boolean
   hasStatusesWith: [LoadBalancerStatusWhereInput!]
+  """ports edge predicates"""
+  hasPorts: Boolean
+  hasPortsWith: [LoadBalancerPortWhereInput!]
   """provider edge predicates"""
   hasProvider: Boolean
   hasProviderWith: [LoadBalancerProviderWhereInput!]
@@ -935,6 +958,9 @@ input UpdateLoadBalancerInput {
   addStatusIDs: [ID!]
   removeStatusIDs: [ID!]
   clearStatuses: Boolean
+  addPortIDs: [ID!]
+  removePortIDs: [ID!]
+  clearPorts: Boolean
 }
 """
 UpdateLoadBalancerOriginInput is used for update LoadBalancerOrigin object.

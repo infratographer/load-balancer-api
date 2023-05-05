@@ -27,6 +27,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerannotation"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerstatus"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/x/gidx"
 )
@@ -80,6 +81,21 @@ func (lbu *LoadBalancerUpdate) AddStatuses(l ...*LoadBalancerStatus) *LoadBalanc
 	return lbu.AddStatusIDs(ids...)
 }
 
+// AddPortIDs adds the "ports" edge to the Port entity by IDs.
+func (lbu *LoadBalancerUpdate) AddPortIDs(ids ...gidx.PrefixedID) *LoadBalancerUpdate {
+	lbu.mutation.AddPortIDs(ids...)
+	return lbu
+}
+
+// AddPorts adds the "ports" edges to the Port entity.
+func (lbu *LoadBalancerUpdate) AddPorts(p ...*Port) *LoadBalancerUpdate {
+	ids := make([]gidx.PrefixedID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return lbu.AddPortIDs(ids...)
+}
+
 // Mutation returns the LoadBalancerMutation object of the builder.
 func (lbu *LoadBalancerUpdate) Mutation() *LoadBalancerMutation {
 	return lbu.mutation
@@ -125,6 +141,27 @@ func (lbu *LoadBalancerUpdate) RemoveStatuses(l ...*LoadBalancerStatus) *LoadBal
 		ids[i] = l[i].ID
 	}
 	return lbu.RemoveStatusIDs(ids...)
+}
+
+// ClearPorts clears all "ports" edges to the Port entity.
+func (lbu *LoadBalancerUpdate) ClearPorts() *LoadBalancerUpdate {
+	lbu.mutation.ClearPorts()
+	return lbu
+}
+
+// RemovePortIDs removes the "ports" edge to Port entities by IDs.
+func (lbu *LoadBalancerUpdate) RemovePortIDs(ids ...gidx.PrefixedID) *LoadBalancerUpdate {
+	lbu.mutation.RemovePortIDs(ids...)
+	return lbu
+}
+
+// RemovePorts removes "ports" edges to Port entities.
+func (lbu *LoadBalancerUpdate) RemovePorts(p ...*Port) *LoadBalancerUpdate {
+	ids := make([]gidx.PrefixedID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return lbu.RemovePortIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -284,6 +321,51 @@ func (lbu *LoadBalancerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if lbu.mutation.PortsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lbu.mutation.RemovedPortsIDs(); len(nodes) > 0 && !lbu.mutation.PortsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lbu.mutation.PortsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lbu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{loadbalancer.Label}
@@ -340,6 +422,21 @@ func (lbuo *LoadBalancerUpdateOne) AddStatuses(l ...*LoadBalancerStatus) *LoadBa
 	return lbuo.AddStatusIDs(ids...)
 }
 
+// AddPortIDs adds the "ports" edge to the Port entity by IDs.
+func (lbuo *LoadBalancerUpdateOne) AddPortIDs(ids ...gidx.PrefixedID) *LoadBalancerUpdateOne {
+	lbuo.mutation.AddPortIDs(ids...)
+	return lbuo
+}
+
+// AddPorts adds the "ports" edges to the Port entity.
+func (lbuo *LoadBalancerUpdateOne) AddPorts(p ...*Port) *LoadBalancerUpdateOne {
+	ids := make([]gidx.PrefixedID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return lbuo.AddPortIDs(ids...)
+}
+
 // Mutation returns the LoadBalancerMutation object of the builder.
 func (lbuo *LoadBalancerUpdateOne) Mutation() *LoadBalancerMutation {
 	return lbuo.mutation
@@ -385,6 +482,27 @@ func (lbuo *LoadBalancerUpdateOne) RemoveStatuses(l ...*LoadBalancerStatus) *Loa
 		ids[i] = l[i].ID
 	}
 	return lbuo.RemoveStatusIDs(ids...)
+}
+
+// ClearPorts clears all "ports" edges to the Port entity.
+func (lbuo *LoadBalancerUpdateOne) ClearPorts() *LoadBalancerUpdateOne {
+	lbuo.mutation.ClearPorts()
+	return lbuo
+}
+
+// RemovePortIDs removes the "ports" edge to Port entities by IDs.
+func (lbuo *LoadBalancerUpdateOne) RemovePortIDs(ids ...gidx.PrefixedID) *LoadBalancerUpdateOne {
+	lbuo.mutation.RemovePortIDs(ids...)
+	return lbuo
+}
+
+// RemovePorts removes "ports" edges to Port entities.
+func (lbuo *LoadBalancerUpdateOne) RemovePorts(p ...*Port) *LoadBalancerUpdateOne {
+	ids := make([]gidx.PrefixedID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return lbuo.RemovePortIDs(ids...)
 }
 
 // Where appends a list predicates to the LoadBalancerUpdate builder.
@@ -567,6 +685,51 @@ func (lbuo *LoadBalancerUpdateOne) sqlSave(ctx context.Context) (_node *LoadBala
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(loadbalancerstatus.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lbuo.mutation.PortsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lbuo.mutation.RemovedPortsIDs(); len(nodes) > 0 && !lbuo.mutation.PortsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lbuo.mutation.PortsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

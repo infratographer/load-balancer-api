@@ -386,6 +386,22 @@ func (c *LoadBalancerClient) QueryStatuses(lb *LoadBalancer) *LoadBalancerStatus
 	return query
 }
 
+// QueryPorts queries the ports edge of a LoadBalancer.
+func (c *LoadBalancerClient) QueryPorts(lb *LoadBalancer) *PortQuery {
+	query := (&PortClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lb.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loadbalancer.Table, loadbalancer.FieldID, id),
+			sqlgraph.To(port.Table, port.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, loadbalancer.PortsTable, loadbalancer.PortsColumn),
+		)
+		fromV = sqlgraph.Neighbors(lb.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryProvider queries the provider edge of a LoadBalancer.
 func (c *LoadBalancerClient) QueryProvider(lb *LoadBalancer) *ProviderQuery {
 	query := (&ProviderClient{config: c.config}).Query()

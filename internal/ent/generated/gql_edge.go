@@ -64,6 +64,27 @@ func (lb *LoadBalancer) Statuses(
 	return lb.QueryStatuses().Paginate(ctx, after, first, before, last, opts...)
 }
 
+func (lb *LoadBalancer) Ports(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy *LoadBalancerPortOrder, where *LoadBalancerPortWhereInput,
+) (*LoadBalancerPortConnection, error) {
+	opts := []LoadBalancerPortPaginateOption{
+		WithLoadBalancerPortOrder(orderBy),
+		WithLoadBalancerPortFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := lb.Edges.totalCount[2][alias]
+	if nodes, err := lb.NamedPorts(alias); err == nil || hasTotalCount {
+		pager, err := newLoadBalancerPortPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &LoadBalancerPortConnection{Edges: []*LoadBalancerPortEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return lb.QueryPorts().Paginate(ctx, after, first, before, last, opts...)
+}
+
 func (lb *LoadBalancer) Provider(ctx context.Context) (*Provider, error) {
 	result, err := lb.Edges.ProviderOrErr()
 	if IsNotLoaded(err) {

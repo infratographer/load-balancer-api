@@ -83,6 +83,11 @@ func (LoadBalancer) Edges() []ent.Edge {
 			Annotations(
 				entgql.RelayConnection(),
 			),
+		edge.From("ports", Port.Type).
+			Ref("load_balancer").
+			Annotations(
+				entgql.RelayConnection(),
+			),
 		edge.To("provider", Provider.Type).
 			Unique().
 			Required().
