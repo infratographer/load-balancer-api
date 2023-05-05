@@ -73,6 +73,9 @@ type LoadBalancerMutation struct {
 	statuses           map[gidx.PrefixedID]struct{}
 	removedstatuses    map[gidx.PrefixedID]struct{}
 	clearedstatuses    bool
+	ports              map[gidx.PrefixedID]struct{}
+	removedports       map[gidx.PrefixedID]struct{}
+	clearedports       bool
 	provider           *gidx.PrefixedID
 	clearedprovider    bool
 	done               bool
@@ -508,6 +511,60 @@ func (m *LoadBalancerMutation) ResetStatuses() {
 	m.removedstatuses = nil
 }
 
+// AddPortIDs adds the "ports" edge to the Port entity by ids.
+func (m *LoadBalancerMutation) AddPortIDs(ids ...gidx.PrefixedID) {
+	if m.ports == nil {
+		m.ports = make(map[gidx.PrefixedID]struct{})
+	}
+	for i := range ids {
+		m.ports[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPorts clears the "ports" edge to the Port entity.
+func (m *LoadBalancerMutation) ClearPorts() {
+	m.clearedports = true
+}
+
+// PortsCleared reports if the "ports" edge to the Port entity was cleared.
+func (m *LoadBalancerMutation) PortsCleared() bool {
+	return m.clearedports
+}
+
+// RemovePortIDs removes the "ports" edge to the Port entity by IDs.
+func (m *LoadBalancerMutation) RemovePortIDs(ids ...gidx.PrefixedID) {
+	if m.removedports == nil {
+		m.removedports = make(map[gidx.PrefixedID]struct{})
+	}
+	for i := range ids {
+		delete(m.ports, ids[i])
+		m.removedports[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPorts returns the removed IDs of the "ports" edge to the Port entity.
+func (m *LoadBalancerMutation) RemovedPortsIDs() (ids []gidx.PrefixedID) {
+	for id := range m.removedports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PortsIDs returns the "ports" edge IDs in the mutation.
+func (m *LoadBalancerMutation) PortsIDs() (ids []gidx.PrefixedID) {
+	for id := range m.ports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPorts resets all changes to the "ports" edge.
+func (m *LoadBalancerMutation) ResetPorts() {
+	m.ports = nil
+	m.clearedports = false
+	m.removedports = nil
+}
+
 // ClearProvider clears the "provider" edge to the Provider entity.
 func (m *LoadBalancerMutation) ClearProvider() {
 	m.clearedprovider = true
@@ -752,12 +809,15 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LoadBalancerMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.annotations != nil {
 		edges = append(edges, loadbalancer.EdgeAnnotations)
 	}
 	if m.statuses != nil {
 		edges = append(edges, loadbalancer.EdgeStatuses)
+	}
+	if m.ports != nil {
+		edges = append(edges, loadbalancer.EdgePorts)
 	}
 	if m.provider != nil {
 		edges = append(edges, loadbalancer.EdgeProvider)
@@ -781,6 +841,12 @@ func (m *LoadBalancerMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case loadbalancer.EdgePorts:
+		ids := make([]ent.Value, 0, len(m.ports))
+		for id := range m.ports {
+			ids = append(ids, id)
+		}
+		return ids
 	case loadbalancer.EdgeProvider:
 		if id := m.provider; id != nil {
 			return []ent.Value{*id}
@@ -791,12 +857,15 @@ func (m *LoadBalancerMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LoadBalancerMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedannotations != nil {
 		edges = append(edges, loadbalancer.EdgeAnnotations)
 	}
 	if m.removedstatuses != nil {
 		edges = append(edges, loadbalancer.EdgeStatuses)
+	}
+	if m.removedports != nil {
+		edges = append(edges, loadbalancer.EdgePorts)
 	}
 	return edges
 }
@@ -817,18 +886,27 @@ func (m *LoadBalancerMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case loadbalancer.EdgePorts:
+		ids := make([]ent.Value, 0, len(m.removedports))
+		for id := range m.removedports {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LoadBalancerMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedannotations {
 		edges = append(edges, loadbalancer.EdgeAnnotations)
 	}
 	if m.clearedstatuses {
 		edges = append(edges, loadbalancer.EdgeStatuses)
+	}
+	if m.clearedports {
+		edges = append(edges, loadbalancer.EdgePorts)
 	}
 	if m.clearedprovider {
 		edges = append(edges, loadbalancer.EdgeProvider)
@@ -844,6 +922,8 @@ func (m *LoadBalancerMutation) EdgeCleared(name string) bool {
 		return m.clearedannotations
 	case loadbalancer.EdgeStatuses:
 		return m.clearedstatuses
+	case loadbalancer.EdgePorts:
+		return m.clearedports
 	case loadbalancer.EdgeProvider:
 		return m.clearedprovider
 	}
@@ -870,6 +950,9 @@ func (m *LoadBalancerMutation) ResetEdge(name string) error {
 		return nil
 	case loadbalancer.EdgeStatuses:
 		m.ResetStatuses()
+		return nil
+	case loadbalancer.EdgePorts:
+		m.ResetPorts()
 		return nil
 	case loadbalancer.EdgeProvider:
 		m.ResetProvider()

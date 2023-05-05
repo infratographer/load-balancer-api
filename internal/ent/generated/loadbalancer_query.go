@@ -28,6 +28,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerannotation"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerstatus"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/provider"
 	"go.infratographer.com/x/gidx"
@@ -42,11 +43,13 @@ type LoadBalancerQuery struct {
 	predicates           []predicate.LoadBalancer
 	withAnnotations      *LoadBalancerAnnotationQuery
 	withStatuses         *LoadBalancerStatusQuery
+	withPorts            *PortQuery
 	withProvider         *ProviderQuery
 	modifiers            []func(*sql.Selector)
 	loadTotal            []func(context.Context, []*LoadBalancer) error
 	withNamedAnnotations map[string]*LoadBalancerAnnotationQuery
 	withNamedStatuses    map[string]*LoadBalancerStatusQuery
+	withNamedPorts       map[string]*PortQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -120,6 +123,28 @@ func (lbq *LoadBalancerQuery) QueryStatuses() *LoadBalancerStatusQuery {
 			sqlgraph.From(loadbalancer.Table, loadbalancer.FieldID, selector),
 			sqlgraph.To(loadbalancerstatus.Table, loadbalancerstatus.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, loadbalancer.StatusesTable, loadbalancer.StatusesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lbq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPorts chains the current query on the "ports" edge.
+func (lbq *LoadBalancerQuery) QueryPorts() *PortQuery {
+	query := (&PortClient{config: lbq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lbq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lbq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(loadbalancer.Table, loadbalancer.FieldID, selector),
+			sqlgraph.To(port.Table, port.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, loadbalancer.PortsTable, loadbalancer.PortsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(lbq.driver.Dialect(), step)
 		return fromU, nil
@@ -343,6 +368,7 @@ func (lbq *LoadBalancerQuery) Clone() *LoadBalancerQuery {
 		predicates:      append([]predicate.LoadBalancer{}, lbq.predicates...),
 		withAnnotations: lbq.withAnnotations.Clone(),
 		withStatuses:    lbq.withStatuses.Clone(),
+		withPorts:       lbq.withPorts.Clone(),
 		withProvider:    lbq.withProvider.Clone(),
 		// clone intermediate query.
 		sql:  lbq.sql.Clone(),
@@ -369,6 +395,17 @@ func (lbq *LoadBalancerQuery) WithStatuses(opts ...func(*LoadBalancerStatusQuery
 		opt(query)
 	}
 	lbq.withStatuses = query
+	return lbq
+}
+
+// WithPorts tells the query-builder to eager-load the nodes that are connected to
+// the "ports" edge. The optional arguments are used to configure the query builder of the edge.
+func (lbq *LoadBalancerQuery) WithPorts(opts ...func(*PortQuery)) *LoadBalancerQuery {
+	query := (&PortClient{config: lbq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	lbq.withPorts = query
 	return lbq
 }
 
@@ -461,9 +498,10 @@ func (lbq *LoadBalancerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*LoadBalancer{}
 		_spec       = lbq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			lbq.withAnnotations != nil,
 			lbq.withStatuses != nil,
+			lbq.withPorts != nil,
 			lbq.withProvider != nil,
 		}
 	)
@@ -502,6 +540,13 @@ func (lbq *LoadBalancerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
+	if query := lbq.withPorts; query != nil {
+		if err := lbq.loadPorts(ctx, query, nodes,
+			func(n *LoadBalancer) { n.Edges.Ports = []*Port{} },
+			func(n *LoadBalancer, e *Port) { n.Edges.Ports = append(n.Edges.Ports, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := lbq.withProvider; query != nil {
 		if err := lbq.loadProvider(ctx, query, nodes, nil,
 			func(n *LoadBalancer, e *Provider) { n.Edges.Provider = e }); err != nil {
@@ -519,6 +564,13 @@ func (lbq *LoadBalancerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := lbq.loadStatuses(ctx, query, nodes,
 			func(n *LoadBalancer) { n.appendNamedStatuses(name) },
 			func(n *LoadBalancer, e *LoadBalancerStatus) { n.appendNamedStatuses(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range lbq.withNamedPorts {
+		if err := lbq.loadPorts(ctx, query, nodes,
+			func(n *LoadBalancer) { n.appendNamedPorts(name) },
+			func(n *LoadBalancer, e *Port) { n.appendNamedPorts(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -575,6 +627,36 @@ func (lbq *LoadBalancerQuery) loadStatuses(ctx context.Context, query *LoadBalan
 	}
 	query.Where(predicate.LoadBalancerStatus(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(loadbalancer.StatusesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.LoadBalancerID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "load_balancer_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (lbq *LoadBalancerQuery) loadPorts(ctx context.Context, query *PortQuery, nodes []*LoadBalancer, init func(*LoadBalancer), assign func(*LoadBalancer, *Port)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[gidx.PrefixedID]*LoadBalancer)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(port.FieldLoadBalancerID)
+	}
+	query.Where(predicate.Port(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(loadbalancer.PortsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -732,6 +814,20 @@ func (lbq *LoadBalancerQuery) WithNamedStatuses(name string, opts ...func(*LoadB
 		lbq.withNamedStatuses = make(map[string]*LoadBalancerStatusQuery)
 	}
 	lbq.withNamedStatuses[name] = query
+	return lbq
+}
+
+// WithNamedPorts tells the query-builder to eager-load the nodes that are connected to the "ports"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (lbq *LoadBalancerQuery) WithNamedPorts(name string, opts ...func(*PortQuery)) *LoadBalancerQuery {
+	query := (&PortClient{config: lbq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if lbq.withNamedPorts == nil {
+		lbq.withNamedPorts = make(map[string]*PortQuery)
+	}
+	lbq.withNamedPorts[name] = query
 	return lbq
 }
 

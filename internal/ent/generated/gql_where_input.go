@@ -92,6 +92,10 @@ type LoadBalancerWhereInput struct {
 	HasStatuses     *bool                           `json:"hasStatuses,omitempty"`
 	HasStatusesWith []*LoadBalancerStatusWhereInput `json:"hasStatusesWith,omitempty"`
 
+	// "ports" edge predicates.
+	HasPorts     *bool                         `json:"hasPorts,omitempty"`
+	HasPortsWith []*LoadBalancerPortWhereInput `json:"hasPortsWith,omitempty"`
+
 	// "provider" edge predicates.
 	HasProvider     *bool                             `json:"hasProvider,omitempty"`
 	HasProviderWith []*LoadBalancerProviderWhereInput `json:"hasProviderWith,omitempty"`
@@ -315,6 +319,24 @@ func (i *LoadBalancerWhereInput) P() (predicate.LoadBalancer, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, loadbalancer.HasStatusesWith(with...))
+	}
+	if i.HasPorts != nil {
+		p := loadbalancer.HasPorts()
+		if !*i.HasPorts {
+			p = loadbalancer.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPortsWith) > 0 {
+		with := make([]predicate.Port, 0, len(i.HasPortsWith))
+		for _, w := range i.HasPortsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPortsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, loadbalancer.HasPortsWith(with...))
 	}
 	if i.HasProvider != nil {
 		p := loadbalancer.HasProvider()

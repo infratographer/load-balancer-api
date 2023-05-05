@@ -23,6 +23,7 @@ import (
 var (
 	tenantPrefix   = "testtnt"
 	locationPrefix = "testloc"
+	lbPrefix       = "testlb"
 )
 
 var (

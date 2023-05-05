@@ -223,6 +223,90 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 			lb.WithNamedStatuses(alias, func(wq *LoadBalancerStatusQuery) {
 				*wq = *query
 			})
+		case "ports":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PortClient{config: lb.config}).Query()
+			)
+			args := newLoadBalancerPortPaginateArgs(fieldArgs(ctx, new(LoadBalancerPortWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newLoadBalancerPortPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
+				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					lb.loadTotal = append(lb.loadTotal, func(ctx context.Context, nodes []*LoadBalancer) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID gidx.PrefixedID `sql:"load_balancer_id"`
+							Count  int             `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(loadbalancer.PortsColumn), ids...))
+						})
+						if err := query.GroupBy(loadbalancer.PortsColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[gidx.PrefixedID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[2] == nil {
+								nodes[i].Edges.totalCount[2] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[2][alias] = n
+						}
+						return nil
+					})
+				} else {
+					lb.loadTotal = append(lb.loadTotal, func(_ context.Context, nodes []*LoadBalancer) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Ports)
+							if nodes[i].Edges.totalCount[2] == nil {
+								nodes[i].Edges.totalCount[2] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[2][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, opCtx, *field, path, mayAddCondition(satisfies, "Port")...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				modify := limitRows(loadbalancer.PortsColumn, limit, pager.orderExpr(query))
+				query.modifiers = append(query.modifiers, modify)
+			} else {
+				query = pager.applyOrder(query)
+			}
+			lb.WithNamedPorts(alias, func(wq *PortQuery) {
+				*wq = *query
+			})
 		case "loadBalancerProvider":
 			var (
 				alias = field.Alias

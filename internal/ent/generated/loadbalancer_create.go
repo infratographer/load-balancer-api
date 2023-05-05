@@ -27,6 +27,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerannotation"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerstatus"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/provider"
 	"go.infratographer.com/x/gidx"
 )
@@ -132,6 +133,21 @@ func (lbc *LoadBalancerCreate) AddStatuses(l ...*LoadBalancerStatus) *LoadBalanc
 		ids[i] = l[i].ID
 	}
 	return lbc.AddStatusIDs(ids...)
+}
+
+// AddPortIDs adds the "ports" edge to the Port entity by IDs.
+func (lbc *LoadBalancerCreate) AddPortIDs(ids ...gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.AddPortIDs(ids...)
+	return lbc
+}
+
+// AddPorts adds the "ports" edges to the Port entity.
+func (lbc *LoadBalancerCreate) AddPorts(p ...*Port) *LoadBalancerCreate {
+	ids := make([]gidx.PrefixedID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return lbc.AddPortIDs(ids...)
 }
 
 // SetProvider sets the "provider" edge to the Provider entity.
@@ -306,6 +322,22 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(loadbalancerstatus.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lbc.mutation.PortsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   loadbalancer.PortsTable,
+			Columns: []string{loadbalancer.PortsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(port.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

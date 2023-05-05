@@ -59,3 +59,28 @@ func (b *LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 	b.prepare(ctx)
 	return EntClient.LoadBalancer.Create().SetName(b.Name).SetTenantID(b.TenantID).SetLocationID(b.LocationID).SetProvider(b.Provider).SaveX(ctx)
 }
+
+type PortBuilder struct {
+	Name           string
+	LoadBalancerID gidx.PrefixedID
+	Number         int
+}
+
+func (p *PortBuilder) prepare(_ context.Context) {
+	if p.Name == "" {
+		p.Name = gofakeit.AppName()
+	}
+
+	if p.LoadBalancerID == "" {
+		p.LoadBalancerID = gidx.MustNewID(lbPrefix)
+	}
+
+	if p.Number == 0 {
+		p.Number = gofakeit.Number(1, 65535)
+	}
+}
+
+func (p *PortBuilder) MustNew(ctx context.Context) *ent.Port {
+	p.prepare(ctx)
+	return EntClient.Port.Create().SetName(p.Name).SetLoadBalancerID(p.LoadBalancerID).SetNumber(p.Number).SaveX(ctx)
+}
