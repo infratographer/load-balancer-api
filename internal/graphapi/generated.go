@@ -2490,7 +2490,7 @@ extend type LoadBalancer {
   location: Location!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/provider_mutation.graphql", Input: `extend type Mutation {
+	{Name: "../../schema/provider.graphql", Input: `extend type Mutation {
   createLoadBalancerProvider(input: CreateLoadBalancerProviderInput!): LoadBalancerProvider!
   updateLoadBalancerProvider(id: ID!, input: UpdateLoadBalancerProviderInput!): LoadBalancerProvider!
 }

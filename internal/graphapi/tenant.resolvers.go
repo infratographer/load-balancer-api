@@ -8,10 +8,11 @@ import (
 	"context"
 
 	"entgo.io/contrib/entgql"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
-	"go.infratographer.com/x/gidx"
 )
 
 // Tenant is the resolver for the tenant field.
