@@ -9,10 +9,9 @@ import (
 	"fmt"
 
 	"entgo.io/contrib/entgql"
-	"go.infratographer.com/x/gidx"
-
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
+	"go.infratographer.com/x/gidx"
 )
 
 // Location is the resolver for the location field.
@@ -39,7 +38,6 @@ type locationResolver struct{ *Resolver }
 func (r *locationResolver) Name(ctx context.Context, obj *Location) (string, error) {
 	panic(fmt.Errorf("not implemented: Name - name"))
 }
-
 func (r *tenantResolver) Name(ctx context.Context, obj *Tenant) (string, error) {
 	panic(fmt.Errorf("not implemented: Name - name"))
 }

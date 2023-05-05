@@ -2604,7 +2604,6 @@ extend type LoadBalancer {
   location: Location!
 }
 `, BuiltIn: false},
-<<<<<<< HEAD
 	{Name: "../../schema/port.graphql", Input: `extend type Mutation {
   """
   Create a load balancer port.
@@ -2651,8 +2650,6 @@ type LoadBalancerPortDeletePayload {
   """
   deletedID: ID
 }`, BuiltIn: false},
-=======
->>>>>>> dfdcdf573a6e2db12abe5bca0beb45eb8e3c5bc2
 	{Name: "../../schema/provider.graphql", Input: `extend type Mutation {
   createLoadBalancerProvider(input: CreateLoadBalancerProviderInput!): LoadBalancerProvider!
   updateLoadBalancerProvider(id: ID!, input: UpdateLoadBalancerProviderInput!): LoadBalancerProvider!
