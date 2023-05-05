@@ -31,14 +31,14 @@ type LoadBalancerUpdate struct {
 
 // LoadBalancer represents a GraphQL LoadBalancer type
 type LoadBalancer struct {
-	ID         gidx.PrefixedID     `json:"id"`
-	Name       string              `json:"name"`
-	CreatedAt  string              `json:"createdAt"`
-	UpdatedAt  string              `json:"updatedAt"`
-	Provider   *Provider           `json:"loadBalancerProvider"`
-	Ports      []*LoadBalancerPort `json:"ports"`
-	LocationID gidx.PrefixedID     `json:"locationID"`
-	TenantID   gidx.PrefixedID     `json:"tenantID"`
+	ID         gidx.PrefixedID                           `json:"id"`
+	Name       string                                    `json:"name"`
+	CreatedAt  string                                    `json:"createdAt"`
+	UpdatedAt  string                                    `json:"updatedAt"`
+	Provider   *Provider                                 `json:"loadBalancerProvider"`
+	Ports      map[string][]map[string]*LoadBalancerPort `json:"ports"`
+	LocationID gidx.PrefixedID                           `json:"locationID"`
+	TenantID   gidx.PrefixedID                           `json:"tenantID"`
 }
 
 // Provider represents a GraphQL Provider type

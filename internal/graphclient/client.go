@@ -297,39 +297,41 @@ func (c *Client) LoadBalancerPortUpdate(id gidx.PrefixedID, input ent.UpdateLoad
 	return resp.LoadBalancerPortUpdate.LoadBalancerPort, err
 }
 
-// // QueryLoadBalancerPortByID will return the results from a query loadBalancer with a given id.
-// func (c *Client) QueryLoadBalancerPortByID(id gidx.PrefixedID, portid gidx.PrefixedID) (*LoadBalancerPort, error) {
-// 	q := `
-// 	query ($id: ID!, $portid: ID!) {
-// 		loadBalancer(id: $id) {
-// 			ports(where: {id: $portid}) {
-//         		edges{
-//           			node{
-//             			id
-//             			number
-//             			loadBalancer {
-//               				id
-//             			}
-//             			createdAt
-//             			updatedAt
-//           			}
-//         		}
-// 			}
-// 		}
-// 	}`
+// QueryLoadBalancerPortByID will return the results from a query loadBalancer with a given id.
+func (c *Client) QueryLoadBalancerPortByID(id gidx.PrefixedID, portid gidx.PrefixedID) (*LoadBalancerPort, error) {
+	q := `
+	query ($id: ID!, $portid: ID!) {
+		loadBalancer(id: $id) {
+			ports(where: {id: $portid}) {
+        		edges{
+          			node{
+            			id
+            			number
+            			loadBalancer {
+              				id
+            			}
+            			createdAt
+            			updatedAt
+          			}
+        		}
+			}
+		}
+	}`
 
-// 	var resp struct {
-// 		LoadBalancer *LoadBalancer `json:"loadBalancer"`
-// 	}
+	var resp struct {
+		LoadBalancer *LoadBalancer `json:"loadBalancer"`
+	}
 
-// 	variables := []client.Option{
-// 		client.Var("id", id.String()),
-// 		client.Var("portid", portid.String()),
-// 	}
+	variables := []client.Option{
+		client.Var("id", id.String()),
+		client.Var("portid", portid.String()),
+	}
 
-// 	err := c.graphClient.Post(q, &resp, variables...)
+	err := c.graphClient.Post(q, &resp, variables...)
 
-// 	//return resp.LoadBalancer.Ports[0], err
-// 	return nil, err
-// 	// return resp.LoadBalancer, err
-// }
+	if len(resp.LoadBalancer.Ports["edges"]) == 1 {
+		return resp.LoadBalancer.Ports["edges"][0]["node"], err
+	}
+
+	return nil, err
+}

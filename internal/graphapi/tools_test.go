@@ -23,7 +23,7 @@ import (
 var (
 	tenantPrefix   = "testtnt"
 	locationPrefix = "testloc"
-	lbPrefix       = "testlb"
+	lbPrefix       = "loadbal"
 )
 
 var (

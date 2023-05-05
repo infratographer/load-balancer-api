@@ -10,17 +10,13 @@ import (
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
-	"go.infratographer.com/x/gidx"
 )
 
 func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx := context.Background()
 	graphClient := graphclient.New(graphapi.NewResolver(EntClient))
 
-	// prov := (&ProviderBuilder{}).MustNew(ctx)
-	tenantID := gidx.MustNewID(tenantPrefix)
-	locationID := gidx.MustNewID(locationPrefix)
-	lb := (&LoadBalancerBuilder{TenantID: tenantID, LocationID: locationID, Name: "lb-a"}).MustNew(ctx)
+	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
 
 	createdPort, err := graphClient.LoadBalancerPortCreate(ent.CreateLoadBalancerPortInput{
@@ -33,6 +29,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	require.NotNil(t, createdPort)
 	require.NotNil(t, createdPort.ID)
 	require.Equal(t, name, createdPort.Name)
+	require.Equal(t, 22, createdPort.Number)
 	assert.Equal(t, "loadprt", createdPort.ID.Prefix())
 	assert.Equal(t, lb.ID, createdPort.LoadBalancerID.ID)
 
@@ -45,17 +42,20 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	require.EqualValues(t, createdPort.ID, updatedPort.ID)
 	require.Equal(t, newPort, updatedPort.Number)
 
-	// // Query the Port
-	// queryPort, err := graphClient.QueryLoadBalancerPortByID(lb.ID, createdPort.ID)
-	// fmt.Println(queryPort)
-	// fmt.Println(err)
-	// // require.NoError(t, err)
-	// // require.NotNil(t, queryPort)
-	// // require.Equal(t, newPort, queryPort.Number)
+	// Query the Port
+	queryPort, err := graphClient.QueryLoadBalancerPortByID(lb.ID, createdPort.ID)
+	require.NoError(t, err)
+	require.NotNil(t, queryPort)
+	require.Equal(t, newPort, queryPort.Number)
 
 	// Delete the Port
 	deletedID, err := graphClient.LoadBalancerPortDelete(createdPort.ID)
 	require.NoError(t, err)
 	require.NotNil(t, deletedID)
 	require.Equal(t, createdPort.ID, deletedID)
+
+	// Query the Port
+	queryPort, err = graphClient.QueryLoadBalancerPortByID(lb.ID, createdPort.ID)
+	require.NoError(t, err)
+	require.Nil(t, queryPort)
 }
