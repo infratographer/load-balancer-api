@@ -75,3 +75,134 @@ func (c *Client) MustGetTenantLoadBalancers(id gidx.PrefixedID, orderBy *OrderBy
 
 	return lbs
 }
+
+// QueryLoadBalancer will return the results from a query loadBalancer with a given id.
+func (c *Client) QueryLoadBalancer(id gidx.PrefixedID) (*LoadBalancer, error) {
+	// ideal query with external references, but these aren't all setup yet
+	// q := `
+	// query ($id: ID!) {
+	// 	loadBalancer(id: $id) {
+	// 		id
+	// 		name
+	// 		location {
+	// 			id
+	// 		}
+	// 		loadBalancerProvider {
+	// 			id
+	// 		}
+	// 		tenant {
+	// 			id
+	// 		}
+	// 		createdAt
+	// 		updatedAt
+	// 	}
+	// }`
+	q := `
+	query ($id: ID!) {
+		loadBalancer(id: $id) {
+			id
+			name
+			loadBalancerProvider {
+				id
+			}
+			createdAt
+			updatedAt
+		}
+	}`
+
+	var resp struct {
+		LoadBalancer *LoadBalancer `json:"loadBalancer"`
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancer, err
+}
+
+// LoadBalancerCreate will return the results from a mutation loadBalancerCreate request
+func (c *Client) LoadBalancerCreate(input ent.CreateLoadBalancerInput) (*LoadBalancer, error) {
+	q := `
+	mutation ($input: CreateLoadBalancerInput!) {
+		loadBalancerCreate(input: $input) {
+			loadBalancer {
+				id
+				name
+				loadBalancerProvider {
+					id
+				}
+				tenantID
+				locationID
+				createdAt
+				updatedAt
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{
+		client.Var("input", map[string]string{
+			"name":       input.Name,
+			"locationID": input.LocationID.String(),
+			"tenantID":   input.TenantID.String(),
+			"providerID": input.ProviderID.String(),
+		}),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerCreate.LoadBalancer, err
+}
+
+// LoadBalancerUpdate will return the results from a mutation loadBalancerUpdate request
+func (c *Client) LoadBalancerUpdate(id gidx.PrefixedID, input ent.UpdateLoadBalancerInput) (*LoadBalancer, error) {
+	q := `
+	mutation ($id: ID!, $input: UpdateLoadBalancerInput!) {
+		loadBalancerUpdate(id: $id, input: $input) {
+			loadBalancer {
+				id
+				name
+				createdAt
+				updatedAt
+			}
+		}
+	}`
+
+	var resp Mutations
+
+	inputAsMap := map[string]string{}
+
+	if input.Name != nil {
+		inputAsMap["name"] = *input.Name
+	}
+
+	variables := []client.Option{
+		client.Var("id", id.String()),
+		client.Var("input", inputAsMap),
+	}
+
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerUpdate.LoadBalancer, err
+}
+
+// LoadBalancerDelete will return the results from a mutation loadBalancerDelete request
+func (c *Client) LoadBalancerDelete(id gidx.PrefixedID) (gidx.PrefixedID, error) {
+	q := `
+	mutation ($id: ID!) {
+		loadBalancerDelete(id: $id) {
+			deletedID
+		}
+	}`
+
+	var resp Mutations
+
+	variables := []client.Option{client.Var("id", id.String())}
+	err := c.graphClient.Post(q, &resp, variables...)
+
+	return resp.LoadBalancerDelete.DeletedID, err
+}
