@@ -6,9 +6,9 @@ Load Balancer API implemented in GraphQL that provides a way to manage and contr
 
 ```mermaid
 graph LR;
-    Port1-->LoadBalancer1;
-    LoadBalancer1-->Pool1;
-    Pool1-->Origin1;
+    Port-->LoadBalancer;
+    LoadBalancer-->Pool;
+    Pool-->Origin;
 
 ```
 
