@@ -31,7 +31,7 @@ coverage: ## Generates coverage report
 
 lint: golint ## Runs linting
 
-golint:
+golint: ## Runs golint
 	@echo --- Running golint...
 	@date --rfc-3339=seconds
 	@golangci-lint run
@@ -60,16 +60,7 @@ dev-nats: ## Initializes nats
 	@date --rfc-3339=seconds
 	@.devcontainer/scripts/nats_account.sh
 
-dev-database: | vendor ## Initializes the dev database
-	@echo --- Creating dev database...
+generate: ## Generates code
+	@echo --- Generating code...
 	@date --rfc-3339=seconds
-	@cockroach sql -e "drop database if exists ${DEV_DB}"
-	@cockroach sql -e "create database ${DEV_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
-
-test-database: | vendor ## Initializes the test database
-	@echo --- Creating test database...
-	@date --rfc-3339=seconds
-	@cockroach sql -e "drop database if exists ${TEST_DB}"
-	@cockroach sql -e "create database ${TEST_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
+	@go generate ./...
