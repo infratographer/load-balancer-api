@@ -8,6 +8,7 @@ Load Balancer API implemented in GraphQL that provides a way to manage and contr
 graph LR;
     Port-->LoadBalancer;
     LoadBalancer-->Pool;
+    Port-->Pool;
     Pool-->Origin;
 
 ```
