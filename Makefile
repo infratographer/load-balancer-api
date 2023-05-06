@@ -13,11 +13,9 @@ APP_NAME=loadbalancer-api
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
 
-ci: | lint
+tests: | unit-test
 
-test: | unit-test
-
-unit-test: ## Runs unit tests
+unit-tests: ## Runs unit tests
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
 	@go test -race -cover -failfast -tags testtools -p 1 -v ./...
@@ -43,8 +41,7 @@ clean: ## Clean up all the things
 	@rm -rf coverage.out
 	@go clean -testcache
 
-
-binary: | models ## Builds the binary
+binary: | generate ## Builds the binary
 	@echo --- Building binary...
 	@date --rfc-3339=seconds
 	@go build -o bin/${APP_NAME} main.go
@@ -60,16 +57,7 @@ dev-nats: ## Initializes nats
 	@date --rfc-3339=seconds
 	@.devcontainer/scripts/nats_account.sh
 
-dev-database: | vendor ## Initializes the dev database
-	@echo --- Creating dev database...
+generate: vendor ## Generates code
+	@echo --- Generating code...
 	@date --rfc-3339=seconds
-	@cockroach sql -e "drop database if exists ${DEV_DB}"
-	@cockroach sql -e "create database ${DEV_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
-
-test-database: | vendor ## Initializes the test database
-	@echo --- Creating test database...
-	@date --rfc-3339=seconds
-	@cockroach sql -e "drop database if exists ${TEST_DB}"
-	@cockroach sql -e "create database ${TEST_DB}"
-	@LOADBALANCERAPI_DB_URI="${DEV_URI}" go run main.go migrate up
+	@go generate ./...
