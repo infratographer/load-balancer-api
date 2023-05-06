@@ -13,11 +13,9 @@ APP_NAME=loadbalancer-api
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
 
-ci: | lint
+tests: | unit-test
 
-test: | unit-test
-
-unit-test: ## Runs unit tests
+unit-tests: ## Runs unit tests
 	@echo --- Running unit tests...
 	@date --rfc-3339=seconds
 	@go test -race -cover -failfast -tags testtools -p 1 -v ./...
@@ -31,7 +29,7 @@ coverage: ## Generates coverage report
 
 lint: golint ## Runs linting
 
-golint: ## Runs golint
+golint:
 	@echo --- Running golint...
 	@date --rfc-3339=seconds
 	@golangci-lint run
@@ -43,8 +41,7 @@ clean: ## Clean up all the things
 	@rm -rf coverage.out
 	@go clean -testcache
 
-
-binary: | models ## Builds the binary
+binary: | generate ## Builds the binary
 	@echo --- Building binary...
 	@date --rfc-3339=seconds
 	@go build -o bin/${APP_NAME} main.go
@@ -60,7 +57,7 @@ dev-nats: ## Initializes nats
 	@date --rfc-3339=seconds
 	@.devcontainer/scripts/nats_account.sh
 
-generate: ## Generates code
+generate: vendor ## Generates code
 	@echo --- Generating code...
 	@date --rfc-3339=seconds
 	@go generate ./...
