@@ -1,4 +1,4 @@
-all: lint test
+all: lint tests binary ## Runs lint, tests, and builds the binary
 
 PHONY: help all test coverage lint golint clean vendor docker-up docker-down unit-test
 GOOS=linux
@@ -9,11 +9,12 @@ DEV_URI="postgresql://root@crdb:26257/${DEV_DB}?sslmode=disable"
 TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
+PID_FILE=/tmp/lba.pid
 
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
 
-tests: | unit-test
+tests: | unit-tests
 
 unit-tests: ## Runs unit tests
 	@echo --- Running unit tests...
@@ -37,11 +38,11 @@ golint:
 clean: ## Clean up all the things
 	@echo --- Cleaning...
 	@date --rfc-3339=seconds
-	@rm -rf ./dist/
+	@rm -rf ./bin/
 	@rm -rf coverage.out
 	@go clean -testcache
 
-binary: | generate ## Builds the binary
+binary: | vendor generate ## Builds the binary
 	@echo --- Building binary...
 	@date --rfc-3339=seconds
 	@go build -o bin/${APP_NAME} main.go
@@ -52,7 +53,9 @@ vendor: ## Vendors dependencies
 	@go mod tidy
 	@go mod download
 
-testclient: ## Regenerates the test client in graphclient
+testclient:| background-run .testclient kill-running ## Regenerates the test client in graphclient
+
+.testclient:
 	@echo --- Generating test graph client...
 	@date --rfc-3339=seconds
 	@go generate ./internal/graphclient
@@ -62,7 +65,24 @@ dev-nats: ## Initializes nats
 	@date --rfc-3339=seconds
 	@.devcontainer/scripts/nats_account.sh
 
-generate: vendor ## Generates code
+generate: background-run .generate kill-running ## Generates code
+
+.generate:
 	@echo --- Generating code...
 	@date --rfc-3339=seconds
 	@go generate ./...
+
+go-run: ## Runs the app
+	@echo --- Running binary...
+	@date --rfc-3339=seconds
+	@go run main.go serve --playground
+
+background-run:  ## Runs in the app in the background
+	@echo --- Running binary in the background...
+	@date --rfc-3339=seconds
+	@go run main.go serve --pid-file=${PID_FILE} &
+
+kill-running: ## Kills the running binary from pid file
+	@echo --- Killing background binary...
+	@date --rfc-3339=seconds
+	@kill $$(cat ${PID_FILE})
