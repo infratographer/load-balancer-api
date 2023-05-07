@@ -9,6 +9,7 @@ DEV_URI="postgresql://root@crdb:26257/${DEV_DB}?sslmode=disable"
 TEST_URI="postgresql://root@crdb:26257/${TEST_DB}?sslmode=disable"
 
 APP_NAME=loadbalancer-api
+PID_FILE=/tmp/lba.pid
 
 help: Makefile ## Print help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/:.*##/#/' | column -c 2 -t -s#
@@ -41,7 +42,7 @@ clean: ## Clean up all the things
 	@rm -rf coverage.out
 	@go clean -testcache
 
-binary: | vendor  ## Builds the binary
+binary: | vendor generate ## Builds the binary
 	@echo --- Building binary...
 	@date --rfc-3339=seconds
 	@go build -o bin/${APP_NAME} main.go
@@ -71,17 +72,17 @@ generate: background-run .generate kill-running ## Generates code
 	@date --rfc-3339=seconds
 	@go generate ./...
 
-go-run: ## Runs the binary
+go-run: ## Runs the app
 	@echo --- Running binary...
 	@date --rfc-3339=seconds
 	@go run main.go serve --playground
 
-background-run: | binary ## Runs the binary in the background
+background-run:  ## Runs in the app in the background
 	@echo --- Running binary in the background...
 	@date --rfc-3339=seconds
-	@./bin/${APP_NAME} serve &
+	@go run main.go serve --pid-file=${PID_FILE} &
 
 kill-running: ## Kills the running binary from pid file
 	@echo --- Killing background binary...
 	@date --rfc-3339=seconds
-	@kill $$(cat /tmp/lba.pid)
+	@kill $$(cat ${PID_FILE})

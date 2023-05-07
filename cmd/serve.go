@@ -22,24 +22,26 @@ import (
 
 const (
 	defaultLBAPIListenAddr = ":7608"
-	pidFileName            = "/tmp/lba.pid"
 )
 
 var (
 	enablePlayground bool
 	serveDevMode     bool
+	pidFileName      = "/tmp/lba.pid"
 )
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the load balancer Graph API",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := writePidFile(pidFileName); err != nil {
-			logger.Error("failed to write pid file", zap.Error(err))
-			return err
-		}
+		if pidFileName != "" {
+			if err := writePidFile(pidFileName); err != nil {
+				logger.Error("failed to write pid file", zap.Error(err))
+				return err
+			}
 
-		defer os.Remove(pidFileName)
+			defer os.Remove(pidFileName)
+		}
 
 		return serve(cmd.Context())
 	},
@@ -53,6 +55,7 @@ func init() {
 	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
 	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
+	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
 }
 
 // Write a pid file, but first make sure it doesn't exist with a running pid.
@@ -71,6 +74,8 @@ func writePidFile(pidFile string) error {
 			}
 		}
 	}
+
+	logger.Debugw("writing pid file", "pid-file", pidFile)
 
 	// If we get here, then the pidfile didn't exist,
 	// or the pid in it doesn't belong to the user running this app.
