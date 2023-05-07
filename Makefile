@@ -52,6 +52,11 @@ vendor: ## Vendors dependencies
 	@go mod tidy
 	@go mod download
 
+testclient: ## Regenerates the test client in graphclient
+	@echo --- Generating test graph client...
+	@date --rfc-3339=seconds
+	@go generate ./internal/graphclient
+
 dev-nats: ## Initializes nats
 	@echo --- Initializing nats
 	@date --rfc-3339=seconds

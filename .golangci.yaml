@@ -9,10 +9,9 @@ run:
     # Exclude generated ent code
     - internal/ent/generated
 
-
 linters-settings:
   goimports:
-    local-prefixes: go.hollow.sh/serverservice
+    local-prefixes: go.infratographer.com/load-balancer-api
   gofumpt:
     extra-rules: true
 

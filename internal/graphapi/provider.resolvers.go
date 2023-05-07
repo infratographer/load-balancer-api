@@ -11,18 +11,44 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// CreateLoadBalancerProvider is the resolver for the createLoadBalancerProvider field.
-func (r *mutationResolver) CreateLoadBalancerProvider(ctx context.Context, input generated.CreateLoadBalancerProviderInput) (*generated.Provider, error) {
+// LoadBalancerProviderCreate is the resolver for the loadBalancerProviderCreate field.
+func (r *mutationResolver) LoadBalancerProviderCreate(ctx context.Context, input generated.CreateLoadBalancerProviderInput) (*LoadBalancerProviderCreatePayload, error) {
 	// TODO: authz check here
-	return r.client.Provider.Create().SetInput(input).Save(ctx)
+	p, err := r.client.Provider.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoadBalancerProviderCreatePayload{LoadBalancerProvider: p}, nil
 }
 
-// UpdateLoadBalancerProvider is the resolver for the updateLoadBalancerProvider field.
-func (r *mutationResolver) UpdateLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*generated.Provider, error) {
+// LoadBalancerProviderUpdate is the resolver for the loadBalancerProviderUpdate field.
+func (r *mutationResolver) LoadBalancerProviderUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*LoadBalancerProviderUpdatePayload, error) {
 	// TODO: authz check here
 	p, err := r.client.Provider.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return p.Update().SetInput(input).Save(ctx)
+
+	p, err = p.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &LoadBalancerProviderUpdatePayload{LoadBalancerProvider: p}, nil
+}
+
+// LoadBalancerProviderDelete is the resolver for the loadBalancerProviderDelete field.
+func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerProviderDeletePayload, error) {
+	// TODO: authz check here
+	if err := r.client.Provider.DeleteOneID(id).Exec(ctx); err != nil {
+		return nil, err
+	}
+
+	return &LoadBalancerProviderDeletePayload{DeletedID: id}, nil
+}
+
+// LoadBalancerProvider is the resolver for the loadBalancerProvider field.
+func (r *queryResolver) LoadBalancerProvider(ctx context.Context, id gidx.PrefixedID) (*generated.Provider, error) {
+	// TODO: authz check here
+	return r.client.Provider.Get(ctx, id)
 }

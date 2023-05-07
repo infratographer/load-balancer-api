@@ -17,22 +17,23 @@ func (r *queryResolver) LoadBalancerPools(ctx context.Context, after *entgql.Cur
 	return r.client.Pool.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerPoolOrder(orderBy), generated.WithLoadBalancerPoolFilter(where.Filter))
 }
 
-// LoadBalancerProviders is the resolver for the loadBalancerProviders field.
-func (r *queryResolver) LoadBalancerProviders(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerProviderOrder, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error) {
-	return r.client.Provider.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerProviderFilter(where.Filter))
-}
-
 // LoadBalancer returns LoadBalancerResolver implementation.
 func (r *Resolver) LoadBalancer() LoadBalancerResolver { return &loadBalancerResolver{r} }
 
 // LoadBalancerPool returns LoadBalancerPoolResolver implementation.
 func (r *Resolver) LoadBalancerPool() LoadBalancerPoolResolver { return &loadBalancerPoolResolver{r} }
 
+// LoadBalancerProvider returns LoadBalancerProviderResolver implementation.
+func (r *Resolver) LoadBalancerProvider() LoadBalancerProviderResolver {
+	return &loadBalancerProviderResolver{r}
+}
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type loadBalancerResolver struct{ *Resolver }
 type loadBalancerPoolResolver struct{ *Resolver }
+type loadBalancerProviderResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
 // !!! WARNING !!!
@@ -41,6 +42,6 @@ type queryResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) LoadBalancers(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
-	return r.client.LoadBalancer.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
+func (r *queryResolver) LoadBalancerProviders(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerProviderOrder, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error) {
+	return r.client.Provider.Query().Paginate(ctx, after, first, before, last, generated.WithLoadBalancerProviderFilter(where.Filter))
 }

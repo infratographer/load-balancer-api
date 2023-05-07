@@ -41,5 +41,5 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
-	return &LoadBalancerPortDeletePayload{DeletedID: &id}, nil
+	return &LoadBalancerPortDeletePayload{DeletedID: id}, nil
 }

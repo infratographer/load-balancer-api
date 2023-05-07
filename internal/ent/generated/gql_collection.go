@@ -336,16 +336,6 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldName)
 				fieldSeen[loadbalancer.FieldName] = struct{}{}
 			}
-		case "tenantID":
-			if _, ok := fieldSeen[loadbalancer.FieldTenantID]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldTenantID)
-				fieldSeen[loadbalancer.FieldTenantID] = struct{}{}
-			}
-		case "locationID":
-			if _, ok := fieldSeen[loadbalancer.FieldLocationID]; !ok {
-				selectedFields = append(selectedFields, loadbalancer.FieldLocationID)
-				fieldSeen[loadbalancer.FieldLocationID] = struct{}{}
-			}
 		case "id":
 		case "__typename":
 		default:
@@ -1252,11 +1242,6 @@ func (pr *ProviderQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 			if _, ok := fieldSeen[provider.FieldName]; !ok {
 				selectedFields = append(selectedFields, provider.FieldName)
 				fieldSeen[provider.FieldName] = struct{}{}
-			}
-		case "tenantID":
-			if _, ok := fieldSeen[provider.FieldTenantID]; !ok {
-				selectedFields = append(selectedFields, provider.FieldTenantID)
-				fieldSeen[provider.FieldTenantID] = struct{}{}
 			}
 		case "id":
 		case "__typename":

@@ -2,13 +2,18 @@ extend type Mutation {
   """
   Create a load balancer port.
   """
-  loadBalancerPortCreate(input: CreateLoadBalancerPortInput!): LoadBalancerPortCreatePayload!
+  loadBalancerPortCreate(
+    input: CreateLoadBalancerPortInput!
+  ): LoadBalancerPortCreatePayload!
 
   """
   Update a load balancer port.
-  """  
-  loadBalancerPortUpdate(id: ID!, input: UpdateLoadBalancerPortInput!): LoadBalancerPortUpdatePayload!
-  
+  """
+  loadBalancerPortUpdate(
+    id: ID!
+    input: UpdateLoadBalancerPortInput!
+  ): LoadBalancerPortUpdatePayload!
+
   """
   Delete a load balancer port
   """
@@ -42,5 +47,5 @@ type LoadBalancerPortDeletePayload {
   """
   The ID of the deleted load balancer port.
   """
-  deletedID: ID
+  deletedID: ID!
 }

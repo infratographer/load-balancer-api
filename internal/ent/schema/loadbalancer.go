@@ -33,39 +33,43 @@ func (LoadBalancer) Fields() []ent.Field {
 			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerPrefix) }).
 			Unique().
 			Immutable().
+			Comment("The ID for the load balancer.").
 			Annotations(
 				entgql.OrderField("ID"),
 			),
 		field.Text("name").
 			NotEmpty().
+			Comment("The name of the load balancer.").
 			Annotations(
 				entgql.OrderField("NAME"),
 			),
 		field.String("tenant_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
+			Comment("The ID for the tenant for this load balancer.").
 			Annotations(
 				entgql.QueryField(),
 				entgql.Type("ID"),
-				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
+				entgql.OrderField("TENANT"),
 			),
 		field.String("location_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
 			NotEmpty().
+			Comment("The ID for the location of this load balancer.").
 			Annotations(
 				entgql.Type("ID"),
-				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
-				entgql.OrderField("LOCATION"),
+				entgql.Skip(^entgql.SkipMutationCreateInput),
 			),
 		field.String("provider_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
 			NotEmpty().
+			Comment("The ID for the load balancer provider for this load balancer.").
 			Annotations(
 				entgql.Type("ID"),
-				entgql.Skip(^entgql.SkipMutationUpdateInput),
-				entgql.OrderField("PROVIDER"),
+				entgql.Skip(^entgql.SkipMutationCreateInput),
 			),
 	}
 }
@@ -75,13 +79,17 @@ func (LoadBalancer) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("annotations", LoadBalancerAnnotation.Type).
 			Ref("load_balancer").
+			Comment("Annotations for the load balancer.").
 			Annotations(
 				entgql.RelayConnection(),
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
 			),
 		edge.From("statuses", LoadBalancerStatus.Type).
 			Ref("load_balancer").
+			Comment("Statuses for the load balancer.").
 			Annotations(
 				entgql.RelayConnection(),
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
 			),
 		edge.From("ports", Port.Type).
 			Ref("load_balancer").
@@ -93,6 +101,7 @@ func (LoadBalancer) Edges() []ent.Edge {
 			Required().
 			Immutable().
 			Field("provider_id").
+			Comment("The load balancer provider for the load balancer.").
 			Annotations(
 				entgql.MapsTo("loadBalancerProvider"),
 			),
@@ -112,8 +121,12 @@ func (LoadBalancer) Indexes() []ent.Index {
 func (LoadBalancer) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
-		entgql.RelayConnection(),
-		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		schema.Comment("Representation of a load balancer."),
 		entgql.Implements("IPv4Addressable"),
+		entgql.RelayConnection(),
+		entgql.Mutations(
+			entgql.MutationCreate().Description("Input information to create a load balancer."),
+			entgql.MutationUpdate().Description("Input information to update a load balancer."),
+		),
 	}
 }

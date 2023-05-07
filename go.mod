@@ -10,6 +10,7 @@ require (
 	entgo.io/contrib v0.4.4
 	entgo.io/ent v0.12.2
 	github.com/99designs/gqlgen v0.17.30
+	github.com/Yamashou/gqlgenc v0.13.5
 	github.com/brianvoe/gofakeit/v6 v6.21.0
 	github.com/docker/go-connections v0.4.0
 	github.com/google/uuid v1.3.0

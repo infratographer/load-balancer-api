@@ -1,0 +1,45 @@
+query GetLoadBalancerProvider($id: ID!) {
+  loadBalancerProvider(id: $id) {
+    id
+    name
+    tenant {
+      id
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation LoadBalancerProviderCreate($input: CreateLoadBalancerProviderInput!) {
+  loadBalancerProviderCreate(input: $input) {
+    loadBalancerProvider {
+      id
+      name
+      tenant {
+        id
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerProviderUpdate(
+  $id: ID!
+  $input: UpdateLoadBalancerProviderInput!
+) {
+  loadBalancerProviderUpdate(id: $id, input: $input) {
+    loadBalancerProvider {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerProviderDelete($id: ID!) {
+  loadBalancerProviderDelete(id: $id) {
+    deletedID
+  }
+}
