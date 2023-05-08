@@ -85,7 +85,7 @@ type PoolBuilder struct {
 
 func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 	if p.Name == "" {
-		p.Name = gofakeit.JobTitle()
+		p.Name = gofakeit.AppName()
 	}
 
 	if p.TenantID == "" {
@@ -97,4 +97,33 @@ func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 	}
 
 	return EntClient.Pool.Create().SetName(p.Name).SetTenantID(p.TenantID).SetProtocol(p.Protocol).SaveX(ctx)
+}
+
+type OriginBuilder struct {
+	Name       string
+	Target     string
+	PortNumber int
+	Active     bool
+	PoolID     gidx.PrefixedID
+}
+
+func (o *OriginBuilder) MustNew(ctx context.Context) *ent.Origin {
+	if o.Name == "" {
+		o.Name = gofakeit.AppName()
+	}
+
+	if o.Target == "" {
+		o.Target = gofakeit.IPv4Address()
+	}
+
+	if o.PortNumber == 0 {
+		o.PortNumber = gofakeit.Number(1, 65535)
+	}
+
+	if o.PoolID == "" {
+		pb := &PoolBuilder{}
+		o.PoolID = pb.MustNew(ctx).ID
+	}
+
+	return EntClient.Origin.Create().SetName(o.Name).SetTarget(o.Target).SetPortNumber(o.PortNumber).SetActive(o.Active).SetPoolID(o.PoolID).SaveX(ctx)
 }

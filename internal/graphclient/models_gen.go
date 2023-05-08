@@ -278,6 +278,18 @@ type LoadBalancerOriginConnection struct {
 	TotalCount int64 `json:"totalCount"`
 }
 
+// Return response from loadBalancerOriginCreate
+type LoadBalancerOriginCreatePayload struct {
+	// The created pool origin.
+	LoadBalancerOrigin LoadBalancerOrigin `json:"loadBalancerOrigin"`
+}
+
+// Return response from loadBalancerOriginDelete
+type LoadBalancerOriginDeletePayload struct {
+	// The deleted pool origin.
+	DeletedID gidx.PrefixedID `json:"deletedID"`
+}
+
 // An edge in a connection.
 type LoadBalancerOriginEdge struct {
 	// The item at the end of the edge.
@@ -292,6 +304,12 @@ type LoadBalancerOriginOrder struct {
 	Direction OrderDirection `json:"direction"`
 	// The field by which to order LoadBalancerOrigins.
 	Field LoadBalancerOriginOrderField `json:"field"`
+}
+
+// Return response from loadBalancerOriginUpdate
+type LoadBalancerOriginUpdatePayload struct {
+	// The updated pool origin.
+	LoadBalancerOrigin LoadBalancerOrigin `json:"loadBalancerOrigin"`
 }
 
 // LoadBalancerOriginWhereInput is used for filtering Origin objects.

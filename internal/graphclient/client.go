@@ -14,11 +14,15 @@ import (
 type GraphClient interface {
 	GetLoadBalancer(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancer, error)
 	GetLoadBalancerPool(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPool, error)
+	GetLoadBalancerPoolOrigin(ctx context.Context, id gidx.PrefixedID, originid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPoolOrigin, error)
 	GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error)
 	GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerProvider, error)
 	GetTenantLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetTenantLoadBalancers, error)
 	LoadBalancerCreate(ctx context.Context, input CreateLoadBalancerInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerCreate, error)
 	LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerDelete, error)
+	LoadBalancerOriginCreate(ctx context.Context, input CreateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginCreate, error)
+	LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginDelete, error)
+	LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginUpdate, error)
 	LoadBalancerPoolCreate(ctx context.Context, input CreateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolCreate, error)
 	LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolDelete, error)
 	LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolUpdate, error)
@@ -51,6 +55,9 @@ type Mutation struct {
 	LoadBalancerCreate         LoadBalancerCreatePayload         "json:\"loadBalancerCreate\" graphql:\"loadBalancerCreate\""
 	LoadBalancerUpdate         LoadBalancerUpdatePayload         "json:\"loadBalancerUpdate\" graphql:\"loadBalancerUpdate\""
 	LoadBalancerDelete         LoadBalancerDeletePayload         "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
+	LoadBalancerOriginCreate   LoadBalancerOriginCreatePayload   "json:\"loadBalancerOriginCreate\" graphql:\"loadBalancerOriginCreate\""
+	LoadBalancerOriginUpdate   LoadBalancerOriginUpdatePayload   "json:\"loadBalancerOriginUpdate\" graphql:\"loadBalancerOriginUpdate\""
+	LoadBalancerOriginDelete   LoadBalancerOriginDeletePayload   "json:\"loadBalancerOriginDelete\" graphql:\"loadBalancerOriginDelete\""
 	LoadBalancerPoolCreate     LoadBalancerPoolCreatePayload     "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
 	LoadBalancerPoolUpdate     LoadBalancerPoolUpdatePayload     "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
 	LoadBalancerPoolDelete     LoadBalancerPoolDeletePayload     "json:\"loadBalancerPoolDelete\" graphql:\"loadBalancerPoolDelete\""
@@ -86,6 +93,24 @@ type GetLoadBalancerPool struct {
 		TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
 		CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
 		UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+}
+type GetLoadBalancerPoolOrigin struct {
+	LoadBalancerPool struct {
+		Origins struct {
+			Edges []*struct {
+				Node *struct {
+					ID         gidx.PrefixedID "json:\"id\" graphql:\"id\""
+					Name       string          "json:\"name\" graphql:\"name\""
+					Target     string          "json:\"target\" graphql:\"target\""
+					PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
+					Active     bool            "json:\"active\" graphql:\"active\""
+					PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
+					CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+					UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+				} "json:\"node\" graphql:\"node\""
+			} "json:\"edges\" graphql:\"edges\""
+		} "json:\"origins\" graphql:\"origins\""
 	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 }
 type GetLoadBalancerPort struct {
@@ -151,6 +176,39 @@ type LoadBalancerDelete struct {
 	LoadBalancerDelete struct {
 		DeletedID gidx.PrefixedID "json:\"deletedID\" graphql:\"deletedID\""
 	} "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
+}
+type LoadBalancerOriginCreate struct {
+	LoadBalancerOriginCreate struct {
+		LoadBalancerOrigin struct {
+			ID         gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			Active     bool            "json:\"active\" graphql:\"active\""
+			Name       string          "json:\"name\" graphql:\"name\""
+			PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
+			Target     string          "json:\"target\" graphql:\"target\""
+			PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
+			CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+		} "json:\"loadBalancerOrigin\" graphql:\"loadBalancerOrigin\""
+	} "json:\"loadBalancerOriginCreate\" graphql:\"loadBalancerOriginCreate\""
+}
+type LoadBalancerOriginDelete struct {
+	LoadBalancerOriginDelete struct {
+		DeletedID gidx.PrefixedID "json:\"deletedID\" graphql:\"deletedID\""
+	} "json:\"loadBalancerOriginDelete\" graphql:\"loadBalancerOriginDelete\""
+}
+type LoadBalancerOriginUpdate struct {
+	LoadBalancerOriginUpdate struct {
+		LoadBalancerOrigin struct {
+			ID         gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			Active     bool            "json:\"active\" graphql:\"active\""
+			Name       string          "json:\"name\" graphql:\"name\""
+			PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
+			Target     string          "json:\"target\" graphql:\"target\""
+			PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
+			CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+		} "json:\"loadBalancerOrigin\" graphql:\"loadBalancerOrigin\""
+	} "json:\"loadBalancerOriginUpdate\" graphql:\"loadBalancerOriginUpdate\""
 }
 type LoadBalancerPoolCreate struct {
 	LoadBalancerPoolCreate struct {
@@ -307,6 +365,40 @@ func (c *Client) GetLoadBalancerPool(ctx context.Context, id gidx.PrefixedID, ht
 	return &res, nil
 }
 
+const GetLoadBalancerPoolOriginDocument = `query GetLoadBalancerPoolOrigin ($id: ID!, $originid: ID!) {
+	loadBalancerPool(id: $id) {
+		origins(where: {id:$originid}) {
+			edges {
+				node {
+					id
+					name
+					target
+					portNumber
+					active
+					poolID
+					createdAt
+					updatedAt
+				}
+			}
+		}
+	}
+}
+`
+
+func (c *Client) GetLoadBalancerPoolOrigin(ctx context.Context, id gidx.PrefixedID, originid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPoolOrigin, error) {
+	vars := map[string]interface{}{
+		"id":       id,
+		"originid": originid,
+	}
+
+	var res GetLoadBalancerPoolOrigin
+	if err := c.Client.Post(ctx, "GetLoadBalancerPoolOrigin", GetLoadBalancerPoolOriginDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetLoadBalancerPortDocument = `query GetLoadBalancerPort ($id: ID!, $portid: ID!) {
 	loadBalancer(id: $id) {
 		ports(where: {id:$portid}) {
@@ -444,6 +536,85 @@ func (c *Client) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, htt
 
 	var res LoadBalancerDelete
 	if err := c.Client.Post(ctx, "LoadBalancerDelete", LoadBalancerDeleteDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerOriginCreateDocument = `mutation LoadBalancerOriginCreate ($input: CreateLoadBalancerOriginInput!) {
+	loadBalancerOriginCreate(input: $input) {
+		loadBalancerOrigin {
+			id
+			active
+			name
+			portNumber
+			target
+			poolID
+			createdAt
+			updatedAt
+		}
+	}
+}
+`
+
+func (c *Client) LoadBalancerOriginCreate(ctx context.Context, input CreateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginCreate, error) {
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	var res LoadBalancerOriginCreate
+	if err := c.Client.Post(ctx, "LoadBalancerOriginCreate", LoadBalancerOriginCreateDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerOriginDeleteDocument = `mutation LoadBalancerOriginDelete ($id: ID!) {
+	loadBalancerOriginDelete(id: $id) {
+		deletedID
+	}
+}
+`
+
+func (c *Client) LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginDelete, error) {
+	vars := map[string]interface{}{
+		"id": id,
+	}
+
+	var res LoadBalancerOriginDelete
+	if err := c.Client.Post(ctx, "LoadBalancerOriginDelete", LoadBalancerOriginDeleteDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerOriginUpdateDocument = `mutation LoadBalancerOriginUpdate ($id: ID!, $input: UpdateLoadBalancerOriginInput!) {
+	loadBalancerOriginUpdate(id: $id, input: $input) {
+		loadBalancerOrigin {
+			id
+			active
+			name
+			portNumber
+			target
+			poolID
+			createdAt
+			updatedAt
+		}
+	}
+}
+`
+
+func (c *Client) LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginUpdate, error) {
+	vars := map[string]interface{}{
+		"id":    id,
+		"input": input,
+	}
+
+	var res LoadBalancerOriginUpdate
+	if err := c.Client.Post(ctx, "LoadBalancerOriginUpdate", LoadBalancerOriginUpdateDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

@@ -1,0 +1,54 @@
+query GetLoadBalancerPoolOrigin($id: ID!, $originid: ID!) {
+  loadBalancerPool(id: $id) {
+    origins(where: { id: $originid }) {
+      edges {
+        node {
+          id
+          name
+          target
+          portNumber
+          active
+          poolID
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+}
+
+mutation LoadBalancerOriginCreate($input: CreateLoadBalancerOriginInput!) {
+  loadBalancerOriginCreate(input: $input) {
+    loadBalancerOrigin {
+      id
+      active
+      name
+      portNumber
+      target
+      poolID
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerOriginUpdate($id: ID!, $input: UpdateLoadBalancerOriginInput!) {
+  loadBalancerOriginUpdate(id: $id, input: $input) {
+    loadBalancerOrigin {
+      id
+      active
+      name
+      portNumber
+      target
+      poolID
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerOriginDelete($id: ID!) {
+  loadBalancerOriginDelete(id: $id) {
+    deletedID
+  }
+}
