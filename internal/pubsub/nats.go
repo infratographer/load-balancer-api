@@ -5,10 +5,13 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
+
+	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // Client is an event bus client with some configuration
 type Client struct {
+	ec             *ent.Client
 	js             nats.JetStreamContext
 	logger         *zap.Logger
 	prefix, stream string
@@ -34,6 +37,13 @@ func NewClient(opts ...Option) *Client {
 func WithJetreamContext(js nats.JetStreamContext) Option {
 	return func(c *Client) {
 		c.js = js
+	}
+}
+
+// WithEntClient sets the ent client
+func WithEntClient(ec *ent.Client) Option {
+	return func(c *Client) {
+		c.ec = ec
 	}
 }
 

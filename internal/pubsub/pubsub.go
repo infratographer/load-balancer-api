@@ -24,36 +24,36 @@ const (
 var prefix = "com.infratographer.events"
 
 // PublishCreate publishes a create event
-func (c *Client) PublishCreate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishCreate(ctx context.Context, subject, location string, data *pubsubx.ChangeMessage) error {
 	data.EventType = CreateEventType
 
-	return c.publish(ctx, CreateEventType, actor, location, data)
+	return c.publish(ctx, CreateEventType, subject, location, data)
 }
 
 // PublishUpdate publishes an update event
-func (c *Client) PublishUpdate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishUpdate(ctx context.Context, subject, location string, data *pubsubx.ChangeMessage) error {
 	data.EventType = UpdateEventType
 
-	return c.publish(ctx, UpdateEventType, actor, location, data)
+	return c.publish(ctx, UpdateEventType, subject, location, data)
 }
 
 // PublishDelete publishes a delete event
-func (c *Client) PublishDelete(ctx context.Context, actor, location string, data *pubsubx.Message) error {
+func (c *Client) PublishDelete(ctx context.Context, subject, location string, data *pubsubx.ChangeMessage) error {
 	data.EventType = DeleteEventType
-	return c.publish(ctx, DeleteEventType, actor, location, data)
+	return c.publish(ctx, DeleteEventType, subject, location, data)
 }
 
 // publish publishes an event
-func (c *Client) publish(_ context.Context, action, actor, location string, data interface{}) error {
-	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
-	c.logger.Debug("publishing nats message", zap.String("nats.subject", subject))
+func (c *Client) publish(_ context.Context, action, subject, location string, data interface{}) error {
+	natSubject := fmt.Sprintf("%s.%s.%s.%s", prefix, subject, action, location)
+	c.logger.Debug("publishing nats message", zap.String("nats.subject", natSubject))
 
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	if _, err := c.js.Publish(subject, b); err != nil {
+	if _, err := c.js.Publish(natSubject, b); err != nil {
 		return err
 	}
 

@@ -130,3 +130,8 @@ func (LoadBalancer) Annotations() []schema.Annotation {
 		),
 	}
 }
+
+// Hooks for the LoadBalancer
+func (LoadBalancer) Hooks() []ent.Hook {
+	return []ent.Hook{}
+}

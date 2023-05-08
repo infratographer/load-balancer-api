@@ -112,6 +112,15 @@ func serve(ctx context.Context) error {
 		return err
 	}
 
+	// Add hooks for nats events to the ent client. They function as middleware between mutators.
+	natsClose, err := addNatsHooks(client)
+	if err != nil {
+		logger.Errorw("failed to add ent client hooks for nats events", "error", err)
+		return err
+	}
+
+	defer natsClose()
+
 	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
 	if err != nil {
 		logger.Error("failed to create server", zap.Error(err))
