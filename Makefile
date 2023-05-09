@@ -78,9 +78,12 @@ go-run: ## Runs the app
 	@go run main.go serve --playground
 
 background-run:  ## Runs in the app in the background
-	@echo --- Running binary in the background...
 	@date --rfc-3339=seconds
-	@go run main.go serve --pid-file=${PID_FILE} &
+	@if [ ! -f "${PID_FILE}" ]; then \
+		echo --- Running binary in the background...; go run main.go serve --pid-file=${PID_FILE} & \
+	else \
+		echo --- Binary already running in the background...; \
+	fi
 
 kill-running: ## Kills the running binary from pid file
 	@echo --- Killing background binary...

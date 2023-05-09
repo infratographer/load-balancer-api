@@ -19,6 +19,24 @@ type LoadBalancerDeletePayload struct {
 	DeletedID gidx.PrefixedID `json:"deletedID"`
 }
 
+// Return response from loadBalancerOriginCreate
+type LoadBalancerOriginCreatePayload struct {
+	// The created pool origin.
+	LoadBalancerOrigin *generated.Origin `json:"loadBalancerOrigin"`
+}
+
+// Return response from loadBalancerOriginDelete
+type LoadBalancerOriginDeletePayload struct {
+	// The deleted pool origin.
+	DeletedID gidx.PrefixedID `json:"deletedID"`
+}
+
+// Return response from loadBalancerOriginUpdate
+type LoadBalancerOriginUpdatePayload struct {
+	// The updated pool origin.
+	LoadBalancerOrigin *generated.Origin `json:"loadBalancerOrigin"`
+}
+
 // Return response from LoadBalancerPoolCreate
 type LoadBalancerPoolCreatePayload struct {
 	// The created pool.

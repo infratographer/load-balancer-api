@@ -166,3 +166,11 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 func newString(s string) *string {
 	return &s
 }
+
+func newBool(b bool) *bool {
+	return &b
+}
+
+func newInt64(i int64) *int64 {
+	return &i
+}

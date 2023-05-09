@@ -1,0 +1,46 @@
+extend type Mutation {
+    """
+    Create a loadbalancer pool origin
+    """
+    loadBalancerOriginCreate(input: CreateLoadBalancerOriginInput!): LoadBalancerOriginCreatePayload!
+
+    """
+    Update a loadbalancer pool origin
+    """
+    loadBalancerOriginUpdate(id: ID!, input: UpdateLoadBalancerOriginInput!): LoadBalancerOriginUpdatePayload!
+
+    """
+    Delete a loadbalancer pool origin
+    """
+    loadBalancerOriginDelete(id: ID!): LoadBalancerOriginDeletePayload!
+}
+
+"""
+Return response from loadBalancerOriginCreate
+"""
+type LoadBalancerOriginCreatePayload {
+  """
+  The created pool origin.
+  """
+  loadBalancerOrigin: LoadBalancerOrigin!
+}
+
+"""
+Return response from loadBalancerOriginUpdate
+"""
+type LoadBalancerOriginUpdatePayload {
+  """
+  The updated pool origin.
+  """
+  loadBalancerOrigin: LoadBalancerOrigin!
+}
+
+"""
+Return response from loadBalancerOriginDelete
+"""
+type LoadBalancerOriginDeletePayload {
+  """
+  The deleted pool origin.
+  """
+  deletedID: ID!
+}

@@ -140,9 +140,21 @@ type ComplexityRoot struct {
 		TotalCount func(childComplexity int) int
 	}
 
+	LoadBalancerOriginCreatePayload struct {
+		LoadBalancerOrigin func(childComplexity int) int
+	}
+
+	LoadBalancerOriginDeletePayload struct {
+		DeletedID func(childComplexity int) int
+	}
+
 	LoadBalancerOriginEdge struct {
 		Cursor func(childComplexity int) int
 		Node   func(childComplexity int) int
+	}
+
+	LoadBalancerOriginUpdatePayload struct {
+		LoadBalancerOrigin func(childComplexity int) int
 	}
 
 	LoadBalancerPool struct {
@@ -280,6 +292,9 @@ type ComplexityRoot struct {
 	Mutation struct {
 		LoadBalancerCreate         func(childComplexity int, input generated.CreateLoadBalancerInput) int
 		LoadBalancerDelete         func(childComplexity int, id gidx.PrefixedID) int
+		LoadBalancerOriginCreate   func(childComplexity int, input generated.CreateLoadBalancerOriginInput) int
+		LoadBalancerOriginDelete   func(childComplexity int, id gidx.PrefixedID) int
+		LoadBalancerOriginUpdate   func(childComplexity int, id gidx.PrefixedID, input generated.UpdateLoadBalancerOriginInput) int
 		LoadBalancerPoolCreate     func(childComplexity int, input generated.CreateLoadBalancerPoolInput) int
 		LoadBalancerPoolDelete     func(childComplexity int, id gidx.PrefixedID) int
 		LoadBalancerPoolUpdate     func(childComplexity int, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) int
@@ -348,6 +363,9 @@ type MutationResolver interface {
 	LoadBalancerCreate(ctx context.Context, input generated.CreateLoadBalancerInput) (*LoadBalancerCreatePayload, error)
 	LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) (*LoadBalancerUpdatePayload, error)
 	LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error)
+	LoadBalancerOriginCreate(ctx context.Context, input generated.CreateLoadBalancerOriginInput) (*LoadBalancerOriginCreatePayload, error)
+	LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerOriginInput) (*LoadBalancerOriginUpdatePayload, error)
+	LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerOriginDeletePayload, error)
 	LoadBalancerPoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*LoadBalancerPoolCreatePayload, error)
 	LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*LoadBalancerPoolUpdatePayload, error)
 	LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPoolDeletePayload, error)
@@ -795,6 +813,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoadBalancerOriginConnection.TotalCount(childComplexity), true
 
+	case "LoadBalancerOriginCreatePayload.loadBalancerOrigin":
+		if e.complexity.LoadBalancerOriginCreatePayload.LoadBalancerOrigin == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancerOriginCreatePayload.LoadBalancerOrigin(childComplexity), true
+
+	case "LoadBalancerOriginDeletePayload.deletedID":
+		if e.complexity.LoadBalancerOriginDeletePayload.DeletedID == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancerOriginDeletePayload.DeletedID(childComplexity), true
+
 	case "LoadBalancerOriginEdge.cursor":
 		if e.complexity.LoadBalancerOriginEdge.Cursor == nil {
 			break
@@ -808,6 +840,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoadBalancerOriginEdge.Node(childComplexity), true
+
+	case "LoadBalancerOriginUpdatePayload.loadBalancerOrigin":
+		if e.complexity.LoadBalancerOriginUpdatePayload.LoadBalancerOrigin == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancerOriginUpdatePayload.LoadBalancerOrigin(childComplexity), true
 
 	case "LoadBalancerPool.createdAt":
 		if e.complexity.LoadBalancerPool.CreatedAt == nil {
@@ -1288,6 +1327,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.LoadBalancerDelete(childComplexity, args["id"].(gidx.PrefixedID)), true
+
+	case "Mutation.loadBalancerOriginCreate":
+		if e.complexity.Mutation.LoadBalancerOriginCreate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loadBalancerOriginCreate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoadBalancerOriginCreate(childComplexity, args["input"].(generated.CreateLoadBalancerOriginInput)), true
+
+	case "Mutation.loadBalancerOriginDelete":
+		if e.complexity.Mutation.LoadBalancerOriginDelete == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loadBalancerOriginDelete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoadBalancerOriginDelete(childComplexity, args["id"].(gidx.PrefixedID)), true
+
+	case "Mutation.loadBalancerOriginUpdate":
+		if e.complexity.Mutation.LoadBalancerOriginUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loadBalancerOriginUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoadBalancerOriginUpdate(childComplexity, args["id"].(gidx.PrefixedID), args["input"].(generated.UpdateLoadBalancerOriginInput)), true
 
 	case "Mutation.loadBalancerPoolCreate":
 		if e.complexity.Mutation.LoadBalancerPoolCreate == nil {
@@ -2733,6 +2808,53 @@ extend type LoadBalancer {
   location: Location! @goField(forceResolver: true)
 }
 `, BuiltIn: false},
+	{Name: "../../schema/origin.graphql", Input: `extend type Mutation {
+    """
+    Create a loadbalancer pool origin
+    """
+    loadBalancerOriginCreate(input: CreateLoadBalancerOriginInput!): LoadBalancerOriginCreatePayload!
+
+    """
+    Update a loadbalancer pool origin
+    """
+    loadBalancerOriginUpdate(id: ID!, input: UpdateLoadBalancerOriginInput!): LoadBalancerOriginUpdatePayload!
+
+    """
+    Delete a loadbalancer pool origin
+    """
+    loadBalancerOriginDelete(id: ID!): LoadBalancerOriginDeletePayload!
+}
+
+"""
+Return response from loadBalancerOriginCreate
+"""
+type LoadBalancerOriginCreatePayload {
+  """
+  The created pool origin.
+  """
+  loadBalancerOrigin: LoadBalancerOrigin!
+}
+
+"""
+Return response from loadBalancerOriginUpdate
+"""
+type LoadBalancerOriginUpdatePayload {
+  """
+  The updated pool origin.
+  """
+  loadBalancerOrigin: LoadBalancerOrigin!
+}
+
+"""
+Return response from loadBalancerOriginDelete
+"""
+type LoadBalancerOriginDeletePayload {
+  """
+  The deleted pool origin.
+  """
+  deletedID: ID!
+}
+`, BuiltIn: false},
 	{Name: "../../schema/pool.graphql", Input: `extend type Query {
   """
   Lookup a pool by ID.
@@ -3591,6 +3713,60 @@ func (ec *executionContext) field_Mutation_loadBalancerDelete_args(ctx context.C
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_loadBalancerOriginCreate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 generated.CreateLoadBalancerOriginInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateLoadBalancerOriginInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐCreateLoadBalancerOriginInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_loadBalancerOriginDelete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 gidx.PrefixedID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_loadBalancerOriginUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 gidx.PrefixedID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 generated.UpdateLoadBalancerOriginInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateLoadBalancerOriginInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐUpdateLoadBalancerOriginInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -6798,6 +6974,114 @@ func (ec *executionContext) fieldContext_LoadBalancerOriginConnection_totalCount
 	return fc, nil
 }
 
+func (ec *executionContext) _LoadBalancerOriginCreatePayload_loadBalancerOrigin(ctx context.Context, field graphql.CollectedField, obj *LoadBalancerOriginCreatePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerOriginCreatePayload_loadBalancerOrigin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LoadBalancerOrigin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.Origin)
+	fc.Result = res
+	return ec.marshalNLoadBalancerOrigin2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐOrigin(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancerOriginCreatePayload_loadBalancerOrigin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancerOriginCreatePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_LoadBalancerOrigin_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancerOrigin_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancerOrigin_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_LoadBalancerOrigin_name(ctx, field)
+			case "target":
+				return ec.fieldContext_LoadBalancerOrigin_target(ctx, field)
+			case "portNumber":
+				return ec.fieldContext_LoadBalancerOrigin_portNumber(ctx, field)
+			case "active":
+				return ec.fieldContext_LoadBalancerOrigin_active(ctx, field)
+			case "poolID":
+				return ec.fieldContext_LoadBalancerOrigin_poolID(ctx, field)
+			case "pool":
+				return ec.fieldContext_LoadBalancerOrigin_pool(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerOrigin", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancerOriginDeletePayload_deletedID(ctx context.Context, field graphql.CollectedField, obj *LoadBalancerOriginDeletePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerOriginDeletePayload_deletedID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gidx.PrefixedID)
+	fc.Result = res
+	return ec.marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancerOriginDeletePayload_deletedID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancerOriginDeletePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoadBalancerOriginEdge_node(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancerOriginEdge) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoadBalancerOriginEdge_node(ctx, field)
 	if err != nil {
@@ -6898,6 +7182,70 @@ func (ec *executionContext) fieldContext_LoadBalancerOriginEdge_cursor(ctx conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancerOriginUpdatePayload_loadBalancerOrigin(ctx context.Context, field graphql.CollectedField, obj *LoadBalancerOriginUpdatePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerOriginUpdatePayload_loadBalancerOrigin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LoadBalancerOrigin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.Origin)
+	fc.Result = res
+	return ec.marshalNLoadBalancerOrigin2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐOrigin(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancerOriginUpdatePayload_loadBalancerOrigin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancerOriginUpdatePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_LoadBalancerOrigin_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_LoadBalancerOrigin_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_LoadBalancerOrigin_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_LoadBalancerOrigin_name(ctx, field)
+			case "target":
+				return ec.fieldContext_LoadBalancerOrigin_target(ctx, field)
+			case "portNumber":
+				return ec.fieldContext_LoadBalancerOrigin_portNumber(ctx, field)
+			case "active":
+				return ec.fieldContext_LoadBalancerOrigin_active(ctx, field)
+			case "poolID":
+				return ec.fieldContext_LoadBalancerOrigin_poolID(ctx, field)
+			case "pool":
+				return ec.fieldContext_LoadBalancerOrigin_pool(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerOrigin", field.Name)
 		},
 	}
 	return fc, nil
@@ -10232,6 +10580,183 @@ func (ec *executionContext) fieldContext_Mutation_loadBalancerDelete(ctx context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_loadBalancerDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_loadBalancerOriginCreate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_loadBalancerOriginCreate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoadBalancerOriginCreate(rctx, fc.Args["input"].(generated.CreateLoadBalancerOriginInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*LoadBalancerOriginCreatePayload)
+	fc.Result = res
+	return ec.marshalNLoadBalancerOriginCreatePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginCreatePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_loadBalancerOriginCreate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "loadBalancerOrigin":
+				return ec.fieldContext_LoadBalancerOriginCreatePayload_loadBalancerOrigin(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerOriginCreatePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_loadBalancerOriginCreate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_loadBalancerOriginUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_loadBalancerOriginUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoadBalancerOriginUpdate(rctx, fc.Args["id"].(gidx.PrefixedID), fc.Args["input"].(generated.UpdateLoadBalancerOriginInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*LoadBalancerOriginUpdatePayload)
+	fc.Result = res
+	return ec.marshalNLoadBalancerOriginUpdatePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginUpdatePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_loadBalancerOriginUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "loadBalancerOrigin":
+				return ec.fieldContext_LoadBalancerOriginUpdatePayload_loadBalancerOrigin(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerOriginUpdatePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_loadBalancerOriginUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_loadBalancerOriginDelete(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_loadBalancerOriginDelete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoadBalancerOriginDelete(rctx, fc.Args["id"].(gidx.PrefixedID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*LoadBalancerOriginDeletePayload)
+	fc.Result = res
+	return ec.marshalNLoadBalancerOriginDeletePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginDeletePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_loadBalancerOriginDelete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "deletedID":
+				return ec.fieldContext_LoadBalancerOriginDeletePayload_deletedID(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerOriginDeletePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_loadBalancerOriginDelete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -18245,6 +18770,62 @@ func (ec *executionContext) _LoadBalancerOriginConnection(ctx context.Context, s
 	return out
 }
 
+var loadBalancerOriginCreatePayloadImplementors = []string{"LoadBalancerOriginCreatePayload"}
+
+func (ec *executionContext) _LoadBalancerOriginCreatePayload(ctx context.Context, sel ast.SelectionSet, obj *LoadBalancerOriginCreatePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loadBalancerOriginCreatePayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoadBalancerOriginCreatePayload")
+		case "loadBalancerOrigin":
+
+			out.Values[i] = ec._LoadBalancerOriginCreatePayload_loadBalancerOrigin(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var loadBalancerOriginDeletePayloadImplementors = []string{"LoadBalancerOriginDeletePayload"}
+
+func (ec *executionContext) _LoadBalancerOriginDeletePayload(ctx context.Context, sel ast.SelectionSet, obj *LoadBalancerOriginDeletePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loadBalancerOriginDeletePayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoadBalancerOriginDeletePayload")
+		case "deletedID":
+
+			out.Values[i] = ec._LoadBalancerOriginDeletePayload_deletedID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var loadBalancerOriginEdgeImplementors = []string{"LoadBalancerOriginEdge"}
 
 func (ec *executionContext) _LoadBalancerOriginEdge(ctx context.Context, sel ast.SelectionSet, obj *generated.LoadBalancerOriginEdge) graphql.Marshaler {
@@ -18262,6 +18843,34 @@ func (ec *executionContext) _LoadBalancerOriginEdge(ctx context.Context, sel ast
 		case "cursor":
 
 			out.Values[i] = ec._LoadBalancerOriginEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var loadBalancerOriginUpdatePayloadImplementors = []string{"LoadBalancerOriginUpdatePayload"}
+
+func (ec *executionContext) _LoadBalancerOriginUpdatePayload(ctx context.Context, sel ast.SelectionSet, obj *LoadBalancerOriginUpdatePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, loadBalancerOriginUpdatePayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LoadBalancerOriginUpdatePayload")
+		case "loadBalancerOrigin":
+
+			out.Values[i] = ec._LoadBalancerOriginUpdatePayload_loadBalancerOrigin(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -19331,6 +19940,33 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "loadBalancerOriginCreate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_loadBalancerOriginCreate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "loadBalancerOriginUpdate":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_loadBalancerOriginUpdate(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "loadBalancerOriginDelete":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_loadBalancerOriginDelete(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "loadBalancerPoolCreate":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -20097,6 +20733,11 @@ func (ec *executionContext) unmarshalNCreateLoadBalancerInput2goᚗinfratographe
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateLoadBalancerOriginInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐCreateLoadBalancerOriginInput(ctx context.Context, v interface{}) (generated.CreateLoadBalancerOriginInput, error) {
+	res, err := ec.unmarshalInputCreateLoadBalancerOriginInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateLoadBalancerPoolInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐCreateLoadBalancerPoolInput(ctx context.Context, v interface{}) (generated.CreateLoadBalancerPoolInput, error) {
 	res, err := ec.unmarshalInputCreateLoadBalancerPoolInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -20309,6 +20950,34 @@ func (ec *executionContext) marshalNLoadBalancerOriginConnection2ᚖgoᚗinfrato
 	return ec._LoadBalancerOriginConnection(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNLoadBalancerOriginCreatePayload2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginCreatePayload(ctx context.Context, sel ast.SelectionSet, v LoadBalancerOriginCreatePayload) graphql.Marshaler {
+	return ec._LoadBalancerOriginCreatePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLoadBalancerOriginCreatePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginCreatePayload(ctx context.Context, sel ast.SelectionSet, v *LoadBalancerOriginCreatePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LoadBalancerOriginCreatePayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNLoadBalancerOriginDeletePayload2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginDeletePayload(ctx context.Context, sel ast.SelectionSet, v LoadBalancerOriginDeletePayload) graphql.Marshaler {
+	return ec._LoadBalancerOriginDeletePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLoadBalancerOriginDeletePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginDeletePayload(ctx context.Context, sel ast.SelectionSet, v *LoadBalancerOriginDeletePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LoadBalancerOriginDeletePayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNLoadBalancerOriginOrderField2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOriginOrderField(ctx context.Context, v interface{}) (*generated.LoadBalancerOriginOrderField, error) {
 	var res = new(generated.LoadBalancerOriginOrderField)
 	err := res.UnmarshalGQL(v)
@@ -20323,6 +20992,20 @@ func (ec *executionContext) marshalNLoadBalancerOriginOrderField2ᚖgoᚗinfrato
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalNLoadBalancerOriginUpdatePayload2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginUpdatePayload(ctx context.Context, sel ast.SelectionSet, v LoadBalancerOriginUpdatePayload) graphql.Marshaler {
+	return ec._LoadBalancerOriginUpdatePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLoadBalancerOriginUpdatePayload2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐLoadBalancerOriginUpdatePayload(ctx context.Context, sel ast.SelectionSet, v *LoadBalancerOriginUpdatePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LoadBalancerOriginUpdatePayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNLoadBalancerOriginWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOriginWhereInput(ctx context.Context, v interface{}) (*generated.LoadBalancerOriginWhereInput, error) {
@@ -20747,6 +21430,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNUpdateLoadBalancerInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐUpdateLoadBalancerInput(ctx context.Context, v interface{}) (generated.UpdateLoadBalancerInput, error) {
 	res, err := ec.unmarshalInputUpdateLoadBalancerInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateLoadBalancerOriginInput2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐUpdateLoadBalancerOriginInput(ctx context.Context, v interface{}) (generated.UpdateLoadBalancerOriginInput, error) {
+	res, err := ec.unmarshalInputUpdateLoadBalancerOriginInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
