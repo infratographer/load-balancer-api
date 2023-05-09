@@ -1,0 +1,42 @@
+query GetLoadBalancerPool($id: ID!) {
+  loadBalancerPool(id: $id) {
+    id
+    name
+    protocol
+    tenantID
+    createdAt
+    updatedAt
+  }
+}
+
+mutation LoadBalancerPoolCreate($input: CreateLoadBalancerPoolInput!) {
+  loadBalancerPoolCreate(input: $input) {
+    loadBalancerPool {
+      id
+      name
+      protocol
+      tenantID
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerPoolUpdate($id: ID!, $input: UpdateLoadBalancerPoolInput!) {
+  loadBalancerPoolUpdate(id: $id, input: $input) {
+    loadBalancerPool {
+      id
+      name
+      protocol
+      tenantID
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+mutation LoadBalancerPoolDelete($id: ID!) {
+  loadBalancerPoolDelete(id: $id) {
+    deletedID
+  }
+}

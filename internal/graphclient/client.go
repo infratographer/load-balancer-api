@@ -13,11 +13,15 @@ import (
 
 type GraphClient interface {
 	GetLoadBalancer(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancer, error)
+	GetLoadBalancerPool(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPool, error)
 	GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error)
 	GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerProvider, error)
 	GetTenantLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetTenantLoadBalancers, error)
 	LoadBalancerCreate(ctx context.Context, input CreateLoadBalancerInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerCreate, error)
 	LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerDelete, error)
+	LoadBalancerPoolCreate(ctx context.Context, input CreateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolCreate, error)
+	LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolDelete, error)
+	LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolUpdate, error)
 	LoadBalancerPortCreate(ctx context.Context, input CreateLoadBalancerPortInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPortCreate, error)
 	LoadBalancerPortDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPortDelete, error)
 	LoadBalancerPortUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerPortInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPortUpdate, error)
@@ -38,6 +42,7 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 type Query struct {
 	LoadBalancerPools    LoadBalancerPoolConnection "json:\"loadBalancerPools\" graphql:\"loadBalancerPools\""
 	LoadBalancer         LoadBalancer               "json:\"loadBalancer\" graphql:\"loadBalancer\""
+	LoadBalancerPool     LoadBalancerPool           "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 	LoadBalancerProvider LoadBalancerProvider       "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
 	Entities             []Entity                   "json:\"_entities\" graphql:\"_entities\""
 	Service              Service                    "json:\"_service\" graphql:\"_service\""
@@ -46,6 +51,9 @@ type Mutation struct {
 	LoadBalancerCreate         LoadBalancerCreatePayload         "json:\"loadBalancerCreate\" graphql:\"loadBalancerCreate\""
 	LoadBalancerUpdate         LoadBalancerUpdatePayload         "json:\"loadBalancerUpdate\" graphql:\"loadBalancerUpdate\""
 	LoadBalancerDelete         LoadBalancerDeletePayload         "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
+	LoadBalancerPoolCreate     LoadBalancerPoolCreatePayload     "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
+	LoadBalancerPoolUpdate     LoadBalancerPoolUpdatePayload     "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
+	LoadBalancerPoolDelete     LoadBalancerPoolDeletePayload     "json:\"loadBalancerPoolDelete\" graphql:\"loadBalancerPoolDelete\""
 	LoadBalancerPortCreate     LoadBalancerPortCreatePayload     "json:\"loadBalancerPortCreate\" graphql:\"loadBalancerPortCreate\""
 	LoadBalancerPortUpdate     LoadBalancerPortUpdatePayload     "json:\"loadBalancerPortUpdate\" graphql:\"loadBalancerPortUpdate\""
 	LoadBalancerPortDelete     LoadBalancerPortDeletePayload     "json:\"loadBalancerPortDelete\" graphql:\"loadBalancerPortDelete\""
@@ -69,6 +77,16 @@ type GetLoadBalancer struct {
 		CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
 		UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancer\" graphql:\"loadBalancer\""
+}
+type GetLoadBalancerPool struct {
+	LoadBalancerPool struct {
+		ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+		Name      string                   "json:\"name\" graphql:\"name\""
+		Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+		TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
+		CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+		UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 }
 type GetLoadBalancerPort struct {
 	LoadBalancer struct {
@@ -133,6 +151,35 @@ type LoadBalancerDelete struct {
 	LoadBalancerDelete struct {
 		DeletedID gidx.PrefixedID "json:\"deletedID\" graphql:\"deletedID\""
 	} "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
+}
+type LoadBalancerPoolCreate struct {
+	LoadBalancerPoolCreate struct {
+		LoadBalancerPool struct {
+			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+			Name      string                   "json:\"name\" graphql:\"name\""
+			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+			TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
+			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	} "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
+}
+type LoadBalancerPoolDelete struct {
+	LoadBalancerPoolDelete struct {
+		DeletedID *gidx.PrefixedID "json:\"deletedID\" graphql:\"deletedID\""
+	} "json:\"loadBalancerPoolDelete\" graphql:\"loadBalancerPoolDelete\""
+}
+type LoadBalancerPoolUpdate struct {
+	LoadBalancerPoolUpdate struct {
+		LoadBalancerPool struct {
+			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+			Name      string                   "json:\"name\" graphql:\"name\""
+			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+			TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
+			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	} "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
 }
 type LoadBalancerPortCreate struct {
 	LoadBalancerPortCreate struct {
@@ -229,6 +276,31 @@ func (c *Client) GetLoadBalancer(ctx context.Context, id gidx.PrefixedID, httpRe
 
 	var res GetLoadBalancer
 	if err := c.Client.Post(ctx, "GetLoadBalancer", GetLoadBalancerDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetLoadBalancerPoolDocument = `query GetLoadBalancerPool ($id: ID!) {
+	loadBalancerPool(id: $id) {
+		id
+		name
+		protocol
+		tenantID
+		createdAt
+		updatedAt
+	}
+}
+`
+
+func (c *Client) GetLoadBalancerPool(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPool, error) {
+	vars := map[string]interface{}{
+		"id": id,
+	}
+
+	var res GetLoadBalancerPool
+	if err := c.Client.Post(ctx, "GetLoadBalancerPool", GetLoadBalancerPoolDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -372,6 +444,81 @@ func (c *Client) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, htt
 
 	var res LoadBalancerDelete
 	if err := c.Client.Post(ctx, "LoadBalancerDelete", LoadBalancerDeleteDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerPoolCreateDocument = `mutation LoadBalancerPoolCreate ($input: CreateLoadBalancerPoolInput!) {
+	loadBalancerPoolCreate(input: $input) {
+		loadBalancerPool {
+			id
+			name
+			protocol
+			tenantID
+			createdAt
+			updatedAt
+		}
+	}
+}
+`
+
+func (c *Client) LoadBalancerPoolCreate(ctx context.Context, input CreateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolCreate, error) {
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	var res LoadBalancerPoolCreate
+	if err := c.Client.Post(ctx, "LoadBalancerPoolCreate", LoadBalancerPoolCreateDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerPoolDeleteDocument = `mutation LoadBalancerPoolDelete ($id: ID!) {
+	loadBalancerPoolDelete(id: $id) {
+		deletedID
+	}
+}
+`
+
+func (c *Client) LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolDelete, error) {
+	vars := map[string]interface{}{
+		"id": id,
+	}
+
+	var res LoadBalancerPoolDelete
+	if err := c.Client.Post(ctx, "LoadBalancerPoolDelete", LoadBalancerPoolDeleteDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const LoadBalancerPoolUpdateDocument = `mutation LoadBalancerPoolUpdate ($id: ID!, $input: UpdateLoadBalancerPoolInput!) {
+	loadBalancerPoolUpdate(id: $id, input: $input) {
+		loadBalancerPool {
+			id
+			name
+			protocol
+			tenantID
+			createdAt
+			updatedAt
+		}
+	}
+}
+`
+
+func (c *Client) LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input UpdateLoadBalancerPoolInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerPoolUpdate, error) {
+	vars := map[string]interface{}{
+		"id":    id,
+		"input": input,
+	}
+
+	var res LoadBalancerPoolUpdate
+	if err := c.Client.Post(ctx, "LoadBalancerPoolUpdate", LoadBalancerPoolUpdateDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
