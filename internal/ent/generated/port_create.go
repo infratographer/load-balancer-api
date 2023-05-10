@@ -124,7 +124,9 @@ func (pc *PortCreate) Mutation() *PortMutation {
 
 // Save creates the Port in the database.
 func (pc *PortCreate) Save(ctx context.Context) (*Port, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks[*Port, PortMutation](ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -151,19 +153,29 @@ func (pc *PortCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PortCreate) defaults() {
+func (pc *PortCreate) defaults() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
+		if port.DefaultCreatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultCreatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		if port.DefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := pc.mutation.ID(); !ok {
+		if port.DefaultID == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultID (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

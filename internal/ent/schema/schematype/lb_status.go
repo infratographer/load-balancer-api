@@ -1,4 +1,4 @@
-package schema
+package schematype
 
 import (
 	"entgo.io/contrib/entgql"
@@ -13,25 +13,25 @@ import (
 	"go.infratographer.com/x/gidx"
 )
 
-// LoadBalancerAnnotation holds the schema definition for the LoadBalancerAnnotation entity.
-type LoadBalancerAnnotation struct {
+// LoadBalancerStatus holds the schema definition for the LoadBalancerStatus entity.
+type LoadBalancerStatus struct {
 	ent.Schema
 }
 
-// Mixin of the LoadBalancerAnnotation
-func (LoadBalancerAnnotation) Mixin() []ent.Mixin {
+// Mixin of the LoadBalancerStatus
+func (LoadBalancerStatus) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NamespacedDataMixin{},
 		entx.NewTimestampMixin(),
 	}
 }
 
-// Fields of the LoadBalancerAnnotation.
-func (LoadBalancerAnnotation) Fields() []ent.Field {
+// Fields of the LoadBalancerStatus.
+func (LoadBalancerStatus) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").
 			GoType(gidx.PrefixedID("")).
-			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerAnnotationPrefix) }).
+			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerStatusPrefix) }).
 			Unique().
 			Immutable(),
 		field.String("load_balancer_id").
@@ -41,14 +41,20 @@ func (LoadBalancerAnnotation) Fields() []ent.Field {
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
 			),
+		field.String("source").
+			Immutable().
+			NotEmpty().
+			Annotations(
+				entgql.Skip(entgql.SkipMutationUpdateInput),
+			),
 	}
 }
 
-// Indexes of the LoadBalancerAnnotation
-func (LoadBalancerAnnotation) Indexes() []ent.Index {
+// Indexes of the LoadBalancerStatus
+func (LoadBalancerStatus) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("load_balancer_id"),
-		index.Fields("load_balancer_id", "namespace"),
+		index.Fields("load_balancer_id", "namespace", "source"),
 		index.Fields("namespace", "data").Annotations(
 			entsql.IndexTypes(map[string]string{
 				dialect.Postgres: "GIN",
@@ -57,8 +63,8 @@ func (LoadBalancerAnnotation) Indexes() []ent.Index {
 	}
 }
 
-// Edges of the LoadBalancerAnnotation
-func (LoadBalancerAnnotation) Edges() []ent.Edge {
+// Edges of the LoadBalancerStatus
+func (LoadBalancerStatus) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("load_balancer", LoadBalancer.Type).
 			Unique().
@@ -69,10 +75,15 @@ func (LoadBalancerAnnotation) Edges() []ent.Edge {
 	}
 }
 
-// Annotations for the LoadBalancerAnnotation
-func (LoadBalancerAnnotation) Annotations() []schema.Annotation {
+// Annotations for the LoadBalancerStatus
+func (LoadBalancerStatus) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
 		entgql.RelayConnection(),
 	}
+}
+
+// Hooks configures actions to take before and after mutations.
+func (LoadBalancerStatus) Hooks() []ent.Hook {
+	return []ent.Hook{}
 }

@@ -1,4 +1,4 @@
-package schema
+package schematype
 
 const (
 	// ApplicationPrefix is the prefix for all application IDs owned by load balancer API

@@ -166,7 +166,9 @@ func (lbu *LoadBalancerUpdate) RemovePorts(p ...*Port) *LoadBalancerUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lbu *LoadBalancerUpdate) Save(ctx context.Context) (int, error) {
-	lbu.defaults()
+	if err := lbu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks[int, LoadBalancerMutation](ctx, lbu.sqlSave, lbu.mutation, lbu.hooks)
 }
 
@@ -193,11 +195,15 @@ func (lbu *LoadBalancerUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (lbu *LoadBalancerUpdate) defaults() {
+func (lbu *LoadBalancerUpdate) defaults() error {
 	if _, ok := lbu.mutation.UpdatedAt(); !ok {
+		if loadbalancer.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized loadbalancer.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := loadbalancer.UpdateDefaultUpdatedAt()
 		lbu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -520,7 +526,9 @@ func (lbuo *LoadBalancerUpdateOne) Select(field string, fields ...string) *LoadB
 
 // Save executes the query and returns the updated LoadBalancer entity.
 func (lbuo *LoadBalancerUpdateOne) Save(ctx context.Context) (*LoadBalancer, error) {
-	lbuo.defaults()
+	if err := lbuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks[*LoadBalancer, LoadBalancerMutation](ctx, lbuo.sqlSave, lbuo.mutation, lbuo.hooks)
 }
 
@@ -547,11 +555,15 @@ func (lbuo *LoadBalancerUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (lbuo *LoadBalancerUpdateOne) defaults() {
+func (lbuo *LoadBalancerUpdateOne) defaults() error {
 	if _, ok := lbuo.mutation.UpdatedAt(); !ok {
+		if loadbalancer.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized loadbalancer.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := loadbalancer.UpdateDefaultUpdatedAt()
 		lbuo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

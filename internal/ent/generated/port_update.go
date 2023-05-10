@@ -105,7 +105,9 @@ func (pu *PortUpdate) RemovePools(p ...*Pool) *PortUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PortUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
+	if err := pu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks[int, PortMutation](ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -132,11 +134,15 @@ func (pu *PortUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pu *PortUpdate) defaults() {
+func (pu *PortUpdate) defaults() error {
 	if _, ok := pu.mutation.UpdatedAt(); !ok {
+		if port.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.UpdateDefaultUpdatedAt()
 		pu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -321,7 +327,9 @@ func (puo *PortUpdateOne) Select(field string, fields ...string) *PortUpdateOne 
 
 // Save executes the query and returns the updated Port entity.
 func (puo *PortUpdateOne) Save(ctx context.Context) (*Port, error) {
-	puo.defaults()
+	if err := puo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks[*Port, PortMutation](ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -348,11 +356,15 @@ func (puo *PortUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (puo *PortUpdateOne) defaults() {
+func (puo *PortUpdateOne) defaults() error {
 	if _, ok := puo.mutation.UpdatedAt(); !ok {
+		if port.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.UpdateDefaultUpdatedAt()
 		puo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/nats-io/nats.go"
+	"github.com/spf13/viper"
 	"go.infratographer.com/x/pubsubx"
 	"go.uber.org/zap"
 )
@@ -20,40 +21,29 @@ const (
 	UpdateEventType = "update"
 )
 
-// May be a config option later
-var prefix = "com.infratographer.events"
-
-// PublishCreate publishes a create event
-func (c *Client) PublishCreate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = CreateEventType
-
-	return c.publish(ctx, CreateEventType, actor, location, data)
+// PublishChange sets the action of the message and then publishes the message
+func (c *Client) PublishChange(ctx context.Context, action, subject, location string, data *pubsubx.ChangeMessage) error {
+	data.EventType = action
+	return c.publish(ctx, action, "changes", subject, location, data)
 }
 
-// PublishUpdate publishes an update event
-func (c *Client) PublishUpdate(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = UpdateEventType
-
-	return c.publish(ctx, UpdateEventType, actor, location, data)
-}
-
-// PublishDelete publishes a delete event
-func (c *Client) PublishDelete(ctx context.Context, actor, location string, data *pubsubx.Message) error {
-	data.EventType = DeleteEventType
-	return c.publish(ctx, DeleteEventType, actor, location, data)
+// PublishEvent sets the action of the message and then publishes the message
+func (c *Client) PublishEvent(ctx context.Context, action, subject, location string, data *pubsubx.EventMessage) error {
+	return c.publish(ctx, action, "events", subject, location, data)
 }
 
 // publish publishes an event
-func (c *Client) publish(_ context.Context, action, actor, location string, data interface{}) error {
-	subject := fmt.Sprintf("%s.%s.%s.%s", prefix, actor, action, location)
-	c.logger.Debug("publishing nats message", zap.String("nats.subject", subject))
+func (c *Client) publish(_ context.Context, action, eventType, subject, location string, data interface{}) error {
+	prefix := viper.GetString("nats.subject-prefix")
+	natsSubject := fmt.Sprintf("%s.%s.%s.%s.%s.%s", prefix, eventType, action, subject, "location", location)
+	c.logger.Debug("publishing nats message", zap.String("nats.subject", natsSubject))
 
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	if _, err := c.js.Publish(subject, b); err != nil {
+	if _, err := c.js.Publish(natsSubject, b); err != nil {
 		return err
 	}
 

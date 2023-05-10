@@ -1,15 +1,23 @@
-package schema
+package schematype
 
 import (
+	"context"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/pkg/errors"
 
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
+
+	gen "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.infratographer.com/load-balancer-api/internal/pubsub/types"
 )
 
 // LoadBalancer holds the schema definition for the LoadBalancer entity.
@@ -127,6 +135,72 @@ func (LoadBalancer) Annotations() []schema.Annotation {
 		entgql.Mutations(
 			entgql.MutationCreate().Description("Input information to create a load balancer."),
 			entgql.MutationUpdate().Description("Input information to update a load balancer."),
+		),
+	}
+}
+
+// Hooks configures actions to take before and after mutations.
+func (LoadBalancer) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.LoadBalancerFunc(func(ctx context.Context, m *gen.LoadBalancerMutation) (ent.Value, error) {
+					val, err := next.Mutate(ctx, m)
+					if err != nil {
+						return nil, err
+					}
+
+					id, ok := m.ID()
+					if !ok {
+						err = errors.Wrap(err, "unable to retrieve load balancer id")
+						return val, err
+					}
+
+					tenant, ok := m.TenantID()
+					if !ok {
+						err = errors.Wrap(err, "unable to retrieve tenant id")
+						return val, err
+					}
+
+					location, ok := m.LocationID()
+					if !ok {
+						location = "api"
+					}
+
+					provider, ok := m.ProviderID()
+					if !ok {
+						err = errors.Wrap(err, "unable to retrieve provider id")
+						return val, err
+					}
+
+					// TODO: Add actor to context once JWT integration is complete
+					//  actorStr := ctx.Value("actor").(string)
+
+					msg, err := pubsub.NewMessage(
+						tenant.String(),
+						pubsub.WithEventType(types.OpToAction[m.Op()]),
+						pubsub.WithSource("load-balancer-api"),
+						pubsub.WithSubjectID(id.String()),
+						pubsub.WithAdditionalSubjectIDs(location.String(), provider.String()),
+						pubsub.WithActorID("testact-lkjasdflkjas"),
+						// pubsub.WithActorID(actorStr)
+					)
+
+					if err != nil {
+						err = errors.Wrap(err, "failed to create message")
+						return val, err
+					}
+
+					if err := m.PubsubClient.PublishChange(ctx, types.OpToAction[m.Op()], types.TypeToSubject[gen.TypeLoadBalancer], location.String(), msg); err != nil {
+						err = errors.Wrap(err, "failed to publish event")
+						return val, err
+					}
+
+					return val, nil
+				})
+			},
+			// Limit the hook only for these operations.
+			ent.OpCreate|ent.OpUpdate|ent.OpDelete,
 		),
 	}
 }

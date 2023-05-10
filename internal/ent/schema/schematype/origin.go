@@ -1,4 +1,4 @@
-package schema
+package schematype
 
 import (
 	"entgo.io/contrib/entgql"
@@ -92,4 +92,9 @@ func (Origin) Annotations() []schema.Annotation {
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
+}
+
+// Hooks configures actions to take before and after mutations.
+func (Origin) Hooks() []ent.Hook {
+	return []ent.Hook{}
 }

@@ -23,6 +23,8 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"go.infratographer.com/x/entx"
+
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 func main() {
@@ -54,9 +56,12 @@ func main() {
 		),
 		entc.TemplateDir("./internal/ent/templates"),
 		entc.FeatureNames("intercept"),
+		entc.Dependency(
+			entc.DependencyType(&pubsub.Client{}),
+		),
 	}
 
-	if err := entc.Generate("./internal/ent/schema", &gen.Config{
+	if err := entc.Generate("./internal/ent/schema/schematype", &gen.Config{
 		Target:   "./internal/ent/generated",
 		Package:  "go.infratographer.com/load-balancer-api/internal/ent/generated",
 		Header:   entx.CopyrightHeader,

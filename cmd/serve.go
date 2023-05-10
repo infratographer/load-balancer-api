@@ -18,6 +18,8 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/config"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
+
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime" // import runtime to avoid hooks import cycle
 )
 
 const (
@@ -90,6 +92,12 @@ func serve(ctx context.Context) error {
 		config.AppConfig.Server.WithMiddleware(middleware.CORS())
 	}
 
+	natsClient, err := configureNatsClient()
+	if err != nil {
+		logger.Error("failed to configure nats client", zap.Error(err))
+		return err
+	}
+
 	cOpts := []ent.Option{}
 
 	if config.AppConfig.Logging.Debug {
@@ -98,6 +106,8 @@ func serve(ctx context.Context) error {
 			ent.Debug(),
 		)
 	}
+
+	cOpts = append(cOpts, ent.PubsubClient(natsClient))
 
 	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1", cOpts...)
 	if err != nil {

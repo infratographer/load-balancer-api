@@ -26,3 +26,9 @@ debugConfig.yaml
 
 # helm test
 test-output/
+
+# vscode
+.vscode
+
+# binary
+load-balancer-api

@@ -1,4 +1,4 @@
-package schema
+package schematype
 
 import (
 	"entgo.io/contrib/entgql"
@@ -81,4 +81,9 @@ func (Pool) Annotations() []schema.Annotation {
 		entgql.QueryField(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
+}
+
+// Hooks configures actions to take before and after mutations.
+func (Pool) Hooks() []ent.Hook {
+	return []ent.Hook{}
 }

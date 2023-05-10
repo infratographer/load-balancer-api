@@ -1,4 +1,4 @@
-package schema
+package schematype
 
 import (
 	"entgo.io/contrib/entgql"
@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 )
@@ -85,4 +86,9 @@ func (Provider) Annotations() []schema.Annotation {
 			entgql.MutationUpdate().Description("Input information to update a load balancer provider."),
 		),
 	}
+}
+
+// Hooks configures actions to take before and after mutations.
+func (Provider) Hooks() []ent.Hook {
+	return []ent.Hook{}
 }
