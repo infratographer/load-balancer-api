@@ -178,7 +178,7 @@ func (Port) Hooks() []ent.Hook {
 				})
 			},
 			// Limit the hook only for these operations.
-			ent.OpCreate|ent.OpUpdate|ent.OpDelete,
+			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne|ent.OpDelete|ent.OpDeleteOne,
 		),
 	}
 }
