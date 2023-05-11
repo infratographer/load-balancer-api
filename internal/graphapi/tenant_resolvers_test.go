@@ -74,7 +74,7 @@ func TestTenantLoadBalancersResolver(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().GetTenantLoadBalancers(ctx, tt.TenantID, tt.OrderBy)
+			resp, err := newGraphTestClient().GetTenantLoadBalancers(ctx, tt.TenantID, tt.OrderBy)
 
 			if tt.errorMsg != "" {
 				assert.Error(t, err)

@@ -16,7 +16,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
 
-	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
+	createdPortResp, err := newGraphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
 		Name:           name,
 		LoadBalancerID: lb.ID,
 		Number:         22,
@@ -35,7 +35,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 
 	// Update the Port
 	newPort := int64(gofakeit.Number(1, 65535))
-	updatedPort, err := graphTestClient().LoadBalancerPortUpdate(ctx, createdPort.ID, graphclient.UpdateLoadBalancerPortInput{Number: &newPort})
+	updatedPort, err := newGraphTestClient().LoadBalancerPortUpdate(ctx, createdPort.ID, graphclient.UpdateLoadBalancerPortInput{Number: &newPort})
 
 	require.NoError(t, err)
 	require.NotNil(t, updatedPort)
@@ -43,20 +43,20 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	require.Equal(t, newPort, updatedPort.LoadBalancerPortUpdate.LoadBalancerPort.Number)
 
 	// Query the Port
-	queryPort, err := graphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
+	queryPort, err := newGraphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
 	require.NoError(t, err)
 	require.NotNil(t, queryPort)
 	require.Len(t, queryPort.LoadBalancer.Ports.Edges, 1)
 	require.Equal(t, newPort, queryPort.LoadBalancer.Ports.Edges[0].Node.Number)
 
 	// Delete the Port
-	deletedResp, err := graphTestClient().LoadBalancerPortDelete(ctx, createdPort.ID)
+	deletedResp, err := newGraphTestClient().LoadBalancerPortDelete(ctx, createdPort.ID)
 	require.NoError(t, err)
 	require.NotNil(t, deletedResp)
 	require.EqualValues(t, createdPort.ID, deletedResp.LoadBalancerPortDelete.DeletedID.String())
 
 	// Query the Port
-	queryPort, err = graphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
+	queryPort, err = newGraphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
 	// The Load balancer still exists so this doesn't cause a failure
 	require.NoError(t, err)
 	require.Len(t, queryPort.LoadBalancer.Ports.Edges, 0)

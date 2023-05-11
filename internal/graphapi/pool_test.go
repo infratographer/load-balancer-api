@@ -50,7 +50,7 @@ func TestQueryPool(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().GetLoadBalancerPool(ctx, tt.QueryID)
+			resp, err := newGraphTestClient().GetLoadBalancerPool(ctx, tt.QueryID)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -122,7 +122,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			createdPoolResp, err := graphTestClient().LoadBalancerPoolCreate(ctx, tt.Input)
+			createdPoolResp, err := newGraphTestClient().LoadBalancerPoolCreate(ctx, tt.Input)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -200,7 +200,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			updatedPoolResp, err := graphTestClient().LoadBalancerPoolUpdate(ctx, pool1.ID, tt.Input)
+			updatedPoolResp, err := newGraphTestClient().LoadBalancerPoolUpdate(ctx, pool1.ID, tt.Input)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -250,7 +250,7 @@ func TestMutate_PoolDelete(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			poolDeleteResp, err := graphTestClient().LoadBalancerPoolDelete(ctx, tt.DeleteID)
+			poolDeleteResp, err := newGraphTestClient().LoadBalancerPoolDelete(ctx, tt.DeleteID)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.Nil(t, poolDeleteResp)

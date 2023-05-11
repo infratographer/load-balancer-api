@@ -1,3 +1,6 @@
+//go:build testtools
+// +build testtools
+
 package graphapi_test
 
 import (
@@ -19,6 +22,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"go.uber.org/zap"
+
+	"go.infratographer.com/x/echojwtx"
+	"go.infratographer.com/x/echox"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
@@ -143,11 +149,39 @@ func errPanic(msg string, err error) {
 	}
 }
 
-func graphTestClient() graphclient.GraphClient {
-	return graphclient.NewClient(&http.Client{Transport: localRoundTripper{handler: handler.NewDefaultServer(
-		graphapi.NewExecutableSchema(
-			graphapi.Config{Resolvers: graphapi.NewResolver(EntClient, zap.NewNop().Sugar())},
-		))}}, "graph")
+type graphTestClient struct {
+	srvURL     string
+	httpClient *http.Client
+}
+
+type graphClientOptions func(*graphTestClient)
+
+func withGraphClientServerURL(url string) graphClientOptions {
+	return func(g *graphTestClient) {
+		g.srvURL = url
+	}
+}
+
+func withGraphClientHTTPClient(httpcli *http.Client) graphClientOptions {
+	return func(g *graphTestClient) {
+		g.httpClient = httpcli
+	}
+}
+
+func newGraphTestClient(options ...graphClientOptions) graphclient.GraphClient {
+	g := &graphTestClient{
+		srvURL: "graph",
+		httpClient: &http.Client{Transport: localRoundTripper{handler: handler.NewDefaultServer(
+			graphapi.NewExecutableSchema(
+				graphapi.Config{Resolvers: graphapi.NewResolver(EntClient, zap.NewNop().Sugar())},
+			))}},
+	}
+
+	for _, opt := range options {
+		opt(g)
+	}
+
+	return graphclient.NewClient(g.httpClient, g.srvURL)
 }
 
 // localRoundTripper is an http.RoundTripper that executes HTTP transactions
@@ -161,6 +195,29 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	l.handler.ServeHTTP(w, req)
 
 	return w.Result(), nil
+}
+
+func newTestServer(authConfig *echojwtx.AuthConfig) (*httptest.Server, error) {
+	echoCfg := echox.Config{}
+
+	if authConfig != nil {
+		auth, err := echojwtx.NewAuth(context.Background(), *authConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		echoCfg = echoCfg.WithMiddleware(auth.Middleware())
+	}
+
+	srv, err := echox.NewServer(zap.NewNop(), echoCfg, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r := graphapi.NewResolver(EntClient, zap.NewNop().Sugar())
+	srv.AddHandler(r.Handler(false))
+
+	return httptest.NewServer(srv.Handler()), nil
 }
 
 func newString(s string) *string {

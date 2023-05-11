@@ -43,7 +43,7 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().GetLoadBalancerProvider(ctx, tt.QueryID)
+			resp, err := newGraphTestClient().GetLoadBalancerProvider(ctx, tt.QueryID)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -67,7 +67,7 @@ func TestFullProviderLifecycle(t *testing.T) {
 	name := gofakeit.DomainName()
 
 	// create the Provider
-	createdResp, err := graphTestClient().LoadBalancerProviderCreate(ctx, graphclient.CreateLoadBalancerProviderInput{
+	createdResp, err := newGraphTestClient().LoadBalancerProviderCreate(ctx, graphclient.CreateLoadBalancerProviderInput{
 		Name:     name,
 		TenantID: tenantID,
 	})
@@ -84,7 +84,7 @@ func TestFullProviderLifecycle(t *testing.T) {
 
 	// Update the Provider
 	newName := gofakeit.DomainName()
-	updatedLBResp, err := graphTestClient().LoadBalancerProviderUpdate(ctx, createdProv.ID, graphclient.UpdateLoadBalancerProviderInput{Name: &newName})
+	updatedLBResp, err := newGraphTestClient().LoadBalancerProviderUpdate(ctx, createdProv.ID, graphclient.UpdateLoadBalancerProviderInput{Name: &newName})
 
 	require.NoError(t, err)
 	require.NotNil(t, updatedLBResp)
@@ -95,21 +95,21 @@ func TestFullProviderLifecycle(t *testing.T) {
 	require.Equal(t, newName, updatedLB.Name)
 
 	// Query the Provider
-	queryLB, err := graphTestClient().GetLoadBalancerProvider(ctx, createdProv.ID)
+	queryLB, err := newGraphTestClient().GetLoadBalancerProvider(ctx, createdProv.ID)
 	require.NoError(t, err)
 	require.NotNil(t, queryLB)
 	require.NotNil(t, queryLB.LoadBalancerProvider)
 	require.Equal(t, newName, queryLB.LoadBalancerProvider.Name)
 
 	// Delete the Provider
-	deletedResp, err := graphTestClient().LoadBalancerProviderDelete(ctx, createdProv.ID)
+	deletedResp, err := newGraphTestClient().LoadBalancerProviderDelete(ctx, createdProv.ID)
 	require.NoError(t, err)
 	require.NotNil(t, deletedResp)
 	require.NotNil(t, deletedResp.LoadBalancerProviderDelete)
 	require.EqualValues(t, createdProv.ID, deletedResp.LoadBalancerProviderDelete.DeletedID.String())
 
 	// Query the Provider to ensure it's no longer available
-	deletedLB, err := graphTestClient().GetLoadBalancerProvider(ctx, createdProv.ID)
+	deletedLB, err := newGraphTestClient().GetLoadBalancerProvider(ctx, createdProv.ID)
 	require.Error(t, err)
 	require.Nil(t, deletedLB)
 	require.ErrorContains(t, err, "provider not found")

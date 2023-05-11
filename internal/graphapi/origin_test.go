@@ -47,7 +47,7 @@ func TestQueryPoolOrigin(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			poolOriginResp, err := graphTestClient().GetLoadBalancerPoolOrigin(ctx, pool1.ID, tt.QueryID)
+			poolOriginResp, err := newGraphTestClient().GetLoadBalancerPoolOrigin(ctx, pool1.ID, tt.QueryID)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -139,7 +139,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			createdOriginResp, err := graphTestClient().LoadBalancerOriginCreate(ctx, tt.Input)
+			createdOriginResp, err := newGraphTestClient().LoadBalancerOriginCreate(ctx, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -223,7 +223,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			updatedOriginResp, err := graphTestClient().LoadBalancerOriginUpdate(ctx, tt.OriginID, tt.Input)
+			updatedOriginResp, err := newGraphTestClient().LoadBalancerOriginUpdate(ctx, tt.OriginID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -277,7 +277,7 @@ func TestMutate_OriginDelete(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			deletedOriginResp, err := graphTestClient().LoadBalancerOriginDelete(ctx, tt.OriginID)
+			deletedOriginResp, err := newGraphTestClient().LoadBalancerOriginDelete(ctx, tt.OriginID)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
