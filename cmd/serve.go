@@ -11,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
@@ -51,6 +52,7 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	echox.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
+	echojwtx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 
 	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
@@ -110,6 +112,23 @@ func serve(ctx context.Context) error {
 	if err := client.Schema.Create(ctx); err != nil {
 		logger.Errorf("failed creating schema resources", zap.Error(err))
 		return err
+	}
+
+	// jwt auth middleware
+	if !serveDevMode {
+		if authconfig, err := echojwtx.AuthConfigFromViper(viper.GetViper()); err != nil {
+			logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
+		} else if authconfig != nil {
+			config.AppConfig.AuthConfig = *authconfig
+			config.AppConfig.AuthConfig.JWTConfig.Skipper = echox.SkipDefaultEndpoints
+
+			auth, err := echojwtx.NewAuth(ctx, config.AppConfig.AuthConfig)
+			if err != nil {
+				logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
+			}
+
+			config.AppConfig.Server = config.AppConfig.Server.WithMiddleware(auth.Middleware())
+		}
 	}
 
 	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
