@@ -149,27 +149,27 @@ func errPanic(msg string, err error) {
 	}
 }
 
-type graphTestClient struct {
+type graphClient struct {
 	srvURL     string
 	httpClient *http.Client
 }
 
-type graphClientOptions func(*graphTestClient)
+type graphClientOptions func(*graphClient)
 
 func withGraphClientServerURL(url string) graphClientOptions {
-	return func(g *graphTestClient) {
+	return func(g *graphClient) {
 		g.srvURL = url
 	}
 }
 
 func withGraphClientHTTPClient(httpcli *http.Client) graphClientOptions {
-	return func(g *graphTestClient) {
+	return func(g *graphClient) {
 		g.httpClient = httpcli
 	}
 }
 
-func newGraphTestClient(options ...graphClientOptions) graphclient.GraphClient {
-	g := &graphTestClient{
+func graphTestClient(options ...graphClientOptions) graphclient.GraphClient {
+	g := &graphClient{
 		srvURL: "graph",
 		httpClient: &http.Client{Transport: localRoundTripper{handler: handler.NewDefaultServer(
 			graphapi.NewExecutableSchema(

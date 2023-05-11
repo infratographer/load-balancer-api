@@ -26,7 +26,7 @@ func TestJWTEnabledLoadbalancerGETWithAuthClient(t *testing.T) {
 	ctx := context.Background()
 	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
 
-	resp, err := newGraphTestClient(
+	resp, err := graphTestClient(
 		withGraphClientHTTPClient(oauthCLI),
 		withGraphClientServerURL(srv.URL+"/query"),
 	).GetLoadBalancer(ctx, lb1.ID)
@@ -52,7 +52,7 @@ func TestJWTENabledLoadbalancerGETWithDefaultClient(t *testing.T) {
 	ctx := context.Background()
 	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
 
-	resp, err := newGraphTestClient(
+	resp, err := graphTestClient(
 		withGraphClientHTTPClient(http.DefaultClient),
 		withGraphClientServerURL(srv.URL+"/query"),
 	).GetLoadBalancer(ctx, lb1.ID)
