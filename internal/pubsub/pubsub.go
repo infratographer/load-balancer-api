@@ -29,6 +29,7 @@ func (c *Client) PublishChange(ctx context.Context, action, subject, location st
 
 // PublishEvent sets the action of the message and then publishes the message
 func (c *Client) PublishEvent(ctx context.Context, action, subject, location string, data *pubsubx.EventMessage) error {
+	data.EventType = action
 	return c.publish(ctx, action, "events", subject, location, data)
 }
 

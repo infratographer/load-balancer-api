@@ -17,13 +17,20 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/nats-io/nats.go"
+	"github.com/spf13/viper"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
+
+	natssrv "github.com/nats-io/nats-server/v2/server"
+
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 )
 
 const (
@@ -93,7 +100,19 @@ func setupDB() {
 
 	dia, uri, cntr := parseDBURI(ctx)
 
-	c, err := ent.Open(dia, uri, ent.Debug())
+	viper.Set("nats.subject-prefix", "com.infratographer")
+
+	ns, err := pubsub.StartNatsServer()
+	if err != nil {
+		errPanic("failed to start nats server", err)
+	}
+
+	natsClient, err := newNatsClient(ns)
+	if err != nil {
+		errPanic("failed to generate nats client", err)
+	}
+
+	c, err := ent.Open(dia, uri, ent.Debug(), ent.PubsubClient(natsClient))
 	if err != nil {
 		errPanic("failed terminating test db container after failing to connect to the db", cntr.Container.Terminate(ctx))
 		errPanic("failed opening connection to database:", err)
@@ -173,4 +192,33 @@ func newBool(b bool) *bool {
 
 func newInt64(i int64) *int64 {
 	return &i
+}
+
+func newNatsClient(srv *natssrv.Server) (*pubsub.Client, error) {
+	nc, err := nats.Connect(srv.ClientURL())
+	if err != nil {
+		// errPanic("teardown failed to terminate test db container", DBContainer.Container.Terminate(ctx))
+		return &pubsub.Client{}, err
+	}
+
+	js, err := nc.JetStream()
+	if err != nil {
+		return &pubsub.Client{}, err
+	}
+
+	_, err = js.AddStream(&nats.StreamConfig{
+		Name:     "load-balancer-api",
+		Subjects: []string{"com.infratographer.events.>", "com.infratographer.changes.>"},
+	})
+	if err != nil {
+		return &pubsub.Client{}, err
+	}
+
+	client := pubsub.NewClient(pubsub.WithJetreamContext(js),
+		pubsub.WithLogger(zap.NewNop().Sugar()),
+		pubsub.WithStreamName("load-balancer-api"),
+		pubsub.WithSubjectPrefix("com.infratographer"),
+	)
+
+	return client, nil
 }

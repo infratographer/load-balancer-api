@@ -32,3 +32,6 @@ test-output/
 
 # binary
 load-balancer-api
+
+#test-coverage
+coverage.txt

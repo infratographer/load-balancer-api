@@ -32,8 +32,7 @@ func configureNatsClient() (*pubsub.Client, error) {
 		pubsub.WithSubjectPrefix(viper.GetString("nats.subject-prefix")),
 	)
 
-	_, err = client.AddStream()
-	if err != nil {
+	if _, err = client.AddStream(); err != nil {
 		return &pubsub.Client{}, err
 	}
 
