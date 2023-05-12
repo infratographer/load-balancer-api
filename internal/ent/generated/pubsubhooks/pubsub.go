@@ -50,13 +50,11 @@ func LoadBalancerHooks() []ent.Hook {
 					}
 
 					changeset := []pubsubx.FieldChange{}
-					created_at, ok := m.CreatedAt()
 					cv_created_at := ""
+					created_at, ok := m.CreatedAt()
 
 					if ok {
 						cv_created_at = created_at.Format(time.RFC3339)
-						queueName = strings.ReplaceAll(queueName, "%created_at%", cv_created_at)
-
 						pv_created_at := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldCreatedAt(ctx)
@@ -74,13 +72,11 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					updated_at, ok := m.UpdatedAt()
 					cv_updated_at := ""
+					updated_at, ok := m.UpdatedAt()
 
 					if ok {
 						cv_updated_at = updated_at.Format(time.RFC3339)
-						queueName = strings.ReplaceAll(queueName, "%updated_at%", cv_updated_at)
-
 						pv_updated_at := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldUpdatedAt(ctx)
@@ -98,13 +94,11 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					name, ok := m.Name()
 					cv_name := ""
+					name, ok := m.Name()
 
 					if ok {
 						cv_name = fmt.Sprintf("%s", name)
-						queueName = strings.ReplaceAll(queueName, "%name%", cv_name)
-
 						pv_name := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldName(ctx)
@@ -122,8 +116,8 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					tenant_id, ok := m.TenantID()
 					cv_tenant_id := ""
+					tenant_id, ok := m.TenantID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
 						tenant_id, err = m.OldTenantID(ctx)
@@ -135,8 +129,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					if ok {
 						cv_tenant_id = fmt.Sprintf("%s", tenant_id)
-						queueName = strings.ReplaceAll(queueName, "%tenant_id%", cv_tenant_id)
-
 						pv_tenant_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldTenantID(ctx)
@@ -154,8 +146,8 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					location_id, ok := m.LocationID()
 					cv_location_id := ""
+					location_id, ok := m.LocationID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
 						location_id, err = m.OldLocationID(ctx)
@@ -185,8 +177,8 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					provider_id, ok := m.ProviderID()
 					cv_provider_id := ""
+					provider_id, ok := m.ProviderID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
 						provider_id, err = m.OldProviderID(ctx)
@@ -198,8 +190,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					if ok {
 						cv_provider_id = fmt.Sprintf("%s", provider_id)
-						queueName = strings.ReplaceAll(queueName, "%provider_id%", cv_provider_id)
-
 						pv_provider_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldProviderID(ctx)

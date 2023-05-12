@@ -59,9 +59,9 @@
 										CurrentValue:  "<redacted>",
 									})
 							{{- else }}
-								{{ $f.Name }}, ok := m.{{ $f.MutationGet }}()
 								{{- $currentValue := print "cv_" $f.Name }}
 								{{ $currentValue }} := ""
+								{{ $f.Name }}, ok := m.{{ $f.MutationGet }}()
 								{{- $annotation := $f.Annotations.INFRA9_PUBSUBHOOK }}
 								{{- if or $annotation.IsAdditionalSubjectField (contains $nodeAnnotation.QueueName $f.Name) }}
 									if !ok && !m.Op().Is(ent.OpCreate) {
@@ -104,8 +104,7 @@
 											{{- else }}
 												{{ $currentValue }} = fmt.Sprintf("%s", {{ $f.Name }})
 											{{- end }}
-											queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
-										{{ end }}
+										{{- end }}
 
 										{{- $prevVar := print "pv_" $f.Name }}
 										{{ $prevVar }} := ""
