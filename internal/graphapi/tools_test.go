@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
@@ -121,6 +122,8 @@ func setupDB() {
 		// Execute the command
 		errPanic("atlas returned an error running database migrations", cmd.Run())
 	}
+
+	pubsubhooks.PubsubHooks(c)
 
 	EntClient = c
 }
