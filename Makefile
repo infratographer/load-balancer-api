@@ -75,12 +75,13 @@ generate: background-run .generate kill-running ## Generates code
 go-run: ## Runs the app
 	@echo --- Running binary...
 	@date --rfc-3339=seconds
-	@go run main.go serve --playground
+	@go run main.go serve --dev
 
 background-run:  ## Runs in the app in the background
 	@date --rfc-3339=seconds
 	@if [ ! -f "${PID_FILE}" ]; then \
-		echo --- Running binary in the background...; go run main.go serve --pid-file=${PID_FILE} & \
+		echo --- Running binary in the background...; \
+		go run main.go serve --pid-file=${PID_FILE} --dev & \
 	else \
 		echo --- Binary already running in the background...; \
 	fi
