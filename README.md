@@ -1,3 +1,4 @@
+![logo](https://github.com/infratographer/website/blob/main/source/theme/assets/pictures/logo.jpg?raw=true)
 # Load Balancer API
 
 Load Balancer API implemented in GraphQL that provides a way to manage and control load balancers using GraphQL queries and mutations. Load Balancers are one subgraph of the Infratographer [federated API](https://www.apollographql.com/docs/federation/). The GraphQL API provides an efficient and precise data retrieval for the related compenents that are external to Load Balancers subgraph, such as [Tenants](https://github.com/infratographer/tenant-api) and [Locations](https://github.com/infratographer/location-api).
