@@ -34,6 +34,7 @@ import (
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 
 	natssrv "github.com/nats-io/nats-server/v2/server"
+
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 

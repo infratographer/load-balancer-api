@@ -7,7 +7,9 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
+
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 )
