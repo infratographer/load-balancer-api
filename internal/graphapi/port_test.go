@@ -2,6 +2,7 @@ package graphapi_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -51,6 +52,8 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 
 	// Delete the Port
 	deletedResp, err := graphTestClient().LoadBalancerPortDelete(ctx, createdPort.ID)
+	fmt.Println(err)
+	fmt.Println(deletedResp)
 	require.NoError(t, err)
 	require.NotNil(t, deletedResp)
 	require.EqualValues(t, createdPort.ID, deletedResp.LoadBalancerPortDelete.DeletedID.String())

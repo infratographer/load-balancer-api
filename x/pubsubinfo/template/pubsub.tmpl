@@ -82,7 +82,7 @@
 										{{- else if $f.HasValueScanner }}
 											{{ $currentValue }} = {{ $f.Name }}.Value()
 										{{- else }}
-											{{ $currentValue }} = fmt.Sprintf("%s", {{ $f.Name }})
+											{{ $currentValue }} = fmt.Sprintf("%s", fmt.Sprint({{ $f.Name }}))
 										{{- end }}
 										queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
 									{{ end }}
@@ -102,7 +102,7 @@
 											{{- else if $f.HasValueScanner }}
 												{{ $currentValue }} = {{ $f.Name }}.Value()
 											{{- else }}
-												{{ $currentValue }} = fmt.Sprintf("%s", {{ $f.Name }})
+												{{ $currentValue }} = fmt.Sprintf("%s", fmt.Sprint({{ $f.Name }}))
 											{{- end }}
 										{{- end }}
 
@@ -118,7 +118,7 @@
 												{{- else if $f.HasValueScanner }}
 												{{ $prevVar }} = ov.Value()
 												{{- else }}
-												{{ $prevVar }} = fmt.Sprintf("%s", ov)
+												{{ $prevVar }} = fmt.Sprintf("%s", fmt.Sprint(ov))
 												{{- end }}
 											}
 										}
@@ -170,7 +170,7 @@
 			// Delete Hook
 			hook.On(
 				func(next ent.Mutator) ent.Mutator {
-					return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
+					return hook.{{ $node.Name }}Func(func(ctx context.Context, m *generated.{{ $node.Name }}Mutation) (ent.Value, error) {
 						queueName := "{{ $nodeAnnotation.QueueName }}"
 						additionalSubjects := []gidx.PrefixedID{}
 

@@ -99,14 +99,14 @@ func LoadBalancerHooks() []ent.Hook {
 					name, ok := m.Name()
 
 					if ok {
-						cv_name = fmt.Sprintf("%s", name)
+						cv_name = fmt.Sprintf("%s", fmt.Sprint(name))
 						pv_name := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldName(ctx)
 							if err != nil {
 								pv_name = "<unknown>"
 							} else {
-								pv_name = fmt.Sprintf("%s", ov)
+								pv_name = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -129,14 +129,14 @@ func LoadBalancerHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, tenant_id)
 
 					if ok {
-						cv_tenant_id = fmt.Sprintf("%s", tenant_id)
+						cv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(tenant_id))
 						pv_tenant_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldTenantID(ctx)
 							if err != nil {
 								pv_tenant_id = "<unknown>"
 							} else {
-								pv_tenant_id = fmt.Sprintf("%s", ov)
+								pv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -157,7 +157,7 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 					additionalSubjects = append(additionalSubjects, location_id)
-					cv_location_id = fmt.Sprintf("%s", location_id)
+					cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
 					queueName = strings.ReplaceAll(queueName, "%location_id%", cv_location_id)
 
 					if ok {
@@ -167,7 +167,7 @@ func LoadBalancerHooks() []ent.Hook {
 							if err != nil {
 								pv_location_id = "<unknown>"
 							} else {
-								pv_location_id = fmt.Sprintf("%s", ov)
+								pv_location_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -190,14 +190,14 @@ func LoadBalancerHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, provider_id)
 
 					if ok {
-						cv_provider_id = fmt.Sprintf("%s", provider_id)
+						cv_provider_id = fmt.Sprintf("%s", fmt.Sprint(provider_id))
 						pv_provider_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldProviderID(ctx)
 							if err != nil {
 								pv_provider_id = "<unknown>"
 							} else {
-								pv_provider_id = fmt.Sprintf("%s", ov)
+								pv_provider_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -377,14 +377,14 @@ func PortHooks() []ent.Hook {
 					number, ok := m.Number()
 
 					if ok {
-						cv_number = fmt.Sprintf("%s", number)
+						cv_number = fmt.Sprintf("%s", fmt.Sprint(number))
 						pv_number := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldNumber(ctx)
 							if err != nil {
 								pv_number = "<unknown>"
 							} else {
-								pv_number = fmt.Sprintf("%s", ov)
+								pv_number = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -399,14 +399,14 @@ func PortHooks() []ent.Hook {
 					name, ok := m.Name()
 
 					if ok {
-						cv_name = fmt.Sprintf("%s", name)
+						cv_name = fmt.Sprintf("%s", fmt.Sprint(name))
 						pv_name := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldName(ctx)
 							if err != nil {
 								pv_name = "<unknown>"
 							} else {
-								pv_name = fmt.Sprintf("%s", ov)
+								pv_name = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -429,14 +429,14 @@ func PortHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, load_balancer_id)
 
 					if ok {
-						cv_load_balancer_id = fmt.Sprintf("%s", load_balancer_id)
+						cv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(load_balancer_id))
 						pv_load_balancer_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldLoadBalancerID(ctx)
 							if err != nil {
 								pv_load_balancer_id = "<unknown>"
 							} else {
-								pv_load_balancer_id = fmt.Sprintf("%s", ov)
+								pv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
@@ -485,7 +485,7 @@ func PortHooks() []ent.Hook {
 		// Delete Hook
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
-				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
+				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
 					queueName := "load-balancer-port.%location_id%"
 					additionalSubjects := []gidx.PrefixedID{}
 
