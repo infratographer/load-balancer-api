@@ -26,3 +26,12 @@ debugConfig.yaml
 
 # helm test
 test-output/
+
+# test coverage
+coverage.txt
+
+# vscode
+.vscode
+
+# binary
+load-balancer-api

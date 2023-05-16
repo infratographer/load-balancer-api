@@ -17,6 +17,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 )
 
@@ -90,7 +91,13 @@ func serve(ctx context.Context) error {
 		config.AppConfig.Server.WithMiddleware(middleware.CORS())
 	}
 
-	cOpts := []ent.Option{}
+	natsClient, err := configureNatsClient()
+	if err != nil {
+		logger.Error("failed to configure nats client", zap.Error(err))
+		return err
+	}
+
+	cOpts := []ent.Option{ent.PubsubClient(natsClient)}
 
 	if config.AppConfig.Logging.Debug {
 		cOpts = append(cOpts,
@@ -105,6 +112,8 @@ func serve(ctx context.Context) error {
 		return err
 	}
 	defer client.Close()
+
+	pubsubhooks.PubsubHooks(client)
 
 	// Run the automatic migration tool to create all schema resources.
 	if err := client.Schema.Create(ctx); err != nil {

@@ -18,7 +18,6 @@ package pubsubhooks
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -26,8 +25,10 @@ import (
 	"entgo.io/ent"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema"
 	"go.infratographer.com/x/gidx"
 	"go.infratographer.com/x/pubsubx"
+	"golang.org/x/exp/slices"
 )
 
 func LoadBalancerHooks() []ent.Hook {
@@ -208,17 +209,33 @@ func LoadBalancerHooks() []ent.Hook {
 					}
 
 					msg := pubsubx.ChangeMessage{
-						EventType:            fmt.Sprintf("%s.%s", eventType(m.Op()), queueName),
+						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
 						AdditionalSubjectIDs: additionalSubjects,
 						Timestamp:            time.Now().UTC(),
 						FieldChanges:         changeset,
 					}
 
-					fmt.Println("Pubsub message to send: ")
+					fmt.Println(queueName)
 
-					b, err := json.MarshalIndent(msg, "", "  ")
-					fmt.Println(string(b))
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -251,6 +268,19 @@ func LoadBalancerHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
 
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							// msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
@@ -258,16 +288,252 @@ func LoadBalancerHooks() []ent.Hook {
 					}
 
 					msg := pubsubx.ChangeMessage{
-						EventType:            fmt.Sprintf("%s.%s", eventType(m.Op()), queueName),
+						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
 						AdditionalSubjectIDs: additionalSubjects,
 						Timestamp:            time.Now().UTC(),
 					}
 
-					fmt.Println("Pubsub message to send: ")
+					fmt.Println(queueName)
 
-					b, err := json.MarshalIndent(msg, "", "  ")
-					fmt.Println(string(b))
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
+
+					return retValue, nil
+				})
+			},
+			ent.OpDelete|ent.OpDeleteOne,
+		),
+	}
+}
+func PortHooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					queueName := "load-balancer-port.%location_id%"
+					additionalSubjects := []gidx.PrefixedID{}
+
+					objID, ok := m.ID()
+					if !ok {
+						return nil, fmt.Errorf("object doesn't have an id %s", objID)
+					}
+
+					changeset := []pubsubx.FieldChange{}
+					cv_created_at := ""
+					created_at, ok := m.CreatedAt()
+
+					if ok {
+						cv_created_at = created_at.Format(time.RFC3339)
+						pv_created_at := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldCreatedAt(ctx)
+							if err != nil {
+								pv_created_at = "<unknown>"
+							} else {
+								pv_created_at = ov.Format(time.RFC3339)
+							}
+						}
+
+						changeset = append(changeset, pubsubx.FieldChange{
+							Field:         "created_at",
+							PreviousValue: pv_created_at,
+							CurrentValue:  cv_created_at,
+						})
+					}
+
+					cv_updated_at := ""
+					updated_at, ok := m.UpdatedAt()
+
+					if ok {
+						cv_updated_at = updated_at.Format(time.RFC3339)
+						pv_updated_at := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldUpdatedAt(ctx)
+							if err != nil {
+								pv_updated_at = "<unknown>"
+							} else {
+								pv_updated_at = ov.Format(time.RFC3339)
+							}
+						}
+
+						changeset = append(changeset, pubsubx.FieldChange{
+							Field:         "updated_at",
+							PreviousValue: pv_updated_at,
+							CurrentValue:  cv_updated_at,
+						})
+					}
+
+					cv_number := ""
+					number, ok := m.Number()
+
+					if ok {
+						cv_number = fmt.Sprintf("%s", number)
+						pv_number := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldNumber(ctx)
+							if err != nil {
+								pv_number = "<unknown>"
+							} else {
+								pv_number = fmt.Sprintf("%s", ov)
+							}
+						}
+
+						changeset = append(changeset, pubsubx.FieldChange{
+							Field:         "number",
+							PreviousValue: pv_number,
+							CurrentValue:  cv_number,
+						})
+					}
+
+					cv_name := ""
+					name, ok := m.Name()
+
+					if ok {
+						cv_name = fmt.Sprintf("%s", name)
+						pv_name := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldName(ctx)
+							if err != nil {
+								pv_name = "<unknown>"
+							} else {
+								pv_name = fmt.Sprintf("%s", ov)
+							}
+						}
+
+						changeset = append(changeset, pubsubx.FieldChange{
+							Field:         "name",
+							PreviousValue: pv_name,
+							CurrentValue:  cv_name,
+						})
+					}
+
+					cv_load_balancer_id := ""
+					load_balancer_id, ok := m.LoadBalancerID()
+					if !ok && !m.Op().Is(ent.OpCreate) {
+						// since we are doing an update or delete and these fields didn't change, load the "old" value
+						load_balancer_id, err = m.OldLoadBalancerID(ctx)
+						if err != nil {
+							return nil, err
+						}
+					}
+					additionalSubjects = append(additionalSubjects, load_balancer_id)
+
+					if ok {
+						cv_load_balancer_id = fmt.Sprintf("%s", load_balancer_id)
+						pv_load_balancer_id := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldLoadBalancerID(ctx)
+							if err != nil {
+								pv_load_balancer_id = "<unknown>"
+							} else {
+								pv_load_balancer_id = fmt.Sprintf("%s", ov)
+							}
+						}
+
+						changeset = append(changeset, pubsubx.FieldChange{
+							Field:         "load_balancer_id",
+							PreviousValue: pv_load_balancer_id,
+							CurrentValue:  cv_load_balancer_id,
+						})
+					}
+
+					msg := pubsubx.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+						FieldChanges:         changeset,
+					}
+
+					fmt.Println(queueName)
+
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
+
+					return retValue, nil
+				})
+			},
+			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+		),
+
+		// Delete Hook
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
+					queueName := "load-balancer-port.%location_id%"
+					additionalSubjects := []gidx.PrefixedID{}
+
+					objID, ok := m.ID()
+					if !ok {
+						return nil, fmt.Errorf("object doesn't have an id %s", objID)
+					}
+
+					dbObj, err := m.Client().Port.Get(ctx, objID)
+					if err != nil {
+						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+					}
+
+					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
+
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							// msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					msg := pubsubx.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
+
+					fmt.Println(queueName)
+
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -280,17 +546,48 @@ func LoadBalancerHooks() []ent.Hook {
 func PubsubHooks(c *generated.Client) {
 	c.LoadBalancer.Use(LoadBalancerHooks()...)
 
+	c.Port.Use(PortHooks()...)
+
 }
 
 func eventType(op ent.Op) string {
 	switch op {
 	case ent.OpCreate:
-		return "created"
+		return "create"
 	case ent.OpUpdate, ent.OpUpdateOne:
-		return "updated"
+		return "update"
 	case ent.OpDelete, ent.OpDeleteOne:
-		return "deleted"
+		return "delete"
 	default:
 		return "unknown"
 	}
+}
+
+func eventSubject(objID gidx.PrefixedID) string {
+	switch objID.Prefix() {
+	case schema.LoadBalancerPrefix:
+		return "load-balancer"
+	case schema.PortPrefix:
+		return "load-balancer-port"
+	case schema.OriginPrefix:
+		return "load-balancer-origin"
+	case schema.PoolPrefix:
+		return "load-balancer-pool"
+	default:
+		return "unknown"
+	}
+}
+
+func getLocation(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) gidx.PrefixedID {
+	if id.Prefix() == schema.LoadBalancerPrefix {
+		return id
+	}
+
+	for _, id := range addID {
+		if id.Prefix() == schema.LoadBalancerPrefix {
+			return id
+		}
+	}
+
+	return ""
 }

@@ -134,17 +134,33 @@
 						{{ end }}
 
 					msg := pubsubx.ChangeMessage{
-						EventType:    					fmt.Sprintf("%s.%s", eventType(m.Op()), queueName),
+						EventType:    					eventType(m.Op()),
 						SubjectID:    					objID,
 						AdditionalSubjectIDs: 	additionalSubjects,
 						Timestamp: 							time.Now().UTC(),
 						FieldChanges: 					changeset,
 					}
 
-					fmt.Println("Pubsub message to send: ")
+					fmt.Println(queueName)
 
-					b, err := json.MarshalIndent(msg, "", "  ")
-					fmt.Println(string(b))
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 						return retValue, nil
 					})},
@@ -190,6 +206,19 @@
 							{{ end }}
 						{{ end }}
 
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							// msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
+
 					// we have all the info we need, now complete the mutation before we process the event
 						retValue, err := next.Mutate(ctx, m)
 						if err != nil {
@@ -197,16 +226,20 @@
 						}
 
 					msg := pubsubx.ChangeMessage{
-						EventType:    					fmt.Sprintf("%s.%s", eventType(m.Op()), queueName),
+						EventType:    					eventType(m.Op()),
 						SubjectID:    					objID,
 						AdditionalSubjectIDs: 	additionalSubjects,
 						Timestamp: 							time.Now().UTC(),
 					}
 
-					fmt.Println("Pubsub message to send: ")
 
-					b, err := json.MarshalIndent(msg, "", "  ")
-					fmt.Println(string(b))
+					fmt.Println(queueName)
+
+					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
+
+					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 						return retValue, nil
 					})},
@@ -227,16 +260,45 @@ func PubsubHooks(c *{{ $genPackage }}.Client) {
 }
 
 func eventType(op ent.Op) string {
-	switch op {
-	case ent.OpCreate:
-		return "created"
-	case ent.OpUpdate, ent.OpUpdateOne:
-		return "updated"
-	case ent.OpDelete, ent.OpDeleteOne:
-		return "deleted"
-	default:
-		return "unknown"
-	}
+        switch op {
+        case ent.OpCreate:
+                return "create"
+        case ent.OpUpdate, ent.OpUpdateOne:
+                return "update"
+        case ent.OpDelete, ent.OpDeleteOne:
+                return "delete"
+        default:
+                return "unknown"
+        }
+}
+
+func eventSubject(objID gidx.PrefixedID) string {
+        switch objID.Prefix(){
+        case schema.LoadBalancerPrefix:
+                return "load-balancer"
+        case schema.PortPrefix:
+                return "load-balancer-port"
+        case schema.OriginPrefix:
+                return "load-balancer-origin"
+        case schema.PoolPrefix:
+                return "load-balancer-pool"
+        default:
+                return "unknown"
+        }
+}
+
+func getLocation(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) (gidx.PrefixedID) {
+        if id.Prefix() == schema.LoadBalancerPrefix {
+                return id
+        }
+
+        for _, id := range addID {
+                if id.Prefix() == schema.LoadBalancerPrefix {
+                        return id
+                }
+        }
+
+        return ""
 }
 
 {{ end }}

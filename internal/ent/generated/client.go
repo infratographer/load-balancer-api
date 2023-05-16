@@ -36,6 +36,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/provider"
+	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 // Client is the client that holds all ent builders.
@@ -91,7 +92,8 @@ type (
 		// hooks to execute on mutations.
 		hooks *hooks
 		// interceptors to execute on queries.
-		inters *inters
+		inters       *inters
+		PubsubClient *pubsub.Client
 	}
 	// Option function to configure the client.
 	Option func(*config)
@@ -125,6 +127,13 @@ func Log(fn func(...any)) Option {
 func Driver(driver dialect.Driver) Option {
 	return func(c *config) {
 		c.driver = driver
+	}
+}
+
+// PubsubClient configures the PubsubClient.
+func PubsubClient(v *pubsub.Client) Option {
+	return func(c *config) {
+		c.PubsubClient = v
 	}
 }
 
