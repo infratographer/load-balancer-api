@@ -10,6 +10,8 @@ import (
 
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
 // LoadBalancer holds the schema definition for the LoadBalancer entity.
@@ -52,6 +54,7 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
 				entgql.OrderField("TENANT"),
+				pubsubinfo.AdditionalSubject(),
 			),
 		field.String("location_id").
 			GoType(gidx.PrefixedID("")).
@@ -61,6 +64,7 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(^entgql.SkipMutationCreateInput),
+				pubsubinfo.AdditionalSubject(),
 			),
 		field.String("provider_id").
 			GoType(gidx.PrefixedID("")).
@@ -70,6 +74,7 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(^entgql.SkipMutationCreateInput),
+				pubsubinfo.AdditionalSubject(),
 			),
 	}
 }
@@ -121,6 +126,7 @@ func (LoadBalancer) Indexes() []ent.Index {
 func (LoadBalancer) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
+		pubsubinfo.Annotation{QueueName: "load-balancers.%location_id%"},
 		schema.Comment("Representation of a load balancer."),
 		entgql.Implements("IPv4Addressable"),
 		entgql.RelayConnection(),

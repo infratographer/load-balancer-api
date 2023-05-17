@@ -3,11 +3,11 @@ package pubsub
 import "errors"
 
 var (
-	// ErrMissingEventSubjectURN is returned when the event subject urn is missing
-	ErrMissingEventSubjectURN = errors.New("missing event subject urn")
+	// ErrMissingEventSubjectID is returned when the event subject id is missing
+	ErrMissingEventSubjectID = errors.New("missing event subject id")
 
-	// ErrMissingEventActorURN is returned when the event actor urn is missing
-	ErrMissingEventActorURN = errors.New("missing event actor urn")
+	// ErrMissingEventActorID is returned when the event actor id is missing
+	ErrMissingEventActorID = errors.New("missing event actor id")
 
 	// ErrMissingEventSource is returned when the event source is missing
 	ErrMissingEventSource = errors.New("missing event source")

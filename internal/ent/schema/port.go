@@ -7,6 +7,9 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
+
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 )
@@ -54,6 +57,7 @@ func (Port) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				pubsubinfo.AdditionalSubject(),
 			),
 	}
 }
@@ -86,5 +90,6 @@ func (Port) Annotations() []schema.Annotation {
 		entgql.Type("LoadBalancerPort"),
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		pubsubinfo.Annotation{QueueName: "load-balancer-port.%location_id%"},
 	}
 }

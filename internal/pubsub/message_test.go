@@ -4,49 +4,50 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.infratographer.com/x/gidx"
 	"go.infratographer.com/x/pubsubx"
 )
 
 func Test_validatePubsubMessage(t *testing.T) {
 	tests := []struct {
 		name    string
-		msg     *pubsubx.Message
+		msg     *pubsubx.ChangeMessage
 		wantErr bool
 	}{
 		{
 			name: "valid message",
-			msg: &pubsubx.Message{
-				EventType:  "test",
-				Source:     "test",
-				SubjectURN: "foo",
-				ActorURN:   "bar",
+			msg: &pubsubx.ChangeMessage{
+				EventType: "test",
+				Source:    "test",
+				SubjectID: gidx.MustNewID("gidxtst"),
+				ActorID:   gidx.MustNewID("actorid"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing source",
-			msg: &pubsubx.Message{
-				EventType:  "test",
-				SubjectURN: "foo",
-				ActorURN:   "bar",
+			msg: &pubsubx.ChangeMessage{
+				EventType: "test",
+				SubjectID: gidx.MustNewID("gidxtst"),
+				ActorID:   gidx.MustNewID("actorid"),
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing subject urn",
-			msg: &pubsubx.Message{
+			msg: &pubsubx.ChangeMessage{
 				EventType: "test",
 				Source:    "test",
-				ActorURN:  "bar",
+				ActorID:   gidx.MustNewID("actorid"),
 			},
 			wantErr: true,
 		},
 		{
 			name: "missing actor urn",
-			msg: &pubsubx.Message{
-				EventType:  "test",
-				Source:     "test",
-				SubjectURN: "foo",
+			msg: &pubsubx.ChangeMessage{
+				EventType: "test",
+				Source:    "test",
+				SubjectID: gidx.MustNewID("gidxtst"),
 			},
 			wantErr: true,
 		},

@@ -31,6 +31,7 @@ require (
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/x v0.0.8
 	go.uber.org/zap v1.24.0
+	golang.org/x/exp v0.0.0-20230203172020-98cc5a0785f9
 )
 
 require (
@@ -137,7 +138,6 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
-	golang.org/x/exp v0.0.0-20230203172020-98cc5a0785f9 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
