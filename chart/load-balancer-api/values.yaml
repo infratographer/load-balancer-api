@@ -48,7 +48,6 @@ api:
   db:
     uriSecret: load-balancer-api-db-uri
     certSecret: load-balancer-api-db-ca
-  migrateOnInit: true
 
   oidc:
     enabled: false
