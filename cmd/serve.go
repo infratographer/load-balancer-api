@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"entgo.io/ent/dialect"
@@ -108,7 +109,9 @@ func serve(ctx context.Context) error {
 		)
 	}
 
-	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1", cOpts...)
+	dia, uri := parseDBURI()
+
+	client, err := ent.Open(dia, uri, cOpts...)
 	if err != nil {
 		logger.Error("failed opening connection to sqlite", zap.Error(err))
 		return err
@@ -155,4 +158,20 @@ func serve(ctx context.Context) error {
 	}
 
 	return err
+}
+
+func parseDBURI() (string, string) {
+	LBURI := os.Getenv("LOADBALANCERAPI_CRDB_URI")
+
+	switch {
+	// if you don't pass in a database we default to an in memory sqlite
+	case LBURI == "":
+		return dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1"
+	case strings.HasPrefix(LBURI, "sqlite://"):
+		return dialect.SQLite, LBURI
+	case strings.HasPrefix(LBURI, "postgres://"), strings.HasPrefix(LBURI, "postgresql://"):
+		return dialect.Postgres, LBURI
+	default:
+		panic("invalid DB URI, uri: " + LBURI)
+	}
 }
