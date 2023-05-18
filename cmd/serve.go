@@ -4,16 +4,18 @@ import (
 	"context"
 	"os"
 	"strconv"
-	"strings"
 	"syscall"
 
 	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
+	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.uber.org/zap"
 
@@ -100,7 +102,21 @@ func serve(ctx context.Context) error {
 		return err
 	}
 
-	cOpts := []ent.Option{ent.PubsubClient(natsClient)}
+	err = otelx.InitTracer(config.AppConfig.Tracing, appName, logger)
+	if err != nil {
+		logger.Fatalw("failed to initialize tracer", "error", err)
+	}
+
+	db, err := crdbx.NewDB(config.AppConfig.CRDB, config.AppConfig.Tracing.Enabled)
+	if err != nil {
+		logger.Fatalw("failed to connect to database", "error", err)
+	}
+
+	defer db.Close()
+
+	entDB := entsql.OpenDB(dialect.Postgres, db)
+
+	cOpts := []ent.Option{ent.Driver(entDB), ent.PubsubClient(natsClient)}
 
 	if config.AppConfig.Logging.Debug {
 		cOpts = append(cOpts,
@@ -109,13 +125,7 @@ func serve(ctx context.Context) error {
 		)
 	}
 
-	dia, uri := parseDBURI()
-
-	client, err := ent.Open(dia, uri, cOpts...)
-	if err != nil {
-		logger.Error("failed opening connection to sqlite", zap.Error(err))
-		return err
-	}
+	client := ent.NewClient(cOpts...)
 	defer client.Close()
 
 	pubsubhooks.PubsubHooks(client)
@@ -158,20 +168,4 @@ func serve(ctx context.Context) error {
 	}
 
 	return err
-}
-
-func parseDBURI() (string, string) {
-	LBURI := os.Getenv("LOADBALANCERAPI_CRDB_URI")
-
-	switch {
-	// if you don't pass in a database we default to an in memory sqlite
-	case LBURI == "":
-		return dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1"
-	case strings.HasPrefix(LBURI, "sqlite://"):
-		return dialect.SQLite, LBURI
-	case strings.HasPrefix(LBURI, "postgres://"), strings.HasPrefix(LBURI, "postgresql://"):
-		return dialect.Postgres, LBURI
-	default:
-		panic("invalid DB URI, uri: " + LBURI)
-	}
 }
