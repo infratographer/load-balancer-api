@@ -31,7 +31,7 @@ require (
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/x v0.0.8
 	go.uber.org/zap v1.24.0
-	golang.org/x/exp v0.0.0-20230203172020-98cc5a0785f9
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
 require (
