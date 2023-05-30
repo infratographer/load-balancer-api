@@ -3,6 +3,11 @@ version: "3.9"
 volumes:
   crdb: null
 
+networks:
+  load-balancer:
+    name: load-balancer
+    driver: bridge
+
 services:
   app:
     build:
@@ -26,7 +31,8 @@ services:
     #   - "127.0.0.1:2222:2222"
     # Use "forwardPorts" in **devcontainer.json** to forward a port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
-
+    networks:
+      - load-balancer
     # Environment setup
   create_databases:
     image: cockroachdb/cockroach:latest-v22.2
@@ -36,6 +42,8 @@ services:
       - .env
     depends_on:
       - crdb
+    networks:
+      - load-balancer
 
   # Required services (databases, etc)
   crdb:
@@ -52,6 +60,8 @@ services:
       retries: 3
       start_period: "15s"
       timeout: "5s"
+    networks:
+      - load-balancer
 
   nats-init:
     image: natsio/nats-box
@@ -63,6 +73,8 @@ services:
       - ./scripts:/scripts
     command:
       - /scripts/nats_init.sh
+    networks:
+      - load-balancer
 
   nats:
     image: 'nats:alpine'
@@ -75,3 +87,14 @@ services:
     volumes:
       - ./nats/:/etc/nats
     restart: unless-stopped
+    networks:
+      - load-balancer
+
+  mock-oauth2-server:
+    image: ghcr.io/navikt/mock-oauth2-server:0.5.8
+    environment:
+      - PORT=8081
+    ports:
+      - 8081:8081
+    networks:
+      - load-balancer
