@@ -123,8 +123,8 @@ github.com/dgryski/trifles v0.0.0-20200323201526-dd97f9abfb48 h1:fRzb/w+pyskVMQ+
 github.com/dgryski/trifles v0.0.0-20200323201526-dd97f9abfb48/go.mod h1:if7Fbed8SFyPtHLHbg49SI7NAdJiC5WIA09pe59rfAA=
 github.com/docker/distribution v2.8.1+incompatible h1:Q50tZOPR6T/hjNsyc9g8/syEs6bk8XXApsHjKukMl68=
 github.com/docker/distribution v2.8.1+incompatible/go.mod h1:J2gT2udsDAN96Uj4KfcMRqY0/ypR+oyYUYmja8H+y+w=
-github.com/docker/docker v23.0.3+incompatible h1:9GhVsShNWz1hO//9BNg/dpMnZW25KydO4wtVxWAIbho=
-github.com/docker/docker v23.0.3+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
+github.com/docker/docker v23.0.5+incompatible h1:DaxtlTJjFSnLOXVNUBU1+6kXGz2lpDoEAH6QoxaSg8k=
+github.com/docker/docker v23.0.5+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
 github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
 github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
@@ -484,8 +484,8 @@ github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNG
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8 h1:atmQux3l6blXSWP4HA4UiUO0VASfsLQr5A1uRtDdg/A=
 github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8/go.mod h1:LTa6q4eygL67Y8LvAmjaUGIiFZlZ+VYvHOWjXLWP8Vg=
-github.com/testcontainers/testcontainers-go/modules/postgres v0.0.0-20230503220718-0df60de8ccd8 h1:Ejf1BfFNbLuEpjxm7UHF5YUeFEkKSDzBINn96358W+I=
-github.com/testcontainers/testcontainers-go/modules/postgres v0.0.0-20230503220718-0df60de8ccd8/go.mod h1:TdT182T2CQ9qkbiTCS1C9iWNKMw7imE3MbNo+D+Fy+w=
+github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1 h1:PkAq2/sxchYxLiepcshIUnMzmhlecakGOCTtKEuZCA0=
+github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1/go.mod h1:c9mDiyvz7se25wEvvkx/8ok1YIIsQE9ACItnim7C0xw=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
