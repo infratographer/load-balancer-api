@@ -2,8 +2,6 @@ module go.infratographer.com/load-balancer-api
 
 go 1.20
 
-replace go.infratographer.com/x => github.com/tylerauerbeck/x v0.0.0-20230602142728-b9eec8ac6d32
-
 replace github.com/testcontainers/testcontainers-go => github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8
 
 require (
@@ -29,7 +27,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/wundergraph/graphql-go-tools v1.62.3
-	go.infratographer.com/x v0.3.0
+	go.infratographer.com/x v0.3.1-0.20230602181043-cb717fbdc62a
 	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )

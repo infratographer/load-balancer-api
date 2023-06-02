@@ -479,8 +479,6 @@ github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8 h
 github.com/testcontainers/testcontainers-go v0.0.0-20230503220718-0df60de8ccd8/go.mod h1:LTa6q4eygL67Y8LvAmjaUGIiFZlZ+VYvHOWjXLWP8Vg=
 github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1 h1:PkAq2/sxchYxLiepcshIUnMzmhlecakGOCTtKEuZCA0=
 github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1/go.mod h1:c9mDiyvz7se25wEvvkx/8ok1YIIsQE9ACItnim7C0xw=
-github.com/tylerauerbeck/x v0.0.0-20230602142728-b9eec8ac6d32 h1:EQeWk7WuvA9VMXCy5GL94wXlEUdQtBkzso6K9mH3lsY=
-github.com/tylerauerbeck/x v0.0.0-20230602142728-b9eec8ac6d32/go.mod h1:w+uknSNnOrJlHiOdDPV08e5EpU47SwWXZ/vOVWBovPA=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
@@ -504,6 +502,8 @@ github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5t
 github.com/zclconf/go-cty v1.8.0 h1:s4AvqaeQzJIu3ndv4gVIhplVD0krU+bgrcLSVUnaWuA=
 github.com/zclconf/go-cty v1.8.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
+go.infratographer.com/x v0.3.1-0.20230602181043-cb717fbdc62a h1:TNtw1ERHQzrMP4tSRE4FgnkLTJNpUNJthTC0eTEgD/w=
+go.infratographer.com/x v0.3.1-0.20230602181043-cb717fbdc62a/go.mod h1:GvOhGwi/1Dp5qAQSudHUdLfFmiXzzc27KBfkH0nxnEQ=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
