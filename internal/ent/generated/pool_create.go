@@ -125,7 +125,7 @@ func (pc *PoolCreate) Mutation() *PoolMutation {
 // Save creates the Pool in the database.
 func (pc *PoolCreate) Save(ctx context.Context) (*Pool, error) {
 	pc.defaults()
-	return withHooks[*Pool, PoolMutation](ctx, pc.sqlSave, pc.mutation, pc.hooks)
+	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

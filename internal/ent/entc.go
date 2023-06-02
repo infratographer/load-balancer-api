@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"go.infratographer.com/x/entx"
+	"go.infratographer.com/x/events"
 
-	"go.infratographer.com/load-balancer-api/internal/pubsub"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -50,7 +50,7 @@ func main() {
 		entc.TemplateDir("./internal/ent/templates"),
 		entc.FeatureNames("intercept"),
 		entc.Dependency(
-			entc.DependencyType(&pubsub.Client{}),
+			entc.DependencyType(&events.Publisher{}),
 		),
 	}
 

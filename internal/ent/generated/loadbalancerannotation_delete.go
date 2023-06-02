@@ -31,7 +31,7 @@ func (lbad *LoadBalancerAnnotationDelete) Where(ps ...predicate.LoadBalancerAnno
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (lbad *LoadBalancerAnnotationDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, LoadBalancerAnnotationMutation](ctx, lbad.sqlExec, lbad.mutation, lbad.hooks)
+	return withHooks(ctx, lbad.sqlExec, lbad.mutation, lbad.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

@@ -344,7 +344,7 @@ type loadbalancerPaginateArgs struct {
 	opts          []LoadBalancerPaginateOption
 }
 
-func newLoadBalancerPaginateArgs(rv map[string]interface{}) *loadbalancerPaginateArgs {
+func newLoadBalancerPaginateArgs(rv map[string]any) *loadbalancerPaginateArgs {
 	args := &loadbalancerPaginateArgs{}
 	if rv == nil {
 		return args
@@ -363,7 +363,7 @@ func newLoadBalancerPaginateArgs(rv map[string]interface{}) *loadbalancerPaginat
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerOrder{Field: &LoadBalancerOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -424,16 +424,6 @@ func (lba *LoadBalancerAnnotationQuery) collectField(ctx context.Context, opCtx 
 				selectedFields = append(selectedFields, loadbalancerannotation.FieldLoadBalancerID)
 				fieldSeen[loadbalancerannotation.FieldLoadBalancerID] = struct{}{}
 			}
-		case "namespace":
-			if _, ok := fieldSeen[loadbalancerannotation.FieldNamespace]; !ok {
-				selectedFields = append(selectedFields, loadbalancerannotation.FieldNamespace)
-				fieldSeen[loadbalancerannotation.FieldNamespace] = struct{}{}
-			}
-		case "data":
-			if _, ok := fieldSeen[loadbalancerannotation.FieldData]; !ok {
-				selectedFields = append(selectedFields, loadbalancerannotation.FieldData)
-				fieldSeen[loadbalancerannotation.FieldData] = struct{}{}
-			}
 		case "createdAt":
 			if _, ok := fieldSeen[loadbalancerannotation.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, loadbalancerannotation.FieldCreatedAt)
@@ -467,7 +457,7 @@ type loadbalancerannotationPaginateArgs struct {
 	opts          []LoadBalancerAnnotationPaginateOption
 }
 
-func newLoadBalancerAnnotationPaginateArgs(rv map[string]interface{}) *loadbalancerannotationPaginateArgs {
+func newLoadBalancerAnnotationPaginateArgs(rv map[string]any) *loadbalancerannotationPaginateArgs {
 	args := &loadbalancerannotationPaginateArgs{}
 	if rv == nil {
 		return args
@@ -486,7 +476,7 @@ func newLoadBalancerAnnotationPaginateArgs(rv map[string]interface{}) *loadbalan
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerAnnotationOrder{Field: &LoadBalancerAnnotationOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -547,16 +537,6 @@ func (lbs *LoadBalancerStatusQuery) collectField(ctx context.Context, opCtx *gra
 				selectedFields = append(selectedFields, loadbalancerstatus.FieldLoadBalancerID)
 				fieldSeen[loadbalancerstatus.FieldLoadBalancerID] = struct{}{}
 			}
-		case "namespace":
-			if _, ok := fieldSeen[loadbalancerstatus.FieldNamespace]; !ok {
-				selectedFields = append(selectedFields, loadbalancerstatus.FieldNamespace)
-				fieldSeen[loadbalancerstatus.FieldNamespace] = struct{}{}
-			}
-		case "data":
-			if _, ok := fieldSeen[loadbalancerstatus.FieldData]; !ok {
-				selectedFields = append(selectedFields, loadbalancerstatus.FieldData)
-				fieldSeen[loadbalancerstatus.FieldData] = struct{}{}
-			}
 		case "createdAt":
 			if _, ok := fieldSeen[loadbalancerstatus.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, loadbalancerstatus.FieldCreatedAt)
@@ -595,7 +575,7 @@ type loadbalancerstatusPaginateArgs struct {
 	opts          []LoadBalancerStatusPaginateOption
 }
 
-func newLoadBalancerStatusPaginateArgs(rv map[string]interface{}) *loadbalancerstatusPaginateArgs {
+func newLoadBalancerStatusPaginateArgs(rv map[string]any) *loadbalancerstatusPaginateArgs {
 	args := &loadbalancerstatusPaginateArgs{}
 	if rv == nil {
 		return args
@@ -614,7 +594,7 @@ func newLoadBalancerStatusPaginateArgs(rv map[string]interface{}) *loadbalancers
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerStatusOrder{Field: &LoadBalancerStatusOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -728,7 +708,7 @@ type loadbalanceroriginPaginateArgs struct {
 	opts          []LoadBalancerOriginPaginateOption
 }
 
-func newLoadBalancerOriginPaginateArgs(rv map[string]interface{}) *loadbalanceroriginPaginateArgs {
+func newLoadBalancerOriginPaginateArgs(rv map[string]any) *loadbalanceroriginPaginateArgs {
 	args := &loadbalanceroriginPaginateArgs{}
 	if rv == nil {
 		return args
@@ -747,7 +727,7 @@ func newLoadBalancerOriginPaginateArgs(rv map[string]interface{}) *loadbalancero
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerOriginOrder{Field: &LoadBalancerOriginOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -933,7 +913,7 @@ type loadbalancerpoolPaginateArgs struct {
 	opts          []LoadBalancerPoolPaginateOption
 }
 
-func newLoadBalancerPoolPaginateArgs(rv map[string]interface{}) *loadbalancerpoolPaginateArgs {
+func newLoadBalancerPoolPaginateArgs(rv map[string]any) *loadbalancerpoolPaginateArgs {
 	args := &loadbalancerpoolPaginateArgs{}
 	if rv == nil {
 		return args
@@ -952,7 +932,7 @@ func newLoadBalancerPoolPaginateArgs(rv map[string]interface{}) *loadbalancerpoo
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerPoolOrder{Field: &LoadBalancerPoolOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -1068,7 +1048,7 @@ type loadbalancerportPaginateArgs struct {
 	opts          []LoadBalancerPortPaginateOption
 }
 
-func newLoadBalancerPortPaginateArgs(rv map[string]interface{}) *loadbalancerportPaginateArgs {
+func newLoadBalancerPortPaginateArgs(rv map[string]any) *loadbalancerportPaginateArgs {
 	args := &loadbalancerportPaginateArgs{}
 	if rv == nil {
 		return args
@@ -1087,7 +1067,7 @@ func newLoadBalancerPortPaginateArgs(rv map[string]interface{}) *loadbalancerpor
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerPortOrder{Field: &LoadBalancerPortOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -1251,7 +1231,7 @@ type loadbalancerproviderPaginateArgs struct {
 	opts          []LoadBalancerProviderPaginateOption
 }
 
-func newLoadBalancerProviderPaginateArgs(rv map[string]interface{}) *loadbalancerproviderPaginateArgs {
+func newLoadBalancerProviderPaginateArgs(rv map[string]any) *loadbalancerproviderPaginateArgs {
 	args := &loadbalancerproviderPaginateArgs{}
 	if rv == nil {
 		return args
@@ -1270,7 +1250,7 @@ func newLoadBalancerProviderPaginateArgs(rv map[string]interface{}) *loadbalance
 	}
 	if v, ok := rv[orderByField]; ok {
 		switch v := v.(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			var (
 				err1, err2 error
 				order      = &LoadBalancerProviderOrder{Field: &LoadBalancerProviderOrderField{}, Direction: entgql.OrderDirectionAsc}
@@ -1307,35 +1287,18 @@ const (
 	whereField     = "where"
 )
 
-func fieldArgs(ctx context.Context, whereInput interface{}, path ...string) map[string]interface{} {
-	fc := graphql.GetFieldContext(ctx)
-	if fc == nil {
+func fieldArgs(ctx context.Context, whereInput any, path ...string) map[string]any {
+	field := collectedField(ctx, path...)
+	if field == nil || field.Arguments == nil {
 		return nil
 	}
 	oc := graphql.GetOperationContext(ctx)
-	for _, name := range path {
-		var field *graphql.CollectedField
-		for _, f := range graphql.CollectFields(oc, fc.Field.Selections, nil) {
-			if f.Alias == name {
-				field = &f
-				break
-			}
-		}
-		if field == nil {
-			return nil
-		}
-		cf, err := fc.Child(ctx, *field)
-		if err != nil {
-			args := field.ArgumentMap(oc.Variables)
-			return unmarshalArgs(ctx, whereInput, args)
-		}
-		fc = cf
-	}
-	return fc.Args
+	args := field.ArgumentMap(oc.Variables)
+	return unmarshalArgs(ctx, whereInput, args)
 }
 
 // unmarshalArgs allows extracting the field arguments from their raw representation.
-func unmarshalArgs(ctx context.Context, whereInput interface{}, args map[string]interface{}) map[string]interface{} {
+func unmarshalArgs(ctx context.Context, whereInput any, args map[string]any) map[string]any {
 	for _, k := range []string{firstField, lastField} {
 		v, ok := args[k]
 		if !ok {

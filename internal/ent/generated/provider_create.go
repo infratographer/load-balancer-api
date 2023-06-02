@@ -103,7 +103,7 @@ func (pc *ProviderCreate) Mutation() *ProviderMutation {
 // Save creates the Provider in the database.
 func (pc *ProviderCreate) Save(ctx context.Context) (*Provider, error) {
 	pc.defaults()
-	return withHooks[*Provider, ProviderMutation](ctx, pc.sqlSave, pc.mutation, pc.hooks)
+	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

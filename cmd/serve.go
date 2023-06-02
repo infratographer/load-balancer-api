@@ -23,6 +23,8 @@ import (
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
+
+	"go.infratographer.com/x/events"
 )
 
 const (
@@ -62,6 +64,8 @@ func init() {
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
 	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
 	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
+
+	events.MustViperFlagsForPublisher(viper.GetViper(), serveCmd.Flags(), appName)
 }
 
 // Write a pid file, but first make sure it doesn't exist with a running pid.
@@ -96,10 +100,9 @@ func serve(ctx context.Context) error {
 		config.AppConfig.Server.WithMiddleware(middleware.CORS())
 	}
 
-	natsClient, err := configureNatsClient()
+	pub, err := events.NewPublisher(config.AppConfig.Events.Publisher)
 	if err != nil {
-		logger.Error("failed to configure nats client", zap.Error(err))
-		return err
+		logger.Fatalw("failed to create publisher", "error", err)
 	}
 
 	err = otelx.InitTracer(config.AppConfig.Tracing, appName, logger)
@@ -116,7 +119,7 @@ func serve(ctx context.Context) error {
 
 	entDB := entsql.OpenDB(dialect.Postgres, db)
 
-	cOpts := []ent.Option{ent.Driver(entDB), ent.PubsubClient(natsClient)}
+	cOpts := []ent.Option{ent.Driver(entDB), ent.EventsPublisher(pub)}
 
 	if config.AppConfig.Logging.Debug {
 		cOpts = append(cOpts,
@@ -137,20 +140,14 @@ func serve(ctx context.Context) error {
 	}
 
 	// jwt auth middleware
-	if !serveDevMode {
-		if authconfig, err := echojwtx.AuthConfigFromViper(viper.GetViper()); err != nil {
+	if viper.GetBool("oidc.enabled") {
+		auth, err := echojwtx.NewAuth(ctx, config.AppConfig.OIDC)
+		if err != nil {
 			logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
-		} else if authconfig != nil {
-			config.AppConfig.AuthConfig = *authconfig
-			config.AppConfig.AuthConfig.JWTConfig.Skipper = echox.SkipDefaultEndpoints
-
-			auth, err := echojwtx.NewAuth(ctx, config.AppConfig.AuthConfig)
-			if err != nil {
-				logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
-			}
-
-			config.AppConfig.Server = config.AppConfig.Server.WithMiddleware(auth.Middleware())
 		}
+
+		auth.JWTConfig.Skipper = echox.SkipDefaultEndpoints
+		config.AppConfig.Server = config.AppConfig.Server.WithMiddleware(auth.Middleware())
 	}
 
 	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())

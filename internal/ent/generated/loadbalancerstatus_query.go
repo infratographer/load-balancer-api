@@ -304,12 +304,12 @@ func (lbsq *LoadBalancerStatusQuery) WithLoadBalancer(opts ...func(*LoadBalancer
 // Example:
 //
 //	var v []struct {
-//		Namespace string `json:"namespace,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.LoadBalancerStatus.Query().
-//		GroupBy(loadbalancerstatus.FieldNamespace).
+//		GroupBy(loadbalancerstatus.FieldCreatedAt).
 //		Aggregate(generated.Count()).
 //		Scan(ctx, &v)
 func (lbsq *LoadBalancerStatusQuery) GroupBy(field string, fields ...string) *LoadBalancerStatusGroupBy {
@@ -327,11 +327,11 @@ func (lbsq *LoadBalancerStatusQuery) GroupBy(field string, fields ...string) *Lo
 // Example:
 //
 //	var v []struct {
-//		Namespace string `json:"namespace,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.LoadBalancerStatus.Query().
-//		Select(loadbalancerstatus.FieldNamespace).
+//		Select(loadbalancerstatus.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (lbsq *LoadBalancerStatusQuery) Select(fields ...string) *LoadBalancerStatusSelect {
 	lbsq.ctx.Fields = append(lbsq.ctx.Fields, fields...)

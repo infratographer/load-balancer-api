@@ -31,7 +31,7 @@ func (pd *ProviderDelete) Where(ps ...predicate.Provider) *ProviderDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (pd *ProviderDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, ProviderMutation](ctx, pd.sqlExec, pd.mutation, pd.hooks)
+	return withHooks(ctx, pd.sqlExec, pd.mutation, pd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

@@ -7,7 +7,6 @@
 package generated
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -24,10 +23,6 @@ type LoadBalancerStatus struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID gidx.PrefixedID `json:"id,omitempty"`
-	// Namespace holds the value of the "namespace" field.
-	Namespace string `json:"namespace,omitempty"`
-	// Data holds the value of the "data" field.
-	Data json.RawMessage `json:"data,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -71,11 +66,9 @@ func (*LoadBalancerStatus) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case loadbalancerstatus.FieldData:
-			values[i] = new([]byte)
 		case loadbalancerstatus.FieldID, loadbalancerstatus.FieldLoadBalancerID:
 			values[i] = new(gidx.PrefixedID)
-		case loadbalancerstatus.FieldNamespace, loadbalancerstatus.FieldSource:
+		case loadbalancerstatus.FieldSource:
 			values[i] = new(sql.NullString)
 		case loadbalancerstatus.FieldCreatedAt, loadbalancerstatus.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -99,20 +92,6 @@ func (lbs *LoadBalancerStatus) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				lbs.ID = *value
-			}
-		case loadbalancerstatus.FieldNamespace:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field namespace", values[i])
-			} else if value.Valid {
-				lbs.Namespace = value.String
-			}
-		case loadbalancerstatus.FieldData:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field data", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &lbs.Data); err != nil {
-					return fmt.Errorf("unmarshal field data: %w", err)
-				}
 			}
 		case loadbalancerstatus.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -179,12 +158,6 @@ func (lbs *LoadBalancerStatus) String() string {
 	var builder strings.Builder
 	builder.WriteString("LoadBalancerStatus(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", lbs.ID))
-	builder.WriteString("namespace=")
-	builder.WriteString(lbs.Namespace)
-	builder.WriteString(", ")
-	builder.WriteString("data=")
-	builder.WriteString(fmt.Sprintf("%v", lbs.Data))
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(lbs.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")

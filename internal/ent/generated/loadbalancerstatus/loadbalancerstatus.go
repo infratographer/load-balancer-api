@@ -19,10 +19,6 @@ const (
 	Label = "load_balancer_status"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldNamespace holds the string denoting the namespace field in the database.
-	FieldNamespace = "namespace"
-	// FieldData holds the string denoting the data field in the database.
-	FieldData = "data"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -47,8 +43,6 @@ const (
 // Columns holds all SQL columns for loadbalancerstatus fields.
 var Columns = []string{
 	FieldID,
-	FieldNamespace,
-	FieldData,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldLoadBalancerID,
@@ -66,8 +60,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// NamespaceValidator is a validator for the "namespace" field. It is called by the builders before save.
-	NamespaceValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -86,11 +78,6 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
-
-// ByNamespace orders the results by the namespace field.
-func ByNamespace(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNamespace, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -126,8 +126,6 @@ type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
 }
 type LoadBalancerAnnotation implements Node @key(fields: "id") {
   id: ID!
-  namespace: String!
-  data: JSON!
   createdAt: Time!
   updatedAt: Time!
   loadBalancerID: ID!
@@ -158,7 +156,6 @@ input LoadBalancerAnnotationOrder {
 }
 """Properties by which LoadBalancerAnnotation connections can be ordered."""
 enum LoadBalancerAnnotationOrderField {
-  NAMESPACE
   CREATED_AT
   UPDATED_AT
 }
@@ -179,20 +176,6 @@ input LoadBalancerAnnotationWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """namespace field predicates"""
-  namespace: String
-  namespaceNEQ: String
-  namespaceIn: [String!]
-  namespaceNotIn: [String!]
-  namespaceGT: String
-  namespaceGTE: String
-  namespaceLT: String
-  namespaceLTE: String
-  namespaceContains: String
-  namespaceHasPrefix: String
-  namespaceHasSuffix: String
-  namespaceEqualFold: String
-  namespaceContainsFold: String
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time
@@ -710,8 +693,6 @@ input LoadBalancerProviderWhereInput {
 }
 type LoadBalancerStatus implements Node @key(fields: "id") {
   id: ID!
-  namespace: String!
-  data: JSON!
   createdAt: Time!
   updatedAt: Time!
   loadBalancerID: ID!
@@ -743,7 +724,6 @@ input LoadBalancerStatusOrder {
 }
 """Properties by which LoadBalancerStatus connections can be ordered."""
 enum LoadBalancerStatusOrderField {
-  NAMESPACE
   CREATED_AT
   UPDATED_AT
 }
@@ -764,20 +744,6 @@ input LoadBalancerStatusWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """namespace field predicates"""
-  namespace: String
-  namespaceNEQ: String
-  namespaceIn: [String!]
-  namespaceNotIn: [String!]
-  namespaceGT: String
-  namespaceGTE: String
-  namespaceLT: String
-  namespaceLTE: String
-  namespaceContains: String
-  namespaceHasPrefix: String
-  namespaceHasSuffix: String
-  namespaceEqualFold: String
-  namespaceContainsFold: String
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time
@@ -895,7 +861,7 @@ enum OrderDirection {
 Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
-type PageInfo {
+type PageInfo @shareable {
   """When paginating forwards, are there more items?"""
   hasNextPage: Boolean!
   """When paginating backwards, are there more items?"""

@@ -680,20 +680,6 @@ func (lba *LoadBalancerAnnotationQuery) Paginate(
 }
 
 var (
-	// LoadBalancerAnnotationOrderFieldNamespace orders LoadBalancerAnnotation by namespace.
-	LoadBalancerAnnotationOrderFieldNamespace = &LoadBalancerAnnotationOrderField{
-		Value: func(lba *LoadBalancerAnnotation) (ent.Value, error) {
-			return lba.Namespace, nil
-		},
-		column: loadbalancerannotation.FieldNamespace,
-		toTerm: loadbalancerannotation.ByNamespace,
-		toCursor: func(lba *LoadBalancerAnnotation) Cursor {
-			return Cursor{
-				ID:    lba.ID,
-				Value: lba.Namespace,
-			}
-		},
-	}
 	// LoadBalancerAnnotationOrderFieldCreatedAt orders LoadBalancerAnnotation by created_at.
 	LoadBalancerAnnotationOrderFieldCreatedAt = &LoadBalancerAnnotationOrderField{
 		Value: func(lba *LoadBalancerAnnotation) (ent.Value, error) {
@@ -728,8 +714,6 @@ var (
 func (f LoadBalancerAnnotationOrderField) String() string {
 	var str string
 	switch f.column {
-	case LoadBalancerAnnotationOrderFieldNamespace.column:
-		str = "NAMESPACE"
 	case LoadBalancerAnnotationOrderFieldCreatedAt.column:
 		str = "CREATED_AT"
 	case LoadBalancerAnnotationOrderFieldUpdatedAt.column:
@@ -750,8 +734,6 @@ func (f *LoadBalancerAnnotationOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("LoadBalancerAnnotationOrderField %T must be a string", v)
 	}
 	switch str {
-	case "NAMESPACE":
-		*f = *LoadBalancerAnnotationOrderFieldNamespace
 	case "CREATED_AT":
 		*f = *LoadBalancerAnnotationOrderFieldCreatedAt
 	case "UPDATED_AT":
@@ -1009,20 +991,6 @@ func (lbs *LoadBalancerStatusQuery) Paginate(
 }
 
 var (
-	// LoadBalancerStatusOrderFieldNamespace orders LoadBalancerStatus by namespace.
-	LoadBalancerStatusOrderFieldNamespace = &LoadBalancerStatusOrderField{
-		Value: func(lbs *LoadBalancerStatus) (ent.Value, error) {
-			return lbs.Namespace, nil
-		},
-		column: loadbalancerstatus.FieldNamespace,
-		toTerm: loadbalancerstatus.ByNamespace,
-		toCursor: func(lbs *LoadBalancerStatus) Cursor {
-			return Cursor{
-				ID:    lbs.ID,
-				Value: lbs.Namespace,
-			}
-		},
-	}
 	// LoadBalancerStatusOrderFieldCreatedAt orders LoadBalancerStatus by created_at.
 	LoadBalancerStatusOrderFieldCreatedAt = &LoadBalancerStatusOrderField{
 		Value: func(lbs *LoadBalancerStatus) (ent.Value, error) {
@@ -1057,8 +1025,6 @@ var (
 func (f LoadBalancerStatusOrderField) String() string {
 	var str string
 	switch f.column {
-	case LoadBalancerStatusOrderFieldNamespace.column:
-		str = "NAMESPACE"
 	case LoadBalancerStatusOrderFieldCreatedAt.column:
 		str = "CREATED_AT"
 	case LoadBalancerStatusOrderFieldUpdatedAt.column:
@@ -1079,8 +1045,6 @@ func (f *LoadBalancerStatusOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("LoadBalancerStatusOrderField %T must be a string", v)
 	}
 	switch str {
-	case "NAMESPACE":
-		*f = *LoadBalancerStatusOrderFieldNamespace
 	case "CREATED_AT":
 		*f = *LoadBalancerStatusOrderFieldCreatedAt
 	case "UPDATED_AT":

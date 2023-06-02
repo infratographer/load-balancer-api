@@ -126,7 +126,7 @@ func (pu *PoolUpdate) RemoveOrigins(o ...*Origin) *PoolUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PoolUpdate) Save(ctx context.Context) (int, error) {
 	pu.defaults()
-	return withHooks[int, PoolMutation](ctx, pu.sqlSave, pu.mutation, pu.hooks)
+	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -410,7 +410,7 @@ func (puo *PoolUpdateOne) Select(field string, fields ...string) *PoolUpdateOne 
 // Save executes the query and returns the updated Pool entity.
 func (puo *PoolUpdateOne) Save(ctx context.Context) (*Pool, error) {
 	puo.defaults()
-	return withHooks[*Pool, PoolMutation](ctx, puo.sqlSave, puo.mutation, puo.hooks)
+	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

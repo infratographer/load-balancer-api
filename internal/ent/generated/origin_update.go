@@ -78,7 +78,7 @@ func (ou *OriginUpdate) Mutation() *OriginMutation {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ou *OriginUpdate) Save(ctx context.Context) (int, error) {
 	ou.defaults()
-	return withHooks[int, OriginMutation](ctx, ou.sqlSave, ou.mutation, ou.hooks)
+	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -244,7 +244,7 @@ func (ouo *OriginUpdateOne) Select(field string, fields ...string) *OriginUpdate
 // Save executes the query and returns the updated Origin entity.
 func (ouo *OriginUpdateOne) Save(ctx context.Context) (*Origin, error) {
 	ouo.defaults()
-	return withHooks[*Origin, OriginMutation](ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
+	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

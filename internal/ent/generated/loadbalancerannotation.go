@@ -7,7 +7,6 @@
 package generated
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -24,10 +23,6 @@ type LoadBalancerAnnotation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID gidx.PrefixedID `json:"id,omitempty"`
-	// Namespace holds the value of the "namespace" field.
-	Namespace string `json:"namespace,omitempty"`
-	// Data holds the value of the "data" field.
-	Data json.RawMessage `json:"data,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -69,12 +64,8 @@ func (*LoadBalancerAnnotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case loadbalancerannotation.FieldData:
-			values[i] = new([]byte)
 		case loadbalancerannotation.FieldID, loadbalancerannotation.FieldLoadBalancerID:
 			values[i] = new(gidx.PrefixedID)
-		case loadbalancerannotation.FieldNamespace:
-			values[i] = new(sql.NullString)
 		case loadbalancerannotation.FieldCreatedAt, loadbalancerannotation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
@@ -97,20 +88,6 @@ func (lba *LoadBalancerAnnotation) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				lba.ID = *value
-			}
-		case loadbalancerannotation.FieldNamespace:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field namespace", values[i])
-			} else if value.Valid {
-				lba.Namespace = value.String
-			}
-		case loadbalancerannotation.FieldData:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field data", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &lba.Data); err != nil {
-					return fmt.Errorf("unmarshal field data: %w", err)
-				}
 			}
 		case loadbalancerannotation.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -171,12 +148,6 @@ func (lba *LoadBalancerAnnotation) String() string {
 	var builder strings.Builder
 	builder.WriteString("LoadBalancerAnnotation(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", lba.ID))
-	builder.WriteString("namespace=")
-	builder.WriteString(lba.Namespace)
-	builder.WriteString(", ")
-	builder.WriteString("data=")
-	builder.WriteString(fmt.Sprintf("%v", lba.Data))
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(lba.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")

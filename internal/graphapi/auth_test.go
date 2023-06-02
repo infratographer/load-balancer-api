@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.infratographer.com/x/echojwtx"
+	"go.infratographer.com/x/testing/auth"
 )
 
 func TestJWTEnabledLoadbalancerGETWithAuthClient(t *testing.T) {
-	oauthCLI, issuer, oAuthClose := echojwtx.TestOAuthClient("urn:test:loadbalancer", "")
+	// oauthCLI, issuer, oAuthClose := echojwtx.("urn:test:loadbalancer", "")
+	oauthCLI, issuer, oAuthClose := auth.OAuthTestClient("urn:test:loadbalancer", "")
 	defer oAuthClose()
 
 	srv, err := newTestServer(&echojwtx.AuthConfig{
@@ -37,7 +39,7 @@ func TestJWTEnabledLoadbalancerGETWithAuthClient(t *testing.T) {
 }
 
 func TestJWTENabledLoadbalancerGETWithDefaultClient(t *testing.T) {
-	_, issuer, oAuthClose := echojwtx.TestOAuthClient("urn:test:loadbalancer", "")
+	_, issuer, oAuthClose := auth.OAuthTestClient("urn:test:loadbalancer", "")
 	defer oAuthClose()
 
 	srv, err := newTestServer(&echojwtx.AuthConfig{

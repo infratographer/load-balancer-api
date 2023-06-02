@@ -153,7 +153,7 @@ func (lbc *LoadBalancerCreate) Mutation() *LoadBalancerMutation {
 // Save creates the LoadBalancer in the database.
 func (lbc *LoadBalancerCreate) Save(ctx context.Context) (*LoadBalancer, error) {
 	lbc.defaults()
-	return withHooks[*LoadBalancer, LoadBalancerMutation](ctx, lbc.sqlSave, lbc.mutation, lbc.hooks)
+	return withHooks(ctx, lbc.sqlSave, lbc.mutation, lbc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
