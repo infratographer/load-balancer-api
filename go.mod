@@ -24,7 +24,7 @@ require (
 	github.com/nats-io/nats.go v1.25.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.19.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.0.0-20230503220718-0df60de8ccd8
 	github.com/vektah/gqlparser/v2 v2.5.1
