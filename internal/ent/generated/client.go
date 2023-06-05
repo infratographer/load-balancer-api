@@ -13,7 +13,6 @@ import (
 	"log"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/migrate"
-	"go.infratographer.com/x/gidx"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -26,7 +25,8 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/provider"
-	"go.infratographer.com/load-balancer-api/internal/pubsub"
+	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/gidx"
 )
 
 // Client is the client that holds all ent builders.
@@ -82,8 +82,8 @@ type (
 		// hooks to execute on mutations.
 		hooks *hooks
 		// interceptors to execute on queries.
-		inters       *inters
-		PubsubClient *pubsub.Client
+		inters          *inters
+		EventsPublisher *events.Publisher
 	}
 	// Option function to configure the client.
 	Option func(*config)
@@ -120,10 +120,10 @@ func Driver(driver dialect.Driver) Option {
 	}
 }
 
-// PubsubClient configures the PubsubClient.
-func PubsubClient(v *pubsub.Client) Option {
+// EventsPublisher configures the EventsPublisher.
+func EventsPublisher(v *events.Publisher) Option {
 	return func(c *config) {
-		c.PubsubClient = v
+		c.EventsPublisher = v
 	}
 }
 

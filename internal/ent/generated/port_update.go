@@ -96,7 +96,7 @@ func (pu *PortUpdate) RemovePools(p ...*Pool) *PortUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PortUpdate) Save(ctx context.Context) (int, error) {
 	pu.defaults()
-	return withHooks[int, PortMutation](ctx, pu.sqlSave, pu.mutation, pu.hooks)
+	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -312,7 +312,7 @@ func (puo *PortUpdateOne) Select(field string, fields ...string) *PortUpdateOne 
 // Save executes the query and returns the updated Port entity.
 func (puo *PortUpdateOne) Save(ctx context.Context) (*Port, error) {
 	puo.defaults()
-	return withHooks[*Port, PortMutation](ctx, puo.sqlSave, puo.mutation, puo.hooks)
+	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

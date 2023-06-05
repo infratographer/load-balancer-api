@@ -31,7 +31,7 @@ func (lbd *LoadBalancerDelete) Where(ps ...predicate.LoadBalancer) *LoadBalancer
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (lbd *LoadBalancerDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, LoadBalancerMutation](ctx, lbd.sqlExec, lbd.mutation, lbd.hooks)
+	return withHooks(ctx, lbd.sqlExec, lbd.mutation, lbd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

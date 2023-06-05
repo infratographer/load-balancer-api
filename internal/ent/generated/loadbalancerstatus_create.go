@@ -8,7 +8,6 @@ package generated
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -25,18 +24,6 @@ type LoadBalancerStatusCreate struct {
 	config
 	mutation *LoadBalancerStatusMutation
 	hooks    []Hook
-}
-
-// SetNamespace sets the "namespace" field.
-func (lbsc *LoadBalancerStatusCreate) SetNamespace(s string) *LoadBalancerStatusCreate {
-	lbsc.mutation.SetNamespace(s)
-	return lbsc
-}
-
-// SetData sets the "data" field.
-func (lbsc *LoadBalancerStatusCreate) SetData(jm json.RawMessage) *LoadBalancerStatusCreate {
-	lbsc.mutation.SetData(jm)
-	return lbsc
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -106,7 +93,7 @@ func (lbsc *LoadBalancerStatusCreate) Mutation() *LoadBalancerStatusMutation {
 // Save creates the LoadBalancerStatus in the database.
 func (lbsc *LoadBalancerStatusCreate) Save(ctx context.Context) (*LoadBalancerStatus, error) {
 	lbsc.defaults()
-	return withHooks[*LoadBalancerStatus, LoadBalancerStatusMutation](ctx, lbsc.sqlSave, lbsc.mutation, lbsc.hooks)
+	return withHooks(ctx, lbsc.sqlSave, lbsc.mutation, lbsc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -149,17 +136,6 @@ func (lbsc *LoadBalancerStatusCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lbsc *LoadBalancerStatusCreate) check() error {
-	if _, ok := lbsc.mutation.Namespace(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New(`generated: missing required field "LoadBalancerStatus.namespace"`)}
-	}
-	if v, ok := lbsc.mutation.Namespace(); ok {
-		if err := loadbalancerstatus.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`generated: validator failed for field "LoadBalancerStatus.namespace": %w`, err)}
-		}
-	}
-	if _, ok := lbsc.mutation.Data(); !ok {
-		return &ValidationError{Name: "data", err: errors.New(`generated: missing required field "LoadBalancerStatus.data"`)}
-	}
 	if _, ok := lbsc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`generated: missing required field "LoadBalancerStatus.created_at"`)}
 	}
@@ -214,14 +190,6 @@ func (lbsc *LoadBalancerStatusCreate) createSpec() (*LoadBalancerStatus, *sqlgra
 	if id, ok := lbsc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := lbsc.mutation.Namespace(); ok {
-		_spec.SetField(loadbalancerstatus.FieldNamespace, field.TypeString, value)
-		_node.Namespace = value
-	}
-	if value, ok := lbsc.mutation.Data(); ok {
-		_spec.SetField(loadbalancerstatus.FieldData, field.TypeJSON, value)
-		_node.Data = value
 	}
 	if value, ok := lbsc.mutation.CreatedAt(); ok {
 		_spec.SetField(loadbalancerstatus.FieldCreatedAt, field.TypeTime, value)

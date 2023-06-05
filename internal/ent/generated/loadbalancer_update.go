@@ -157,7 +157,7 @@ func (lbu *LoadBalancerUpdate) RemovePorts(p ...*Port) *LoadBalancerUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lbu *LoadBalancerUpdate) Save(ctx context.Context) (int, error) {
 	lbu.defaults()
-	return withHooks[int, LoadBalancerMutation](ctx, lbu.sqlSave, lbu.mutation, lbu.hooks)
+	return withHooks(ctx, lbu.sqlSave, lbu.mutation, lbu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -511,7 +511,7 @@ func (lbuo *LoadBalancerUpdateOne) Select(field string, fields ...string) *LoadB
 // Save executes the query and returns the updated LoadBalancer entity.
 func (lbuo *LoadBalancerUpdateOne) Save(ctx context.Context) (*LoadBalancer, error) {
 	lbuo.defaults()
-	return withHooks[*LoadBalancer, LoadBalancerMutation](ctx, lbuo.sqlSave, lbuo.mutation, lbuo.hooks)
+	return withHooks(ctx, lbuo.sqlSave, lbuo.mutation, lbuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

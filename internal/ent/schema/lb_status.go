@@ -3,8 +3,6 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -21,7 +19,6 @@ type LoadBalancerStatus struct {
 // Mixin of the LoadBalancerStatus
 func (LoadBalancerStatus) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		entx.NamespacedDataMixin{},
 		entx.NewTimestampMixin(),
 	}
 }
@@ -54,12 +51,7 @@ func (LoadBalancerStatus) Fields() []ent.Field {
 func (LoadBalancerStatus) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("load_balancer_id"),
-		index.Fields("load_balancer_id", "namespace", "source"),
-		index.Fields("namespace", "data").Annotations(
-			entsql.IndexTypes(map[string]string{
-				dialect.Postgres: "GIN",
-			}),
-		),
+		index.Fields("load_balancer_id", "source"),
 	}
 }
 

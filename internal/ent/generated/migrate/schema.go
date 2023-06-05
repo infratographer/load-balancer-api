@@ -7,7 +7,6 @@
 package migrate
 
 import (
-	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -67,8 +66,6 @@ var (
 	// LoadBalancerAnnotationsColumns holds the columns for the "load_balancer_annotations" table.
 	LoadBalancerAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
-		{Name: "namespace", Type: field.TypeString, Size: 64},
-		{Name: "data", Type: field.TypeJSON},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "load_balancer_id", Type: field.TypeString},
@@ -81,7 +78,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "load_balancer_annotations_load_balancers_load_balancer",
-				Columns:    []*schema.Column{LoadBalancerAnnotationsColumns[5]},
+				Columns:    []*schema.Column{LoadBalancerAnnotationsColumns[3]},
 				RefColumns: []*schema.Column{LoadBalancersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -90,40 +87,23 @@ var (
 			{
 				Name:    "loadbalancerannotation_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[3]},
+				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[1]},
 			},
 			{
 				Name:    "loadbalancerannotation_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[4]},
+				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[2]},
 			},
 			{
 				Name:    "loadbalancerannotation_load_balancer_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[5]},
-			},
-			{
-				Name:    "loadbalancerannotation_load_balancer_id_namespace",
-				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[5], LoadBalancerAnnotationsColumns[1]},
-			},
-			{
-				Name:    "loadbalancerannotation_namespace_data",
-				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[1], LoadBalancerAnnotationsColumns[2]},
-				Annotation: &entsql.IndexAnnotation{
-					Types: map[string]string{
-						"postgres": "GIN",
-					},
-				},
+				Columns: []*schema.Column{LoadBalancerAnnotationsColumns[3]},
 			},
 		},
 	}
 	// LoadBalancerStatusColumns holds the columns for the "load_balancer_status" table.
 	LoadBalancerStatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
-		{Name: "namespace", Type: field.TypeString, Size: 64},
-		{Name: "data", Type: field.TypeJSON},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "source", Type: field.TypeString},
@@ -137,7 +117,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "load_balancer_status_load_balancers_load_balancer",
-				Columns:    []*schema.Column{LoadBalancerStatusColumns[6]},
+				Columns:    []*schema.Column{LoadBalancerStatusColumns[4]},
 				RefColumns: []*schema.Column{LoadBalancersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -146,32 +126,22 @@ var (
 			{
 				Name:    "loadbalancerstatus_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerStatusColumns[3]},
+				Columns: []*schema.Column{LoadBalancerStatusColumns[1]},
 			},
 			{
 				Name:    "loadbalancerstatus_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerStatusColumns[4]},
+				Columns: []*schema.Column{LoadBalancerStatusColumns[2]},
 			},
 			{
 				Name:    "loadbalancerstatus_load_balancer_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerStatusColumns[6]},
+				Columns: []*schema.Column{LoadBalancerStatusColumns[4]},
 			},
 			{
-				Name:    "loadbalancerstatus_load_balancer_id_namespace_source",
+				Name:    "loadbalancerstatus_load_balancer_id_source",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerStatusColumns[6], LoadBalancerStatusColumns[1], LoadBalancerStatusColumns[5]},
-			},
-			{
-				Name:    "loadbalancerstatus_namespace_data",
-				Unique:  false,
-				Columns: []*schema.Column{LoadBalancerStatusColumns[1], LoadBalancerStatusColumns[2]},
-				Annotation: &entsql.IndexAnnotation{
-					Types: map[string]string{
-						"postgres": "GIN",
-					},
-				},
+				Columns: []*schema.Column{LoadBalancerStatusColumns[4], LoadBalancerStatusColumns[3]},
 			},
 		},
 	}

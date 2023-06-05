@@ -11,7 +11,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/x/gidx"
 )
@@ -61,11 +60,6 @@ func IDLTE(id gidx.PrefixedID) predicate.LoadBalancerAnnotation {
 	return predicate.LoadBalancerAnnotation(sql.FieldLTE(FieldID, id))
 }
 
-// Namespace applies equality check predicate on the "namespace" field. It's identical to NamespaceEQ.
-func Namespace(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldEQ(FieldNamespace, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.LoadBalancerAnnotation {
 	return predicate.LoadBalancerAnnotation(sql.FieldEQ(FieldCreatedAt, v))
@@ -79,71 +73,6 @@ func UpdatedAt(v time.Time) predicate.LoadBalancerAnnotation {
 // LoadBalancerID applies equality check predicate on the "load_balancer_id" field. It's identical to LoadBalancerIDEQ.
 func LoadBalancerID(v gidx.PrefixedID) predicate.LoadBalancerAnnotation {
 	return predicate.LoadBalancerAnnotation(sql.FieldEQ(FieldLoadBalancerID, v))
-}
-
-// NamespaceEQ applies the EQ predicate on the "namespace" field.
-func NamespaceEQ(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldEQ(FieldNamespace, v))
-}
-
-// NamespaceNEQ applies the NEQ predicate on the "namespace" field.
-func NamespaceNEQ(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldNEQ(FieldNamespace, v))
-}
-
-// NamespaceIn applies the In predicate on the "namespace" field.
-func NamespaceIn(vs ...string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldIn(FieldNamespace, vs...))
-}
-
-// NamespaceNotIn applies the NotIn predicate on the "namespace" field.
-func NamespaceNotIn(vs ...string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldNotIn(FieldNamespace, vs...))
-}
-
-// NamespaceGT applies the GT predicate on the "namespace" field.
-func NamespaceGT(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldGT(FieldNamespace, v))
-}
-
-// NamespaceGTE applies the GTE predicate on the "namespace" field.
-func NamespaceGTE(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldGTE(FieldNamespace, v))
-}
-
-// NamespaceLT applies the LT predicate on the "namespace" field.
-func NamespaceLT(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldLT(FieldNamespace, v))
-}
-
-// NamespaceLTE applies the LTE predicate on the "namespace" field.
-func NamespaceLTE(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldLTE(FieldNamespace, v))
-}
-
-// NamespaceContains applies the Contains predicate on the "namespace" field.
-func NamespaceContains(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldContains(FieldNamespace, v))
-}
-
-// NamespaceHasPrefix applies the HasPrefix predicate on the "namespace" field.
-func NamespaceHasPrefix(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldHasPrefix(FieldNamespace, v))
-}
-
-// NamespaceHasSuffix applies the HasSuffix predicate on the "namespace" field.
-func NamespaceHasSuffix(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldHasSuffix(FieldNamespace, v))
-}
-
-// NamespaceEqualFold applies the EqualFold predicate on the "namespace" field.
-func NamespaceEqualFold(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldEqualFold(FieldNamespace, v))
-}
-
-// NamespaceContainsFold applies the ContainsFold predicate on the "namespace" field.
-func NamespaceContainsFold(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(sql.FieldContainsFold(FieldNamespace, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -348,12 +277,5 @@ func Or(predicates ...predicate.LoadBalancerAnnotation) predicate.LoadBalancerAn
 func Not(p predicate.LoadBalancerAnnotation) predicate.LoadBalancerAnnotation {
 	return predicate.LoadBalancerAnnotation(func(s *sql.Selector) {
 		p(s.Not())
-	})
-}
-
-// DataHasKey checks if Data contains given value
-func DataHasKey(v string) predicate.LoadBalancerAnnotation {
-	return predicate.LoadBalancerAnnotation(func(s *sql.Selector) {
-		s.Where(sqljson.HasKey(s.C(FieldData), sqljson.DotPath(v)))
 	})
 }

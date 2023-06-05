@@ -119,7 +119,7 @@ func (oc *OriginCreate) Mutation() *OriginMutation {
 // Save creates the Origin in the database.
 func (oc *OriginCreate) Save(ctx context.Context) (*Origin, error) {
 	oc.defaults()
-	return withHooks[*Origin, OriginMutation](ctx, oc.sqlSave, oc.mutation, oc.hooks)
+	return withHooks(ctx, oc.sqlSave, oc.mutation, oc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

@@ -115,7 +115,7 @@ func (pc *PortCreate) Mutation() *PortMutation {
 // Save creates the Port in the database.
 func (pc *PortCreate) Save(ctx context.Context) (*Port, error) {
 	pc.defaults()
-	return withHooks[*Port, PortMutation](ctx, pc.sqlSave, pc.mutation, pc.hooks)
+	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

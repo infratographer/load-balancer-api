@@ -8,7 +8,6 @@ package generated
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -957,9 +956,6 @@ type LoadBalancerAnnotationMutation struct {
 	op                   Op
 	typ                  string
 	id                   *gidx.PrefixedID
-	namespace            *string
-	data                 *json.RawMessage
-	appenddata           json.RawMessage
 	created_at           *time.Time
 	updated_at           *time.Time
 	clearedFields        map[string]struct{}
@@ -1072,93 +1068,6 @@ func (m *LoadBalancerAnnotationMutation) IDs(ctx context.Context) ([]gidx.Prefix
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetNamespace sets the "namespace" field.
-func (m *LoadBalancerAnnotationMutation) SetNamespace(s string) {
-	m.namespace = &s
-}
-
-// Namespace returns the value of the "namespace" field in the mutation.
-func (m *LoadBalancerAnnotationMutation) Namespace() (r string, exists bool) {
-	v := m.namespace
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNamespace returns the old "namespace" field's value of the LoadBalancerAnnotation entity.
-// If the LoadBalancerAnnotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerAnnotationMutation) OldNamespace(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNamespace is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNamespace requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNamespace: %w", err)
-	}
-	return oldValue.Namespace, nil
-}
-
-// ResetNamespace resets all changes to the "namespace" field.
-func (m *LoadBalancerAnnotationMutation) ResetNamespace() {
-	m.namespace = nil
-}
-
-// SetData sets the "data" field.
-func (m *LoadBalancerAnnotationMutation) SetData(jm json.RawMessage) {
-	m.data = &jm
-	m.appenddata = nil
-}
-
-// Data returns the value of the "data" field in the mutation.
-func (m *LoadBalancerAnnotationMutation) Data() (r json.RawMessage, exists bool) {
-	v := m.data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldData returns the old "data" field's value of the LoadBalancerAnnotation entity.
-// If the LoadBalancerAnnotation object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerAnnotationMutation) OldData(ctx context.Context) (v json.RawMessage, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
-	}
-	return oldValue.Data, nil
-}
-
-// AppendData adds jm to the "data" field.
-func (m *LoadBalancerAnnotationMutation) AppendData(jm json.RawMessage) {
-	m.appenddata = append(m.appenddata, jm...)
-}
-
-// AppendedData returns the list of values that were appended to the "data" field in this mutation.
-func (m *LoadBalancerAnnotationMutation) AppendedData() (json.RawMessage, bool) {
-	if len(m.appenddata) == 0 {
-		return nil, false
-	}
-	return m.appenddata, true
-}
-
-// ResetData resets all changes to the "data" field.
-func (m *LoadBalancerAnnotationMutation) ResetData() {
-	m.data = nil
-	m.appenddata = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1329,13 +1238,7 @@ func (m *LoadBalancerAnnotationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoadBalancerAnnotationMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.namespace != nil {
-		fields = append(fields, loadbalancerannotation.FieldNamespace)
-	}
-	if m.data != nil {
-		fields = append(fields, loadbalancerannotation.FieldData)
-	}
+	fields := make([]string, 0, 3)
 	if m.created_at != nil {
 		fields = append(fields, loadbalancerannotation.FieldCreatedAt)
 	}
@@ -1353,10 +1256,6 @@ func (m *LoadBalancerAnnotationMutation) Fields() []string {
 // schema.
 func (m *LoadBalancerAnnotationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case loadbalancerannotation.FieldNamespace:
-		return m.Namespace()
-	case loadbalancerannotation.FieldData:
-		return m.Data()
 	case loadbalancerannotation.FieldCreatedAt:
 		return m.CreatedAt()
 	case loadbalancerannotation.FieldUpdatedAt:
@@ -1372,10 +1271,6 @@ func (m *LoadBalancerAnnotationMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *LoadBalancerAnnotationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case loadbalancerannotation.FieldNamespace:
-		return m.OldNamespace(ctx)
-	case loadbalancerannotation.FieldData:
-		return m.OldData(ctx)
 	case loadbalancerannotation.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case loadbalancerannotation.FieldUpdatedAt:
@@ -1391,20 +1286,6 @@ func (m *LoadBalancerAnnotationMutation) OldField(ctx context.Context, name stri
 // type.
 func (m *LoadBalancerAnnotationMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case loadbalancerannotation.FieldNamespace:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNamespace(v)
-		return nil
-	case loadbalancerannotation.FieldData:
-		v, ok := value.(json.RawMessage)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetData(v)
-		return nil
 	case loadbalancerannotation.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -1475,12 +1356,6 @@ func (m *LoadBalancerAnnotationMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *LoadBalancerAnnotationMutation) ResetField(name string) error {
 	switch name {
-	case loadbalancerannotation.FieldNamespace:
-		m.ResetNamespace()
-		return nil
-	case loadbalancerannotation.FieldData:
-		m.ResetData()
-		return nil
 	case loadbalancerannotation.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -1574,9 +1449,6 @@ type LoadBalancerStatusMutation struct {
 	op                   Op
 	typ                  string
 	id                   *gidx.PrefixedID
-	namespace            *string
-	data                 *json.RawMessage
-	appenddata           json.RawMessage
 	created_at           *time.Time
 	updated_at           *time.Time
 	source               *string
@@ -1690,93 +1562,6 @@ func (m *LoadBalancerStatusMutation) IDs(ctx context.Context) ([]gidx.PrefixedID
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetNamespace sets the "namespace" field.
-func (m *LoadBalancerStatusMutation) SetNamespace(s string) {
-	m.namespace = &s
-}
-
-// Namespace returns the value of the "namespace" field in the mutation.
-func (m *LoadBalancerStatusMutation) Namespace() (r string, exists bool) {
-	v := m.namespace
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNamespace returns the old "namespace" field's value of the LoadBalancerStatus entity.
-// If the LoadBalancerStatus object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerStatusMutation) OldNamespace(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNamespace is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNamespace requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNamespace: %w", err)
-	}
-	return oldValue.Namespace, nil
-}
-
-// ResetNamespace resets all changes to the "namespace" field.
-func (m *LoadBalancerStatusMutation) ResetNamespace() {
-	m.namespace = nil
-}
-
-// SetData sets the "data" field.
-func (m *LoadBalancerStatusMutation) SetData(jm json.RawMessage) {
-	m.data = &jm
-	m.appenddata = nil
-}
-
-// Data returns the value of the "data" field in the mutation.
-func (m *LoadBalancerStatusMutation) Data() (r json.RawMessage, exists bool) {
-	v := m.data
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldData returns the old "data" field's value of the LoadBalancerStatus entity.
-// If the LoadBalancerStatus object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerStatusMutation) OldData(ctx context.Context) (v json.RawMessage, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldData is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldData requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldData: %w", err)
-	}
-	return oldValue.Data, nil
-}
-
-// AppendData adds jm to the "data" field.
-func (m *LoadBalancerStatusMutation) AppendData(jm json.RawMessage) {
-	m.appenddata = append(m.appenddata, jm...)
-}
-
-// AppendedData returns the list of values that were appended to the "data" field in this mutation.
-func (m *LoadBalancerStatusMutation) AppendedData() (json.RawMessage, bool) {
-	if len(m.appenddata) == 0 {
-		return nil, false
-	}
-	return m.appenddata, true
-}
-
-// ResetData resets all changes to the "data" field.
-func (m *LoadBalancerStatusMutation) ResetData() {
-	m.data = nil
-	m.appenddata = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1983,13 +1768,7 @@ func (m *LoadBalancerStatusMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoadBalancerStatusMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.namespace != nil {
-		fields = append(fields, loadbalancerstatus.FieldNamespace)
-	}
-	if m.data != nil {
-		fields = append(fields, loadbalancerstatus.FieldData)
-	}
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, loadbalancerstatus.FieldCreatedAt)
 	}
@@ -2010,10 +1789,6 @@ func (m *LoadBalancerStatusMutation) Fields() []string {
 // schema.
 func (m *LoadBalancerStatusMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case loadbalancerstatus.FieldNamespace:
-		return m.Namespace()
-	case loadbalancerstatus.FieldData:
-		return m.Data()
 	case loadbalancerstatus.FieldCreatedAt:
 		return m.CreatedAt()
 	case loadbalancerstatus.FieldUpdatedAt:
@@ -2031,10 +1806,6 @@ func (m *LoadBalancerStatusMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *LoadBalancerStatusMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case loadbalancerstatus.FieldNamespace:
-		return m.OldNamespace(ctx)
-	case loadbalancerstatus.FieldData:
-		return m.OldData(ctx)
 	case loadbalancerstatus.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case loadbalancerstatus.FieldUpdatedAt:
@@ -2052,20 +1823,6 @@ func (m *LoadBalancerStatusMutation) OldField(ctx context.Context, name string) 
 // type.
 func (m *LoadBalancerStatusMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case loadbalancerstatus.FieldNamespace:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNamespace(v)
-		return nil
-	case loadbalancerstatus.FieldData:
-		v, ok := value.(json.RawMessage)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetData(v)
-		return nil
 	case loadbalancerstatus.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2143,12 +1900,6 @@ func (m *LoadBalancerStatusMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *LoadBalancerStatusMutation) ResetField(name string) error {
 	switch name {
-	case loadbalancerstatus.FieldNamespace:
-		m.ResetNamespace()
-		return nil
-	case loadbalancerstatus.FieldData:
-		m.ResetData()
-		return nil
 	case loadbalancerstatus.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil

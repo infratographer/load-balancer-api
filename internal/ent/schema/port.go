@@ -90,6 +90,6 @@ func (Port) Annotations() []schema.Annotation {
 		entgql.Type("LoadBalancerPort"),
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
-		pubsubinfo.Annotation{QueueName: "load-balancer-port.%location_id%"},
+		pubsubinfo.Annotation{},
 	}
 }

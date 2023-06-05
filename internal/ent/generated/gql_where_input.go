@@ -373,21 +373,6 @@ type LoadBalancerAnnotationWhereInput struct {
 	IDLT    *gidx.PrefixedID  `json:"idLT,omitempty"`
 	IDLTE   *gidx.PrefixedID  `json:"idLTE,omitempty"`
 
-	// "namespace" field predicates.
-	Namespace             *string  `json:"namespace,omitempty"`
-	NamespaceNEQ          *string  `json:"namespaceNEQ,omitempty"`
-	NamespaceIn           []string `json:"namespaceIn,omitempty"`
-	NamespaceNotIn        []string `json:"namespaceNotIn,omitempty"`
-	NamespaceGT           *string  `json:"namespaceGT,omitempty"`
-	NamespaceGTE          *string  `json:"namespaceGTE,omitempty"`
-	NamespaceLT           *string  `json:"namespaceLT,omitempty"`
-	NamespaceLTE          *string  `json:"namespaceLTE,omitempty"`
-	NamespaceContains     *string  `json:"namespaceContains,omitempty"`
-	NamespaceHasPrefix    *string  `json:"namespaceHasPrefix,omitempty"`
-	NamespaceHasSuffix    *string  `json:"namespaceHasSuffix,omitempty"`
-	NamespaceEqualFold    *string  `json:"namespaceEqualFold,omitempty"`
-	NamespaceContainsFold *string  `json:"namespaceContainsFold,omitempty"`
-
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
 	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
@@ -508,45 +493,6 @@ func (i *LoadBalancerAnnotationWhereInput) P() (predicate.LoadBalancerAnnotation
 	if i.IDLTE != nil {
 		predicates = append(predicates, loadbalancerannotation.IDLTE(*i.IDLTE))
 	}
-	if i.Namespace != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceEQ(*i.Namespace))
-	}
-	if i.NamespaceNEQ != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceNEQ(*i.NamespaceNEQ))
-	}
-	if len(i.NamespaceIn) > 0 {
-		predicates = append(predicates, loadbalancerannotation.NamespaceIn(i.NamespaceIn...))
-	}
-	if len(i.NamespaceNotIn) > 0 {
-		predicates = append(predicates, loadbalancerannotation.NamespaceNotIn(i.NamespaceNotIn...))
-	}
-	if i.NamespaceGT != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceGT(*i.NamespaceGT))
-	}
-	if i.NamespaceGTE != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceGTE(*i.NamespaceGTE))
-	}
-	if i.NamespaceLT != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceLT(*i.NamespaceLT))
-	}
-	if i.NamespaceLTE != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceLTE(*i.NamespaceLTE))
-	}
-	if i.NamespaceContains != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceContains(*i.NamespaceContains))
-	}
-	if i.NamespaceHasPrefix != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceHasPrefix(*i.NamespaceHasPrefix))
-	}
-	if i.NamespaceHasSuffix != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceHasSuffix(*i.NamespaceHasSuffix))
-	}
-	if i.NamespaceEqualFold != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceEqualFold(*i.NamespaceEqualFold))
-	}
-	if i.NamespaceContainsFold != nil {
-		predicates = append(predicates, loadbalancerannotation.NamespaceContainsFold(*i.NamespaceContainsFold))
-	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, loadbalancerannotation.CreatedAtEQ(*i.CreatedAt))
 	}
@@ -640,21 +586,6 @@ type LoadBalancerStatusWhereInput struct {
 	IDGTE   *gidx.PrefixedID  `json:"idGTE,omitempty"`
 	IDLT    *gidx.PrefixedID  `json:"idLT,omitempty"`
 	IDLTE   *gidx.PrefixedID  `json:"idLTE,omitempty"`
-
-	// "namespace" field predicates.
-	Namespace             *string  `json:"namespace,omitempty"`
-	NamespaceNEQ          *string  `json:"namespaceNEQ,omitempty"`
-	NamespaceIn           []string `json:"namespaceIn,omitempty"`
-	NamespaceNotIn        []string `json:"namespaceNotIn,omitempty"`
-	NamespaceGT           *string  `json:"namespaceGT,omitempty"`
-	NamespaceGTE          *string  `json:"namespaceGTE,omitempty"`
-	NamespaceLT           *string  `json:"namespaceLT,omitempty"`
-	NamespaceLTE          *string  `json:"namespaceLTE,omitempty"`
-	NamespaceContains     *string  `json:"namespaceContains,omitempty"`
-	NamespaceHasPrefix    *string  `json:"namespaceHasPrefix,omitempty"`
-	NamespaceHasSuffix    *string  `json:"namespaceHasSuffix,omitempty"`
-	NamespaceEqualFold    *string  `json:"namespaceEqualFold,omitempty"`
-	NamespaceContainsFold *string  `json:"namespaceContainsFold,omitempty"`
 
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
@@ -790,45 +721,6 @@ func (i *LoadBalancerStatusWhereInput) P() (predicate.LoadBalancerStatus, error)
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, loadbalancerstatus.IDLTE(*i.IDLTE))
-	}
-	if i.Namespace != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceEQ(*i.Namespace))
-	}
-	if i.NamespaceNEQ != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceNEQ(*i.NamespaceNEQ))
-	}
-	if len(i.NamespaceIn) > 0 {
-		predicates = append(predicates, loadbalancerstatus.NamespaceIn(i.NamespaceIn...))
-	}
-	if len(i.NamespaceNotIn) > 0 {
-		predicates = append(predicates, loadbalancerstatus.NamespaceNotIn(i.NamespaceNotIn...))
-	}
-	if i.NamespaceGT != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceGT(*i.NamespaceGT))
-	}
-	if i.NamespaceGTE != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceGTE(*i.NamespaceGTE))
-	}
-	if i.NamespaceLT != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceLT(*i.NamespaceLT))
-	}
-	if i.NamespaceLTE != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceLTE(*i.NamespaceLTE))
-	}
-	if i.NamespaceContains != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceContains(*i.NamespaceContains))
-	}
-	if i.NamespaceHasPrefix != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceHasPrefix(*i.NamespaceHasPrefix))
-	}
-	if i.NamespaceHasSuffix != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceHasSuffix(*i.NamespaceHasSuffix))
-	}
-	if i.NamespaceEqualFold != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceEqualFold(*i.NamespaceEqualFold))
-	}
-	if i.NamespaceContainsFold != nil {
-		predicates = append(predicates, loadbalancerstatus.NamespaceContainsFold(*i.NamespaceContainsFold))
 	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, loadbalancerstatus.CreatedAtEQ(*i.CreatedAt))

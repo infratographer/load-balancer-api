@@ -126,7 +126,7 @@ func (LoadBalancer) Indexes() []ent.Index {
 func (LoadBalancer) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
-		pubsubinfo.Annotation{QueueName: "load-balancers.%location_id%"},
+		pubsubinfo.Annotation{},
 		schema.Comment("Representation of a load balancer."),
 		entgql.Implements("IPv4Addressable"),
 		entgql.RelayConnection(),

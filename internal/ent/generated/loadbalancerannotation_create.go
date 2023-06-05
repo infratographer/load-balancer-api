@@ -8,7 +8,6 @@ package generated
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -25,18 +24,6 @@ type LoadBalancerAnnotationCreate struct {
 	config
 	mutation *LoadBalancerAnnotationMutation
 	hooks    []Hook
-}
-
-// SetNamespace sets the "namespace" field.
-func (lbac *LoadBalancerAnnotationCreate) SetNamespace(s string) *LoadBalancerAnnotationCreate {
-	lbac.mutation.SetNamespace(s)
-	return lbac
-}
-
-// SetData sets the "data" field.
-func (lbac *LoadBalancerAnnotationCreate) SetData(jm json.RawMessage) *LoadBalancerAnnotationCreate {
-	lbac.mutation.SetData(jm)
-	return lbac
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -100,7 +87,7 @@ func (lbac *LoadBalancerAnnotationCreate) Mutation() *LoadBalancerAnnotationMuta
 // Save creates the LoadBalancerAnnotation in the database.
 func (lbac *LoadBalancerAnnotationCreate) Save(ctx context.Context) (*LoadBalancerAnnotation, error) {
 	lbac.defaults()
-	return withHooks[*LoadBalancerAnnotation, LoadBalancerAnnotationMutation](ctx, lbac.sqlSave, lbac.mutation, lbac.hooks)
+	return withHooks(ctx, lbac.sqlSave, lbac.mutation, lbac.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -143,17 +130,6 @@ func (lbac *LoadBalancerAnnotationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lbac *LoadBalancerAnnotationCreate) check() error {
-	if _, ok := lbac.mutation.Namespace(); !ok {
-		return &ValidationError{Name: "namespace", err: errors.New(`generated: missing required field "LoadBalancerAnnotation.namespace"`)}
-	}
-	if v, ok := lbac.mutation.Namespace(); ok {
-		if err := loadbalancerannotation.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`generated: validator failed for field "LoadBalancerAnnotation.namespace": %w`, err)}
-		}
-	}
-	if _, ok := lbac.mutation.Data(); !ok {
-		return &ValidationError{Name: "data", err: errors.New(`generated: missing required field "LoadBalancerAnnotation.data"`)}
-	}
 	if _, ok := lbac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`generated: missing required field "LoadBalancerAnnotation.created_at"`)}
 	}
@@ -200,14 +176,6 @@ func (lbac *LoadBalancerAnnotationCreate) createSpec() (*LoadBalancerAnnotation,
 	if id, ok := lbac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := lbac.mutation.Namespace(); ok {
-		_spec.SetField(loadbalancerannotation.FieldNamespace, field.TypeString, value)
-		_node.Namespace = value
-	}
-	if value, ok := lbac.mutation.Data(); ok {
-		_spec.SetField(loadbalancerannotation.FieldData, field.TypeJSON, value)
-		_node.Data = value
 	}
 	if value, ok := lbac.mutation.CreatedAt(); ok {
 		_spec.SetField(loadbalancerannotation.FieldCreatedAt, field.TypeTime, value)

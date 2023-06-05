@@ -20,20 +20,18 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/nats-io/nats.go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"go.uber.org/zap"
 
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
+	"go.infratographer.com/x/events"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
-
-	natssrv "github.com/nats-io/nats-server/v2/server"
 
 	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
@@ -110,12 +108,17 @@ func setupDB() {
 		errPanic("failed to start nats server", err)
 	}
 
-	natsClient, err := newNatsClient(ns)
-	if err != nil {
-		errPanic("failed to generate nats client", err)
+	pubcfg := events.PublisherConfig{
+		URL:    ns.ClientURL(),
+		Prefix: "com.infratographer",
 	}
 
-	c, err := ent.Open(dia, uri, ent.Debug(), ent.PubsubClient(natsClient))
+	pub, err := events.NewPublisher(pubcfg)
+	if err != nil {
+		errPanic("failed to create events publisher", err)
+	}
+
+	c, err := ent.Open(dia, uri, ent.Debug(), ent.EventsPublisher(pub))
 	if err != nil {
 		errPanic("failed terminating test db container after failing to connect to the db", cntr.Container.Terminate(ctx))
 		errPanic("failed opening connection to database:", err)
@@ -248,33 +251,4 @@ func newBool(b bool) *bool {
 
 func newInt64(i int64) *int64 {
 	return &i
-}
-
-func newNatsClient(srv *natssrv.Server) (*pubsub.Client, error) {
-	nc, err := nats.Connect(srv.ClientURL())
-	if err != nil {
-		// errPanic("teardown failed to terminate test db container", DBContainer.Container.Terminate(ctx))
-		return &pubsub.Client{}, err
-	}
-
-	js, err := nc.JetStream()
-	if err != nil {
-		return &pubsub.Client{}, err
-	}
-
-	_, err = js.AddStream(&nats.StreamConfig{
-		Name:     "load-balancer-api",
-		Subjects: []string{"com.infratographer.events.>", "com.infratographer.changes.>"},
-	})
-	if err != nil {
-		return &pubsub.Client{}, err
-	}
-
-	client := pubsub.NewClient(pubsub.WithJetreamContext(js),
-		pubsub.WithLogger(zap.NewNop().Sugar()),
-		pubsub.WithStreamName("load-balancer-api"),
-		pubsub.WithSubjectPrefix("com.infratographer"),
-	)
-
-	return client, nil
 }

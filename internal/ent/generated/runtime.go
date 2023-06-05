@@ -58,35 +58,14 @@ func init() {
 	loadbalancerannotationMixin := schema.LoadBalancerAnnotation{}.Mixin()
 	loadbalancerannotationMixinFields0 := loadbalancerannotationMixin[0].Fields()
 	_ = loadbalancerannotationMixinFields0
-	loadbalancerannotationMixinFields1 := loadbalancerannotationMixin[1].Fields()
-	_ = loadbalancerannotationMixinFields1
 	loadbalancerannotationFields := schema.LoadBalancerAnnotation{}.Fields()
 	_ = loadbalancerannotationFields
-	// loadbalancerannotationDescNamespace is the schema descriptor for namespace field.
-	loadbalancerannotationDescNamespace := loadbalancerannotationMixinFields0[0].Descriptor()
-	// loadbalancerannotation.NamespaceValidator is a validator for the "namespace" field. It is called by the builders before save.
-	loadbalancerannotation.NamespaceValidator = func() func(string) error {
-		validators := loadbalancerannotationDescNamespace.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-			validators[2].(func(string) error),
-		}
-		return func(namespace string) error {
-			for _, fn := range fns {
-				if err := fn(namespace); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
 	// loadbalancerannotationDescCreatedAt is the schema descriptor for created_at field.
-	loadbalancerannotationDescCreatedAt := loadbalancerannotationMixinFields1[0].Descriptor()
+	loadbalancerannotationDescCreatedAt := loadbalancerannotationMixinFields0[0].Descriptor()
 	// loadbalancerannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	loadbalancerannotation.DefaultCreatedAt = loadbalancerannotationDescCreatedAt.Default.(func() time.Time)
 	// loadbalancerannotationDescUpdatedAt is the schema descriptor for updated_at field.
-	loadbalancerannotationDescUpdatedAt := loadbalancerannotationMixinFields1[1].Descriptor()
+	loadbalancerannotationDescUpdatedAt := loadbalancerannotationMixinFields0[1].Descriptor()
 	// loadbalancerannotation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	loadbalancerannotation.DefaultUpdatedAt = loadbalancerannotationDescUpdatedAt.Default.(func() time.Time)
 	// loadbalancerannotation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -98,35 +77,14 @@ func init() {
 	loadbalancerstatusMixin := schema.LoadBalancerStatus{}.Mixin()
 	loadbalancerstatusMixinFields0 := loadbalancerstatusMixin[0].Fields()
 	_ = loadbalancerstatusMixinFields0
-	loadbalancerstatusMixinFields1 := loadbalancerstatusMixin[1].Fields()
-	_ = loadbalancerstatusMixinFields1
 	loadbalancerstatusFields := schema.LoadBalancerStatus{}.Fields()
 	_ = loadbalancerstatusFields
-	// loadbalancerstatusDescNamespace is the schema descriptor for namespace field.
-	loadbalancerstatusDescNamespace := loadbalancerstatusMixinFields0[0].Descriptor()
-	// loadbalancerstatus.NamespaceValidator is a validator for the "namespace" field. It is called by the builders before save.
-	loadbalancerstatus.NamespaceValidator = func() func(string) error {
-		validators := loadbalancerstatusDescNamespace.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-			validators[2].(func(string) error),
-		}
-		return func(namespace string) error {
-			for _, fn := range fns {
-				if err := fn(namespace); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
 	// loadbalancerstatusDescCreatedAt is the schema descriptor for created_at field.
-	loadbalancerstatusDescCreatedAt := loadbalancerstatusMixinFields1[0].Descriptor()
+	loadbalancerstatusDescCreatedAt := loadbalancerstatusMixinFields0[0].Descriptor()
 	// loadbalancerstatus.DefaultCreatedAt holds the default value on creation for the created_at field.
 	loadbalancerstatus.DefaultCreatedAt = loadbalancerstatusDescCreatedAt.Default.(func() time.Time)
 	// loadbalancerstatusDescUpdatedAt is the schema descriptor for updated_at field.
-	loadbalancerstatusDescUpdatedAt := loadbalancerstatusMixinFields1[1].Descriptor()
+	loadbalancerstatusDescUpdatedAt := loadbalancerstatusMixinFields0[1].Descriptor()
 	// loadbalancerstatus.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	loadbalancerstatus.DefaultUpdatedAt = loadbalancerstatusDescUpdatedAt.Default.(func() time.Time)
 	// loadbalancerstatus.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -83,7 +83,7 @@ func (pu *ProviderUpdate) RemoveLoadBalancers(l ...*LoadBalancer) *ProviderUpdat
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *ProviderUpdate) Save(ctx context.Context) (int, error) {
 	pu.defaults()
-	return withHooks[int, ProviderMutation](ctx, pu.sqlSave, pu.mutation, pu.hooks)
+	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -272,7 +272,7 @@ func (puo *ProviderUpdateOne) Select(field string, fields ...string) *ProviderUp
 // Save executes the query and returns the updated Provider entity.
 func (puo *ProviderUpdateOne) Save(ctx context.Context) (*Provider, error) {
 	puo.defaults()
-	return withHooks[*Provider, ProviderMutation](ctx, puo.sqlSave, puo.mutation, puo.hooks)
+	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

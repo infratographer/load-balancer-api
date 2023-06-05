@@ -8,13 +8,11 @@ package generated
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancerstatus"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
@@ -33,24 +31,6 @@ func (lbsu *LoadBalancerStatusUpdate) Where(ps ...predicate.LoadBalancerStatus) 
 	return lbsu
 }
 
-// SetNamespace sets the "namespace" field.
-func (lbsu *LoadBalancerStatusUpdate) SetNamespace(s string) *LoadBalancerStatusUpdate {
-	lbsu.mutation.SetNamespace(s)
-	return lbsu
-}
-
-// SetData sets the "data" field.
-func (lbsu *LoadBalancerStatusUpdate) SetData(jm json.RawMessage) *LoadBalancerStatusUpdate {
-	lbsu.mutation.SetData(jm)
-	return lbsu
-}
-
-// AppendData appends jm to the "data" field.
-func (lbsu *LoadBalancerStatusUpdate) AppendData(jm json.RawMessage) *LoadBalancerStatusUpdate {
-	lbsu.mutation.AppendData(jm)
-	return lbsu
-}
-
 // Mutation returns the LoadBalancerStatusMutation object of the builder.
 func (lbsu *LoadBalancerStatusUpdate) Mutation() *LoadBalancerStatusMutation {
 	return lbsu.mutation
@@ -59,7 +39,7 @@ func (lbsu *LoadBalancerStatusUpdate) Mutation() *LoadBalancerStatusMutation {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lbsu *LoadBalancerStatusUpdate) Save(ctx context.Context) (int, error) {
 	lbsu.defaults()
-	return withHooks[int, LoadBalancerStatusMutation](ctx, lbsu.sqlSave, lbsu.mutation, lbsu.hooks)
+	return withHooks(ctx, lbsu.sqlSave, lbsu.mutation, lbsu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -94,11 +74,6 @@ func (lbsu *LoadBalancerStatusUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lbsu *LoadBalancerStatusUpdate) check() error {
-	if v, ok := lbsu.mutation.Namespace(); ok {
-		if err := loadbalancerstatus.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`generated: validator failed for field "LoadBalancerStatus.namespace": %w`, err)}
-		}
-	}
 	if _, ok := lbsu.mutation.LoadBalancerID(); lbsu.mutation.LoadBalancerCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "LoadBalancerStatus.load_balancer"`)
 	}
@@ -116,17 +91,6 @@ func (lbsu *LoadBalancerStatusUpdate) sqlSave(ctx context.Context) (n int, err e
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := lbsu.mutation.Namespace(); ok {
-		_spec.SetField(loadbalancerstatus.FieldNamespace, field.TypeString, value)
-	}
-	if value, ok := lbsu.mutation.Data(); ok {
-		_spec.SetField(loadbalancerstatus.FieldData, field.TypeJSON, value)
-	}
-	if value, ok := lbsu.mutation.AppendedData(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, loadbalancerstatus.FieldData, value)
-		})
 	}
 	if value, ok := lbsu.mutation.UpdatedAt(); ok {
 		_spec.SetField(loadbalancerstatus.FieldUpdatedAt, field.TypeTime, value)
@@ -151,24 +115,6 @@ type LoadBalancerStatusUpdateOne struct {
 	mutation *LoadBalancerStatusMutation
 }
 
-// SetNamespace sets the "namespace" field.
-func (lbsuo *LoadBalancerStatusUpdateOne) SetNamespace(s string) *LoadBalancerStatusUpdateOne {
-	lbsuo.mutation.SetNamespace(s)
-	return lbsuo
-}
-
-// SetData sets the "data" field.
-func (lbsuo *LoadBalancerStatusUpdateOne) SetData(jm json.RawMessage) *LoadBalancerStatusUpdateOne {
-	lbsuo.mutation.SetData(jm)
-	return lbsuo
-}
-
-// AppendData appends jm to the "data" field.
-func (lbsuo *LoadBalancerStatusUpdateOne) AppendData(jm json.RawMessage) *LoadBalancerStatusUpdateOne {
-	lbsuo.mutation.AppendData(jm)
-	return lbsuo
-}
-
 // Mutation returns the LoadBalancerStatusMutation object of the builder.
 func (lbsuo *LoadBalancerStatusUpdateOne) Mutation() *LoadBalancerStatusMutation {
 	return lbsuo.mutation
@@ -190,7 +136,7 @@ func (lbsuo *LoadBalancerStatusUpdateOne) Select(field string, fields ...string)
 // Save executes the query and returns the updated LoadBalancerStatus entity.
 func (lbsuo *LoadBalancerStatusUpdateOne) Save(ctx context.Context) (*LoadBalancerStatus, error) {
 	lbsuo.defaults()
-	return withHooks[*LoadBalancerStatus, LoadBalancerStatusMutation](ctx, lbsuo.sqlSave, lbsuo.mutation, lbsuo.hooks)
+	return withHooks(ctx, lbsuo.sqlSave, lbsuo.mutation, lbsuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -225,11 +171,6 @@ func (lbsuo *LoadBalancerStatusUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lbsuo *LoadBalancerStatusUpdateOne) check() error {
-	if v, ok := lbsuo.mutation.Namespace(); ok {
-		if err := loadbalancerstatus.NamespaceValidator(v); err != nil {
-			return &ValidationError{Name: "namespace", err: fmt.Errorf(`generated: validator failed for field "LoadBalancerStatus.namespace": %w`, err)}
-		}
-	}
 	if _, ok := lbsuo.mutation.LoadBalancerID(); lbsuo.mutation.LoadBalancerCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "LoadBalancerStatus.load_balancer"`)
 	}
@@ -264,17 +205,6 @@ func (lbsuo *LoadBalancerStatusUpdateOne) sqlSave(ctx context.Context) (_node *L
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := lbsuo.mutation.Namespace(); ok {
-		_spec.SetField(loadbalancerstatus.FieldNamespace, field.TypeString, value)
-	}
-	if value, ok := lbsuo.mutation.Data(); ok {
-		_spec.SetField(loadbalancerstatus.FieldData, field.TypeJSON, value)
-	}
-	if value, ok := lbsuo.mutation.AppendedData(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, loadbalancerstatus.FieldData, value)
-		})
 	}
 	if value, ok := lbsuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(loadbalancerstatus.FieldUpdatedAt, field.TypeTime, value)

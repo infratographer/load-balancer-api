@@ -9,15 +9,14 @@ package pubsubhooks
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
 	"go.infratographer.com/load-balancer-api/internal/ent/schema"
+	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
-	"go.infratographer.com/x/pubsubx"
 	"golang.org/x/exp/slices"
 )
 
@@ -32,7 +31,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					queueName := "load-balancers.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -40,7 +39,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
 
-					changeset := []pubsubx.FieldChange{}
+					changeset := []events.FieldChange{}
 					cv_created_at := ""
 					created_at, ok := m.CreatedAt()
 
@@ -56,7 +55,7 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "created_at",
 							PreviousValue: pv_created_at,
 							CurrentValue:  cv_created_at,
@@ -78,7 +77,7 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "updated_at",
 							PreviousValue: pv_updated_at,
 							CurrentValue:  cv_updated_at,
@@ -100,7 +99,7 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "name",
 							PreviousValue: pv_name,
 							CurrentValue:  cv_name,
@@ -130,7 +129,7 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "tenant_id",
 							PreviousValue: pv_tenant_id,
 							CurrentValue:  cv_tenant_id,
@@ -147,10 +146,9 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 					additionalSubjects = append(additionalSubjects, location_id)
-					cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
-					queueName = strings.ReplaceAll(queueName, "%location_id%", cv_location_id)
 
 					if ok {
+						cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
 						pv_location_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldLocationID(ctx)
@@ -161,7 +159,7 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "location_id",
 							PreviousValue: pv_location_id,
 							CurrentValue:  cv_location_id,
@@ -191,22 +189,20 @@ func LoadBalancerHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "provider_id",
 							PreviousValue: pv_provider_id,
 							CurrentValue:  cv_provider_id,
 						})
 					}
 
-					msg := pubsubx.ChangeMessage{
+					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
 						AdditionalSubjectIDs: additionalSubjects,
 						Timestamp:            time.Now().UTC(),
 						FieldChanges:         changeset,
 					}
-
-					fmt.Println(queueName)
 
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
@@ -221,11 +217,7 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 
-					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
-
-					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
-						return nil, fmt.Errorf("failed to publish change: %w", err)
-					}
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
@@ -237,7 +229,7 @@ func LoadBalancerHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
-					queueName := "load-balancers.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -253,10 +245,15 @@ func LoadBalancerHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.TenantID)
 
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
-					value_location_id := fmt.Sprintf("%s", dbObj.LocationID)
-					queueName = strings.ReplaceAll(queueName, "%location_id%", value_location_id)
 
 					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
+
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
 
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
@@ -267,7 +264,7 @@ func LoadBalancerHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
 							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							// msg.AdditionalSubjectIDs = additionalSubjects
+							msg.AdditionalSubjectIDs = additionalSubjects
 						}
 					}
 
@@ -277,20 +274,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					msg := pubsubx.ChangeMessage{
-						EventType:            eventType(m.Op()),
-						SubjectID:            objID,
-						AdditionalSubjectIDs: additionalSubjects,
-						Timestamp:            time.Now().UTC(),
-					}
-
-					fmt.Println(queueName)
-
-					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
-
-					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
-						return nil, fmt.Errorf("failed to publish change: %w", err)
-					}
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
@@ -310,7 +294,7 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					queueName := "load-balancer-port.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -318,7 +302,7 @@ func PortHooks() []ent.Hook {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
 
-					changeset := []pubsubx.FieldChange{}
+					changeset := []events.FieldChange{}
 					cv_created_at := ""
 					created_at, ok := m.CreatedAt()
 
@@ -334,7 +318,7 @@ func PortHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "created_at",
 							PreviousValue: pv_created_at,
 							CurrentValue:  cv_created_at,
@@ -356,7 +340,7 @@ func PortHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "updated_at",
 							PreviousValue: pv_updated_at,
 							CurrentValue:  cv_updated_at,
@@ -378,7 +362,7 @@ func PortHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "number",
 							PreviousValue: pv_number,
 							CurrentValue:  cv_number,
@@ -400,7 +384,7 @@ func PortHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "name",
 							PreviousValue: pv_name,
 							CurrentValue:  cv_name,
@@ -430,22 +414,20 @@ func PortHooks() []ent.Hook {
 							}
 						}
 
-						changeset = append(changeset, pubsubx.FieldChange{
+						changeset = append(changeset, events.FieldChange{
 							Field:         "load_balancer_id",
 							PreviousValue: pv_load_balancer_id,
 							CurrentValue:  cv_load_balancer_id,
 						})
 					}
 
-					msg := pubsubx.ChangeMessage{
+					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
 						AdditionalSubjectIDs: additionalSubjects,
 						Timestamp:            time.Now().UTC(),
 						FieldChanges:         changeset,
 					}
-
-					fmt.Println(queueName)
 
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
@@ -460,11 +442,7 @@ func PortHooks() []ent.Hook {
 						}
 					}
 
-					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
-
-					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
-						return nil, fmt.Errorf("failed to publish change: %w", err)
-					}
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
@@ -476,7 +454,7 @@ func PortHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
-					queueName := "load-balancer-port.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -491,6 +469,13 @@ func PortHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
 
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
+
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
@@ -500,7 +485,7 @@ func PortHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
 							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							// msg.AdditionalSubjectIDs = additionalSubjects
+							msg.AdditionalSubjectIDs = additionalSubjects
 						}
 					}
 
@@ -510,20 +495,7 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					msg := pubsubx.ChangeMessage{
-						EventType:            eventType(m.Op()),
-						SubjectID:            objID,
-						AdditionalSubjectIDs: additionalSubjects,
-						Timestamp:            time.Now().UTC(),
-					}
-
-					fmt.Println(queueName)
-
-					pubSubj := m.PubsubClient.NewSubject("changes", eventType(m.Op()), eventSubject(objID))
-
-					if err := m.PubsubClient.PublishChange(ctx, pubSubj, msg); err != nil {
-						return nil, fmt.Errorf("failed to publish change: %w", err)
-					}
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
