@@ -1,7 +1,7 @@
 image:
   repository: ghcr.io/infratographer/load-balancer-api
   pullPolicy: IfNotPresent
-  tag: "v0.0.17"
+  tag: "v0.1.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -34,20 +34,21 @@ api:
   listenPort: 7608
   extraLabels: {}
   extraAnnotations: {}
-  extraEnvVars: {}
+  extraEnvVars: [] 
+  #- value: "postgresql://user@my-db-server:26257/load_balancer_api"
+  #  name: LOADBALANCERAPI_CRDB_URI 
   resources: {}
   podSecurityContext: {}
   securityContext: {}
   events:
-    connectionURL: "my-events-cluster.example.com:4222"
+    connectionURL: "nats://my-events-cluster.example.com:4222"
     auth:
-      secretName: "events-creds"
+      secretName: ""
       credsPath: "/nats/creds"
-    subjects: "events"
-    queue: "load-balancer"
+    topicPrefix: "com.infratographer"
   db:
-    uriSecret: load-balancer-api-db-uri
-    certSecret: load-balancer-api-db-ca
+    uriSecret: "" 
+    certSecret: ""
 
   oidc:
     enabled: false
