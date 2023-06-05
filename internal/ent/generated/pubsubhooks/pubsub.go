@@ -9,7 +9,6 @@ package pubsubhooks
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"entgo.io/ent"
@@ -32,7 +31,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					queueName := "load-balancers.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -147,10 +146,9 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 					additionalSubjects = append(additionalSubjects, location_id)
-					cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
-					queueName = strings.ReplaceAll(queueName, "%location_id%", cv_location_id)
 
 					if ok {
+						cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
 						pv_location_id := ""
 						if !m.Op().Is(ent.OpCreate) {
 							ov, err := m.OldLocationID(ctx)
@@ -206,8 +204,6 @@ func LoadBalancerHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					fmt.Println(queueName)
-
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
@@ -233,7 +229,7 @@ func LoadBalancerHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
-					queueName := "load-balancers.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -249,8 +245,6 @@ func LoadBalancerHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.TenantID)
 
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
-					value_location_id := fmt.Sprintf("%s", dbObj.LocationID)
-					queueName = strings.ReplaceAll(queueName, "%location_id%", value_location_id)
 
 					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
 
@@ -280,8 +274,6 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					fmt.Println(queueName)
-
 					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
@@ -302,7 +294,7 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					queueName := "load-balancer-port.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -437,8 +429,6 @@ func PortHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					fmt.Println(queueName)
-
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
@@ -464,7 +454,7 @@ func PortHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
-					queueName := "load-balancer-port.%location_id%"
+					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -504,8 +494,6 @@ func PortHooks() []ent.Hook {
 					if err != nil {
 						return retValue, err
 					}
-
-					fmt.Println(queueName)
 
 					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 

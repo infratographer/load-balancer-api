@@ -38,7 +38,7 @@
 							return retValue, err
 						}
 
-						queueName := "{{ $nodeAnnotation.QueueName }}"
+						// queueName := "{{ $nodeAnnotation.QueueName }}"
 						additionalSubjects := []gidx.PrefixedID{}
 
 						objID, ok := m.{{ $node.ID.MutationGet }}()
@@ -84,7 +84,7 @@
 										{{- else }}
 											{{ $currentValue }} = fmt.Sprintf("%s", fmt.Sprint({{ $f.Name }}))
 										{{- end }}
-										queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
+										// queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
 									{{ end }}
 								{{ end }}
 
@@ -141,8 +141,6 @@
 						FieldChanges: 					changeset,
 					}
 
-					fmt.Println(queueName)
-
 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
@@ -167,7 +165,7 @@
 			hook.On(
 				func(next ent.Mutator) ent.Mutator {
 					return hook.{{ $node.Name }}Func(func(ctx context.Context, m *generated.{{ $node.Name }}Mutation) (ent.Value, error) {
-						queueName := "{{ $nodeAnnotation.QueueName }}"
+						// queueName := "{{ $nodeAnnotation.QueueName }}"
 						additionalSubjects := []gidx.PrefixedID{}
 
 						objID, ok := m.{{ $node.ID.MutationGet }}()
@@ -196,7 +194,7 @@
 										{{- else }}
 											{{ $currentValue }} := fmt.Sprintf("%s", dbObj.{{ $f.MutationGet }})
 										{{- end }}
-										queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
+										// queueName = strings.ReplaceAll(queueName, "%{{ $f.Name }}%",  {{ $currentValue }})
 									{{ end }}
 								{{ end }}
 							{{ end }}
@@ -227,8 +225,6 @@
 						if err != nil {
 							return retValue, err
 						}
-
-						fmt.Println(queueName)
 
 						m.EventsPublisher.PublishChange(ctx, eventSubject(objID),msg)
 
