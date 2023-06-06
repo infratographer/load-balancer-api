@@ -52,7 +52,7 @@ spec:
                 name: {{ .Values.api.db.uriSecret }}
           {{- end }}
             - configMapRef:
-                name: api-config
+                name: {{ include "common.names.fullname" . }}-config
           {{- with .Values.api.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
