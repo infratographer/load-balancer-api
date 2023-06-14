@@ -30,7 +30,6 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -239,7 +238,6 @@ func LoadBalancerHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -582,14 +580,12 @@ func PoolHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					// addSubjPortLoadBalancerID, err := m.Client().Port.Get(ctx, objID)
 					addSubjPortLoadBalancerID, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjPortLoadBalancerID.ID) && objID != addSubjPortLoadBalancerID.ID {
@@ -600,7 +596,6 @@ func PoolHooks() []ent.Hook {
 							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID)
 						}
 					}
-					// addSubjOriginPoolID, err := m.Client().Origin.Get(ctx, objID)
 					addSubjOriginPoolID, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjOriginPoolID.ID) && objID != addSubjOriginPoolID.ID {
@@ -764,7 +759,6 @@ func PoolHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PoolFunc(func(ctx context.Context, m *generated.PoolMutation) (ent.Value, error) {
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
@@ -825,14 +819,12 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					// addSubjPoolTenantID, err := m.Client().Pool.Get(ctx, objID)
 					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
@@ -843,7 +835,6 @@ func PortHooks() []ent.Hook {
 							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.TenantID)
 						}
 					}
-					// addSubjLoadBalancerTenantID, err := m.Client().LoadBalancer.Get(ctx, objID)
 					addSubjLoadBalancerTenantID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancerTenantID.ID) && objID != addSubjLoadBalancerTenantID.ID {
@@ -854,7 +845,6 @@ func PortHooks() []ent.Hook {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerTenantID.TenantID)
 						}
 					}
-					// addSubjLoadBalancerLocationID, err := m.Client().LoadBalancer.Get(ctx, objID)
 					addSubjLoadBalancerLocationID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancerLocationID.ID) && objID != addSubjLoadBalancerLocationID.ID {
@@ -865,7 +855,6 @@ func PortHooks() []ent.Hook {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerLocationID.LocationID)
 						}
 					}
-					// addSubjLoadBalancerProviderID, err := m.Client().LoadBalancer.Get(ctx, objID)
 					addSubjLoadBalancerProviderID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancerProviderID.ID) && objID != addSubjLoadBalancerProviderID.ID {
@@ -1029,7 +1018,6 @@ func PortHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
-					// queueName := ""
 					additionalSubjects := []gidx.PrefixedID{}
 
 					objID, ok := m.ID()
