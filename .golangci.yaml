@@ -5,6 +5,7 @@ run:
     - internal/pubsub/*
     - internal/ent/generated/*
     - internal/graphql/gen_*
+    - internal/manualhooks/*
   skip-dirs:
     # Exclude generated ent code
     - internal/ent/generated

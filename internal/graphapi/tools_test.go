@@ -26,14 +26,13 @@ import (
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/testing/eventtools"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/manualhooks"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
-
-	"go.infratographer.com/load-balancer-api/internal/pubsub"
 )
 
 const (
@@ -103,17 +102,12 @@ func setupDB() {
 
 	dia, uri, cntr := parseDBURI(ctx)
 
-	ns, err := pubsub.StartNatsServer()
+	pc, _, err := eventtools.NewNatsServer()
 	if err != nil {
 		errPanic("failed to start nats server", err)
 	}
 
-	pubcfg := events.PublisherConfig{
-		URL:    ns.ClientURL(),
-		Prefix: "com.infratographer",
-	}
-
-	pub, err := events.NewPublisher(pubcfg)
+	pub, err := events.NewPublisher(pc)
 	if err != nil {
 		errPanic("failed to create events publisher", err)
 	}
@@ -147,7 +141,9 @@ func setupDB() {
 		errPanic("atlas returned an error running database migrations", cmd.Run())
 	}
 
-	pubsubhooks.PubsubHooks(c)
+	// TODO: fix generated pubsubhooks
+	// pubsubhooks.PubsubHooks(c)
+	manualhooks.PubsubHooks(c)
 
 	EntClient = c
 }

@@ -21,8 +21,8 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pubsubhooks"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
+	"go.infratographer.com/load-balancer-api/internal/manualhooks"
 
 	"go.infratographer.com/x/events"
 )
@@ -131,7 +131,10 @@ func serve(ctx context.Context) error {
 	client := ent.NewClient(cOpts...)
 	defer client.Close()
 
-	pubsubhooks.PubsubHooks(client)
+	// TODO: fix generated pubsubhooks
+	// pubsubhooks.PubsubHooks(client)
+
+	manualhooks.PubsubHooks(client)
 
 	// Run the automatic migration tool to create all schema resources.
 	if err := client.Schema.Create(ctx); err != nil {
