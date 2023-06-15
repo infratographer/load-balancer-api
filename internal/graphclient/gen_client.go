@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/Yamashou/gqlgenc/client"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/x/gidx"
 )
 
@@ -46,8 +48,8 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 type Query struct {
 	LoadBalancerPools    LoadBalancerPoolConnection "json:\"loadBalancerPools\" graphql:\"loadBalancerPools\""
 	LoadBalancer         LoadBalancer               "json:\"loadBalancer\" graphql:\"loadBalancer\""
-	LoadBalancerPool     LoadBalancerPool           "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
-	LoadBalancerProvider LoadBalancerProvider       "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
+	LoadBalancerPool     generated.Pool             "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	LoadBalancerProvider generated.Provider         "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
 	Entities             []Entity                   "json:\"_entities\" graphql:\"_entities\""
 	Service              Service                    "json:\"_service\" graphql:\"_service\""
 }
@@ -87,12 +89,12 @@ type GetLoadBalancer struct {
 }
 type GetLoadBalancerPool struct {
 	LoadBalancerPool struct {
-		ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
-		Name      string                   "json:\"name\" graphql:\"name\""
-		Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
-		TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
-		CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
-		UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+		ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		Name      string          "json:\"name\" graphql:\"name\""
+		Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
+		TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+		CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+		UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 }
 type GetLoadBalancerPoolOrigin struct {
@@ -213,12 +215,12 @@ type LoadBalancerOriginUpdate struct {
 type LoadBalancerPoolCreate struct {
 	LoadBalancerPoolCreate struct {
 		LoadBalancerPool struct {
-			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
-			Name      string                   "json:\"name\" graphql:\"name\""
-			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
-			TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
-			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
-			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			Name      string          "json:\"name\" graphql:\"name\""
+			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
+			TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 	} "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
 }
@@ -230,12 +232,12 @@ type LoadBalancerPoolDelete struct {
 type LoadBalancerPoolUpdate struct {
 	LoadBalancerPoolUpdate struct {
 		LoadBalancerPool struct {
-			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
-			Name      string                   "json:\"name\" graphql:\"name\""
-			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
-			TenantID  gidx.PrefixedID          "json:\"tenantID\" graphql:\"tenantID\""
-			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
-			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
+			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			Name      string          "json:\"name\" graphql:\"name\""
+			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
+			TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 	} "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
 }
