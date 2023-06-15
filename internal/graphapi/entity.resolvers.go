@@ -51,9 +51,9 @@ func (r *entityResolver) FindLocationByID(ctx context.Context, id gidx.PrefixedI
 	return &Location{ID: id}, nil
 }
 
-// FindTenantByID is the resolver for the findTenantByID field.
-func (r *entityResolver) FindTenantByID(ctx context.Context, id gidx.PrefixedID) (*Tenant, error) {
-	return &Tenant{ID: id}, nil
+// FindOwnerByID is the resolver for the findOwnerByID field.
+func (r *entityResolver) FindOwnerByID(ctx context.Context, id gidx.PrefixedID) (*Owner, error) {
+	return &Owner{ID: id}, nil
 }
 
 // Entity returns EntityResolver implementation.

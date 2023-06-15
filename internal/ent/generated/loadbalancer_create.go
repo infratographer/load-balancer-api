@@ -63,9 +63,9 @@ func (lbc *LoadBalancerCreate) SetName(s string) *LoadBalancerCreate {
 	return lbc
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (lbc *LoadBalancerCreate) SetTenantID(gi gidx.PrefixedID) *LoadBalancerCreate {
-	lbc.mutation.SetTenantID(gi)
+// SetOwnerID sets the "owner_id" field.
+func (lbc *LoadBalancerCreate) SetOwnerID(gi gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.SetOwnerID(gi)
 	return lbc
 }
 
@@ -210,8 +210,8 @@ func (lbc *LoadBalancerCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "LoadBalancer.name": %w`, err)}
 		}
 	}
-	if _, ok := lbc.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`generated: missing required field "LoadBalancer.tenant_id"`)}
+	if _, ok := lbc.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner_id", err: errors.New(`generated: missing required field "LoadBalancer.owner_id"`)}
 	}
 	if _, ok := lbc.mutation.LocationID(); !ok {
 		return &ValidationError{Name: "location_id", err: errors.New(`generated: missing required field "LoadBalancer.location_id"`)}
@@ -279,9 +279,9 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := lbc.mutation.TenantID(); ok {
-		_spec.SetField(loadbalancer.FieldTenantID, field.TypeString, value)
-		_node.TenantID = value
+	if value, ok := lbc.mutation.OwnerID(); ok {
+		_spec.SetField(loadbalancer.FieldOwnerID, field.TypeString, value)
+		_node.OwnerID = value
 	}
 	if value, ok := lbc.mutation.LocationID(); ok {
 		_spec.SetField(loadbalancer.FieldLocationID, field.TypeString, value)

@@ -11,8 +11,8 @@ import (
 )
 
 type ProviderBuilder struct {
-	Name     string
-	TenantID gidx.PrefixedID
+	Name    string
+	OwnerID gidx.PrefixedID
 }
 
 func (p ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
@@ -20,23 +20,23 @@ func (p ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
 		p.Name = gofakeit.JobTitle()
 	}
 
-	if p.TenantID == "" {
-		p.TenantID = gidx.MustNewID(tenantPrefix)
+	if p.OwnerID == "" {
+		p.OwnerID = gidx.MustNewID(ownerPrefix)
 	}
 
-	return EntClient.Provider.Create().SetName(p.Name).SetTenantID(p.TenantID).SaveX(ctx)
+	return EntClient.Provider.Create().SetName(p.Name).SetOwnerID(p.OwnerID).SaveX(ctx)
 }
 
 type LoadBalancerBuilder struct {
 	Name       string
-	TenantID   gidx.PrefixedID
+	OwnerID    gidx.PrefixedID
 	LocationID gidx.PrefixedID
 	Provider   *ent.Provider
 }
 
 func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 	if b.Provider == nil {
-		pb := &ProviderBuilder{TenantID: b.TenantID}
+		pb := &ProviderBuilder{OwnerID: b.OwnerID}
 		b.Provider = pb.MustNew(ctx)
 	}
 
@@ -44,15 +44,15 @@ func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 		b.Name = gofakeit.AppName()
 	}
 
-	if b.TenantID == "" {
-		b.TenantID = b.Provider.TenantID
+	if b.OwnerID == "" {
+		b.OwnerID = b.Provider.OwnerID
 	}
 
 	if b.LocationID == "" {
 		b.LocationID = gidx.MustNewID(locationPrefix)
 	}
 
-	return EntClient.LoadBalancer.Create().SetName(b.Name).SetTenantID(b.TenantID).SetLocationID(b.LocationID).SetProvider(b.Provider).SaveX(ctx)
+	return EntClient.LoadBalancer.Create().SetName(b.Name).SetOwnerID(b.OwnerID).SetLocationID(b.LocationID).SetProvider(b.Provider).SaveX(ctx)
 }
 
 type PortBuilder struct {
@@ -79,7 +79,7 @@ func (p PortBuilder) MustNew(ctx context.Context) *ent.Port {
 
 type PoolBuilder struct {
 	Name     string
-	TenantID gidx.PrefixedID
+	OwnerID  gidx.PrefixedID
 	Protocol pool.Protocol
 }
 
@@ -88,15 +88,15 @@ func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 		p.Name = gofakeit.AppName()
 	}
 
-	if p.TenantID == "" {
-		p.TenantID = gidx.MustNewID(tenantPrefix)
+	if p.OwnerID == "" {
+		p.OwnerID = gidx.MustNewID(ownerPrefix)
 	}
 
 	if p.Protocol == "" {
 		p.Protocol = pool.Protocol(gofakeit.RandomString([]string{"tcp", "udp"}))
 	}
 
-	return EntClient.Pool.Create().SetName(p.Name).SetTenantID(p.TenantID).SetProtocol(p.Protocol).SaveX(ctx)
+	return EntClient.Pool.Create().SetName(p.Name).SetOwnerID(p.OwnerID).SetProtocol(p.Protocol).SaveX(ctx)
 }
 
 type OriginBuilder struct {

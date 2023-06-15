@@ -8,20 +8,20 @@ import (
 
 // Location represents a Location in the graph for the bits load-balancer-api is able to return
 type Location struct {
-	ID               gidx.PrefixedID                   `json:"id"`
-	LoadBalancers    *generated.LoadBalancerConnection `json:"loadBalancers"`
-	scopedToTenantID gidx.PrefixedID                   `json:"-"`
+	ID              gidx.PrefixedID                   `json:"id"`
+	LoadBalancers   *generated.LoadBalancerConnection `json:"loadBalancers"`
+	scopedToOwnerID gidx.PrefixedID                   `json:"-"`
 }
 
 // IsEntity ensures the entity interface is met
 func (Location) IsEntity() {}
 
-// Tenant represents a Location in the graph for the bits load-balancer-api is able to return
-type Tenant struct {
+// Owner represents a Location in the graph for the bits load-balancer-api is able to return
+type Owner struct {
 	ID                gidx.PrefixedID                       `json:"id"`
 	LoadBalancers     *generated.LoadBalancerConnection     `json:"loadBalancers"`
 	LoadBalancerPools *generated.LoadBalancerPoolConnection `json:"loadBalancerPools"`
 }
 
 // IsEntity ensures the entity interface is met
-func (Tenant) IsEntity() {}
+func (Owner) IsEntity() {}

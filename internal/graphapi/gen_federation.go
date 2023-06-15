@@ -240,21 +240,21 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				list[idx[i]] = entity
 				return nil
 			}
-		case "Tenant":
-			resolverName, err := entityResolverNameForTenant(ctx, rep)
+		case "Owner":
+			resolverName, err := entityResolverNameForOwner(ctx, rep)
 			if err != nil {
-				return fmt.Errorf(`finding resolver for Entity "Tenant": %w`, err)
+				return fmt.Errorf(`finding resolver for Entity "Owner": %w`, err)
 			}
 			switch resolverName {
 
-			case "findTenantByID":
+			case "findOwnerByID":
 				id0, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, rep["id"])
 				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findTenantByID(): %w`, err)
+					return fmt.Errorf(`unmarshalling param 0 for findOwnerByID(): %w`, err)
 				}
-				entity, err := ec.resolvers.Entity().FindTenantByID(ctx, id0)
+				entity, err := ec.resolvers.Entity().FindOwnerByID(ctx, id0)
 				if err != nil {
-					return fmt.Errorf(`resolving Entity "Tenant": %w`, err)
+					return fmt.Errorf(`resolving Entity "Owner": %w`, err)
 				}
 
 				list[idx[i]] = entity
@@ -465,7 +465,7 @@ func entityResolverNameForLocation(ctx context.Context, rep map[string]interface
 	return "", fmt.Errorf("%w for Location", ErrTypeNotFound)
 }
 
-func entityResolverNameForTenant(ctx context.Context, rep map[string]interface{}) (string, error) {
+func entityResolverNameForOwner(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
 			m   map[string]interface{}
@@ -477,7 +477,7 @@ func entityResolverNameForTenant(ctx context.Context, rep map[string]interface{}
 		if _, ok = m["id"]; !ok {
 			break
 		}
-		return "findTenantByID", nil
+		return "findOwnerByID", nil
 	}
-	return "", fmt.Errorf("%w for Tenant", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Owner", ErrTypeNotFound)
 }

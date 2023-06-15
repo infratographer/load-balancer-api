@@ -66,7 +66,7 @@ func TestQueryPool(t *testing.T) {
 }
 
 func TestMutate_PoolCreate(t *testing.T) {
-	tenantID := gidx.MustNewID(tenantPrefix)
+	ownerID := gidx.MustNewID(ownerPrefix)
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -80,20 +80,20 @@ func TestMutate_PoolCreate(t *testing.T) {
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
 				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
-				TenantID: tenantID,
+				OwnerID:  ownerID,
 			},
 			ExpectedPool: graphclient.LoadBalancerPool{
 				Name:     "pooly",
 				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
-				TenantID: tenantID,
+				OwnerID:  ownerID,
 			},
 		},
 		{
-			TestName: "invalid tenant ID",
+			TestName: "invalid owner ID",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
 				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
-				TenantID: "not a valid ID",
+				OwnerID:  "not a valid ID",
 			},
 			errorMsg: "invalid id",
 		},
@@ -102,7 +102,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
 				Protocol: "invalid",
-				TenantID: tenantID,
+				OwnerID:  ownerID,
 			},
 			errorMsg: "not a valid LoadBalancerPoolProtocol",
 		},
@@ -111,7 +111,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "",
 				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
-				TenantID: tenantID,
+				OwnerID:  ownerID,
 			},
 			errorMsg: "validator failed",
 		},
@@ -138,7 +138,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			assert.Equal(t, "loadpol", createdPool.ID.Prefix())
 			assert.Equal(t, tt.ExpectedPool.Name, createdPool.Name)
 			assert.Equal(t, tt.ExpectedPool.Protocol, createdPool.Protocol)
-			assert.Equal(t, tt.ExpectedPool.TenantID, createdPool.TenantID)
+			assert.Equal(t, tt.ExpectedPool.OwnerID, createdPool.OwnerID)
 		})
 	}
 }
@@ -163,7 +163,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			ExpectedPool: graphclient.LoadBalancerPool{
 				Name:     "ImaPool",
 				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
-				TenantID: pool1.TenantID,
+				OwnerID:  pool1.OwnerID,
 			},
 		},
 		{
@@ -175,7 +175,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			ExpectedPool: graphclient.LoadBalancerPool{
 				Name:     "ImaPool",
 				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
-				TenantID: pool1.TenantID,
+				OwnerID:  pool1.OwnerID,
 			},
 		},
 		{
@@ -215,7 +215,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			assert.Equal(t, "loadpol", updatedPool.ID.Prefix())
 			assert.Equal(t, tt.ExpectedPool.Name, updatedPool.Name)
 			assert.Equal(t, tt.ExpectedPool.Protocol, updatedPool.Protocol)
-			assert.Equal(t, tt.ExpectedPool.TenantID, updatedPool.TenantID)
+			assert.Equal(t, tt.ExpectedPool.OwnerID, updatedPool.OwnerID)
 		})
 	}
 }
@@ -240,7 +240,7 @@ func TestMutate_PoolDelete(t *testing.T) {
 		},
 		{
 			TestName: "non-existent ID",
-			DeleteID: gidx.MustNewID(tenantPrefix),
+			DeleteID: gidx.MustNewID(ownerPrefix),
 			errorMsg: "not found",
 		},
 	}

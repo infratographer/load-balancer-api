@@ -1,4 +1,4 @@
-extend type Tenant @key(fields: "id") {
+extend type Owner @key(fields: "id") {
   id: ID! @external
   loadBalancers(
     """
@@ -97,21 +97,21 @@ extend type Tenant @key(fields: "id") {
 
 extend type LoadBalancer {
   """
-  The tenant of the load balancer.
+  The owner of the load balancer.
   """
-  tenant: Tenant! @goField(forceResolver: true)
+  owner: Owner! @goField(forceResolver: true)
 }
 
 extend type LoadBalancerPool {
   """
-  The tenant of the load balancer pool.
+  The owner of the load balancer pool.
   """
-  tenant: Tenant! @goField(forceResolver: true)
+  owner: Owner! @goField(forceResolver: true)
 }
 
 extend type LoadBalancerProvider {
   """
-  The tenant of the load balancer provider.
+  The owner of the load balancer provider.
   """
-  tenant: Tenant! @goField(forceResolver: true)
+  owner: Owner! @goField(forceResolver: true)
 }

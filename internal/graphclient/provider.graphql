@@ -2,7 +2,7 @@ query GetLoadBalancerProvider($id: ID!) {
   loadBalancerProvider(id: $id) {
     id
     name
-    tenant {
+    owner {
       id
     }
     createdAt
@@ -15,7 +15,7 @@ mutation LoadBalancerProviderCreate($input: CreateLoadBalancerProviderInput!) {
     loadBalancerProvider {
       id
       name
-      tenant {
+      owner {
         id
       }
       createdAt

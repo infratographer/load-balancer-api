@@ -3,7 +3,7 @@ query GetLoadBalancerPool($id: ID!) {
     id
     name
     protocol
-    tenantID
+    ownerID
     createdAt
     updatedAt
   }
@@ -15,7 +15,7 @@ mutation LoadBalancerPoolCreate($input: CreateLoadBalancerPoolInput!) {
       id
       name
       protocol
-      tenantID
+      ownerID
       createdAt
       updatedAt
     }
@@ -28,7 +28,7 @@ mutation LoadBalancerPoolUpdate($id: ID!, $input: UpdateLoadBalancerPoolInput!) 
       id
       name
       protocol
-      tenantID
+      ownerID
       createdAt
       updatedAt
     }

@@ -371,17 +371,17 @@ var (
 			}
 		},
 	}
-	// LoadBalancerOrderFieldTenantID orders LoadBalancer by tenant_id.
-	LoadBalancerOrderFieldTenantID = &LoadBalancerOrderField{
+	// LoadBalancerOrderFieldOwnerID orders LoadBalancer by owner_id.
+	LoadBalancerOrderFieldOwnerID = &LoadBalancerOrderField{
 		Value: func(lb *LoadBalancer) (ent.Value, error) {
-			return lb.TenantID, nil
+			return lb.OwnerID, nil
 		},
-		column: loadbalancer.FieldTenantID,
-		toTerm: loadbalancer.ByTenantID,
+		column: loadbalancer.FieldOwnerID,
+		toTerm: loadbalancer.ByOwnerID,
 		toCursor: func(lb *LoadBalancer) Cursor {
 			return Cursor{
 				ID:    lb.ID,
-				Value: lb.TenantID,
+				Value: lb.OwnerID,
 			}
 		},
 	}
@@ -399,8 +399,8 @@ func (f LoadBalancerOrderField) String() string {
 		str = "UPDATED_AT"
 	case LoadBalancerOrderFieldName.column:
 		str = "NAME"
-	case LoadBalancerOrderFieldTenantID.column:
-		str = "TENANT"
+	case LoadBalancerOrderFieldOwnerID.column:
+		str = "OWNER"
 	}
 	return str
 }
@@ -425,8 +425,8 @@ func (f *LoadBalancerOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *LoadBalancerOrderFieldUpdatedAt
 	case "NAME":
 		*f = *LoadBalancerOrderFieldName
-	case "TENANT":
-		*f = *LoadBalancerOrderFieldTenantID
+	case "OWNER":
+		*f = *LoadBalancerOrderFieldOwnerID
 	default:
 		return fmt.Errorf("%s is not a valid LoadBalancerOrderField", str)
 	}
@@ -2447,17 +2447,17 @@ var (
 			}
 		},
 	}
-	// ProviderOrderFieldTenantID orders Provider by tenant_id.
-	ProviderOrderFieldTenantID = &LoadBalancerProviderOrderField{
+	// ProviderOrderFieldOwnerID orders Provider by owner_id.
+	ProviderOrderFieldOwnerID = &LoadBalancerProviderOrderField{
 		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
-			return pr.TenantID, nil
+			return pr.OwnerID, nil
 		},
-		column: provider.FieldTenantID,
-		toTerm: provider.ByTenantID,
+		column: provider.FieldOwnerID,
+		toTerm: provider.ByOwnerID,
 		toCursor: func(pr *LoadBalancerProvider) Cursor {
 			return Cursor{
 				ID:    pr.ID,
-				Value: pr.TenantID,
+				Value: pr.OwnerID,
 			}
 		},
 	}
@@ -2475,8 +2475,8 @@ func (f LoadBalancerProviderOrderField) String() string {
 		str = "UPDATED_AT"
 	case ProviderOrderFieldName.column:
 		str = "NAME"
-	case ProviderOrderFieldTenantID.column:
-		str = "TENANT"
+	case ProviderOrderFieldOwnerID.column:
+		str = "OWNER"
 	}
 	return str
 }
@@ -2501,8 +2501,8 @@ func (f *LoadBalancerProviderOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *ProviderOrderFieldUpdatedAt
 	case "NAME":
 		*f = *ProviderOrderFieldName
-	case "TENANT":
-		*f = *ProviderOrderFieldTenantID
+	case "OWNER":
+		*f = *ProviderOrderFieldOwnerID
 	default:
 		return fmt.Errorf("%s is not a valid LoadBalancerProviderOrderField", str)
 	}

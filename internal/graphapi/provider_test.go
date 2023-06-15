@@ -63,13 +63,13 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 
 func TestFullProviderLifecycle(t *testing.T) {
 	ctx := context.Background()
-	tenantID := gidx.MustNewID(tenantPrefix)
+	ownerID := gidx.MustNewID(ownerPrefix)
 	name := gofakeit.DomainName()
 
 	// create the Provider
 	createdResp, err := graphTestClient().LoadBalancerProviderCreate(ctx, graphclient.CreateLoadBalancerProviderInput{
-		Name:     name,
-		TenantID: tenantID,
+		Name:    name,
+		OwnerID: ownerID,
 	})
 
 	require.NoError(t, err)
@@ -80,7 +80,7 @@ func TestFullProviderLifecycle(t *testing.T) {
 	require.NotNil(t, createdProv.ID)
 	require.Equal(t, name, createdProv.Name)
 	assert.Equal(t, "loadpvd", createdProv.ID.Prefix())
-	assert.Equal(t, tenantID, createdProv.Tenant.ID)
+	assert.Equal(t, ownerID, createdProv.Owner.ID)
 
 	// Update the Provider
 	newName := gofakeit.DomainName()

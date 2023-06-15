@@ -30,8 +30,8 @@ type Pool struct {
 	Name string `json:"name,omitempty"`
 	// Protocol holds the value of the "protocol" field.
 	Protocol pool.Protocol `json:"protocol,omitempty"`
-	// TenantID holds the value of the "tenant_id" field.
-	TenantID gidx.PrefixedID `json:"tenant_id,omitempty"`
+	// OwnerID holds the value of the "owner_id" field.
+	OwnerID gidx.PrefixedID `json:"owner_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PoolQuery when eager-loading is set.
 	Edges        PoolEdges `json:"edges"`
@@ -77,7 +77,7 @@ func (*Pool) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case pool.FieldID, pool.FieldTenantID:
+		case pool.FieldID, pool.FieldOwnerID:
 			values[i] = new(gidx.PrefixedID)
 		case pool.FieldName, pool.FieldProtocol:
 			values[i] = new(sql.NullString)
@@ -128,11 +128,11 @@ func (po *Pool) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				po.Protocol = pool.Protocol(value.String)
 			}
-		case pool.FieldTenantID:
+		case pool.FieldOwnerID:
 			if value, ok := values[i].(*gidx.PrefixedID); !ok {
-				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
 			} else if value != nil {
-				po.TenantID = *value
+				po.OwnerID = *value
 			}
 		default:
 			po.selectValues.Set(columns[i], values[i])
@@ -192,8 +192,8 @@ func (po *Pool) String() string {
 	builder.WriteString("protocol=")
 	builder.WriteString(fmt.Sprintf("%v", po.Protocol))
 	builder.WriteString(", ")
-	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", po.TenantID))
+	builder.WriteString("owner_id=")
+	builder.WriteString(fmt.Sprintf("%v", po.OwnerID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -30,8 +30,8 @@ type LoadBalancer struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// The name of the load balancer.
 	Name string `json:"name,omitempty"`
-	// The ID for the tenant for this load balancer.
-	TenantID gidx.PrefixedID `json:"tenant_id,omitempty"`
+	// The ID for the owner for this load balancer.
+	OwnerID gidx.PrefixedID `json:"owner_id,omitempty"`
 	// The ID for the location of this load balancer.
 	LocationID gidx.PrefixedID `json:"location_id,omitempty"`
 	// The ID for the load balancer provider for this load balancer.
@@ -108,7 +108,7 @@ func (*LoadBalancer) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case loadbalancer.FieldID, loadbalancer.FieldTenantID, loadbalancer.FieldLocationID, loadbalancer.FieldProviderID:
+		case loadbalancer.FieldID, loadbalancer.FieldOwnerID, loadbalancer.FieldLocationID, loadbalancer.FieldProviderID:
 			values[i] = new(gidx.PrefixedID)
 		case loadbalancer.FieldName:
 			values[i] = new(sql.NullString)
@@ -153,11 +153,11 @@ func (lb *LoadBalancer) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				lb.Name = value.String
 			}
-		case loadbalancer.FieldTenantID:
+		case loadbalancer.FieldOwnerID:
 			if value, ok := values[i].(*gidx.PrefixedID); !ok {
-				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
 			} else if value != nil {
-				lb.TenantID = *value
+				lb.OwnerID = *value
 			}
 		case loadbalancer.FieldLocationID:
 			if value, ok := values[i].(*gidx.PrefixedID); !ok {
@@ -236,8 +236,8 @@ func (lb *LoadBalancer) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(lb.Name)
 	builder.WriteString(", ")
-	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", lb.TenantID))
+	builder.WriteString("owner_id=")
+	builder.WriteString(fmt.Sprintf("%v", lb.OwnerID))
 	builder.WriteString(", ")
 	builder.WriteString("location_id=")
 	builder.WriteString(fmt.Sprintf("%v", lb.LocationID))

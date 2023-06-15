@@ -106,33 +106,33 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					cv_tenant_id := ""
-					tenant_id, ok := m.TenantID()
+					cv_owner_id := ""
+					owner_id, ok := m.OwnerID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						tenant_id, err = m.OldTenantID(ctx)
+						owner_id, err = m.OldOwnerID(ctx)
 						if err != nil {
 							return nil, err
 						}
 					}
-					additionalSubjects = append(additionalSubjects, tenant_id)
+					additionalSubjects = append(additionalSubjects, owner_id)
 
 					if ok {
-						cv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(tenant_id))
-						pv_tenant_id := ""
+						cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))
+						pv_owner_id := ""
 						if !m.Op().Is(ent.OpCreate) {
-							ov, err := m.OldTenantID(ctx)
+							ov, err := m.OldOwnerID(ctx)
 							if err != nil {
-								pv_tenant_id = "<unknown>"
+								pv_owner_id = "<unknown>"
 							} else {
-								pv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(ov))
+								pv_owner_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
 						changeset = append(changeset, events.FieldChange{
-							Field:         "tenant_id",
-							PreviousValue: pv_tenant_id,
-							CurrentValue:  cv_tenant_id,
+							Field:         "owner_id",
+							PreviousValue: pv_owner_id,
+							CurrentValue:  cv_owner_id,
 						})
 					}
 
@@ -242,7 +242,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
 					}
 
-					additionalSubjects = append(additionalSubjects, dbObj.TenantID)
+					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
 

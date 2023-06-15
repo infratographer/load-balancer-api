@@ -75,9 +75,9 @@ func Name(v string) predicate.LoadBalancer {
 	return predicate.LoadBalancer(sql.FieldEQ(FieldName, v))
 }
 
-// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
-func TenantID(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldEQ(FieldTenantID, v))
+// OwnerID applies equality check predicate on the "owner_id" field. It's identical to OwnerIDEQ.
+func OwnerID(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldEQ(FieldOwnerID, v))
 }
 
 // LocationID applies equality check predicate on the "location_id" field. It's identical to LocationIDEQ.
@@ -235,74 +235,74 @@ func NameContainsFold(v string) predicate.LoadBalancer {
 	return predicate.LoadBalancer(sql.FieldContainsFold(FieldName, v))
 }
 
-// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
-func TenantIDEQ(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldEQ(FieldTenantID, v))
+// OwnerIDEQ applies the EQ predicate on the "owner_id" field.
+func OwnerIDEQ(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldEQ(FieldOwnerID, v))
 }
 
-// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
-func TenantIDNEQ(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldNEQ(FieldTenantID, v))
+// OwnerIDNEQ applies the NEQ predicate on the "owner_id" field.
+func OwnerIDNEQ(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldNEQ(FieldOwnerID, v))
 }
 
-// TenantIDIn applies the In predicate on the "tenant_id" field.
-func TenantIDIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldIn(FieldTenantID, vs...))
+// OwnerIDIn applies the In predicate on the "owner_id" field.
+func OwnerIDIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldIn(FieldOwnerID, vs...))
 }
 
-// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
-func TenantIDNotIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldNotIn(FieldTenantID, vs...))
+// OwnerIDNotIn applies the NotIn predicate on the "owner_id" field.
+func OwnerIDNotIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldNotIn(FieldOwnerID, vs...))
 }
 
-// TenantIDGT applies the GT predicate on the "tenant_id" field.
-func TenantIDGT(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldGT(FieldTenantID, v))
+// OwnerIDGT applies the GT predicate on the "owner_id" field.
+func OwnerIDGT(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldGT(FieldOwnerID, v))
 }
 
-// TenantIDGTE applies the GTE predicate on the "tenant_id" field.
-func TenantIDGTE(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldGTE(FieldTenantID, v))
+// OwnerIDGTE applies the GTE predicate on the "owner_id" field.
+func OwnerIDGTE(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldGTE(FieldOwnerID, v))
 }
 
-// TenantIDLT applies the LT predicate on the "tenant_id" field.
-func TenantIDLT(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldLT(FieldTenantID, v))
+// OwnerIDLT applies the LT predicate on the "owner_id" field.
+func OwnerIDLT(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldLT(FieldOwnerID, v))
 }
 
-// TenantIDLTE applies the LTE predicate on the "tenant_id" field.
-func TenantIDLTE(v gidx.PrefixedID) predicate.LoadBalancer {
-	return predicate.LoadBalancer(sql.FieldLTE(FieldTenantID, v))
+// OwnerIDLTE applies the LTE predicate on the "owner_id" field.
+func OwnerIDLTE(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldLTE(FieldOwnerID, v))
 }
 
-// TenantIDContains applies the Contains predicate on the "tenant_id" field.
-func TenantIDContains(v gidx.PrefixedID) predicate.LoadBalancer {
+// OwnerIDContains applies the Contains predicate on the "owner_id" field.
+func OwnerIDContains(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
-	return predicate.LoadBalancer(sql.FieldContains(FieldTenantID, vc))
+	return predicate.LoadBalancer(sql.FieldContains(FieldOwnerID, vc))
 }
 
-// TenantIDHasPrefix applies the HasPrefix predicate on the "tenant_id" field.
-func TenantIDHasPrefix(v gidx.PrefixedID) predicate.LoadBalancer {
+// OwnerIDHasPrefix applies the HasPrefix predicate on the "owner_id" field.
+func OwnerIDHasPrefix(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
-	return predicate.LoadBalancer(sql.FieldHasPrefix(FieldTenantID, vc))
+	return predicate.LoadBalancer(sql.FieldHasPrefix(FieldOwnerID, vc))
 }
 
-// TenantIDHasSuffix applies the HasSuffix predicate on the "tenant_id" field.
-func TenantIDHasSuffix(v gidx.PrefixedID) predicate.LoadBalancer {
+// OwnerIDHasSuffix applies the HasSuffix predicate on the "owner_id" field.
+func OwnerIDHasSuffix(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
-	return predicate.LoadBalancer(sql.FieldHasSuffix(FieldTenantID, vc))
+	return predicate.LoadBalancer(sql.FieldHasSuffix(FieldOwnerID, vc))
 }
 
-// TenantIDEqualFold applies the EqualFold predicate on the "tenant_id" field.
-func TenantIDEqualFold(v gidx.PrefixedID) predicate.LoadBalancer {
+// OwnerIDEqualFold applies the EqualFold predicate on the "owner_id" field.
+func OwnerIDEqualFold(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
-	return predicate.LoadBalancer(sql.FieldEqualFold(FieldTenantID, vc))
+	return predicate.LoadBalancer(sql.FieldEqualFold(FieldOwnerID, vc))
 }
 
-// TenantIDContainsFold applies the ContainsFold predicate on the "tenant_id" field.
-func TenantIDContainsFold(v gidx.PrefixedID) predicate.LoadBalancer {
+// OwnerIDContainsFold applies the ContainsFold predicate on the "owner_id" field.
+func OwnerIDContainsFold(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
-	return predicate.LoadBalancer(sql.FieldContainsFold(FieldTenantID, vc))
+	return predicate.LoadBalancer(sql.FieldContainsFold(FieldOwnerID, vc))
 }
 
 // LocationIDEQ applies the EQ predicate on the "location_id" field.

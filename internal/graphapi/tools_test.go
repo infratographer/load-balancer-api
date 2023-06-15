@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	tenantPrefix   = "testtnt"
+	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
 	lbPrefix       = "loadbal"
 )

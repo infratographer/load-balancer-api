@@ -169,10 +169,10 @@ func init() {
 	poolDescName := poolFields[1].Descriptor()
 	// pool.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	pool.NameValidator = poolDescName.Validators[0].(func(string) error)
-	// poolDescTenantID is the schema descriptor for tenant_id field.
-	poolDescTenantID := poolFields[3].Descriptor()
-	// pool.TenantIDValidator is a validator for the "tenant_id" field. It is called by the builders before save.
-	pool.TenantIDValidator = poolDescTenantID.Validators[0].(func(string) error)
+	// poolDescOwnerID is the schema descriptor for owner_id field.
+	poolDescOwnerID := poolFields[3].Descriptor()
+	// pool.OwnerIDValidator is a validator for the "owner_id" field. It is called by the builders before save.
+	pool.OwnerIDValidator = poolDescOwnerID.Validators[0].(func(string) error)
 	// poolDescID is the schema descriptor for id field.
 	poolDescID := poolFields[0].Descriptor()
 	// pool.DefaultID holds the default value on creation for the id field.

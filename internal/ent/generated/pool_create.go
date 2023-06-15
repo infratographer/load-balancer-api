@@ -67,9 +67,9 @@ func (pc *PoolCreate) SetProtocol(po pool.Protocol) *PoolCreate {
 	return pc
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (pc *PoolCreate) SetTenantID(gi gidx.PrefixedID) *PoolCreate {
-	pc.mutation.SetTenantID(gi)
+// SetOwnerID sets the "owner_id" field.
+func (pc *PoolCreate) SetOwnerID(gi gidx.PrefixedID) *PoolCreate {
+	pc.mutation.SetOwnerID(gi)
 	return pc
 }
 
@@ -190,12 +190,12 @@ func (pc *PoolCreate) check() error {
 			return &ValidationError{Name: "protocol", err: fmt.Errorf(`generated: validator failed for field "Pool.protocol": %w`, err)}
 		}
 	}
-	if _, ok := pc.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`generated: missing required field "Pool.tenant_id"`)}
+	if _, ok := pc.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner_id", err: errors.New(`generated: missing required field "Pool.owner_id"`)}
 	}
-	if v, ok := pc.mutation.TenantID(); ok {
-		if err := pool.TenantIDValidator(string(v)); err != nil {
-			return &ValidationError{Name: "tenant_id", err: fmt.Errorf(`generated: validator failed for field "Pool.tenant_id": %w`, err)}
+	if v, ok := pc.mutation.OwnerID(); ok {
+		if err := pool.OwnerIDValidator(string(v)); err != nil {
+			return &ValidationError{Name: "owner_id", err: fmt.Errorf(`generated: validator failed for field "Pool.owner_id": %w`, err)}
 		}
 	}
 	return nil
@@ -249,9 +249,9 @@ func (pc *PoolCreate) createSpec() (*Pool, *sqlgraph.CreateSpec) {
 		_spec.SetField(pool.FieldProtocol, field.TypeEnum, value)
 		_node.Protocol = value
 	}
-	if value, ok := pc.mutation.TenantID(); ok {
-		_spec.SetField(pool.FieldTenantID, field.TypeString, value)
-		_node.TenantID = value
+	if value, ok := pc.mutation.OwnerID(); ok {
+		_spec.SetField(pool.FieldOwnerID, field.TypeString, value)
+		_node.OwnerID = value
 	}
 	if nodes := pc.mutation.PortsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
