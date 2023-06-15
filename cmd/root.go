@@ -10,12 +10,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.infratographer.com/x/crdbx"
+	"go.infratographer.com/x/goosex"
 	"go.infratographer.com/x/loggingx"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.infratographer.com/x/viperx"
 	"go.uber.org/zap"
 
+	dbm "go.infratographer.com/load-balancer-api/db"
 	"go.infratographer.com/load-balancer-api/internal/config"
 )
 
@@ -53,6 +55,13 @@ func init() {
 	versionx.RegisterCobraCommand(rootCmd, func() { versionx.PrintVersion(logger) })
 	otelx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
 	crdbx.MustViperFlags(viper.GetViper(), rootCmd.Flags())
+
+	// Setup migrate command
+	goosex.RegisterCobraCommand(rootCmd, func() {
+		goosex.SetBaseFS(dbm.Migrations)
+		goosex.SetDBURI(config.AppConfig.CRDB.URI)
+		goosex.SetLogger(logger)
+	})
 }
 
 // initConfig reads in config file and ENV variables if set.

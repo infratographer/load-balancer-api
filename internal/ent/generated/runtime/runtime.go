@@ -9,6 +9,6 @@ package runtime
 // The schema-stitching logic is generated in go.infratographer.com/load-balancer-api/internal/ent/generated/runtime.go
 
 const (
-	Version = "v0.12.3"                                         // Version of ent codegen.
-	Sum     = "h1:N5lO2EOrHpCH5HYfiMOCHYbo+oh5M8GjT0/cx5x6xkk=" // Sum of ent codegen.
+	Version = "v0.12.4-0.20230503082810-f251400818ea"           // Version of ent codegen.
+	Sum     = "h1:R0Rq0neRfHnux+a4NrCgNncloOQQaNAOvEC/YY5+Ox0=" // Sum of ent codegen.
 )

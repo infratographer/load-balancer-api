@@ -1,2 +1,3 @@
-h1:CIlF8FH9K420FqywBK3ay8hNy9qlBHZiIT2HHpsM3dg=
-20230503185445_initial-migration.sql h1:TKB7clk/6oxhQQIaBR73PyB7s77kGRpVhWZJqEOu8eM=
+h1:cq1UC9ftXVg422+SnvFi7fXDlIPYfzLMnFT/K12gXBE=
+20230503185445_initial-migration.sql h1:WBvl1qHqUSSHUr17+p57AXWjn9F6UhhOupHuAjwY4E8=
+20230615194819_drop_tenant_add_owner.sql h1:S5Kap481l8nqP6/UxyKxEnJwP3K1jCTkgksXev8WZc8=
