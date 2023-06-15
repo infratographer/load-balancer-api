@@ -120,3 +120,65 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	require.Nil(t, deletedLB)
 	require.ErrorContains(t, err, "load_balancer not found")
 }
+
+func TestDeleteLoadBalancer_WithPorts(t *testing.T) {
+	ctx := context.Background()
+	prov := (&ProviderBuilder{}).MustNew(ctx)
+	tenantID := gidx.MustNewID(tenantPrefix)
+	locationID := gidx.MustNewID(locationPrefix)
+	name := gofakeit.DomainName()
+
+	// create the LB
+	createdLBResp, err := graphTestClient().LoadBalancerCreate(ctx, graphclient.CreateLoadBalancerInput{
+		Name:       name,
+		ProviderID: prov.ID,
+		TenantID:   tenantID,
+		LocationID: locationID,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, createdLBResp)
+	require.NotNil(t, createdLBResp.LoadBalancerCreate.LoadBalancer)
+
+	createdLB := createdLBResp.LoadBalancerCreate.LoadBalancer
+	require.NotNil(t, createdLB.ID)
+	require.Equal(t, name, createdLB.Name)
+	assert.Equal(t, "loadbal", createdLB.ID.Prefix())
+	assert.Equal(t, prov.ID, createdLB.LoadBalancerProvider.ID)
+	assert.Equal(t, locationID, createdLB.Location.ID)
+	assert.Equal(t, tenantID, createdLB.Tenant.ID)
+
+	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
+		Name:           gofakeit.DomainName(),
+		Number:         8080,
+		LoadBalancerID: createdLB.ID,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, createdPortResp)
+	require.NotNil(t, createdPortResp.LoadBalancerPortCreate.LoadBalancerPort)
+
+	createdPort := createdPortResp.LoadBalancerPortCreate.LoadBalancerPort
+	require.NotNil(t, createdPort.ID)
+	require.Equal(t, "loadprt", createdPort.ID.Prefix())
+	assert.Equal(t, createdPort.LoadBalancer.ID, createdLB.ID)
+
+	// Query the LB
+	queryLB, err := graphTestClient().GetLoadBalancer(ctx, createdLB.ID)
+	require.NoError(t, err)
+	require.NotNil(t, queryLB)
+	require.NotNil(t, queryLB.LoadBalancer)
+
+	// Delete the LB
+	deletedResp, err := graphTestClient().LoadBalancerDelete(ctx, createdLB.ID)
+	require.NoError(t, err)
+	require.NotNil(t, deletedResp)
+	require.NotNil(t, deletedResp.LoadBalancerDelete)
+	require.EqualValues(t, createdLB.ID, deletedResp.LoadBalancerDelete.DeletedID.String())
+
+	// Query the LB to ensure it's no longer available
+	deletedLB, err := graphTestClient().GetLoadBalancer(ctx, createdLB.ID)
+	require.Error(t, err)
+	require.Nil(t, deletedLB)
+	require.ErrorContains(t, err, "load_balancer not found")
+}

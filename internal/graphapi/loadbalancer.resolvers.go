@@ -6,8 +6,13 @@ package graphapi
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
+	"github.com/labstack/gommon/log"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/x/gidx"
 )
 
@@ -54,9 +59,49 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	// r.authClient.CheckPermissions(
 	// 	authzclient.Check{Subject: actor.ID, Action: "delete", On: id},
 	// )
-	if err := r.client.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
+
+	var (
+		err error
+		tx  *generated.Tx
+	)
+
+	defer func() {
+		if err != nil {
+			if rerr := tx.Rollback(); rerr != nil {
+				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			}
+		}
+	}()
+
+	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
 		return nil, err
 	}
+
+	// cleanup ports associated with loadbalancer
+	ports, err := tx.Port.Query().Where(predicate.Port(port.LoadBalancerIDEQ(id))).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range ports {
+		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	// delete loadbalancer
+	if err = tx.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	// if err := r.client.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
+	// 	return nil, err
+	// }
 
 	return &LoadBalancerDeletePayload{DeletedID: id}, nil
 }
