@@ -11,7 +11,7 @@ import (
 
 	"github.com/labstack/gommon/log"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/x/gidx"
 )
@@ -67,9 +67,15 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	// todo: cleanup pool assigments
 
 	// cleanup origins associated with pool
-	_, err = tx.Origin.Delete().Where(predicate.Origin(pool.IDEQ(id))).Exec(ctx)
+	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, o := range origins {
+		if err = tx.Origin.DeleteOne(o).Exec(ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	// delete pool
