@@ -51,14 +51,6 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 		tx  *generated.Tx
 	)
 
-	defer func() {
-		if err != nil {
-			if rerr := tx.Rollback(); rerr != nil {
-				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-			}
-		}
-	}()
-
 	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -69,21 +61,33 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	// cleanup origins associated with pool
 	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)
 	if err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
 
 	for _, o := range origins {
 		if err = tx.Origin.DeleteOne(o).Exec(ctx); err != nil {
+			if rerr := tx.Rollback(); rerr != nil {
+				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			}
 			return nil, err
 		}
 	}
 
 	// delete pool
 	if err = tx.Pool.DeleteOneID(id).Exec(ctx); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
 
