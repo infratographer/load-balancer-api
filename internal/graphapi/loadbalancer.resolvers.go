@@ -65,14 +65,6 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		tx  *generated.Tx
 	)
 
-	defer func() {
-		if err != nil {
-			if rerr := tx.Rollback(); rerr != nil {
-				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-			}
-		}
-	}()
-
 	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -81,27 +73,35 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	// cleanup ports associated with loadbalancer
 	ports, err := tx.Port.Query().Where(predicate.Port(port.LoadBalancerIDEQ(id))).All(ctx)
 	if err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
 
 	for _, p := range ports {
 		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
+			if rerr := tx.Rollback(); rerr != nil {
+				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			}
 			return nil, err
 		}
 	}
 
 	// delete loadbalancer
 	if err = tx.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+		}
 		return nil, err
 	}
-
-	// if err := r.client.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
-	// 	return nil, err
-	// }
 
 	return &LoadBalancerDeletePayload{DeletedID: id}, nil
 }
