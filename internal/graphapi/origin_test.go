@@ -76,7 +76,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 	testCases := []struct {
 		TestName       string
 		Input          graphclient.CreateLoadBalancerOriginInput
-		ExpectedOrigin graphclient.LoadBalancerOrigin
+		ExpectedOrigin ent.LoadBalancerOrigin
 		errorMsg       string
 	}{
 		{
@@ -107,7 +107,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 				PortNumber: 22,
 				PoolID:     pool1.ID,
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				Name:       "original",
 				Target:     "1.2.3.4",
 				PortNumber: 22,
@@ -124,7 +124,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 				PoolID:     pool1.ID,
 				Active:     newBool(false),
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				Name:       "original",
 				Target:     "1.2.3.4",
 				PortNumber: 22,
@@ -173,7 +173,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 		TestName       string
 		OriginID       gidx.PrefixedID
 		Input          graphclient.UpdateLoadBalancerOriginInput
-		ExpectedOrigin graphclient.LoadBalancerOrigin
+		ExpectedOrigin ent.LoadBalancerOrigin
 		errorMsg       string
 	}{
 		{
@@ -207,7 +207,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 				PortNumber: newInt64(222),
 				Active:     newBool(true),
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				ID:         origin1.ID,
 				Name:       "originator",
 				Target:     "5.6.7.8",

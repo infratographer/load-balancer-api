@@ -41,12 +41,17 @@ resolver:
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
 
+directives:
+  interfaceObject:
+    skip_runtime: true
+  prefixedID:
+    skip_runtime: true
+
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
   - "go.infratographer.com/load-balancer-api/internal/graphapi"
   - "go.infratographer.com/load-balancer-api/internal/ent/generated"
-  - "go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -62,6 +67,9 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Bool:
+    model:
+      - github.com/99designs/gqlgen/graphql.Bool
   JSON:
     model:
       - go.infratographer.com/x/entx.RawMessage
