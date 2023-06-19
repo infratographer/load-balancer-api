@@ -292,282 +292,281 @@ func LoadBalancerHooks() []ent.Hook {
 	}
 }
 
-// func OriginHooks() []ent.Hook {
-// 	return []ent.Hook{
-// 		hook.On(
-// 			func(next ent.Mutator) ent.Mutator {
-// 				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
-// 					// complete the mutation before we process the event
-// 					retValue, err := next.Mutate(ctx, m)
-// 					if err != nil {
-// 						return retValue, err
-// 					}
+func OriginHooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-// 					// queueName := ""
-// 					additionalSubjects := []gidx.PrefixedID{}
+					// queueName := ""
+					additionalSubjects := []gidx.PrefixedID{}
 
-// 					objID, ok := m.ID()
-// 					if !ok {
-// 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
-// 					}
-// 					// addSubjPoolTenantID, err := m.Client().Pool.Get(ctx, objID)
-// 					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
-// 					if err == nil {
-// 						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
-// 							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.ID)
-// 						}
+					objID, ok := m.ID()
+					if !ok {
+						return nil, fmt.Errorf("object doesn't have an id %s", objID)
+					}
+					// addSubjPoolTenantID, err := m.Client().Pool.Get(ctx, objID)
+					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.ID)
+						}
 
-// 						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.TenantID) {
-// 							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.TenantID)
-// 						}
-// 					}
+						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.TenantID) {
+							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.TenantID)
+						}
+					}
 
-// 					changeset := []events.FieldChange{}
-// 					cv_created_at := ""
-// 					created_at, ok := m.CreatedAt()
+					changeset := []events.FieldChange{}
+					cv_created_at := ""
+					created_at, ok := m.CreatedAt()
 
-// 					if ok {
-// 						cv_created_at = created_at.Format(time.RFC3339)
-// 						pv_created_at := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldCreatedAt(ctx)
-// 							if err != nil {
-// 								pv_created_at = "<unknown>"
-// 							} else {
-// 								pv_created_at = ov.Format(time.RFC3339)
-// 							}
-// 						}
+					if ok {
+						cv_created_at = created_at.Format(time.RFC3339)
+						pv_created_at := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldCreatedAt(ctx)
+							if err != nil {
+								pv_created_at = "<unknown>"
+							} else {
+								pv_created_at = ov.Format(time.RFC3339)
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "created_at",
-// 							PreviousValue: pv_created_at,
-// 							CurrentValue:  cv_created_at,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "created_at",
+							PreviousValue: pv_created_at,
+							CurrentValue:  cv_created_at,
+						})
+					}
 
-// 					cv_updated_at := ""
-// 					updated_at, ok := m.UpdatedAt()
+					cv_updated_at := ""
+					updated_at, ok := m.UpdatedAt()
 
-// 					if ok {
-// 						cv_updated_at = updated_at.Format(time.RFC3339)
-// 						pv_updated_at := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldUpdatedAt(ctx)
-// 							if err != nil {
-// 								pv_updated_at = "<unknown>"
-// 							} else {
-// 								pv_updated_at = ov.Format(time.RFC3339)
-// 							}
-// 						}
+					if ok {
+						cv_updated_at = updated_at.Format(time.RFC3339)
+						pv_updated_at := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldUpdatedAt(ctx)
+							if err != nil {
+								pv_updated_at = "<unknown>"
+							} else {
+								pv_updated_at = ov.Format(time.RFC3339)
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "updated_at",
-// 							PreviousValue: pv_updated_at,
-// 							CurrentValue:  cv_updated_at,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "updated_at",
+							PreviousValue: pv_updated_at,
+							CurrentValue:  cv_updated_at,
+						})
+					}
 
-// 					cv_name := ""
-// 					name, ok := m.Name()
+					cv_name := ""
+					name, ok := m.Name()
 
-// 					if ok {
-// 						cv_name = fmt.Sprintf("%s", fmt.Sprint(name))
-// 						pv_name := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldName(ctx)
-// 							if err != nil {
-// 								pv_name = "<unknown>"
-// 							} else {
-// 								pv_name = fmt.Sprintf("%s", fmt.Sprint(ov))
-// 							}
-// 						}
+					if ok {
+						cv_name = fmt.Sprintf("%s", fmt.Sprint(name))
+						pv_name := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldName(ctx)
+							if err != nil {
+								pv_name = "<unknown>"
+							} else {
+								pv_name = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "name",
-// 							PreviousValue: pv_name,
-// 							CurrentValue:  cv_name,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "name",
+							PreviousValue: pv_name,
+							CurrentValue:  cv_name,
+						})
+					}
 
-// 					cv_target := ""
-// 					target, ok := m.Target()
+					cv_target := ""
+					target, ok := m.Target()
 
-// 					if ok {
-// 						cv_target = fmt.Sprintf("%s", fmt.Sprint(target))
-// 						pv_target := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldTarget(ctx)
-// 							if err != nil {
-// 								pv_target = "<unknown>"
-// 							} else {
-// 								pv_target = fmt.Sprintf("%s", fmt.Sprint(ov))
-// 							}
-// 						}
+					if ok {
+						cv_target = fmt.Sprintf("%s", fmt.Sprint(target))
+						pv_target := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldTarget(ctx)
+							if err != nil {
+								pv_target = "<unknown>"
+							} else {
+								pv_target = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "target",
-// 							PreviousValue: pv_target,
-// 							CurrentValue:  cv_target,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "target",
+							PreviousValue: pv_target,
+							CurrentValue:  cv_target,
+						})
+					}
 
-// 					cv_port_number := ""
-// 					port_number, ok := m.PortNumber()
+					cv_port_number := ""
+					port_number, ok := m.PortNumber()
 
-// 					if ok {
-// 						cv_port_number = fmt.Sprintf("%s", fmt.Sprint(port_number))
-// 						pv_port_number := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldPortNumber(ctx)
-// 							if err != nil {
-// 								pv_port_number = "<unknown>"
-// 							} else {
-// 								pv_port_number = fmt.Sprintf("%s", fmt.Sprint(ov))
-// 							}
-// 						}
+					if ok {
+						cv_port_number = fmt.Sprintf("%s", fmt.Sprint(port_number))
+						pv_port_number := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldPortNumber(ctx)
+							if err != nil {
+								pv_port_number = "<unknown>"
+							} else {
+								pv_port_number = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "port_number",
-// 							PreviousValue: pv_port_number,
-// 							CurrentValue:  cv_port_number,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "port_number",
+							PreviousValue: pv_port_number,
+							CurrentValue:  cv_port_number,
+						})
+					}
 
-// 					cv_active := ""
-// 					active, ok := m.Active()
+					cv_active := ""
+					active, ok := m.Active()
 
-// 					if ok {
-// 						cv_active = fmt.Sprintf("%s", fmt.Sprint(active))
-// 						pv_active := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldActive(ctx)
-// 							if err != nil {
-// 								pv_active = "<unknown>"
-// 							} else {
-// 								pv_active = fmt.Sprintf("%s", fmt.Sprint(ov))
-// 							}
-// 						}
+					if ok {
+						cv_active = fmt.Sprintf("%s", fmt.Sprint(active))
+						pv_active := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldActive(ctx)
+							if err != nil {
+								pv_active = "<unknown>"
+							} else {
+								pv_active = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "active",
-// 							PreviousValue: pv_active,
-// 							CurrentValue:  cv_active,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "active",
+							PreviousValue: pv_active,
+							CurrentValue:  cv_active,
+						})
+					}
 
-// 					cv_pool_id := ""
-// 					pool_id, ok := m.PoolID()
-// 					if !ok && !m.Op().Is(ent.OpCreate) {
-// 						// since we are doing an update or delete and these fields didn't change, load the "old" value
-// 						pool_id, err = m.OldPoolID(ctx)
-// 						if err != nil {
-// 							return nil, err
-// 						}
-// 					}
-// 					additionalSubjects = append(additionalSubjects, pool_id)
+					cv_pool_id := ""
+					pool_id, ok := m.PoolID()
+					if !ok && !m.Op().Is(ent.OpCreate) {
+						// since we are doing an update or delete and these fields didn't change, load the "old" value
+						pool_id, err = m.OldPoolID(ctx)
+						if err != nil {
+							return nil, err
+						}
+					}
+					additionalSubjects = append(additionalSubjects, pool_id)
 
-// 					if ok {
-// 						cv_pool_id = fmt.Sprintf("%s", fmt.Sprint(pool_id))
-// 						pv_pool_id := ""
-// 						if !m.Op().Is(ent.OpCreate) {
-// 							ov, err := m.OldPoolID(ctx)
-// 							if err != nil {
-// 								pv_pool_id = "<unknown>"
-// 							} else {
-// 								pv_pool_id = fmt.Sprintf("%s", fmt.Sprint(ov))
-// 							}
-// 						}
+					if ok {
+						cv_pool_id = fmt.Sprintf("%s", fmt.Sprint(pool_id))
+						pv_pool_id := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldPoolID(ctx)
+							if err != nil {
+								pv_pool_id = "<unknown>"
+							} else {
+								pv_pool_id = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
 
-// 						changeset = append(changeset, events.FieldChange{
-// 							Field:         "pool_id",
-// 							PreviousValue: pv_pool_id,
-// 							CurrentValue:  cv_pool_id,
-// 						})
-// 					}
+						changeset = append(changeset, events.FieldChange{
+							Field:         "pool_id",
+							PreviousValue: pv_pool_id,
+							CurrentValue:  cv_pool_id,
+						})
+					}
 
-// 					msg := events.ChangeMessage{
-// 						EventType:            eventType(m.Op()),
-// 						SubjectID:            objID,
-// 						AdditionalSubjectIDs: additionalSubjects,
-// 						Timestamp:            time.Now().UTC(),
-// 						FieldChanges:         changeset,
-// 					}
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+						FieldChanges:         changeset,
+					}
 
-// 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-// 					if lb_lookup != "" {
-// 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-// 						if err != nil {
-// 							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-// 						}
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
 
-// 						if !slices.Contains(additionalSubjects, lb.LocationID) {
-// 							additionalSubjects = append(additionalSubjects, lb.LocationID)
-// 							msg.AdditionalSubjectIDs = additionalSubjects
-// 						}
-// 					}
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
 
-// 					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
-// 					return retValue, nil
-// 				})
-// 			},
-// 			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
-// 		),
+					return retValue, nil
+				})
+			},
+			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+		),
 
-// 		// Delete Hook
-// 		hook.On(
-// 			func(next ent.Mutator) ent.Mutator {
-// 				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
-// 					// queueName := ""
-// 					additionalSubjects := []gidx.PrefixedID{}
+		// Delete Hook
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
+					additionalSubjects := []gidx.PrefixedID{}
 
-// 					objID, ok := m.ID()
-// 					if !ok {
-// 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
-// 					}
+					objID, ok := m.ID()
+					if !ok {
+						return nil, fmt.Errorf("object doesn't have an id %s", objID)
+					}
 
-// 					dbObj, err := m.Client().Origin.Get(ctx, objID)
-// 					if err != nil {
-// 						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
-// 					}
+					dbObj, err := m.Client().Origin.Get(ctx, objID)
+					if err != nil {
+						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+					}
 
-// 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
+					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
 
-// 					msg := events.ChangeMessage{
-// 						EventType:            eventType(m.Op()),
-// 						SubjectID:            objID,
-// 						AdditionalSubjectIDs: additionalSubjects,
-// 						Timestamp:            time.Now().UTC(),
-// 					}
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
 
-// 					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-// 					if lb_lookup != "" {
-// 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-// 						if err != nil {
-// 							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-// 						}
+					lb_lookup := getLocation(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
 
-// 						if !slices.Contains(additionalSubjects, lb.LocationID) {
-// 							additionalSubjects = append(additionalSubjects, lb.LocationID)
-// 							msg.AdditionalSubjectIDs = additionalSubjects
-// 						}
-// 					}
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+							msg.AdditionalSubjectIDs = additionalSubjects
+						}
+					}
 
-// 					// we have all the info we need, now complete the mutation before we process the event
-// 					retValue, err := next.Mutate(ctx, m)
-// 					if err != nil {
-// 						return retValue, err
-// 					}
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-// 					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
-// 					return retValue, nil
-// 				})
-// 			},
-// 			ent.OpDelete|ent.OpDeleteOne,
-// 		),
-// 	}
-// }
+					return retValue, nil
+				})
+			},
+			ent.OpDelete|ent.OpDeleteOne,
+		),
+	}
+}
 
 func PoolHooks() []ent.Hook {
 	return []ent.Hook{
@@ -1072,12 +1071,11 @@ func PortHooks() []ent.Hook {
 func PubsubHooks(c *generated.Client) {
 	c.LoadBalancer.Use(LoadBalancerHooks()...)
 
-	// c.Origin.Use(OriginHooks()...)
+	c.Origin.Use(OriginHooks()...)
 
 	c.Pool.Use(PoolHooks()...)
 
 	c.Port.Use(PortHooks()...)
-
 }
 
 func eventType(op ent.Op) string {
