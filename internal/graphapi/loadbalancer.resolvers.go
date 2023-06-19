@@ -7,9 +7,7 @@ package graphapi
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
-	"github.com/labstack/gommon/log"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
@@ -60,12 +58,7 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	// 	authzclient.Check{Subject: actor.ID, Action: "delete", On: id},
 	// )
 
-	var (
-		err error
-		tx  *generated.Tx
-	)
-
-	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
+	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -73,16 +66,18 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	// cleanup ports associated with loadbalancer
 	ports, err := tx.Port.Query().Where(predicate.Port(port.LoadBalancerIDEQ(id))).All(ctx)
 	if err != nil {
+		r.logger.Errorw("failed to query ports", "error", err)
 		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "query ports")
 		}
 		return nil, err
 	}
 
 	for _, p := range ports {
 		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
+			r.logger.Errorw("failed to delete port", "port", p.ID, "error", err)
 			if rerr := tx.Rollback(); rerr != nil {
-				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+				r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "delete port")
 			}
 			return nil, err
 		}
@@ -90,15 +85,17 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 	// delete loadbalancer
 	if err = tx.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
+		r.logger.Errorw("failed to delete loadbalancer", "loadbalancer", id.String(), "error", err)
 		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "delete loadbalancer")
 		}
 		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
+		r.logger.Errorw("failed to commit transaction", "error", err)
 		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
+			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "commit transaction")
 		}
 		return nil, err
 	}
