@@ -312,15 +312,15 @@ func OriginHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					// addSubjPoolTenantID, err := m.Client().Pool.Get(ctx, objID)
-					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					// addSubjPoolOwnerID, err := m.Client().Pool.Get(ctx, objID)
+					addSubjPoolOwnerID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.ID) && objID != addSubjPoolOwnerID.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.OwnerID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
 						}
 					}
 
