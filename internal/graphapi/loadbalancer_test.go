@@ -88,6 +88,16 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	assert.Equal(t, locationID, createdLB.Location.ID)
 	assert.Equal(t, ownerID, createdLB.Owner.ID)
 
+	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
+		Name:           gofakeit.DomainName(),
+		Number:         8080,
+		LoadBalancerID: createdLB.ID,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, createdPortResp)
+	require.NotNil(t, createdPortResp.LoadBalancerPortCreate.LoadBalancerPort)
+
 	// Update the LB
 	newName := gofakeit.DomainName()
 	updatedLBResp, err := graphTestClient().LoadBalancerUpdate(ctx, createdLB.ID, graphclient.UpdateLoadBalancerInput{Name: &newName})

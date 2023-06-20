@@ -1176,17 +1176,16 @@ directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJEC
 directive @override(from: String!) on FIELD_DEFINITION
 directive @inaccessible on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 #directive @interfaceObject on OBJECT
-
 extend schema
   @link(
-    url: "https://specs.apollo.dev/federation/v2.3"
-    import: [
-      "@key",
-      "@external",
-      "@shareable",
-      "@tag",
-      "@override",
-      "@inaccessible",
-      "@interfaceObject"
-      ]
+	url: "https://specs.apollo.dev/federation/v2.3"
+	import: [
+	  "@key",
+	  "@external",
+	  "@shareable",
+	  "@tag",
+	  "@override",
+	  "@inaccessible",
+	  "@interfaceObject"
+	  ]
   )

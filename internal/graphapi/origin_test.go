@@ -62,7 +62,7 @@ func TestQueryPoolOrigin(t *testing.T) {
 			assert.Len(t, poolOrigins, 1)
 			assert.Equal(t, tt.ExpectedOrigin.Name, poolOrigins[0].Node.Name)
 			assert.Equal(t, tt.ExpectedOrigin.Target, poolOrigins[0].Node.Target)
-			assert.Equal(t, int64(tt.ExpectedOrigin.PortNumber), poolOrigins[0].Node.PortNumber)
+			assert.Equal(t, tt.ExpectedOrigin.PortNumber, int(poolOrigins[0].Node.PortNumber))
 			assert.Equal(t, tt.ExpectedOrigin.Active, poolOrigins[0].Node.Active)
 			assert.Equal(t, tt.ExpectedOrigin.PoolID, poolOrigins[0].Node.PoolID)
 		})
@@ -76,7 +76,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 	testCases := []struct {
 		TestName       string
 		Input          graphclient.CreateLoadBalancerOriginInput
-		ExpectedOrigin graphclient.LoadBalancerOrigin
+		ExpectedOrigin ent.LoadBalancerOrigin
 		errorMsg       string
 	}{
 		{
@@ -107,7 +107,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 				PortNumber: 22,
 				PoolID:     pool1.ID,
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				Name:       "original",
 				Target:     "1.2.3.4",
 				PortNumber: 22,
@@ -124,7 +124,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 				PoolID:     pool1.ID,
 				Active:     newBool(false),
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				Name:       "original",
 				Target:     "1.2.3.4",
 				PortNumber: 22,
@@ -155,7 +155,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 			assert.Contains(t, createdOrigin.ID, "loadogn-")
 			assert.Equal(t, tt.ExpectedOrigin.Name, createdOrigin.Name)
 			assert.Equal(t, tt.ExpectedOrigin.Target, createdOrigin.Target)
-			assert.Equal(t, tt.ExpectedOrigin.PortNumber, createdOrigin.PortNumber)
+			assert.Equal(t, tt.ExpectedOrigin.PortNumber, int(createdOrigin.PortNumber))
 			assert.Equal(t, tt.ExpectedOrigin.PoolID, createdOrigin.PoolID)
 			assert.Equal(t, tt.ExpectedOrigin.Active, createdOrigin.Active)
 		})
@@ -173,7 +173,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 		TestName       string
 		OriginID       gidx.PrefixedID
 		Input          graphclient.UpdateLoadBalancerOriginInput
-		ExpectedOrigin graphclient.LoadBalancerOrigin
+		ExpectedOrigin ent.LoadBalancerOrigin
 		errorMsg       string
 	}{
 		{
@@ -207,7 +207,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 				PortNumber: newInt64(222),
 				Active:     newBool(true),
 			},
-			ExpectedOrigin: graphclient.LoadBalancerOrigin{
+			ExpectedOrigin: ent.LoadBalancerOrigin{
 				ID:         origin1.ID,
 				Name:       "originator",
 				Target:     "5.6.7.8",
@@ -239,7 +239,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 			assert.Equal(t, tt.ExpectedOrigin.ID, updatedOrigin.ID)
 			assert.Equal(t, tt.ExpectedOrigin.Name, updatedOrigin.Name)
 			assert.Equal(t, tt.ExpectedOrigin.Target, updatedOrigin.Target)
-			assert.Equal(t, tt.ExpectedOrigin.PortNumber, updatedOrigin.PortNumber)
+			assert.Equal(t, tt.ExpectedOrigin.PortNumber, int(updatedOrigin.PortNumber))
 			assert.Equal(t, tt.ExpectedOrigin.PoolID, updatedOrigin.PoolID)
 			assert.Equal(t, tt.ExpectedOrigin.Active, updatedOrigin.Active)
 		})

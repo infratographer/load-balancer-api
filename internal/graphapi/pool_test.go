@@ -9,6 +9,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
+	pool "go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 )
 
@@ -72,19 +73,19 @@ func TestMutate_PoolCreate(t *testing.T) {
 	testCases := []struct {
 		TestName     string
 		Input        graphclient.CreateLoadBalancerPoolInput
-		ExpectedPool graphclient.LoadBalancerPool
+		ExpectedPool ent.LoadBalancerPool
 		errorMsg     string
 	}{
 		{
 			TestName: "create pool",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
-				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
+				Protocol: pool.ProtocolTCP,
 				OwnerID:  ownerID,
 			},
-			ExpectedPool: graphclient.LoadBalancerPool{
+			ExpectedPool: ent.LoadBalancerPool{
 				Name:     "pooly",
-				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
+				Protocol: pool.ProtocolTCP,
 				OwnerID:  ownerID,
 			},
 		},
@@ -92,7 +93,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			TestName: "invalid owner ID",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
-				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
+				Protocol: pool.ProtocolTCP,
 				OwnerID:  "not a valid ID",
 			},
 			errorMsg: "invalid id",
@@ -110,7 +111,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			TestName: "empty name",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "",
-				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
+				Protocol: pool.ProtocolUDP,
 				OwnerID:  ownerID,
 			},
 			errorMsg: "validator failed",
@@ -146,13 +147,13 @@ func TestMutate_PoolCreate(t *testing.T) {
 func TestMutate_PoolUpdate(t *testing.T) {
 	ctx := context.Background()
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	updateProtocolUnknown := graphclient.LoadBalancerPoolProtocol("invalid")
-	updateProtocolUDP := graphclient.LoadBalancerPoolProtocolUDP
+	updateProtocolUnknown := pool.Protocol("invalid")
+	updateProtocolUDP := pool.ProtocolUDP
 
 	testCases := []struct {
 		TestName     string
 		Input        graphclient.UpdateLoadBalancerPoolInput
-		ExpectedPool graphclient.LoadBalancerPool
+		ExpectedPool ent.LoadBalancerPool
 		errorMsg     string
 	}{
 		{
@@ -160,9 +161,9 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name: newString("ImaPool"),
 			},
-			ExpectedPool: graphclient.LoadBalancerPool{
+			ExpectedPool: ent.LoadBalancerPool{
 				Name:     "ImaPool",
-				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
+				Protocol: pool.ProtocolTCP,
 				OwnerID:  pool1.OwnerID,
 			},
 		},
@@ -172,9 +173,9 @@ func TestMutate_PoolUpdate(t *testing.T) {
 				Name:     newString("ImaPool"),
 				Protocol: &updateProtocolUDP,
 			},
-			ExpectedPool: graphclient.LoadBalancerPool{
+			ExpectedPool: ent.LoadBalancerPool{
 				Name:     "ImaPool",
-				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
+				Protocol: pool.ProtocolUDP,
 				OwnerID:  pool1.OwnerID,
 			},
 		},
