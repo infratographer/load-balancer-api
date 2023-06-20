@@ -73,26 +73,46 @@ CREATE INDEX "port_updated_at" ON "ports" ("updated_at");
 CREATE TABLE "pool_ports" ("pool_id" character varying NOT NULL, "port_id" character varying NOT NULL, PRIMARY KEY ("pool_id", "port_id"), CONSTRAINT "pool_ports_pool_id" FOREIGN KEY ("pool_id") REFERENCES "pools" ("id") ON UPDATE NO ACTION ON DELETE CASCADE, CONSTRAINT "pool_ports_port_id" FOREIGN KEY ("port_id") REFERENCES "ports" ("id") ON UPDATE NO ACTION ON DELETE CASCADE);
 
 -- +goose Down
--- reverse: create index "provider_created_at" to table: "providers"
-DROP INDEX "provider_created_at";
--- reverse: create index "provider_tenant_id" to table: "providers"
-DROP INDEX "provider_tenant_id";
--- reverse: create index "provider_updated_at" to table: "providers"
-DROP INDEX "provider_updated_at";
--- reverse: create "providers" table
-DROP TABLE "providers";
--- reverse: create index "loadbalancer_created_at" to table: "load_balancers"
-DROP INDEX "loadbalancer_created_at";
--- reverse: create index "loadbalancer_location_id" to table: "load_balancers"
-DROP INDEX "loadbalancer_location_id";
--- reverse: create index "loadbalancer_provider_id" to table: "load_balancers"
-DROP INDEX "loadbalancer_provider_id";
--- reverse: create index "loadbalancer_tenant_id" to table: "load_balancers"
-DROP INDEX "loadbalancer_tenant_id";
--- reverse: create index "loadbalancer_updated_at" to table: "load_balancers"
-DROP INDEX "loadbalancer_updated_at";
--- reverse: create "load_balancers" table
-DROP TABLE "load_balancers";
+-- reverse: create "pool_ports" table
+DROP TABLE "pool_ports";
+-- reverse: create index "port_created_at" to table: "ports"
+DROP INDEX "port_created_at";
+-- reverse: create index "port_load_balancer_id" to table: "ports"
+DROP INDEX "port_load_balancer_id";
+-- reverse: create index "port_load_balancer_id_number" to table: "ports"
+DROP INDEX "port_load_balancer_id_number";
+-- reverse: create index "port_updated_at" to table: "ports"
+DROP INDEX "port_updated_at";
+-- reverse: create "ports" table
+DROP TABLE "ports";
+-- reverse: create index "origin_created_at" to table: "origins"
+DROP INDEX "origin_created_at";
+-- reverse: create index "origin_pool_id" to table: "origins"
+DROP INDEX "origin_pool_id";
+-- reverse: create index "origin_updated_at" to table: "origins"
+DROP INDEX "origin_updated_at";
+-- reverse: create "origins" table
+DROP TABLE "origins";
+-- reverse: create index "pool_created_at" to table: "pools"
+DROP INDEX "pool_created_at";
+-- reverse: create index "pool_tenant_id" to table: "pools"
+DROP INDEX "pool_tenant_id";
+-- reverse: create index "pool_updated_at" to table: "pools"
+DROP INDEX "pool_updated_at";
+-- reverse: create "pools" table
+DROP TABLE "pools";
+-- reverse: create index "loadbalancerstatus_created_at" to table: "load_balancer_status"
+DROP INDEX "loadbalancerstatus_created_at";
+-- reverse: create index "loadbalancerstatus_load_balancer_id" to table: "load_balancer_status"
+DROP INDEX "loadbalancerstatus_load_balancer_id";
+-- reverse: create index "loadbalancerstatus_load_balancer_id_namespace_source" to table: "load_balancer_status"
+DROP INDEX "loadbalancerstatus_load_balancer_id_namespace_source";
+-- reverse: create index "loadbalancerstatus_namespace_data" to table: "load_balancer_status"
+DROP INDEX "loadbalancerstatus_namespace_data";
+-- reverse: create index "loadbalancerstatus_updated_at" to table: "load_balancer_status"
+DROP INDEX "loadbalancerstatus_updated_at";
+-- reverse: create "load_balancer_status" table
+DROP TABLE "load_balancer_status";
 -- reverse: create index "loadbalancerannotation_created_at" to table: "load_balancer_annotations"
 DROP INDEX "loadbalancerannotation_created_at";
 -- reverse: create index "loadbalancerannotation_load_balancer_id" to table: "load_balancer_annotations"
@@ -105,43 +125,23 @@ DROP INDEX "loadbalancerannotation_namespace_data";
 DROP INDEX "loadbalancerannotation_updated_at";
 -- reverse: create "load_balancer_annotations" table
 DROP TABLE "load_balancer_annotations";
--- reverse: create index "loadbalancerstatus_created_at" to table: "load_balancer_status"
-DROP INDEX "loadbalancerstatus_created_at";
--- reverse: create index "loadbalancerstatus_load_balancer_id" to table: "load_balancer_status"
-DROP INDEX "loadbalancerstatus_load_balancer_id" ON;
--- reverse: create index "loadbalancerstatus_load_balancer_id_namespace_source" to table: "load_balancer_status"
-DROP INDEX "loadbalancerstatus_load_balancer_id_namespace_source";
--- reverse: create index "loadbalancerstatus_namespace_data" to table: "load_balancer_status"
-DROP INDEX "loadbalancerstatus_namespace_data";
--- reverse: create index "loadbalancerstatus_updated_at" to table: "load_balancer_status"
-DROP INDEX "loadbalancerstatus_updated_at";
--- reverse: create "load_balancer_status" table
-DROP TABLE "load_balancer_status";
--- reverse: create index "pool_created_at" to table: "pools"
-DROP INDEX "pool_created_at";
--- reverse: create index "pool_tenant_id" to table: "pools"
-DROP INDEX "pool_tenant_id";
--- reverse: create index "pool_updated_at" to table: "pools"
-DROP INDEX "pool_updated_at";
--- reverse: create "pools" table
-DROP TABLE "pools";
--- reverse: create index "origin_created_at" to table: "origins"
-DROP INDEX "origin_created_at";
--- reverse: create index "origin_pool_id" to table: "origins"
-DROP INDEX "origin_pool_id";
--- reverse: create index "origin_updated_at" to table: "origins"
-DROP INDEX "origin_updated_at";
--- reverse: create "origins" table
-DROP TABLE "origins";
--- reverse: create index "port_created_at" to table: "ports"
-DROP INDEX "port_created_at";
--- reverse: create index "port_load_balancer_id" to table: "ports"
-DROP INDEX "port_load_balancer_id";
--- reverse: create index "port_load_balancer_id_number" to table: "ports"
-DROP UNIQUE INDEX "port_load_balancer_id_number";
--- reverse: create index "port_updated_at" to table: "ports"
-DROP INDEX "port_updated_at";
--- reverse: create "ports" table
-DROP TABLE "ports";
--- reverse: create "pool_ports" table
-DROP TABLE "pool_ports";
+-- reverse: create index "loadbalancer_created_at" to table: "load_balancers"
+DROP INDEX "loadbalancer_created_at";
+-- reverse: create index "loadbalancer_location_id" to table: "load_balancers"
+DROP INDEX "loadbalancer_location_id";
+-- reverse: create index "loadbalancer_provider_id" to table: "load_balancers"
+DROP INDEX "loadbalancer_provider_id";
+-- reverse: create index "loadbalancer_tenant_id" to table: "load_balancers"
+DROP INDEX "loadbalancer_tenant_id";
+-- reverse: create index "loadbalancer_updated_at" to table: "load_balancers"
+DROP INDEX "loadbalancer_updated_at";
+-- reverse: create "load_balancers" table
+DROP TABLE "load_balancers";
+-- reverse: create index "provider_created_at" to table: "providers"
+DROP INDEX "provider_created_at";
+-- reverse: create index "provider_tenant_id" to table: "providers"
+DROP INDEX "provider_tenant_id";
+-- reverse: create index "provider_updated_at" to table: "providers"
+DROP INDEX "provider_updated_at";
+-- reverse: create "providers" table
+DROP TABLE "providers";
