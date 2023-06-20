@@ -44,4 +44,4 @@ To contact the maintainers, please open a [GithHub Issue](https://github.com/inf
 
 ## License
 
-[Elastic License 2.0](LICENSE)
+[Apache License, Version 2.0](LICENSE)
