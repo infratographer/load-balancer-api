@@ -15,7 +15,7 @@ graph LR;
 
 ### Load Balancers
 
-Load Balancers are the top level component managed by the load balancer API. Load balancers are assigned to a tenant.
+Load Balancers are the top level component managed by the load balancer API. Load balancers are assigned to an owner (tenant).
 
 ### Ports
 
@@ -23,7 +23,7 @@ Ports define the listening port of a load balancer. Ports share edges to load ba
 
 ### Pools
 
-Pools are a collection of origins. Pools are own by a tenant, and share an edge to ports. Pools can be assigned to multiple port and load balancer pairs.
+Pools are a collection of origins. Pools are own by an owner (tenant), and share an edge to ports. Pools can be assigned to multiple port and load balancer pairs.
 
 ### Origins
 

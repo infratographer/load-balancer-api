@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
@@ -13,10 +14,11 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/schema"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
 	"golang.org/x/exp/slices"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/schema"
 )
 
 func LoadBalancerHooks() []ent.Hook {
@@ -115,33 +117,33 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					cv_tenant_id := ""
-					tenant_id, ok := m.TenantID()
+					cv_owner_id := ""
+					owner_id, ok := m.OwnerID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						tenant_id, err = m.OldTenantID(ctx)
+						owner_id, err = m.OldOwnerID(ctx)
 						if err != nil {
 							return nil, err
 						}
 					}
-					additionalSubjects = append(additionalSubjects, tenant_id)
+					additionalSubjects = append(additionalSubjects, owner_id)
 
 					if ok {
-						cv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(tenant_id))
-						pv_tenant_id := ""
+						cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))
+						pv_owner_id := ""
 						if !m.Op().Is(ent.OpCreate) {
-							ov, err := m.OldTenantID(ctx)
+							ov, err := m.OldOwnerID(ctx)
 							if err != nil {
-								pv_tenant_id = "<unknown>"
+								pv_owner_id = "<unknown>"
 							} else {
-								pv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(ov))
+								pv_owner_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
 						changeset = append(changeset, events.FieldChange{
-							Field:         "tenant_id",
-							PreviousValue: pv_tenant_id,
-							CurrentValue:  cv_tenant_id,
+							Field:         "owner_id",
+							PreviousValue: pv_owner_id,
+							CurrentValue:  cv_owner_id,
 						})
 					}
 
@@ -250,7 +252,7 @@ func LoadBalancerHooks() []ent.Hook {
 						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
 					}
 
-					additionalSubjects = append(additionalSubjects, dbObj.TenantID)
+					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
 
@@ -310,15 +312,15 @@ func OriginHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					// addSubjPoolTenantID, err := m.Client().Pool.Get(ctx, objID)
-					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					// addSubjPoolOwnerID, err := m.Client().Pool.Get(ctx, objID)
+					addSubjPoolOwnerID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.ID) && objID != addSubjPoolOwnerID.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.TenantID) {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.TenantID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
 						}
 					}
 
@@ -695,33 +697,33 @@ func PoolHooks() []ent.Hook {
 						})
 					}
 
-					cv_tenant_id := ""
-					tenant_id, ok := m.TenantID()
+					cv_owner_id := ""
+					owner_id, ok := m.OwnerID()
 					if !ok && !m.Op().Is(ent.OpCreate) {
 						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						tenant_id, err = m.OldTenantID(ctx)
+						owner_id, err = m.OldOwnerID(ctx)
 						if err != nil {
 							return nil, err
 						}
 					}
-					additionalSubjects = append(additionalSubjects, tenant_id)
+					additionalSubjects = append(additionalSubjects, owner_id)
 
 					if ok {
-						cv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(tenant_id))
-						pv_tenant_id := ""
+						cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))
+						pv_owner_id := ""
 						if !m.Op().Is(ent.OpCreate) {
-							ov, err := m.OldTenantID(ctx)
+							ov, err := m.OldOwnerID(ctx)
 							if err != nil {
-								pv_tenant_id = "<unknown>"
+								pv_owner_id = "<unknown>"
 							} else {
-								pv_tenant_id = fmt.Sprintf("%s", fmt.Sprint(ov))
+								pv_owner_id = fmt.Sprintf("%s", fmt.Sprint(ov))
 							}
 						}
 
 						changeset = append(changeset, events.FieldChange{
-							Field:         "tenant_id",
-							PreviousValue: pv_tenant_id,
-							CurrentValue:  cv_tenant_id,
+							Field:         "owner_id",
+							PreviousValue: pv_owner_id,
+							CurrentValue:  cv_owner_id,
 						})
 					}
 
@@ -770,7 +772,7 @@ func PoolHooks() []ent.Hook {
 						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
 					}
 
-					additionalSubjects = append(additionalSubjects, dbObj.TenantID)
+					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
@@ -807,6 +809,7 @@ func PoolHooks() []ent.Hook {
 		),
 	}
 }
+
 func PortHooks() []ent.Hook {
 	return []ent.Hook{
 		hook.On(
@@ -824,24 +827,24 @@ func PortHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					addSubjPoolTenantID, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjPoolOwnerID, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.ID) && objID != addSubjPoolTenantID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.ID) && objID != addSubjPoolOwnerID.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPoolTenantID.TenantID) {
-							additionalSubjects = append(additionalSubjects, addSubjPoolTenantID.TenantID)
+						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
 						}
 					}
-					addSubjLoadBalancerTenantID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjLoadBalancerOwnerID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerTenantID.ID) && objID != addSubjLoadBalancerTenantID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerTenantID.ID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancerOwnerID.ID) && objID != addSubjLoadBalancerOwnerID.ID {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerOwnerID.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerTenantID.TenantID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerTenantID.TenantID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancerOwnerID.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerOwnerID.OwnerID)
 						}
 					}
 					addSubjLoadBalancerLocationID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)

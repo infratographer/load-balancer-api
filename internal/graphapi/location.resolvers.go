@@ -15,12 +15,12 @@ import (
 
 // Location is the resolver for the location field.
 func (r *loadBalancerResolver) Location(ctx context.Context, obj *generated.LoadBalancer) (*Location, error) {
-	return &Location{ID: obj.LocationID, scopedToTenantID: obj.TenantID}, nil
+	return &Location{ID: obj.LocationID, scopedToOwnerID: obj.OwnerID}, nil
 }
 
 // LoadBalancers is the resolver for the loadBalancers field.
 func (r *locationResolver) LoadBalancers(ctx context.Context, obj *Location, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
-	return r.client.LoadBalancer.Query().Where(loadbalancer.TenantID(obj.scopedToTenantID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
+	return r.client.LoadBalancer.Query().Where(loadbalancer.OwnerID(obj.scopedToOwnerID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
 }
 
 // Location returns LocationResolver implementation.

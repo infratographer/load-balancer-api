@@ -18,7 +18,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
-		{Name: "tenant_id", Type: field.TypeString},
+		{Name: "owner_id", Type: field.TypeString},
 		{Name: "location_id", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString},
 	}
@@ -57,7 +57,7 @@ var (
 				Columns: []*schema.Column{LoadBalancersColumns[5]},
 			},
 			{
-				Name:    "loadbalancer_tenant_id",
+				Name:    "loadbalancer_owner_id",
 				Unique:  false,
 				Columns: []*schema.Column{LoadBalancersColumns[4]},
 			},
@@ -194,7 +194,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
 		{Name: "protocol", Type: field.TypeEnum, Enums: []string{"tcp", "udp"}},
-		{Name: "tenant_id", Type: field.TypeString},
+		{Name: "owner_id", Type: field.TypeString},
 	}
 	// PoolsTable holds the schema information for the "pools" table.
 	PoolsTable = &schema.Table{
@@ -213,7 +213,7 @@ var (
 				Columns: []*schema.Column{PoolsColumns[2]},
 			},
 			{
-				Name:    "pool_tenant_id",
+				Name:    "pool_owner_id",
 				Unique:  false,
 				Columns: []*schema.Column{PoolsColumns[5]},
 			},
@@ -270,7 +270,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
-		{Name: "tenant_id", Type: field.TypeString},
+		{Name: "owner_id", Type: field.TypeString},
 	}
 	// ProvidersTable holds the schema information for the "providers" table.
 	ProvidersTable = &schema.Table{
@@ -289,7 +289,7 @@ var (
 				Columns: []*schema.Column{ProvidersColumns[2]},
 			},
 			{
-				Name:    "provider_tenant_id",
+				Name:    "provider_owner_id",
 				Unique:  false,
 				Columns: []*schema.Column{ProvidersColumns[4]},
 			},

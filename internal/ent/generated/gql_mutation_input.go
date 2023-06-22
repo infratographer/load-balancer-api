@@ -14,7 +14,7 @@ import (
 // CreateLoadBalancerInput represents a mutation input for creating loadbalancers.
 type CreateLoadBalancerInput struct {
 	Name       string
-	TenantID   gidx.PrefixedID
+	OwnerID    gidx.PrefixedID
 	LocationID gidx.PrefixedID
 	PortIDs    []gidx.PrefixedID
 	ProviderID gidx.PrefixedID
@@ -23,7 +23,7 @@ type CreateLoadBalancerInput struct {
 // Mutate applies the CreateLoadBalancerInput on the LoadBalancerMutation builder.
 func (i *CreateLoadBalancerInput) Mutate(m *LoadBalancerMutation) {
 	m.SetName(i.Name)
-	m.SetTenantID(i.TenantID)
+	m.SetOwnerID(i.OwnerID)
 	m.SetLocationID(i.LocationID)
 	if v := i.PortIDs; len(v) > 0 {
 		m.AddPortIDs(v...)
@@ -139,7 +139,7 @@ func (c *OriginUpdateOne) SetInput(i UpdateLoadBalancerOriginInput) *OriginUpdat
 type CreateLoadBalancerPoolInput struct {
 	Name      string
 	Protocol  pool.Protocol
-	TenantID  gidx.PrefixedID
+	OwnerID   gidx.PrefixedID
 	PortIDs   []gidx.PrefixedID
 	OriginIDs []gidx.PrefixedID
 }
@@ -148,7 +148,7 @@ type CreateLoadBalancerPoolInput struct {
 func (i *CreateLoadBalancerPoolInput) Mutate(m *PoolMutation) {
 	m.SetName(i.Name)
 	m.SetProtocol(i.Protocol)
-	m.SetTenantID(i.TenantID)
+	m.SetOwnerID(i.OwnerID)
 	if v := i.PortIDs; len(v) > 0 {
 		m.AddPortIDs(v...)
 	}
@@ -281,14 +281,14 @@ func (c *PortUpdateOne) SetInput(i UpdateLoadBalancerPortInput) *PortUpdateOne {
 
 // CreateLoadBalancerProviderInput represents a mutation input for creating loadbalancerproviders.
 type CreateLoadBalancerProviderInput struct {
-	Name     string
-	TenantID gidx.PrefixedID
+	Name    string
+	OwnerID gidx.PrefixedID
 }
 
 // Mutate applies the CreateLoadBalancerProviderInput on the ProviderMutation builder.
 func (i *CreateLoadBalancerProviderInput) Mutate(m *ProviderMutation) {
 	m.SetName(i.Name)
-	m.SetTenantID(i.TenantID)
+	m.SetOwnerID(i.OwnerID)
 }
 
 // SetInput applies the change-set in the CreateLoadBalancerProviderInput on the ProviderCreate builder.

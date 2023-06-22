@@ -53,7 +53,7 @@ type LoadBalancerMutation struct {
 	created_at         *time.Time
 	updated_at         *time.Time
 	name               *string
-	tenant_id          *gidx.PrefixedID
+	owner_id           *gidx.PrefixedID
 	location_id        *gidx.PrefixedID
 	clearedFields      map[string]struct{}
 	annotations        map[gidx.PrefixedID]struct{}
@@ -284,40 +284,40 @@ func (m *LoadBalancerMutation) ResetName() {
 	m.name = nil
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (m *LoadBalancerMutation) SetTenantID(gi gidx.PrefixedID) {
-	m.tenant_id = &gi
+// SetOwnerID sets the "owner_id" field.
+func (m *LoadBalancerMutation) SetOwnerID(gi gidx.PrefixedID) {
+	m.owner_id = &gi
 }
 
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *LoadBalancerMutation) TenantID() (r gidx.PrefixedID, exists bool) {
-	v := m.tenant_id
+// OwnerID returns the value of the "owner_id" field in the mutation.
+func (m *LoadBalancerMutation) OwnerID() (r gidx.PrefixedID, exists bool) {
+	v := m.owner_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the LoadBalancer entity.
+// OldOwnerID returns the old "owner_id" field's value of the LoadBalancer entity.
 // If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoadBalancerMutation) OldTenantID(ctx context.Context) (v gidx.PrefixedID, err error) {
+func (m *LoadBalancerMutation) OldOwnerID(ctx context.Context) (v gidx.PrefixedID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+		return v, errors.New("OldOwnerID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
+		return v, errors.New("OldOwnerID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+		return v, fmt.Errorf("querying old value for OldOwnerID: %w", err)
 	}
-	return oldValue.TenantID, nil
+	return oldValue.OwnerID, nil
 }
 
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *LoadBalancerMutation) ResetTenantID() {
-	m.tenant_id = nil
+// ResetOwnerID resets all changes to the "owner_id" field.
+func (m *LoadBalancerMutation) ResetOwnerID() {
+	m.owner_id = nil
 }
 
 // SetLocationID sets the "location_id" field.
@@ -624,8 +624,8 @@ func (m *LoadBalancerMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, loadbalancer.FieldName)
 	}
-	if m.tenant_id != nil {
-		fields = append(fields, loadbalancer.FieldTenantID)
+	if m.owner_id != nil {
+		fields = append(fields, loadbalancer.FieldOwnerID)
 	}
 	if m.location_id != nil {
 		fields = append(fields, loadbalancer.FieldLocationID)
@@ -647,8 +647,8 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case loadbalancer.FieldName:
 		return m.Name()
-	case loadbalancer.FieldTenantID:
-		return m.TenantID()
+	case loadbalancer.FieldOwnerID:
+		return m.OwnerID()
 	case loadbalancer.FieldLocationID:
 		return m.LocationID()
 	case loadbalancer.FieldProviderID:
@@ -668,8 +668,8 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUpdatedAt(ctx)
 	case loadbalancer.FieldName:
 		return m.OldName(ctx)
-	case loadbalancer.FieldTenantID:
-		return m.OldTenantID(ctx)
+	case loadbalancer.FieldOwnerID:
+		return m.OldOwnerID(ctx)
 	case loadbalancer.FieldLocationID:
 		return m.OldLocationID(ctx)
 	case loadbalancer.FieldProviderID:
@@ -704,12 +704,12 @@ func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case loadbalancer.FieldTenantID:
+	case loadbalancer.FieldOwnerID:
 		v, ok := value.(gidx.PrefixedID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTenantID(v)
+		m.SetOwnerID(v)
 		return nil
 	case loadbalancer.FieldLocationID:
 		v, ok := value.(gidx.PrefixedID)
@@ -783,8 +783,8 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 	case loadbalancer.FieldName:
 		m.ResetName()
 		return nil
-	case loadbalancer.FieldTenantID:
-		m.ResetTenantID()
+	case loadbalancer.FieldOwnerID:
+		m.ResetOwnerID()
 		return nil
 	case loadbalancer.FieldLocationID:
 		m.ResetLocationID()
@@ -2745,7 +2745,7 @@ type PoolMutation struct {
 	updated_at     *time.Time
 	name           *string
 	protocol       *pool.Protocol
-	tenant_id      *gidx.PrefixedID
+	owner_id       *gidx.PrefixedID
 	clearedFields  map[string]struct{}
 	ports          map[gidx.PrefixedID]struct{}
 	removedports   map[gidx.PrefixedID]struct{}
@@ -3006,40 +3006,40 @@ func (m *PoolMutation) ResetProtocol() {
 	m.protocol = nil
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (m *PoolMutation) SetTenantID(gi gidx.PrefixedID) {
-	m.tenant_id = &gi
+// SetOwnerID sets the "owner_id" field.
+func (m *PoolMutation) SetOwnerID(gi gidx.PrefixedID) {
+	m.owner_id = &gi
 }
 
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *PoolMutation) TenantID() (r gidx.PrefixedID, exists bool) {
-	v := m.tenant_id
+// OwnerID returns the value of the "owner_id" field in the mutation.
+func (m *PoolMutation) OwnerID() (r gidx.PrefixedID, exists bool) {
+	v := m.owner_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the Pool entity.
+// OldOwnerID returns the old "owner_id" field's value of the Pool entity.
 // If the Pool object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PoolMutation) OldTenantID(ctx context.Context) (v gidx.PrefixedID, err error) {
+func (m *PoolMutation) OldOwnerID(ctx context.Context) (v gidx.PrefixedID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+		return v, errors.New("OldOwnerID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
+		return v, errors.New("OldOwnerID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+		return v, fmt.Errorf("querying old value for OldOwnerID: %w", err)
 	}
-	return oldValue.TenantID, nil
+	return oldValue.OwnerID, nil
 }
 
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *PoolMutation) ResetTenantID() {
-	m.tenant_id = nil
+// ResetOwnerID resets all changes to the "owner_id" field.
+func (m *PoolMutation) ResetOwnerID() {
+	m.owner_id = nil
 }
 
 // AddPortIDs adds the "ports" edge to the Port entity by ids.
@@ -3197,8 +3197,8 @@ func (m *PoolMutation) Fields() []string {
 	if m.protocol != nil {
 		fields = append(fields, pool.FieldProtocol)
 	}
-	if m.tenant_id != nil {
-		fields = append(fields, pool.FieldTenantID)
+	if m.owner_id != nil {
+		fields = append(fields, pool.FieldOwnerID)
 	}
 	return fields
 }
@@ -3216,8 +3216,8 @@ func (m *PoolMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case pool.FieldProtocol:
 		return m.Protocol()
-	case pool.FieldTenantID:
-		return m.TenantID()
+	case pool.FieldOwnerID:
+		return m.OwnerID()
 	}
 	return nil, false
 }
@@ -3235,8 +3235,8 @@ func (m *PoolMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldName(ctx)
 	case pool.FieldProtocol:
 		return m.OldProtocol(ctx)
-	case pool.FieldTenantID:
-		return m.OldTenantID(ctx)
+	case pool.FieldOwnerID:
+		return m.OldOwnerID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Pool field %s", name)
 }
@@ -3274,12 +3274,12 @@ func (m *PoolMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProtocol(v)
 		return nil
-	case pool.FieldTenantID:
+	case pool.FieldOwnerID:
 		v, ok := value.(gidx.PrefixedID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTenantID(v)
+		m.SetOwnerID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Pool field %s", name)
@@ -3342,8 +3342,8 @@ func (m *PoolMutation) ResetField(name string) error {
 	case pool.FieldProtocol:
 		m.ResetProtocol()
 		return nil
-	case pool.FieldTenantID:
-		m.ResetTenantID()
+	case pool.FieldOwnerID:
+		m.ResetOwnerID()
 		return nil
 	}
 	return fmt.Errorf("unknown Pool field %s", name)
@@ -4190,7 +4190,7 @@ type ProviderMutation struct {
 	created_at            *time.Time
 	updated_at            *time.Time
 	name                  *string
-	tenant_id             *gidx.PrefixedID
+	owner_id              *gidx.PrefixedID
 	clearedFields         map[string]struct{}
 	load_balancers        map[gidx.PrefixedID]struct{}
 	removedload_balancers map[gidx.PrefixedID]struct{}
@@ -4412,40 +4412,40 @@ func (m *ProviderMutation) ResetName() {
 	m.name = nil
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (m *ProviderMutation) SetTenantID(gi gidx.PrefixedID) {
-	m.tenant_id = &gi
+// SetOwnerID sets the "owner_id" field.
+func (m *ProviderMutation) SetOwnerID(gi gidx.PrefixedID) {
+	m.owner_id = &gi
 }
 
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *ProviderMutation) TenantID() (r gidx.PrefixedID, exists bool) {
-	v := m.tenant_id
+// OwnerID returns the value of the "owner_id" field in the mutation.
+func (m *ProviderMutation) OwnerID() (r gidx.PrefixedID, exists bool) {
+	v := m.owner_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the Provider entity.
+// OldOwnerID returns the old "owner_id" field's value of the Provider entity.
 // If the Provider object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderMutation) OldTenantID(ctx context.Context) (v gidx.PrefixedID, err error) {
+func (m *ProviderMutation) OldOwnerID(ctx context.Context) (v gidx.PrefixedID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+		return v, errors.New("OldOwnerID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
+		return v, errors.New("OldOwnerID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+		return v, fmt.Errorf("querying old value for OldOwnerID: %w", err)
 	}
-	return oldValue.TenantID, nil
+	return oldValue.OwnerID, nil
 }
 
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *ProviderMutation) ResetTenantID() {
-	m.tenant_id = nil
+// ResetOwnerID resets all changes to the "owner_id" field.
+func (m *ProviderMutation) ResetOwnerID() {
+	m.owner_id = nil
 }
 
 // AddLoadBalancerIDs adds the "load_balancers" edge to the LoadBalancer entity by ids.
@@ -4546,8 +4546,8 @@ func (m *ProviderMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, provider.FieldName)
 	}
-	if m.tenant_id != nil {
-		fields = append(fields, provider.FieldTenantID)
+	if m.owner_id != nil {
+		fields = append(fields, provider.FieldOwnerID)
 	}
 	return fields
 }
@@ -4563,8 +4563,8 @@ func (m *ProviderMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case provider.FieldName:
 		return m.Name()
-	case provider.FieldTenantID:
-		return m.TenantID()
+	case provider.FieldOwnerID:
+		return m.OwnerID()
 	}
 	return nil, false
 }
@@ -4580,8 +4580,8 @@ func (m *ProviderMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldUpdatedAt(ctx)
 	case provider.FieldName:
 		return m.OldName(ctx)
-	case provider.FieldTenantID:
-		return m.OldTenantID(ctx)
+	case provider.FieldOwnerID:
+		return m.OldOwnerID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Provider field %s", name)
 }
@@ -4612,12 +4612,12 @@ func (m *ProviderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case provider.FieldTenantID:
+	case provider.FieldOwnerID:
 		v, ok := value.(gidx.PrefixedID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTenantID(v)
+		m.SetOwnerID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Provider field %s", name)
@@ -4677,8 +4677,8 @@ func (m *ProviderMutation) ResetField(name string) error {
 	case provider.FieldName:
 		m.ResetName()
 		return nil
-	case provider.FieldTenantID:
-		m.ResetTenantID()
+	case provider.FieldOwnerID:
+		m.ResetOwnerID()
 		return nil
 	}
 	return fmt.Errorf("unknown Provider field %s", name)

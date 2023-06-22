@@ -45,15 +45,15 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.OrderField("NAME"),
 			),
-		field.String("tenant_id").
+		field.String("owner_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
-			Comment("The ID for the tenant for this load balancer.").
+			Comment("The ID for the owner for this load balancer.").
 			Annotations(
 				entgql.QueryField(),
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
-				entgql.OrderField("TENANT"),
+				entgql.OrderField("OWNER"),
 				pubsubinfo.AdditionalSubject(),
 			),
 		field.String("location_id").
@@ -118,7 +118,7 @@ func (LoadBalancer) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("provider_id"),
 		index.Fields("location_id"),
-		index.Fields("tenant_id"),
+		index.Fields("owner_id"),
 	}
 }
 

@@ -42,7 +42,7 @@ func (Pool) Fields() []ent.Field {
 			Annotations(
 				entgql.OrderField("protocol"),
 			),
-		field.String("tenant_id").
+		field.String("owner_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
 			NotEmpty().
@@ -68,7 +68,7 @@ func (Pool) Edges() []ent.Edge {
 // Indexes of the Pool
 func (Pool) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id"),
+		index.Fields("owner_id"),
 	}
 }
 

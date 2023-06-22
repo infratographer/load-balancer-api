@@ -34,8 +34,8 @@ type Entity interface {
 type CreateLoadBalancerInput struct {
 	// The name of the load balancer.
 	Name string `json:"name"`
-	// The ID for the tenant for this load balancer.
-	TenantID gidx.PrefixedID `json:"tenantID"`
+	// The ID for the owner for this load balancer.
+	OwnerID gidx.PrefixedID `json:"ownerID"`
 	// The ID for the location of this load balancer.
 	LocationID gidx.PrefixedID   `json:"locationID"`
 	PortIDs    []gidx.PrefixedID `json:"portIDs,omitempty"`
@@ -57,7 +57,7 @@ type CreateLoadBalancerOriginInput struct {
 type CreateLoadBalancerPoolInput struct {
 	Name      string            `json:"name"`
 	Protocol  pool.Protocol     `json:"protocol"`
-	TenantID  gidx.PrefixedID   `json:"tenantID"`
+	OwnerID   gidx.PrefixedID   `json:"ownerID"`
 	PortIDs   []gidx.PrefixedID `json:"portIDs,omitempty"`
 	OriginIDs []gidx.PrefixedID `json:"originIDs,omitempty"`
 }
@@ -75,8 +75,8 @@ type CreateLoadBalancerPortInput struct {
 type CreateLoadBalancerProviderInput struct {
 	// The name of the load balancer provider.
 	Name string `json:"name"`
-	// The ID for the tenant for this load balancer.
-	TenantID gidx.PrefixedID `json:"tenantID"`
+	// The ID for the owner for this load balancer.
+	OwnerID gidx.PrefixedID `json:"ownerID"`
 }
 
 type LoadBalancer struct {
@@ -93,8 +93,8 @@ type LoadBalancer struct {
 	Provider generated.Provider `json:"loadBalancerProvider"`
 	// The location of the load balancer.
 	Location Location `json:"location"`
-	// The tenant of the load balancer.
-	Tenant Tenant `json:"tenant"`
+	// The owner of the load balancer.
+	Owner Owner `json:"owner"`
 }
 
 func (LoadBalancer) IsIPv4Addressable()          {}
@@ -821,6 +821,15 @@ type Location struct {
 
 func (Location) IsEntity() {}
 
+type Owner struct {
+	ID                     gidx.PrefixedID                `json:"id"`
+	LoadBalancers          LoadBalancerConnection         `json:"loadBalancers"`
+	LoadBalancerPools      LoadBalancerPoolConnection     `json:"loadBalancerPools"`
+	LoadBalancersProviders LoadBalancerProviderConnection `json:"loadBalancersProviders"`
+}
+
+func (Owner) IsEntity() {}
+
 // Information about pagination in a connection.
 // https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 type PageInfo struct {
@@ -833,15 +842,6 @@ type PageInfo struct {
 	// When paginating forwards, the cursor to continue.
 	EndCursor *string `json:"endCursor,omitempty"`
 }
-
-type Tenant struct {
-	ID                     gidx.PrefixedID                `json:"id"`
-	LoadBalancers          LoadBalancerConnection         `json:"loadBalancers"`
-	LoadBalancerPools      LoadBalancerPoolConnection     `json:"loadBalancerPools"`
-	LoadBalancersProviders LoadBalancerProviderConnection `json:"loadBalancersProviders"`
-}
-
-func (Tenant) IsEntity() {}
 
 // Input information to update a load balancer.
 type UpdateLoadBalancerInput struct {
@@ -944,7 +944,7 @@ const (
 	LoadBalancerOrderFieldCreatedAt LoadBalancerOrderField = "CREATED_AT"
 	LoadBalancerOrderFieldUpdatedAt LoadBalancerOrderField = "UPDATED_AT"
 	LoadBalancerOrderFieldName      LoadBalancerOrderField = "NAME"
-	LoadBalancerOrderFieldTenant    LoadBalancerOrderField = "TENANT"
+	LoadBalancerOrderFieldOwner     LoadBalancerOrderField = "OWNER"
 )
 
 var AllLoadBalancerOrderField = []LoadBalancerOrderField{
@@ -952,12 +952,12 @@ var AllLoadBalancerOrderField = []LoadBalancerOrderField{
 	LoadBalancerOrderFieldCreatedAt,
 	LoadBalancerOrderFieldUpdatedAt,
 	LoadBalancerOrderFieldName,
-	LoadBalancerOrderFieldTenant,
+	LoadBalancerOrderFieldOwner,
 }
 
 func (e LoadBalancerOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerOrderFieldID, LoadBalancerOrderFieldCreatedAt, LoadBalancerOrderFieldUpdatedAt, LoadBalancerOrderFieldName, LoadBalancerOrderFieldTenant:
+	case LoadBalancerOrderFieldID, LoadBalancerOrderFieldCreatedAt, LoadBalancerOrderFieldUpdatedAt, LoadBalancerOrderFieldName, LoadBalancerOrderFieldOwner:
 		return true
 	}
 	return false
@@ -1134,7 +1134,7 @@ const (
 	LoadBalancerProviderOrderFieldCreatedAt LoadBalancerProviderOrderField = "CREATED_AT"
 	LoadBalancerProviderOrderFieldUpdatedAt LoadBalancerProviderOrderField = "UPDATED_AT"
 	LoadBalancerProviderOrderFieldName      LoadBalancerProviderOrderField = "NAME"
-	LoadBalancerProviderOrderFieldTenant    LoadBalancerProviderOrderField = "TENANT"
+	LoadBalancerProviderOrderFieldOwner     LoadBalancerProviderOrderField = "OWNER"
 )
 
 var AllLoadBalancerProviderOrderField = []LoadBalancerProviderOrderField{
@@ -1142,12 +1142,12 @@ var AllLoadBalancerProviderOrderField = []LoadBalancerProviderOrderField{
 	LoadBalancerProviderOrderFieldCreatedAt,
 	LoadBalancerProviderOrderFieldUpdatedAt,
 	LoadBalancerProviderOrderFieldName,
-	LoadBalancerProviderOrderFieldTenant,
+	LoadBalancerProviderOrderFieldOwner,
 }
 
 func (e LoadBalancerProviderOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerProviderOrderFieldID, LoadBalancerProviderOrderFieldCreatedAt, LoadBalancerProviderOrderFieldUpdatedAt, LoadBalancerProviderOrderFieldName, LoadBalancerProviderOrderFieldTenant:
+	case LoadBalancerProviderOrderFieldID, LoadBalancerProviderOrderFieldCreatedAt, LoadBalancerProviderOrderFieldUpdatedAt, LoadBalancerProviderOrderFieldName, LoadBalancerProviderOrderFieldOwner:
 		return true
 	}
 	return false

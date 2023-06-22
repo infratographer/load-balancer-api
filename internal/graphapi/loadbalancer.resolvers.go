@@ -18,10 +18,10 @@ import (
 func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generated.CreateLoadBalancerInput) (*LoadBalancerCreatePayload, error) {
 	// TODO: authz check here, stub of what this might look like
 	// r.authClient.CheckPermissions(
-	// 	authzclient.Check{Subject: actor.ID, Action: "loadBalancerCreate", On: input.TenantID},
-	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: input.LocationID},
-	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: input.ProviderID},
-	// 	authzclient.Check{Subject: input.TenantID, Action: "enabled", On: config.ResourceProvider.Name},
+	// 	authzclient.Check{Subject: actor.ID, Action: "loadBalancerCreate", On: input.OwnerID},
+	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: input.LocationID},
+	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: input.ProviderID},
+	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: config.ResourceProvider.Name},
 	// 	authzclient.Check{Subject: config.ResourceProvider.Name, Action: "enabled", On: input.LocationID},
 	// )
 	lb, err := r.client.LoadBalancer.Create().SetInput(input).Save(ctx)

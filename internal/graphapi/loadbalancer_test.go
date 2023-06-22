@@ -64,7 +64,7 @@ func TestQuery_loadBalancer(t *testing.T) {
 func TestFullLoadBalancerLifecycle(t *testing.T) {
 	ctx := context.Background()
 	prov := (&ProviderBuilder{}).MustNew(ctx)
-	tenantID := gidx.MustNewID(tenantPrefix)
+	ownerID := gidx.MustNewID(ownerPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
 
@@ -72,7 +72,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	createdLBResp, err := graphTestClient().LoadBalancerCreate(ctx, graphclient.CreateLoadBalancerInput{
 		Name:       name,
 		ProviderID: prov.ID,
-		TenantID:   tenantID,
+		OwnerID:    ownerID,
 		LocationID: locationID,
 	})
 
@@ -86,7 +86,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	assert.Equal(t, "loadbal", createdLB.ID.Prefix())
 	assert.Equal(t, prov.ID, createdLB.LoadBalancerProvider.ID)
 	assert.Equal(t, locationID, createdLB.Location.ID)
-	assert.Equal(t, tenantID, createdLB.Tenant.ID)
+	assert.Equal(t, ownerID, createdLB.Owner.ID)
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
 		Name:           gofakeit.DomainName(),

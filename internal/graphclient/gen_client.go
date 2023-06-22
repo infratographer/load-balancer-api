@@ -19,7 +19,7 @@ type GraphClient interface {
 	GetLoadBalancerPoolOrigin(ctx context.Context, id gidx.PrefixedID, originid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPoolOrigin, error)
 	GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error)
 	GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerProvider, error)
-	GetTenantLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetTenantLoadBalancers, error)
+	GetOwnerLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetOwnerLoadBalancers, error)
 	LoadBalancerCreate(ctx context.Context, input CreateLoadBalancerInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerCreate, error)
 	LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerDelete, error)
 	LoadBalancerOriginCreate(ctx context.Context, input CreateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginCreate, error)
@@ -80,9 +80,9 @@ type GetLoadBalancer struct {
 		LoadBalancerProvider struct {
 			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
 		} "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
-		Tenant struct {
+		Owner struct {
 			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
-		} "json:\"tenant\" graphql:\"tenant\""
+		} "json:\"owner\" graphql:\"owner\""
 		CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
 		UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancer\" graphql:\"loadBalancer\""
@@ -92,7 +92,7 @@ type GetLoadBalancerPool struct {
 		ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
 		Name      string          "json:\"name\" graphql:\"name\""
 		Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-		TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+		OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
 		CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 		UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
@@ -134,16 +134,16 @@ type GetLoadBalancerPort struct {
 }
 type GetLoadBalancerProvider struct {
 	LoadBalancerProvider struct {
-		ID     gidx.PrefixedID "json:\"id\" graphql:\"id\""
-		Name   string          "json:\"name\" graphql:\"name\""
-		Tenant struct {
+		ID    gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		Name  string          "json:\"name\" graphql:\"name\""
+		Owner struct {
 			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
-		} "json:\"tenant\" graphql:\"tenant\""
+		} "json:\"owner\" graphql:\"owner\""
 		CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
 		UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
 }
-type GetTenantLoadBalancers struct {
+type GetOwnerLoadBalancers struct {
 	Entities []*struct {
 		LoadBalancers struct {
 			Edges []*struct {
@@ -163,9 +163,9 @@ type LoadBalancerCreate struct {
 			LoadBalancerProvider struct {
 				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
 			} "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
-			Tenant struct {
+			Owner struct {
 				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			} "json:\"tenant\" graphql:\"tenant\""
+			} "json:\"owner\" graphql:\"owner\""
 			Location struct {
 				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
 			} "json:\"location\" graphql:\"location\""
@@ -218,7 +218,7 @@ type LoadBalancerPoolCreate struct {
 			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
 			Name      string          "json:\"name\" graphql:\"name\""
 			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-			TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+			OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
 			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
@@ -235,7 +235,7 @@ type LoadBalancerPoolUpdate struct {
 			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
 			Name      string          "json:\"name\" graphql:\"name\""
 			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-			TenantID  gidx.PrefixedID "json:\"tenantID\" graphql:\"tenantID\""
+			OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
 			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
@@ -274,11 +274,11 @@ type LoadBalancerPortUpdate struct {
 type LoadBalancerProviderCreate struct {
 	LoadBalancerProviderCreate struct {
 		LoadBalancerProvider struct {
-			ID     gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			Name   string          "json:\"name\" graphql:\"name\""
-			Tenant struct {
+			ID    gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			Name  string          "json:\"name\" graphql:\"name\""
+			Owner struct {
 				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			} "json:\"tenant\" graphql:\"tenant\""
+			} "json:\"owner\" graphql:\"owner\""
 			CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
@@ -320,7 +320,7 @@ const GetLoadBalancerDocument = `query GetLoadBalancer ($id: ID!) {
 		loadBalancerProvider {
 			id
 		}
-		tenant {
+		owner {
 			id
 		}
 		createdAt
@@ -347,7 +347,7 @@ const GetLoadBalancerPoolDocument = `query GetLoadBalancerPool ($id: ID!) {
 		id
 		name
 		protocol
-		tenantID
+		ownerID
 		createdAt
 		updatedAt
 	}
@@ -438,7 +438,7 @@ const GetLoadBalancerProviderDocument = `query GetLoadBalancerProvider ($id: ID!
 	loadBalancerProvider(id: $id) {
 		id
 		name
-		tenant {
+		owner {
 			id
 		}
 		createdAt
@@ -460,9 +460,9 @@ func (c *Client) GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID
 	return &res, nil
 }
 
-const GetTenantLoadBalancersDocument = `query GetTenantLoadBalancers ($id: ID!, $orderBy: LoadBalancerOrder) {
-	_entities(representations: {__typename:"Tenant",id:$id}) {
-		... on Tenant {
+const GetOwnerLoadBalancersDocument = `query GetOwnerLoadBalancers ($id: ID!, $orderBy: LoadBalancerOrder) {
+	_entities(representations: {__typename:"Owner",id:$id}) {
+		... on Owner {
 			loadBalancers(orderBy: $orderBy) {
 				edges {
 					node {
@@ -476,14 +476,14 @@ const GetTenantLoadBalancersDocument = `query GetTenantLoadBalancers ($id: ID!, 
 }
 `
 
-func (c *Client) GetTenantLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetTenantLoadBalancers, error) {
+func (c *Client) GetOwnerLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetOwnerLoadBalancers, error) {
 	vars := map[string]interface{}{
 		"id":      id,
 		"orderBy": orderBy,
 	}
 
-	var res GetTenantLoadBalancers
-	if err := c.Client.Post(ctx, "GetTenantLoadBalancers", GetTenantLoadBalancersDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res GetOwnerLoadBalancers
+	if err := c.Client.Post(ctx, "GetOwnerLoadBalancers", GetOwnerLoadBalancersDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -498,7 +498,7 @@ const LoadBalancerCreateDocument = `mutation LoadBalancerCreate ($input: CreateL
 			loadBalancerProvider {
 				id
 			}
-			tenant {
+			owner {
 				id
 			}
 			location {
@@ -629,7 +629,7 @@ const LoadBalancerPoolCreateDocument = `mutation LoadBalancerPoolCreate ($input:
 			id
 			name
 			protocol
-			tenantID
+			ownerID
 			createdAt
 			updatedAt
 		}
@@ -676,7 +676,7 @@ const LoadBalancerPoolUpdateDocument = `mutation LoadBalancerPoolUpdate ($id: ID
 			id
 			name
 			protocol
-			tenantID
+			ownerID
 			createdAt
 			updatedAt
 		}
@@ -779,7 +779,7 @@ const LoadBalancerProviderCreateDocument = `mutation LoadBalancerProviderCreate 
 		loadBalancerProvider {
 			id
 			name
-			tenant {
+			owner {
 				id
 			}
 			createdAt

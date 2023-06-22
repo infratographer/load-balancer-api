@@ -890,10 +890,10 @@ func (po *PoolQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 				selectedFields = append(selectedFields, pool.FieldProtocol)
 				fieldSeen[pool.FieldProtocol] = struct{}{}
 			}
-		case "tenantID":
-			if _, ok := fieldSeen[pool.FieldTenantID]; !ok {
-				selectedFields = append(selectedFields, pool.FieldTenantID)
-				fieldSeen[pool.FieldTenantID] = struct{}{}
+		case "ownerID":
+			if _, ok := fieldSeen[pool.FieldOwnerID]; !ok {
+				selectedFields = append(selectedFields, pool.FieldOwnerID)
+				fieldSeen[pool.FieldOwnerID] = struct{}{}
 			}
 		case "id":
 		case "__typename":

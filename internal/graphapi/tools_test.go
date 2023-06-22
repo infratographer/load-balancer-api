@@ -4,14 +4,11 @@
 package graphapi_test
 
 import (
-	"bytes"
 	"context"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -26,8 +23,10 @@ import (
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/goosex"
 	"go.infratographer.com/x/testing/eventtools"
 
+	"go.infratographer.com/load-balancer-api/db"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
@@ -36,7 +35,7 @@ import (
 )
 
 const (
-	tenantPrefix   = "testtnt"
+	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
 	lbPrefix       = "loadbal"
 )
@@ -124,21 +123,7 @@ func setupDB() {
 		errPanic("failed creating db scema", c.Schema.Create(ctx))
 	case dialect.Postgres:
 		log.Println("Running database migrations")
-
-		cmd := exec.Command("atlas", "migrate", "apply",
-			"--dir", "file://../../db/migrations",
-			"--url", uri,
-		)
-
-		// write all output to stdout and stderr as it comes through
-		var stdBuffer bytes.Buffer
-		mw := io.MultiWriter(os.Stdout, &stdBuffer)
-
-		cmd.Stdout = mw
-		cmd.Stderr = mw
-
-		// Execute the command
-		errPanic("atlas returned an error running database migrations", cmd.Run())
+		goosex.MigrateUp(uri, db.Migrations)
 	}
 
 	// TODO: fix generated pubsubhooks

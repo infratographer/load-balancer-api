@@ -8,7 +8,7 @@ query GetLoadBalancer($id: ID!) {
     loadBalancerProvider {
       id
     }
-    tenant {
+    owner {
       id
     }
     createdAt
@@ -16,9 +16,9 @@ query GetLoadBalancer($id: ID!) {
   }
 }
 
-query GetTenantLoadBalancers($id: ID!, $orderBy: LoadBalancerOrder) {
-  _entities(representations: { __typename: "Tenant", id: $id }) {
-    ... on Tenant {
+query GetOwnerLoadBalancers($id: ID!, $orderBy: LoadBalancerOrder) {
+  _entities(representations: { __typename: "Owner", id: $id }) {
+    ... on Owner {
       loadBalancers(orderBy: $orderBy) {
         edges {
           node {
@@ -39,7 +39,7 @@ mutation LoadBalancerCreate($input: CreateLoadBalancerInput!) {
       loadBalancerProvider {
         id
       }
-      tenant {
+      owner {
         id
       }
       location {

@@ -47,8 +47,8 @@ type ResolverRoot interface {
 	LoadBalancerProvider() LoadBalancerProviderResolver
 	Location() LocationResolver
 	Mutation() MutationResolver
+	Owner() OwnerResolver
 	Query() QueryResolver
-	Tenant() TenantResolver
 }
 
 type DirectiveRoot struct {
@@ -64,7 +64,7 @@ type ComplexityRoot struct {
 		FindLoadBalancerProviderByID   func(childComplexity int, id gidx.PrefixedID) int
 		FindLoadBalancerStatusByID     func(childComplexity int, id gidx.PrefixedID) int
 		FindLocationByID               func(childComplexity int, id gidx.PrefixedID) int
-		FindTenantByID                 func(childComplexity int, id gidx.PrefixedID) int
+		FindOwnerByID                  func(childComplexity int, id gidx.PrefixedID) int
 	}
 
 	LoadBalancer struct {
@@ -73,10 +73,10 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		Location    func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Owner       func(childComplexity int) int
 		Ports       func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPortOrder, where *generated.LoadBalancerPortWhereInput) int
 		Provider    func(childComplexity int) int
 		Statuses    func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerStatusOrder, where *generated.LoadBalancerStatusWhereInput) int
-		Tenant      func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 	}
 
@@ -158,10 +158,10 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		Name      func(childComplexity int) int
 		Origins   func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOriginOrder, where *generated.LoadBalancerOriginWhereInput) int
+		Owner     func(childComplexity int) int
+		OwnerID   func(childComplexity int) int
 		Ports     func(childComplexity int) int
 		Protocol  func(childComplexity int) int
-		Tenant    func(childComplexity int) int
-		TenantID  func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
 
@@ -227,7 +227,7 @@ type ComplexityRoot struct {
 		ID            func(childComplexity int) int
 		LoadBalancers func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) int
 		Name          func(childComplexity int) int
-		Tenant        func(childComplexity int) int
+		Owner         func(childComplexity int) int
 		UpdatedAt     func(childComplexity int) int
 	}
 
@@ -301,6 +301,13 @@ type ComplexityRoot struct {
 		LoadBalancerUpdate         func(childComplexity int, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) int
 	}
 
+	Owner struct {
+		ID                     func(childComplexity int) int
+		LoadBalancerPools      func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) int
+		LoadBalancers          func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) int
+		LoadBalancersProviders func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerProviderWhereInput) int
+	}
+
 	PageInfo struct {
 		EndCursor       func(childComplexity int) int
 		HasNextPage     func(childComplexity int) int
@@ -317,13 +324,6 @@ type ComplexityRoot struct {
 		__resolve_entities   func(childComplexity int, representations []map[string]interface{}) int
 	}
 
-	Tenant struct {
-		ID                     func(childComplexity int) int
-		LoadBalancerPools      func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) int
-		LoadBalancers          func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) int
-		LoadBalancersProviders func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerProviderWhereInput) int
-	}
-
 	_Service struct {
 		SDL func(childComplexity int) int
 	}
@@ -338,17 +338,17 @@ type EntityResolver interface {
 	FindLoadBalancerProviderByID(ctx context.Context, id gidx.PrefixedID) (*generated.Provider, error)
 	FindLoadBalancerStatusByID(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancerStatus, error)
 	FindLocationByID(ctx context.Context, id gidx.PrefixedID) (*Location, error)
-	FindTenantByID(ctx context.Context, id gidx.PrefixedID) (*Tenant, error)
+	FindOwnerByID(ctx context.Context, id gidx.PrefixedID) (*Owner, error)
 }
 type LoadBalancerResolver interface {
 	Location(ctx context.Context, obj *generated.LoadBalancer) (*Location, error)
-	Tenant(ctx context.Context, obj *generated.LoadBalancer) (*Tenant, error)
+	Owner(ctx context.Context, obj *generated.LoadBalancer) (*Owner, error)
 }
 type LoadBalancerPoolResolver interface {
-	Tenant(ctx context.Context, obj *generated.Pool) (*Tenant, error)
+	Owner(ctx context.Context, obj *generated.Pool) (*Owner, error)
 }
 type LoadBalancerProviderResolver interface {
-	Tenant(ctx context.Context, obj *generated.Provider) (*Tenant, error)
+	Owner(ctx context.Context, obj *generated.Provider) (*Owner, error)
 }
 type LocationResolver interface {
 	LoadBalancers(ctx context.Context, obj *Location, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error)
@@ -370,16 +370,16 @@ type MutationResolver interface {
 	LoadBalancerProviderUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*LoadBalancerProviderUpdatePayload, error)
 	LoadBalancerProviderDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerProviderDeletePayload, error)
 }
+type OwnerResolver interface {
+	LoadBalancers(ctx context.Context, obj *Owner, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error)
+	LoadBalancerPools(ctx context.Context, obj *Owner, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error)
+	LoadBalancersProviders(ctx context.Context, obj *Owner, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error)
+}
 type QueryResolver interface {
 	LoadBalancerPools(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error)
 	LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error)
 	LoadBalancerPool(ctx context.Context, id gidx.PrefixedID) (*generated.Pool, error)
 	LoadBalancerProvider(ctx context.Context, id gidx.PrefixedID) (*generated.Provider, error)
-}
-type TenantResolver interface {
-	LoadBalancers(ctx context.Context, obj *Tenant, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error)
-	LoadBalancerPools(ctx context.Context, obj *Tenant, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error)
-	LoadBalancersProviders(ctx context.Context, obj *Tenant, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerProviderWhereInput) (*generated.LoadBalancerProviderConnection, error)
 }
 
 type executableSchema struct {
@@ -493,17 +493,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindLocationByID(childComplexity, args["id"].(gidx.PrefixedID)), true
 
-	case "Entity.findTenantByID":
-		if e.complexity.Entity.FindTenantByID == nil {
+	case "Entity.findOwnerByID":
+		if e.complexity.Entity.FindOwnerByID == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findTenantByID_args(context.TODO(), rawArgs)
+		args, err := ec.field_Entity_findOwnerByID_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindTenantByID(childComplexity, args["id"].(gidx.PrefixedID)), true
+		return e.complexity.Entity.FindOwnerByID(childComplexity, args["id"].(gidx.PrefixedID)), true
 
 	case "LoadBalancer.annotations":
 		if e.complexity.LoadBalancer.Annotations == nil {
@@ -545,6 +545,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoadBalancer.Name(childComplexity), true
 
+	case "LoadBalancer.owner":
+		if e.complexity.LoadBalancer.Owner == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancer.Owner(childComplexity), true
+
 	case "LoadBalancer.ports":
 		if e.complexity.LoadBalancer.Ports == nil {
 			break
@@ -575,13 +582,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoadBalancer.Statuses(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerStatusOrder), args["where"].(*generated.LoadBalancerStatusWhereInput)), true
-
-	case "LoadBalancer.tenant":
-		if e.complexity.LoadBalancer.Tenant == nil {
-			break
-		}
-
-		return e.complexity.LoadBalancer.Tenant(childComplexity), true
 
 	case "LoadBalancer.updatedAt":
 		if e.complexity.LoadBalancer.UpdatedAt == nil {
@@ -861,6 +861,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoadBalancerPool.Origins(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOriginOrder), args["where"].(*generated.LoadBalancerOriginWhereInput)), true
 
+	case "LoadBalancerPool.owner":
+		if e.complexity.LoadBalancerPool.Owner == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancerPool.Owner(childComplexity), true
+
+	case "LoadBalancerPool.ownerID":
+		if e.complexity.LoadBalancerPool.OwnerID == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancerPool.OwnerID(childComplexity), true
+
 	case "LoadBalancerPool.ports":
 		if e.complexity.LoadBalancerPool.Ports == nil {
 			break
@@ -874,20 +888,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoadBalancerPool.Protocol(childComplexity), true
-
-	case "LoadBalancerPool.tenant":
-		if e.complexity.LoadBalancerPool.Tenant == nil {
-			break
-		}
-
-		return e.complexity.LoadBalancerPool.Tenant(childComplexity), true
-
-	case "LoadBalancerPool.tenantID":
-		if e.complexity.LoadBalancerPool.TenantID == nil {
-			break
-		}
-
-		return e.complexity.LoadBalancerPool.TenantID(childComplexity), true
 
 	case "LoadBalancerPool.updatedAt":
 		if e.complexity.LoadBalancerPool.UpdatedAt == nil {
@@ -1097,12 +1097,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoadBalancerProvider.Name(childComplexity), true
 
-	case "LoadBalancerProvider.tenant":
-		if e.complexity.LoadBalancerProvider.Tenant == nil {
+	case "LoadBalancerProvider.owner":
+		if e.complexity.LoadBalancerProvider.Owner == nil {
 			break
 		}
 
-		return e.complexity.LoadBalancerProvider.Tenant(childComplexity), true
+		return e.complexity.LoadBalancerProvider.Owner(childComplexity), true
 
 	case "LoadBalancerProvider.updatedAt":
 		if e.complexity.LoadBalancerProvider.UpdatedAt == nil {
@@ -1450,6 +1450,49 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.LoadBalancerUpdate(childComplexity, args["id"].(gidx.PrefixedID), args["input"].(generated.UpdateLoadBalancerInput)), true
 
+	case "Owner.id":
+		if e.complexity.Owner.ID == nil {
+			break
+		}
+
+		return e.complexity.Owner.ID(childComplexity), true
+
+	case "Owner.loadBalancerPools":
+		if e.complexity.Owner.LoadBalancerPools == nil {
+			break
+		}
+
+		args, err := ec.field_Owner_loadBalancerPools_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Owner.LoadBalancerPools(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerPoolOrder), args["where"].(*generated.LoadBalancerPoolWhereInput)), true
+
+	case "Owner.loadBalancers":
+		if e.complexity.Owner.LoadBalancers == nil {
+			break
+		}
+
+		args, err := ec.field_Owner_loadBalancers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Owner.LoadBalancers(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerWhereInput)), true
+
+	case "Owner.loadBalancersProviders":
+		if e.complexity.Owner.LoadBalancersProviders == nil {
+			break
+		}
+
+		args, err := ec.field_Owner_loadBalancersProviders_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Owner.LoadBalancersProviders(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerProviderWhereInput)), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -1544,49 +1587,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
-
-	case "Tenant.id":
-		if e.complexity.Tenant.ID == nil {
-			break
-		}
-
-		return e.complexity.Tenant.ID(childComplexity), true
-
-	case "Tenant.loadBalancerPools":
-		if e.complexity.Tenant.LoadBalancerPools == nil {
-			break
-		}
-
-		args, err := ec.field_Tenant_loadBalancerPools_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Tenant.LoadBalancerPools(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerPoolOrder), args["where"].(*generated.LoadBalancerPoolWhereInput)), true
-
-	case "Tenant.loadBalancers":
-		if e.complexity.Tenant.LoadBalancers == nil {
-			break
-		}
-
-		args, err := ec.field_Tenant_loadBalancers_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Tenant.LoadBalancers(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerWhereInput)), true
-
-	case "Tenant.loadBalancersProviders":
-		if e.complexity.Tenant.LoadBalancersProviders == nil {
-			break
-		}
-
-		args, err := ec.field_Tenant_loadBalancersProviders_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Tenant.LoadBalancersProviders(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerProviderWhereInput)), true
 
 	case "_Service.sdl":
 		if e.complexity._Service.SDL == nil {
@@ -1693,8 +1693,8 @@ directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | 
 input CreateLoadBalancerInput {
   """The name of the load balancer."""
   name: String!
-  """The ID for the tenant for this load balancer."""
-  tenantID: ID!
+  """The ID for the owner for this load balancer."""
+  ownerID: ID!
   """The ID for the location of this load balancer."""
   locationID: ID!
   portIDs: [ID!]
@@ -1718,7 +1718,7 @@ Input was generated by ent.
 input CreateLoadBalancerPoolInput {
   name: String!
   protocol: LoadBalancerPoolProtocol!
-  tenantID: ID!
+  ownerID: ID!
   portIDs: [ID!]
   originIDs: [ID!]
 }
@@ -1736,8 +1736,8 @@ input CreateLoadBalancerPortInput {
 input CreateLoadBalancerProviderInput {
   """The name of the load balancer provider."""
   name: String!
-  """The ID for the tenant for this load balancer."""
-  tenantID: ID!
+  """The ID for the owner for this load balancer."""
+  ownerID: ID!
 }
 """
 Define a Relay Cursor type:
@@ -1916,7 +1916,7 @@ enum LoadBalancerOrderField {
   CREATED_AT
   UPDATED_AT
   NAME
-  TENANT
+  OWNER
 }
 type LoadBalancerOrigin implements Node @key(fields: "id") @goModel(model: "go.infratographer.com/load-balancer-api/internal/ent/generated.Origin") {
   id: ID!
@@ -2046,7 +2046,7 @@ type LoadBalancerPool implements Node @key(fields: "id") @goModel(model: "go.inf
   updatedAt: Time!
   name: String!
   protocol: LoadBalancerPoolProtocol!
-  tenantID: ID!
+  ownerID: ID!
   ports: [LoadBalancerPort!]
   origins(
     """Returns the elements in the list that come after the specified cursor."""
@@ -2325,7 +2325,7 @@ enum LoadBalancerProviderOrderField {
   CREATED_AT
   UPDATED_AT
   NAME
-  TENANT
+  OWNER
 }
 """
 LoadBalancerProviderWhereInput is used for filtering Provider objects.
@@ -2787,6 +2787,124 @@ type LoadBalancerOriginDeletePayload {
   deletedID: ID!
 }
 `, BuiltIn: false},
+	{Name: "../../schema/owner.graphql", Input: `extend type Owner @key(fields: "id") {
+  id: ID! @external
+  loadBalancers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for LoadBalancers returned from the connection.
+    """
+    orderBy: LoadBalancerOrder
+
+    """
+    Filtering options for LoadBalancers returned from the connection.
+    """
+    where: LoadBalancerWhereInput
+  ): LoadBalancerConnection! @goField(forceResolver: true)
+  loadBalancerPools(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for LoadBalancerPools returned from the connection.
+    """
+    orderBy: LoadBalancerPoolOrder
+
+    """
+    Filtering options for LoadBalancerPools returned from the connection.
+    """
+    where: LoadBalancerPoolWhereInput
+  ): LoadBalancerPoolConnection! @goField(forceResolver: true)
+  loadBalancersProviders(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for LoadBalancerProviders returned from the connection.
+    """
+    orderBy: LoadBalancerOrder
+
+    """
+    Filtering options for LoadBalancerProviders returned from the connection.
+    """
+    where: LoadBalancerProviderWhereInput
+  ): LoadBalancerProviderConnection! @goField(forceResolver: true)
+}
+
+extend type LoadBalancer {
+  """
+  The owner of the load balancer.
+  """
+  owner: Owner! @goField(forceResolver: true)
+}
+
+extend type LoadBalancerPool {
+  """
+  The owner of the load balancer pool.
+  """
+  owner: Owner! @goField(forceResolver: true)
+}
+
+extend type LoadBalancerProvider {
+  """
+  The owner of the load balancer provider.
+  """
+  owner: Owner! @goField(forceResolver: true)
+}
+`, BuiltIn: false},
 	{Name: "../../schema/pool.graphql", Input: `extend type Query {
   """
   Lookup a pool by ID.
@@ -2956,124 +3074,6 @@ type LoadBalancerProviderUpdatePayload {
   loadBalancerProvider: LoadBalancerProvider!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/tenant.graphql", Input: `extend type Tenant @key(fields: "id") {
-  id: ID! @external
-  loadBalancers(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
-    after: Cursor
-
-    """
-    Returns the first _n_ elements from the list.
-    """
-    first: Int
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
-    before: Cursor
-
-    """
-    Returns the last _n_ elements from the list.
-    """
-    last: Int
-
-    """
-    Ordering options for LoadBalancers returned from the connection.
-    """
-    orderBy: LoadBalancerOrder
-
-    """
-    Filtering options for LoadBalancers returned from the connection.
-    """
-    where: LoadBalancerWhereInput
-  ): LoadBalancerConnection! @goField(forceResolver: true)
-  loadBalancerPools(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
-    after: Cursor
-
-    """
-    Returns the first _n_ elements from the list.
-    """
-    first: Int
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
-    before: Cursor
-
-    """
-    Returns the last _n_ elements from the list.
-    """
-    last: Int
-
-    """
-    Ordering options for LoadBalancerPools returned from the connection.
-    """
-    orderBy: LoadBalancerPoolOrder
-
-    """
-    Filtering options for LoadBalancerPools returned from the connection.
-    """
-    where: LoadBalancerPoolWhereInput
-  ): LoadBalancerPoolConnection! @goField(forceResolver: true)
-  loadBalancersProviders(
-    """
-    Returns the elements in the list that come after the specified cursor.
-    """
-    after: Cursor
-
-    """
-    Returns the first _n_ elements from the list.
-    """
-    first: Int
-
-    """
-    Returns the elements in the list that come before the specified cursor.
-    """
-    before: Cursor
-
-    """
-    Returns the last _n_ elements from the list.
-    """
-    last: Int
-
-    """
-    Ordering options for LoadBalancerProviders returned from the connection.
-    """
-    orderBy: LoadBalancerOrder
-
-    """
-    Filtering options for LoadBalancerProviders returned from the connection.
-    """
-    where: LoadBalancerProviderWhereInput
-  ): LoadBalancerProviderConnection! @goField(forceResolver: true)
-}
-
-extend type LoadBalancer {
-  """
-  The tenant of the load balancer.
-  """
-  tenant: Tenant! @goField(forceResolver: true)
-}
-
-extend type LoadBalancerPool {
-  """
-  The tenant of the load balancer pool.
-  """
-  tenant: Tenant! @goField(forceResolver: true)
-}
-
-extend type LoadBalancerProvider {
-  """
-  The tenant of the load balancer provider.
-  """
-  tenant: Tenant! @goField(forceResolver: true)
-}
-`, BuiltIn: false},
 	{Name: "../../federation/directives.graphql", Input: `
 	scalar _Any
 	scalar _FieldSet
@@ -3091,7 +3091,7 @@ extend type LoadBalancerProvider {
 `, BuiltIn: true},
 	{Name: "../../federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = LoadBalancer | LoadBalancerAnnotation | LoadBalancerOrigin | LoadBalancerPool | LoadBalancerPort | LoadBalancerProvider | LoadBalancerStatus | Location | Tenant
+union _Entity = LoadBalancer | LoadBalancerAnnotation | LoadBalancerOrigin | LoadBalancerPool | LoadBalancerPort | LoadBalancerProvider | LoadBalancerStatus | Location | Owner
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
@@ -3103,7 +3103,7 @@ type Entity {
 	findLoadBalancerProviderByID(id: ID!,): LoadBalancerProvider!
 	findLoadBalancerStatusByID(id: ID!,): LoadBalancerStatus!
 	findLocationByID(id: ID!,): Location!
-	findTenantByID(id: ID!,): Tenant!
+	findOwnerByID(id: ID!,): Owner!
 
 }
 
@@ -3243,7 +3243,7 @@ func (ec *executionContext) field_Entity_findLocationByID_args(ctx context.Conte
 	return args, nil
 }
 
-func (ec *executionContext) field_Entity_findTenantByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Entity_findOwnerByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 gidx.PrefixedID
@@ -3888,6 +3888,186 @@ func (ec *executionContext) field_Mutation_loadBalancerUpdate_args(ctx context.C
 	return args, nil
 }
 
+func (ec *executionContext) field_Owner_loadBalancerPools_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *generated.LoadBalancerPoolOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOLoadBalancerPoolOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *generated.LoadBalancerPoolWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOLoadBalancerPoolWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Owner_loadBalancersProviders_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *generated.LoadBalancerOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *generated.LoadBalancerProviderWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOLoadBalancerProviderWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerProviderWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Owner_loadBalancers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *generated.LoadBalancerOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *generated.LoadBalancerWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOLoadBalancerWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4023,186 +4203,6 @@ func (ec *executionContext) field_Query_loadBalancer_args(ctx context.Context, r
 	return args, nil
 }
 
-func (ec *executionContext) field_Tenant_loadBalancerPools_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *generated.LoadBalancerPoolOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOLoadBalancerPoolOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolOrder(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *generated.LoadBalancerPoolWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOLoadBalancerPoolWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
-	return args, nil
-}
-
-func (ec *executionContext) field_Tenant_loadBalancersProviders_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *generated.LoadBalancerOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *generated.LoadBalancerProviderWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOLoadBalancerProviderWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerProviderWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
-	return args, nil
-}
-
-func (ec *executionContext) field_Tenant_loadBalancers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *generated.LoadBalancerOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *generated.LoadBalancerWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOLoadBalancerWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
-	return args, nil
-}
-
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4298,8 +4298,8 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerByID(ctx context
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -4509,14 +4509,14 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerPoolByID(ctx con
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -4657,8 +4657,8 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerProviderByID(ctx
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -4807,8 +4807,8 @@ func (ec *executionContext) fieldContext_Entity_findLocationByID(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Entity_findTenantByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Entity_findTenantByID(ctx, field)
+func (ec *executionContext) _Entity_findOwnerByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findOwnerByID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4821,7 +4821,7 @@ func (ec *executionContext) _Entity_findTenantByID(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindTenantByID(rctx, fc.Args["id"].(gidx.PrefixedID))
+		return ec.resolvers.Entity().FindOwnerByID(rctx, fc.Args["id"].(gidx.PrefixedID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4833,12 +4833,12 @@ func (ec *executionContext) _Entity_findTenantByID(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Tenant)
+	res := resTmp.(*Owner)
 	fc.Result = res
-	return ec.marshalNTenant2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx, field.Selections, res)
+	return ec.marshalNOwner2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Entity_findTenantByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Entity_findOwnerByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Entity",
 		Field:      field,
@@ -4847,15 +4847,15 @@ func (ec *executionContext) fieldContext_Entity_findTenantByID(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Tenant_id(ctx, field)
+				return ec.fieldContext_Owner_id(ctx, field)
 			case "loadBalancers":
-				return ec.fieldContext_Tenant_loadBalancers(ctx, field)
+				return ec.fieldContext_Owner_loadBalancers(ctx, field)
 			case "loadBalancerPools":
-				return ec.fieldContext_Tenant_loadBalancerPools(ctx, field)
+				return ec.fieldContext_Owner_loadBalancerPools(ctx, field)
 			case "loadBalancersProviders":
-				return ec.fieldContext_Tenant_loadBalancersProviders(ctx, field)
+				return ec.fieldContext_Owner_loadBalancersProviders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Owner", field.Name)
 		},
 	}
 	defer func() {
@@ -4865,7 +4865,7 @@ func (ec *executionContext) fieldContext_Entity_findTenantByID(ctx context.Conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Entity_findTenantByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Entity_findOwnerByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5286,8 +5286,8 @@ func (ec *executionContext) fieldContext_LoadBalancer_loadBalancerProvider(ctx c
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -5345,8 +5345,8 @@ func (ec *executionContext) fieldContext_LoadBalancer_location(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _LoadBalancer_tenant(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancer_tenant(ctx, field)
+func (ec *executionContext) _LoadBalancer_owner(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_owner(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5359,7 +5359,7 @@ func (ec *executionContext) _LoadBalancer_tenant(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.LoadBalancer().Tenant(rctx, obj)
+		return ec.resolvers.LoadBalancer().Owner(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5371,12 +5371,12 @@ func (ec *executionContext) _LoadBalancer_tenant(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Tenant)
+	res := resTmp.(*Owner)
 	fc.Result = res
-	return ec.marshalNTenant2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx, field.Selections, res)
+	return ec.marshalNOwner2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_LoadBalancer_tenant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoadBalancer_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoadBalancer",
 		Field:      field,
@@ -5385,15 +5385,15 @@ func (ec *executionContext) fieldContext_LoadBalancer_tenant(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Tenant_id(ctx, field)
+				return ec.fieldContext_Owner_id(ctx, field)
 			case "loadBalancers":
-				return ec.fieldContext_Tenant_loadBalancers(ctx, field)
+				return ec.fieldContext_Owner_loadBalancers(ctx, field)
 			case "loadBalancerPools":
-				return ec.fieldContext_Tenant_loadBalancerPools(ctx, field)
+				return ec.fieldContext_Owner_loadBalancerPools(ctx, field)
 			case "loadBalancersProviders":
-				return ec.fieldContext_Tenant_loadBalancersProviders(ctx, field)
+				return ec.fieldContext_Owner_loadBalancersProviders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Owner", field.Name)
 		},
 	}
 	return fc, nil
@@ -5632,8 +5632,8 @@ func (ec *executionContext) fieldContext_LoadBalancerAnnotation_loadBalancer(ctx
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -6085,8 +6085,8 @@ func (ec *executionContext) fieldContext_LoadBalancerCreatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -6192,8 +6192,8 @@ func (ec *executionContext) fieldContext_LoadBalancerEdge_node(ctx context.Conte
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -6646,14 +6646,14 @@ func (ec *executionContext) fieldContext_LoadBalancerOrigin_pool(ctx context.Con
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -7303,8 +7303,8 @@ func (ec *executionContext) fieldContext_LoadBalancerPool_protocol(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _LoadBalancerPool_tenantID(ctx context.Context, field graphql.CollectedField, obj *generated.Pool) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+func (ec *executionContext) _LoadBalancerPool_ownerID(ctx context.Context, field graphql.CollectedField, obj *generated.Pool) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7317,7 +7317,7 @@ func (ec *executionContext) _LoadBalancerPool_tenantID(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.TenantID, nil
+		return obj.OwnerID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7334,7 +7334,7 @@ func (ec *executionContext) _LoadBalancerPool_tenantID(ctx context.Context, fiel
 	return ec.marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_LoadBalancerPool_tenantID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoadBalancerPool_ownerID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoadBalancerPool",
 		Field:      field,
@@ -7469,8 +7469,8 @@ func (ec *executionContext) fieldContext_LoadBalancerPool_origins(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _LoadBalancerPool_tenant(ctx context.Context, field graphql.CollectedField, obj *generated.Pool) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+func (ec *executionContext) _LoadBalancerPool_owner(ctx context.Context, field graphql.CollectedField, obj *generated.Pool) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7483,7 +7483,7 @@ func (ec *executionContext) _LoadBalancerPool_tenant(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.LoadBalancerPool().Tenant(rctx, obj)
+		return ec.resolvers.LoadBalancerPool().Owner(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7495,12 +7495,12 @@ func (ec *executionContext) _LoadBalancerPool_tenant(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Tenant)
+	res := resTmp.(*Owner)
 	fc.Result = res
-	return ec.marshalNTenant2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx, field.Selections, res)
+	return ec.marshalNOwner2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_LoadBalancerPool_tenant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoadBalancerPool_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoadBalancerPool",
 		Field:      field,
@@ -7509,15 +7509,15 @@ func (ec *executionContext) fieldContext_LoadBalancerPool_tenant(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Tenant_id(ctx, field)
+				return ec.fieldContext_Owner_id(ctx, field)
 			case "loadBalancers":
-				return ec.fieldContext_Tenant_loadBalancers(ctx, field)
+				return ec.fieldContext_Owner_loadBalancers(ctx, field)
 			case "loadBalancerPools":
-				return ec.fieldContext_Tenant_loadBalancerPools(ctx, field)
+				return ec.fieldContext_Owner_loadBalancerPools(ctx, field)
 			case "loadBalancersProviders":
-				return ec.fieldContext_Tenant_loadBalancersProviders(ctx, field)
+				return ec.fieldContext_Owner_loadBalancersProviders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Owner", field.Name)
 		},
 	}
 	return fc, nil
@@ -7717,14 +7717,14 @@ func (ec *executionContext) fieldContext_LoadBalancerPoolCreatePayload_loadBalan
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -7819,14 +7819,14 @@ func (ec *executionContext) fieldContext_LoadBalancerPoolEdge_node(ctx context.C
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -7927,14 +7927,14 @@ func (ec *executionContext) fieldContext_LoadBalancerPoolUpdatePayload_loadBalan
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -8252,14 +8252,14 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_pools(ctx context.Cont
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -8324,8 +8324,8 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_loadBalancer(ctx conte
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -8988,8 +8988,8 @@ func (ec *executionContext) fieldContext_LoadBalancerProvider_loadBalancers(ctx 
 	return fc, nil
 }
 
-func (ec *executionContext) _LoadBalancerProvider_tenant(ctx context.Context, field graphql.CollectedField, obj *generated.Provider) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+func (ec *executionContext) _LoadBalancerProvider_owner(ctx context.Context, field graphql.CollectedField, obj *generated.Provider) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9002,7 +9002,7 @@ func (ec *executionContext) _LoadBalancerProvider_tenant(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.LoadBalancerProvider().Tenant(rctx, obj)
+		return ec.resolvers.LoadBalancerProvider().Owner(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9014,12 +9014,12 @@ func (ec *executionContext) _LoadBalancerProvider_tenant(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Tenant)
+	res := resTmp.(*Owner)
 	fc.Result = res
-	return ec.marshalNTenant2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx, field.Selections, res)
+	return ec.marshalNOwner2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_LoadBalancerProvider_tenant(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_LoadBalancerProvider_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "LoadBalancerProvider",
 		Field:      field,
@@ -9028,15 +9028,15 @@ func (ec *executionContext) fieldContext_LoadBalancerProvider_tenant(ctx context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Tenant_id(ctx, field)
+				return ec.fieldContext_Owner_id(ctx, field)
 			case "loadBalancers":
-				return ec.fieldContext_Tenant_loadBalancers(ctx, field)
+				return ec.fieldContext_Owner_loadBalancers(ctx, field)
 			case "loadBalancerPools":
-				return ec.fieldContext_Tenant_loadBalancerPools(ctx, field)
+				return ec.fieldContext_Owner_loadBalancerPools(ctx, field)
 			case "loadBalancersProviders":
-				return ec.fieldContext_Tenant_loadBalancersProviders(ctx, field)
+				return ec.fieldContext_Owner_loadBalancersProviders(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Tenant", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Owner", field.Name)
 		},
 	}
 	return fc, nil
@@ -9236,8 +9236,8 @@ func (ec *executionContext) fieldContext_LoadBalancerProviderCreatePayload_loadB
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -9335,8 +9335,8 @@ func (ec *executionContext) fieldContext_LoadBalancerProviderEdge_node(ctx conte
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -9437,8 +9437,8 @@ func (ec *executionContext) fieldContext_LoadBalancerProviderUpdatePayload_loadB
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -9723,8 +9723,8 @@ func (ec *executionContext) fieldContext_LoadBalancerStatus_loadBalancer(ctx con
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -10033,8 +10033,8 @@ func (ec *executionContext) fieldContext_LoadBalancerUpdatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -11034,6 +11034,239 @@ func (ec *executionContext) fieldContext_Mutation_loadBalancerProviderDelete(ctx
 	return fc, nil
 }
 
+func (ec *executionContext) _Owner_id(ctx context.Context, field graphql.CollectedField, obj *Owner) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Owner_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gidx.PrefixedID)
+	fc.Result = res
+	return ec.marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Owner_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Owner",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Owner_loadBalancers(ctx context.Context, field graphql.CollectedField, obj *Owner) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Owner_loadBalancers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Owner().LoadBalancers(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.LoadBalancerConnection)
+	fc.Result = res
+	return ec.marshalNLoadBalancerConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Owner_loadBalancers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Owner",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_LoadBalancerConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LoadBalancerConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_LoadBalancerConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Owner_loadBalancers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Owner_loadBalancerPools(ctx context.Context, field graphql.CollectedField, obj *Owner) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Owner_loadBalancerPools(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Owner().LoadBalancerPools(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerPoolOrder), fc.Args["where"].(*generated.LoadBalancerPoolWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.LoadBalancerPoolConnection)
+	fc.Result = res
+	return ec.marshalNLoadBalancerPoolConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Owner_loadBalancerPools(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Owner",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_LoadBalancerPoolConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LoadBalancerPoolConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_LoadBalancerPoolConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPoolConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Owner_loadBalancerPools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Owner_loadBalancersProviders(ctx context.Context, field graphql.CollectedField, obj *Owner) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Owner_loadBalancersProviders(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Owner().LoadBalancersProviders(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerProviderWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.LoadBalancerProviderConnection)
+	fc.Result = res
+	return ec.marshalNLoadBalancerProviderConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerProviderConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Owner_loadBalancersProviders(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Owner",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_LoadBalancerProviderConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LoadBalancerProviderConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_LoadBalancerProviderConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProviderConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Owner_loadBalancersProviders_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *entgql.PageInfo[gidx.PrefixedID]) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
 	if err != nil {
@@ -11324,8 +11557,8 @@ func (ec *executionContext) fieldContext_Query_loadBalancer(ctx context.Context,
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancer_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancer", field.Name)
 		},
@@ -11393,14 +11626,14 @@ func (ec *executionContext) fieldContext_Query_loadBalancerPool(ctx context.Cont
 				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
 			case "protocol":
 				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "tenantID":
-				return ec.fieldContext_LoadBalancerPool_tenantID(ctx, field)
+			case "ownerID":
+				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
 			case "ports":
 				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
 			case "origins":
 				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerPool_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
 		},
@@ -11468,8 +11701,8 @@ func (ec *executionContext) fieldContext_Query_loadBalancerProvider(ctx context.
 				return ec.fieldContext_LoadBalancerProvider_name(ctx, field)
 			case "loadBalancers":
 				return ec.fieldContext_LoadBalancerProvider_loadBalancers(ctx, field)
-			case "tenant":
-				return ec.fieldContext_LoadBalancerProvider_tenant(ctx, field)
+			case "owner":
+				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
 		},
@@ -11716,239 +11949,6 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tenant_id(ctx context.Context, field graphql.CollectedField, obj *Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(gidx.PrefixedID)
-	fc.Result = res
-	return ec.marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tenant_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tenant",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tenant_loadBalancers(ctx context.Context, field graphql.CollectedField, obj *Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_loadBalancers(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().LoadBalancers(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*generated.LoadBalancerConnection)
-	fc.Result = res
-	return ec.marshalNLoadBalancerConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tenant_loadBalancers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tenant",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_LoadBalancerConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_LoadBalancerConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_LoadBalancerConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Tenant_loadBalancers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tenant_loadBalancerPools(ctx context.Context, field graphql.CollectedField, obj *Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_loadBalancerPools(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().LoadBalancerPools(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerPoolOrder), fc.Args["where"].(*generated.LoadBalancerPoolWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*generated.LoadBalancerPoolConnection)
-	fc.Result = res
-	return ec.marshalNLoadBalancerPoolConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tenant_loadBalancerPools(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tenant",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_LoadBalancerPoolConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_LoadBalancerPoolConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_LoadBalancerPoolConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPoolConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Tenant_loadBalancerPools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tenant_loadBalancersProviders(ctx context.Context, field graphql.CollectedField, obj *Tenant) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tenant_loadBalancersProviders(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tenant().LoadBalancersProviders(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerProviderWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*generated.LoadBalancerProviderConnection)
-	fc.Result = res
-	return ec.marshalNLoadBalancerProviderConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerProviderConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tenant_loadBalancersProviders(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tenant",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_LoadBalancerProviderConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_LoadBalancerProviderConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_LoadBalancerProviderConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProviderConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Tenant_loadBalancersProviders_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -13774,7 +13774,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "tenantID", "locationID", "portIDs", "providerID"}
+	fieldsInOrder := [...]string{"name", "ownerID", "locationID", "portIDs", "providerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13790,15 +13790,15 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 				return it, err
 			}
 			it.Name = data
-		case "tenantID":
+		case "ownerID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
 			data, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TenantID = data
+			it.OwnerID = data
 		case "locationID":
 			var err error
 
@@ -13904,7 +13904,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerPoolInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "protocol", "tenantID", "portIDs", "originIDs"}
+	fieldsInOrder := [...]string{"name", "protocol", "ownerID", "portIDs", "originIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13929,15 +13929,15 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerPoolInput(ctx contex
 				return it, err
 			}
 			it.Protocol = data
-		case "tenantID":
+		case "ownerID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
 			data, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TenantID = data
+			it.OwnerID = data
 		case "portIDs":
 			var err error
 
@@ -14025,7 +14025,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerProviderInput(ctx co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "tenantID"}
+	fieldsInOrder := [...]string{"name", "ownerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14041,15 +14041,15 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerProviderInput(ctx co
 				return it, err
 			}
 			it.Name = data
-		case "tenantID":
+		case "ownerID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
 			data, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TenantID = data
+			it.OwnerID = data
 		}
 	}
 
@@ -17846,13 +17846,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Location(ctx, sel, obj)
-	case Tenant:
-		return ec._Tenant(ctx, sel, &obj)
-	case *Tenant:
+	case Owner:
+		return ec._Owner(ctx, sel, &obj)
+	case *Owner:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._Tenant(ctx, sel, obj)
+		return ec._Owner(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -18065,7 +18065,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "findTenantByID":
+		case "findOwnerByID":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -18074,7 +18074,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findTenantByID(ctx, field)
+				res = ec._Entity_findOwnerByID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -18237,7 +18237,7 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 				return innerFunc(ctx)
 
 			})
-		case "tenant":
+		case "owner":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -18246,7 +18246,7 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._LoadBalancer_tenant(ctx, field, obj)
+				res = ec._LoadBalancer_owner(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -18832,9 +18832,9 @@ func (ec *executionContext) _LoadBalancerPool(ctx context.Context, sel ast.Selec
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "tenantID":
+		case "ownerID":
 
-			out.Values[i] = ec._LoadBalancerPool_tenantID(ctx, field, obj)
+			out.Values[i] = ec._LoadBalancerPool_ownerID(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -18876,7 +18876,7 @@ func (ec *executionContext) _LoadBalancerPool(ctx context.Context, sel ast.Selec
 				return innerFunc(ctx)
 
 			})
-		case "tenant":
+		case "owner":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -18885,7 +18885,7 @@ func (ec *executionContext) _LoadBalancerPool(ctx context.Context, sel ast.Selec
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._LoadBalancerPool_tenant(ctx, field, obj)
+				res = ec._LoadBalancerPool_owner(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -19372,7 +19372,7 @@ func (ec *executionContext) _LoadBalancerProvider(ctx context.Context, sel ast.S
 				return innerFunc(ctx)
 
 			})
-		case "tenant":
+		case "owner":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -19381,7 +19381,7 @@ func (ec *executionContext) _LoadBalancerProvider(ctx context.Context, sel ast.S
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._LoadBalancerProvider_tenant(ctx, field, obj)
+				res = ec._LoadBalancerProvider_owner(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -19946,6 +19946,94 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var ownerImplementors = []string{"Owner", "_Entity"}
+
+func (ec *executionContext) _Owner(ctx context.Context, sel ast.SelectionSet, obj *Owner) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ownerImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Owner")
+		case "id":
+
+			out.Values[i] = ec._Owner_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "loadBalancers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Owner_loadBalancers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "loadBalancerPools":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Owner_loadBalancerPools(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "loadBalancersProviders":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Owner_loadBalancersProviders(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var pageInfoImplementors = []string{"PageInfo"}
 
 func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *entgql.PageInfo[gidx.PrefixedID]) graphql.Marshaler {
@@ -20158,94 +20246,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				return ec._Query___schema(ctx, field)
 			})
 
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var tenantImplementors = []string{"Tenant", "_Entity"}
-
-func (ec *executionContext) _Tenant(ctx context.Context, sel ast.SelectionSet, obj *Tenant) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, tenantImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Tenant")
-		case "id":
-
-			out.Values[i] = ec._Tenant_id(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "loadBalancers":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tenant_loadBalancers(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
-		case "loadBalancerPools":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tenant_loadBalancerPools(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
-		case "loadBalancersProviders":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Tenant_loadBalancersProviders(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21246,6 +21246,20 @@ func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgql
 	return v
 }
 
+func (ec *executionContext) marshalNOwner2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx context.Context, sel ast.SelectionSet, v Owner) graphql.Marshaler {
+	return ec._Owner(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOwner2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐOwner(ctx context.Context, sel ast.SelectionSet, v *Owner) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Owner(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[gidx.PrefixedID]) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
 }
@@ -21263,20 +21277,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNTenant2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx context.Context, sel ast.SelectionSet, v Tenant) graphql.Marshaler {
-	return ec._Tenant(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNTenant2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐTenant(ctx context.Context, sel ast.SelectionSet, v *Tenant) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Tenant(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
