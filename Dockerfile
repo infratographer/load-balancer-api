@@ -4,8 +4,8 @@ FROM gcr.io/distroless/static:nonroot
 USER 65532:65532
 
 # Copy the binary that goreleaser built
-COPY  loadbalancer-api /loadbalancer-api
+COPY  load-balancer-api /load-balancer-api
 
 # Run the web service on container startup.
-ENTRYPOINT ["/loadbalancer-api"]
+ENTRYPOINT ["/load-balancer-api"]
 CMD ["serve"]
