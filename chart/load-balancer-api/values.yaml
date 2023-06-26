@@ -49,6 +49,7 @@ api:
   db:
     uriSecret: "" 
     certSecret: ""
+  migrateOnInit: false 
 
   oidc:
     enabled: false
