@@ -10,4 +10,9 @@ const (
 	actionLoadBalancerPoolUpdate = "loadbalancerpool_update"
 	actionLoadBalancerPoolDelete = "loadbalancerpool_delete"
 	actionLoadBalancerPoolGet    = "loadbalancerpool_get"
+
+	actionLoadBalancerProviderCreate = "loadbalancerprovider_create"
+	actionLoadBalancerProviderUpdate = "loadbalancerprovider_update"
+	actionLoadBalancerProviderDelete = "loadbalancerprovider_delete"
+	actionLoadBalancerProviderGet    = "loadbalancerprovider_get"
 )

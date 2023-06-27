@@ -7,13 +7,18 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerProviderCreate is the resolver for the loadBalancerProviderCreate field.
 func (r *mutationResolver) LoadBalancerProviderCreate(ctx context.Context, input generated.CreateLoadBalancerProviderInput) (*LoadBalancerProviderCreatePayload, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerProviderCreate); err != nil {
+		return nil, err
+	}
+
 	p, err := r.client.Provider.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -24,7 +29,10 @@ func (r *mutationResolver) LoadBalancerProviderCreate(ctx context.Context, input
 
 // LoadBalancerProviderUpdate is the resolver for the loadBalancerProviderUpdate field.
 func (r *mutationResolver) LoadBalancerProviderUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*LoadBalancerProviderUpdatePayload, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderUpdate); err != nil {
+		return nil, err
+	}
+
 	p, err := r.client.Provider.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -39,7 +47,10 @@ func (r *mutationResolver) LoadBalancerProviderUpdate(ctx context.Context, id gi
 
 // LoadBalancerProviderDelete is the resolver for the loadBalancerProviderDelete field.
 func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerProviderDeletePayload, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderDelete); err != nil {
+		return nil, err
+	}
+
 	if err := r.client.Provider.DeleteOneID(id).Exec(ctx); err != nil {
 		return nil, err
 	}
@@ -49,6 +60,9 @@ func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gi
 
 // LoadBalancerProvider is the resolver for the loadBalancerProvider field.
 func (r *queryResolver) LoadBalancerProvider(ctx context.Context, id gidx.PrefixedID) (*generated.Provider, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderGet); err != nil {
+		return nil, err
+	}
+
 	return r.client.Provider.Get(ctx, id)
 }
