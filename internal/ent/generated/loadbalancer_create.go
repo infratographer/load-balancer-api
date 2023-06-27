@@ -81,6 +81,20 @@ func (lbc *LoadBalancerCreate) SetProviderID(gi gidx.PrefixedID) *LoadBalancerCr
 	return lbc
 }
 
+// SetIPID sets the "ip_id" field.
+func (lbc *LoadBalancerCreate) SetIPID(gi gidx.PrefixedID) *LoadBalancerCreate {
+	lbc.mutation.SetIPID(gi)
+	return lbc
+}
+
+// SetNillableIPID sets the "ip_id" field if the given value is not nil.
+func (lbc *LoadBalancerCreate) SetNillableIPID(gi *gidx.PrefixedID) *LoadBalancerCreate {
+	if gi != nil {
+		lbc.SetIPID(*gi)
+	}
+	return lbc
+}
+
 // SetID sets the "id" field.
 func (lbc *LoadBalancerCreate) SetID(gi gidx.PrefixedID) *LoadBalancerCreate {
 	lbc.mutation.SetID(gi)
@@ -286,6 +300,10 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 	if value, ok := lbc.mutation.LocationID(); ok {
 		_spec.SetField(loadbalancer.FieldLocationID, field.TypeString, value)
 		_node.LocationID = value
+	}
+	if value, ok := lbc.mutation.IPID(); ok {
+		_spec.SetField(loadbalancer.FieldIPID, field.TypeString, value)
+		_node.IPID = value
 	}
 	if nodes := lbc.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

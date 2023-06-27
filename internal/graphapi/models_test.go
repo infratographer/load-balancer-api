@@ -32,6 +32,7 @@ type LoadBalancerBuilder struct {
 	OwnerID    gidx.PrefixedID
 	LocationID gidx.PrefixedID
 	Provider   *ent.Provider
+	IPID       gidx.PrefixedID
 }
 
 func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
@@ -52,7 +53,7 @@ func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 		b.LocationID = gidx.MustNewID(locationPrefix)
 	}
 
-	return EntClient.LoadBalancer.Create().SetName(b.Name).SetOwnerID(b.OwnerID).SetLocationID(b.LocationID).SetProvider(b.Provider).SaveX(ctx)
+	return EntClient.LoadBalancer.Create().SetName(b.Name).SetOwnerID(b.OwnerID).SetLocationID(b.LocationID).SetProvider(b.Provider).SetIPID(b.IPID).SaveX(ctx)
 }
 
 type PortBuilder struct {

@@ -20,6 +20,7 @@ var (
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "owner_id", Type: field.TypeString},
 		{Name: "location_id", Type: field.TypeString},
+		{Name: "ip_id", Type: field.TypeString, Nullable: true},
 		{Name: "provider_id", Type: field.TypeString},
 	}
 	// LoadBalancersTable holds the schema information for the "load_balancers" table.
@@ -30,7 +31,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "load_balancers_providers_provider",
-				Columns:    []*schema.Column{LoadBalancersColumns[6]},
+				Columns:    []*schema.Column{LoadBalancersColumns[7]},
 				RefColumns: []*schema.Column{ProvidersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -49,7 +50,7 @@ var (
 			{
 				Name:    "loadbalancer_provider_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancersColumns[6]},
+				Columns: []*schema.Column{LoadBalancersColumns[7]},
 			},
 			{
 				Name:    "loadbalancer_location_id",

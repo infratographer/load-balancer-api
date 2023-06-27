@@ -16,7 +16,7 @@ import (
 func TestQuery_loadBalancer(t *testing.T) {
 	ctx := context.Background()
 	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
-	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb2 := (&LoadBalancerBuilder{IPID: "ipamipa-testing"}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string

@@ -90,6 +90,11 @@ func ProviderID(v gidx.PrefixedID) predicate.LoadBalancer {
 	return predicate.LoadBalancer(sql.FieldEQ(FieldProviderID, v))
 }
 
+// IPID applies equality check predicate on the "ip_id" field. It's identical to IPIDEQ.
+func IPID(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldEQ(FieldIPID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.LoadBalancer {
 	return predicate.LoadBalancer(sql.FieldEQ(FieldCreatedAt, v))
@@ -443,6 +448,86 @@ func ProviderIDEqualFold(v gidx.PrefixedID) predicate.LoadBalancer {
 func ProviderIDContainsFold(v gidx.PrefixedID) predicate.LoadBalancer {
 	vc := string(v)
 	return predicate.LoadBalancer(sql.FieldContainsFold(FieldProviderID, vc))
+}
+
+// IPIDEQ applies the EQ predicate on the "ip_id" field.
+func IPIDEQ(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldEQ(FieldIPID, v))
+}
+
+// IPIDNEQ applies the NEQ predicate on the "ip_id" field.
+func IPIDNEQ(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldNEQ(FieldIPID, v))
+}
+
+// IPIDIn applies the In predicate on the "ip_id" field.
+func IPIDIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldIn(FieldIPID, vs...))
+}
+
+// IPIDNotIn applies the NotIn predicate on the "ip_id" field.
+func IPIDNotIn(vs ...gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldNotIn(FieldIPID, vs...))
+}
+
+// IPIDGT applies the GT predicate on the "ip_id" field.
+func IPIDGT(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldGT(FieldIPID, v))
+}
+
+// IPIDGTE applies the GTE predicate on the "ip_id" field.
+func IPIDGTE(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldGTE(FieldIPID, v))
+}
+
+// IPIDLT applies the LT predicate on the "ip_id" field.
+func IPIDLT(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldLT(FieldIPID, v))
+}
+
+// IPIDLTE applies the LTE predicate on the "ip_id" field.
+func IPIDLTE(v gidx.PrefixedID) predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldLTE(FieldIPID, v))
+}
+
+// IPIDContains applies the Contains predicate on the "ip_id" field.
+func IPIDContains(v gidx.PrefixedID) predicate.LoadBalancer {
+	vc := string(v)
+	return predicate.LoadBalancer(sql.FieldContains(FieldIPID, vc))
+}
+
+// IPIDHasPrefix applies the HasPrefix predicate on the "ip_id" field.
+func IPIDHasPrefix(v gidx.PrefixedID) predicate.LoadBalancer {
+	vc := string(v)
+	return predicate.LoadBalancer(sql.FieldHasPrefix(FieldIPID, vc))
+}
+
+// IPIDHasSuffix applies the HasSuffix predicate on the "ip_id" field.
+func IPIDHasSuffix(v gidx.PrefixedID) predicate.LoadBalancer {
+	vc := string(v)
+	return predicate.LoadBalancer(sql.FieldHasSuffix(FieldIPID, vc))
+}
+
+// IPIDIsNil applies the IsNil predicate on the "ip_id" field.
+func IPIDIsNil() predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldIsNull(FieldIPID))
+}
+
+// IPIDNotNil applies the NotNil predicate on the "ip_id" field.
+func IPIDNotNil() predicate.LoadBalancer {
+	return predicate.LoadBalancer(sql.FieldNotNull(FieldIPID))
+}
+
+// IPIDEqualFold applies the EqualFold predicate on the "ip_id" field.
+func IPIDEqualFold(v gidx.PrefixedID) predicate.LoadBalancer {
+	vc := string(v)
+	return predicate.LoadBalancer(sql.FieldEqualFold(FieldIPID, vc))
+}
+
+// IPIDContainsFold applies the ContainsFold predicate on the "ip_id" field.
+func IPIDContainsFold(v gidx.PrefixedID) predicate.LoadBalancer {
+	vc := string(v)
+	return predicate.LoadBalancer(sql.FieldContainsFold(FieldIPID, vc))
 }
 
 // HasAnnotations applies the HasEdge predicate on the "annotations" edge.

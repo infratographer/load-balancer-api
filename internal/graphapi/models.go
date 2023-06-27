@@ -6,6 +6,16 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
+// IP represents a IP in the graph for the bits load-balancer-api is able to return
+type IP struct {
+	ID              gidx.PrefixedID                   `json:"id"`
+	LoadBalancers   *generated.LoadBalancerConnection `json:"loadBalancers"`
+	scopedToOwnerID gidx.PrefixedID                   `json:"-"`
+}
+
+// IsEntity ensures the entity interface is met
+func (IP) IsEntity() {}
+
 // Location represents a Location in the graph for the bits load-balancer-api is able to return
 type Location struct {
 	ID              gidx.PrefixedID                   `json:"id"`

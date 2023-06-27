@@ -196,6 +196,36 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
+					cv_ip_id := ""
+					ip_id, ok := m.IPID()
+					if !ok && !m.Op().Is(ent.OpCreate) {
+						// since we are doing an update or delete and these fields didn't change, load the "old" value
+						ip_id, err = m.OldIPID(ctx)
+						if err != nil {
+							return nil, err
+						}
+					}
+					additionalSubjects = append(additionalSubjects, ip_id)
+
+					if ok {
+						cv_ip_id = fmt.Sprintf("%s", fmt.Sprint(ip_id))
+						pv_ip_id := ""
+						if !m.Op().Is(ent.OpCreate) {
+							ov, err := m.OldIPID(ctx)
+							if err != nil {
+								pv_ip_id = "<unknown>"
+							} else {
+								pv_ip_id = fmt.Sprintf("%s", fmt.Sprint(ov))
+							}
+						}
+
+						changeset = append(changeset, events.FieldChange{
+							Field:         "ip_id",
+							PreviousValue: pv_ip_id,
+							CurrentValue:  cv_ip_id,
+						})
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -247,6 +277,8 @@ func LoadBalancerHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
 
 					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
+
+					additionalSubjects = append(additionalSubjects, dbObj.IPID)
 
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),

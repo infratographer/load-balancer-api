@@ -36,6 +36,8 @@ type LoadBalancer struct {
 	LocationID gidx.PrefixedID `json:"location_id,omitempty"`
 	// The ID for the load balancer provider for this load balancer.
 	ProviderID gidx.PrefixedID `json:"provider_id,omitempty"`
+	// The ID of the ip address for this load balancer.
+	IPID gidx.PrefixedID `json:"ip_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoadBalancerQuery when eager-loading is set.
 	Edges        LoadBalancerEdges `json:"edges"`
@@ -108,7 +110,7 @@ func (*LoadBalancer) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case loadbalancer.FieldID, loadbalancer.FieldOwnerID, loadbalancer.FieldLocationID, loadbalancer.FieldProviderID:
+		case loadbalancer.FieldID, loadbalancer.FieldOwnerID, loadbalancer.FieldLocationID, loadbalancer.FieldProviderID, loadbalancer.FieldIPID:
 			values[i] = new(gidx.PrefixedID)
 		case loadbalancer.FieldName:
 			values[i] = new(sql.NullString)
@@ -170,6 +172,12 @@ func (lb *LoadBalancer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value != nil {
 				lb.ProviderID = *value
+			}
+		case loadbalancer.FieldIPID:
+			if value, ok := values[i].(*gidx.PrefixedID); !ok {
+				return fmt.Errorf("unexpected type %T for field ip_id", values[i])
+			} else if value != nil {
+				lb.IPID = *value
 			}
 		default:
 			lb.selectValues.Set(columns[i], values[i])
@@ -244,6 +252,9 @@ func (lb *LoadBalancer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(fmt.Sprintf("%v", lb.ProviderID))
+	builder.WriteString(", ")
+	builder.WriteString("ip_id=")
+	builder.WriteString(fmt.Sprintf("%v", lb.IPID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -6,10 +6,16 @@ package graphapi
 
 import (
 	"context"
+	"fmt"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/x/gidx"
 )
+
+// FindIPByID is the resolver for the findIPByID field.
+func (r *entityResolver) FindIPByID(ctx context.Context, id gidx.PrefixedID) (*IP, error) {
+	panic(fmt.Errorf("not implemented: FindIPByID - findIPByID"))
+}
 
 // FindLoadBalancerByID is the resolver for the findLoadBalancerByID field.
 func (r *entityResolver) FindLoadBalancerByID(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {

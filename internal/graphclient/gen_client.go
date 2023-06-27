@@ -72,8 +72,11 @@ type Mutation struct {
 }
 type GetLoadBalancer struct {
 	LoadBalancer struct {
-		ID       gidx.PrefixedID "json:\"id\" graphql:\"id\""
-		Name     string          "json:\"name\" graphql:\"name\""
+		ID   gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		Name string          "json:\"name\" graphql:\"name\""
+		IP   struct {
+			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		} "json:\"ip\" graphql:\"ip\""
 		Location struct {
 			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
 		} "json:\"location\" graphql:\"location\""
@@ -306,6 +309,9 @@ type LoadBalancerUpdate struct {
 			Name      string          "json:\"name\" graphql:\"name\""
 			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+			IP        struct {
+				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
+			} "json:\"ip\" graphql:\"ip\""
 		} "json:\"loadBalancer\" graphql:\"loadBalancer\""
 	} "json:\"loadBalancerUpdate\" graphql:\"loadBalancerUpdate\""
 }
@@ -314,6 +320,9 @@ const GetLoadBalancerDocument = `query GetLoadBalancer ($id: ID!) {
 	loadBalancer(id: $id) {
 		id
 		name
+		ip {
+			id
+		}
 		location {
 			id
 		}
@@ -855,6 +864,9 @@ const LoadBalancerUpdateDocument = `mutation LoadBalancerUpdate ($id: ID!, $inpu
 			name
 			createdAt
 			updatedAt
+			ip {
+				id
+			}
 		}
 	}
 }

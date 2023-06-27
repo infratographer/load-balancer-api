@@ -8,6 +8,8 @@ input CreateLoadBalancerInput {
   ownerID: ID!
   """The ID for the location of this load balancer."""
   locationID: ID!
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
   portIDs: [ID!]
   providerID: ID!
 }
@@ -64,6 +66,8 @@ type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
   updatedAt: Time!
   """The name of the load balancer."""
   name: String!
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
   annotations(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -829,6 +833,22 @@ input LoadBalancerWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """ip_id field predicates"""
+  ipID: ID
+  ipIDNEQ: ID
+  ipIDIn: [ID!]
+  ipIDNotIn: [ID!]
+  ipIDGT: ID
+  ipIDGTE: ID
+  ipIDLT: ID
+  ipIDLTE: ID
+  ipIDContains: ID
+  ipIDHasPrefix: ID
+  ipIDHasSuffix: ID
+  ipIDIsNil: Boolean
+  ipIDNotNil: Boolean
+  ipIDEqualFold: ID
+  ipIDContainsFold: ID
   """annotations edge predicates"""
   hasAnnotations: Boolean
   hasAnnotationsWith: [LoadBalancerAnnotationWhereInput!]
@@ -898,6 +918,9 @@ scalar Time
 input UpdateLoadBalancerInput {
   """The name of the load balancer."""
   name: String
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
+  clearIPID: Boolean
   addPortIDs: [ID!]
   removePortIDs: [ID!]
   clearPorts: Boolean

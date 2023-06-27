@@ -2,6 +2,11 @@ query GetLoadBalancer($id: ID!) {
   loadBalancer(id: $id) {
     id
     name
+
+    ip {
+      id
+    }
+
     location {
       id
     }
@@ -39,6 +44,9 @@ mutation LoadBalancerCreate($input: CreateLoadBalancerInput!) {
       loadBalancerProvider {
         id
       }
+      ip {
+        id
+      }
       owner {
         id
       }
@@ -58,6 +66,10 @@ mutation LoadBalancerUpdate($id: ID!, $input: UpdateLoadBalancerInput!) {
       name
       createdAt
       updatedAt
+
+      ip {
+        id
+      }
     }
   }
 }

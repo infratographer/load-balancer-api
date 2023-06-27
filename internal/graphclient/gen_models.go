@@ -37,7 +37,9 @@ type CreateLoadBalancerInput struct {
 	// The ID for the owner for this load balancer.
 	OwnerID gidx.PrefixedID `json:"ownerID"`
 	// The ID for the location of this load balancer.
-	LocationID gidx.PrefixedID   `json:"locationID"`
+	LocationID gidx.PrefixedID `json:"locationID"`
+	// The ID of the ip address for this load balancer.
+	IPID       *gidx.PrefixedID  `json:"ipID,omitempty"`
 	PortIDs    []gidx.PrefixedID `json:"portIDs,omitempty"`
 	ProviderID gidx.PrefixedID   `json:"providerID"`
 }
@@ -79,18 +81,29 @@ type CreateLoadBalancerProviderInput struct {
 	OwnerID gidx.PrefixedID `json:"ownerID"`
 }
 
+type IP struct {
+	ID            gidx.PrefixedID        `json:"id"`
+	LoadBalancers LoadBalancerConnection `json:"loadBalancers"`
+}
+
+func (IP) IsEntity() {}
+
 type LoadBalancer struct {
 	// The ID for the load balancer.
 	ID        gidx.PrefixedID `json:"id"`
 	CreatedAt time.Time       `json:"createdAt"`
 	UpdatedAt time.Time       `json:"updatedAt"`
 	// The name of the load balancer.
-	Name        string                           `json:"name"`
+	Name string `json:"name"`
+	// The ID of the ip address for this load balancer.
+	IPID        *gidx.PrefixedID                 `json:"ipID,omitempty"`
 	Annotations LoadBalancerAnnotationConnection `json:"annotations"`
 	Statuses    LoadBalancerStatusConnection     `json:"statuses"`
 	Ports       LoadBalancerPortConnection       `json:"ports"`
 	// The load balancer provider for the load balancer.
 	Provider generated.Provider `json:"loadBalancerProvider"`
+	// The location of the load balancer.
+	IP IP `json:"ip"`
 	// The location of the load balancer.
 	Location Location `json:"location"`
 	// The owner of the load balancer.
@@ -800,6 +813,22 @@ type LoadBalancerWhereInput struct {
 	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
+	// ip_id field predicates
+	IPID             *gidx.PrefixedID  `json:"ipID,omitempty"`
+	IPIDNeq          *gidx.PrefixedID  `json:"ipIDNEQ,omitempty"`
+	IPIDIn           []gidx.PrefixedID `json:"ipIDIn,omitempty"`
+	IPIDNotIn        []gidx.PrefixedID `json:"ipIDNotIn,omitempty"`
+	IPIDGt           *gidx.PrefixedID  `json:"ipIDGT,omitempty"`
+	IPIDGte          *gidx.PrefixedID  `json:"ipIDGTE,omitempty"`
+	IPIDLt           *gidx.PrefixedID  `json:"ipIDLT,omitempty"`
+	IPIDLte          *gidx.PrefixedID  `json:"ipIDLTE,omitempty"`
+	IPIDContains     *gidx.PrefixedID  `json:"ipIDContains,omitempty"`
+	IPIDHasPrefix    *gidx.PrefixedID  `json:"ipIDHasPrefix,omitempty"`
+	IPIDHasSuffix    *gidx.PrefixedID  `json:"ipIDHasSuffix,omitempty"`
+	IPIDIsNil        *bool             `json:"ipIDIsNil,omitempty"`
+	IPIDNotNil       *bool             `json:"ipIDNotNil,omitempty"`
+	IPIDEqualFold    *gidx.PrefixedID  `json:"ipIDEqualFold,omitempty"`
+	IPIDContainsFold *gidx.PrefixedID  `json:"ipIDContainsFold,omitempty"`
 	// annotations edge predicates
 	HasAnnotations     *bool                               `json:"hasAnnotations,omitempty"`
 	HasAnnotationsWith []*LoadBalancerAnnotationWhereInput `json:"hasAnnotationsWith,omitempty"`
@@ -846,7 +875,10 @@ type PageInfo struct {
 // Input information to update a load balancer.
 type UpdateLoadBalancerInput struct {
 	// The name of the load balancer.
-	Name          *string           `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+	// The ID of the ip address for this load balancer.
+	IPID          *gidx.PrefixedID  `json:"ipID,omitempty"`
+	ClearIPID     *bool             `json:"clearIPID,omitempty"`
 	AddPortIDs    []gidx.PrefixedID `json:"addPortIDs,omitempty"`
 	RemovePortIDs []gidx.PrefixedID `json:"removePortIDs,omitempty"`
 	ClearPorts    *bool             `json:"clearPorts,omitempty"`

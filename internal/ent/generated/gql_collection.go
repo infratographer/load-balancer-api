@@ -326,6 +326,11 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldName)
 				fieldSeen[loadbalancer.FieldName] = struct{}{}
 			}
+		case "ipID":
+			if _, ok := fieldSeen[loadbalancer.FieldIPID]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldIPID)
+				fieldSeen[loadbalancer.FieldIPID] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

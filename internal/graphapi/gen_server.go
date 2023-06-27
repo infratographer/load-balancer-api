@@ -42,6 +42,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Entity() EntityResolver
+	IP() IPResolver
 	LoadBalancer() LoadBalancerResolver
 	LoadBalancerPool() LoadBalancerPoolResolver
 	LoadBalancerProvider() LoadBalancerProviderResolver
@@ -56,6 +57,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Entity struct {
+		FindIPByID                     func(childComplexity int, id gidx.PrefixedID) int
 		FindLoadBalancerAnnotationByID func(childComplexity int, id gidx.PrefixedID) int
 		FindLoadBalancerByID           func(childComplexity int, id gidx.PrefixedID) int
 		FindLoadBalancerOriginByID     func(childComplexity int, id gidx.PrefixedID) int
@@ -67,10 +69,17 @@ type ComplexityRoot struct {
 		FindOwnerByID                  func(childComplexity int, id gidx.PrefixedID) int
 	}
 
+	IP struct {
+		ID            func(childComplexity int) int
+		LoadBalancers func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) int
+	}
+
 	LoadBalancer struct {
 		Annotations func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerAnnotationOrder, where *generated.LoadBalancerAnnotationWhereInput) int
 		CreatedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
+		IP          func(childComplexity int) int
+		IPID        func(childComplexity int) int
 		Location    func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Owner       func(childComplexity int) int
@@ -330,6 +339,7 @@ type ComplexityRoot struct {
 }
 
 type EntityResolver interface {
+	FindIPByID(ctx context.Context, id gidx.PrefixedID) (*IP, error)
 	FindLoadBalancerByID(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error)
 	FindLoadBalancerAnnotationByID(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancerAnnotation, error)
 	FindLoadBalancerOriginByID(ctx context.Context, id gidx.PrefixedID) (*generated.Origin, error)
@@ -340,7 +350,11 @@ type EntityResolver interface {
 	FindLocationByID(ctx context.Context, id gidx.PrefixedID) (*Location, error)
 	FindOwnerByID(ctx context.Context, id gidx.PrefixedID) (*Owner, error)
 }
+type IPResolver interface {
+	LoadBalancers(ctx context.Context, obj *IP, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error)
+}
 type LoadBalancerResolver interface {
+	IP(ctx context.Context, obj *generated.LoadBalancer) (*IP, error)
 	Location(ctx context.Context, obj *generated.LoadBalancer) (*Location, error)
 	Owner(ctx context.Context, obj *generated.LoadBalancer) (*Owner, error)
 }
@@ -396,6 +410,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Entity.findIPByID":
+		if e.complexity.Entity.FindIPByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findIPByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindIPByID(childComplexity, args["id"].(gidx.PrefixedID)), true
 
 	case "Entity.findLoadBalancerAnnotationByID":
 		if e.complexity.Entity.FindLoadBalancerAnnotationByID == nil {
@@ -505,6 +531,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindOwnerByID(childComplexity, args["id"].(gidx.PrefixedID)), true
 
+	case "IP.id":
+		if e.complexity.IP.ID == nil {
+			break
+		}
+
+		return e.complexity.IP.ID(childComplexity), true
+
+	case "IP.loadBalancers":
+		if e.complexity.IP.LoadBalancers == nil {
+			break
+		}
+
+		args, err := ec.field_IP_loadBalancers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.IP.LoadBalancers(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerOrder), args["where"].(*generated.LoadBalancerWhereInput)), true
+
 	case "LoadBalancer.annotations":
 		if e.complexity.LoadBalancer.Annotations == nil {
 			break
@@ -530,6 +575,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoadBalancer.ID(childComplexity), true
+
+	case "LoadBalancer.ip":
+		if e.complexity.LoadBalancer.IP == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancer.IP(childComplexity), true
+
+	case "LoadBalancer.ipID":
+		if e.complexity.LoadBalancer.IPID == nil {
+			break
+		}
+
+		return e.complexity.LoadBalancer.IPID(childComplexity), true
 
 	case "LoadBalancer.location":
 		if e.complexity.LoadBalancer.Location == nil {
@@ -1697,6 +1756,8 @@ input CreateLoadBalancerInput {
   ownerID: ID!
   """The ID for the location of this load balancer."""
   locationID: ID!
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
   portIDs: [ID!]
   providerID: ID!
 }
@@ -1753,6 +1814,8 @@ type LoadBalancer implements Node & IPv4Addressable @key(fields: "id") {
   updatedAt: Time!
   """The name of the load balancer."""
   name: String!
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
   annotations(
     """Returns the elements in the list that come after the specified cursor."""
     after: Cursor
@@ -2518,6 +2581,22 @@ input LoadBalancerWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """ip_id field predicates"""
+  ipID: ID
+  ipIDNEQ: ID
+  ipIDIn: [ID!]
+  ipIDNotIn: [ID!]
+  ipIDGT: ID
+  ipIDGTE: ID
+  ipIDLT: ID
+  ipIDLTE: ID
+  ipIDContains: ID
+  ipIDHasPrefix: ID
+  ipIDHasSuffix: ID
+  ipIDIsNil: Boolean
+  ipIDNotNil: Boolean
+  ipIDEqualFold: ID
+  ipIDContainsFold: ID
   """annotations edge predicates"""
   hasAnnotations: Boolean
   hasAnnotationsWith: [LoadBalancerAnnotationWhereInput!]
@@ -2587,6 +2666,9 @@ scalar Time
 input UpdateLoadBalancerInput {
   """The name of the load balancer."""
   name: String
+  """The ID of the ip address for this load balancer."""
+  ipID: ID
+  clearIPID: Boolean
   addPortIDs: [ID!]
   removePortIDs: [ID!]
   clearPorts: Boolean
@@ -2634,6 +2716,48 @@ input UpdateLoadBalancerProviderInput {
 `, BuiltIn: false},
 	{Name: "../../schema/ipam.graphql", Input: `extend interface IPv4Addressable {
   id: ID!
+}
+
+extend type IP @key(fields: "id") {
+  id: ID! @external
+  loadBalancers(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Ordering options for LoadBalancers returned from the connection.
+    """
+    orderBy: LoadBalancerOrder
+
+    """
+    Filtering options for LoadBalancers returned from the connection.
+    """
+    where: LoadBalancerWhereInput
+  ): LoadBalancerConnection! @goField(forceResolver: true)
+}
+
+extend type LoadBalancer {
+  """
+  The location of the load balancer.
+  """
+  ip: IP! @goField(forceResolver: true)
 }
 `, BuiltIn: false},
 	{Name: "../../schema/loadbalancer.graphql", Input: `extend type Query {
@@ -3091,11 +3215,12 @@ type LoadBalancerProviderUpdatePayload {
 `, BuiltIn: true},
 	{Name: "../../federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = LoadBalancer | LoadBalancerAnnotation | LoadBalancerOrigin | LoadBalancerPool | LoadBalancerPort | LoadBalancerProvider | LoadBalancerStatus | Location | Owner
+union _Entity = IP | LoadBalancer | LoadBalancerAnnotation | LoadBalancerOrigin | LoadBalancerPool | LoadBalancerPort | LoadBalancerProvider | LoadBalancerStatus | Location | Owner
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findLoadBalancerByID(id: ID!,): LoadBalancer!
+		findIPByID(id: ID!,): IP!
+	findLoadBalancerByID(id: ID!,): LoadBalancer!
 	findLoadBalancerAnnotationByID(id: ID!,): LoadBalancerAnnotation!
 	findLoadBalancerOriginByID(id: ID!,): LoadBalancerOrigin!
 	findLoadBalancerPoolByID(id: ID!,): LoadBalancerPool!
@@ -3122,6 +3247,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findIPByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 gidx.PrefixedID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Entity_findLoadBalancerAnnotationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -3255,6 +3395,66 @@ func (ec *executionContext) field_Entity_findOwnerByID_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_IP_loadBalancers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *generated.LoadBalancerOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOLoadBalancerOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *generated.LoadBalancerWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOLoadBalancerWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
 	return args, nil
 }
 
@@ -4241,6 +4441,67 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _Entity_findIPByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findIPByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindIPByID(rctx, fc.Args["id"].(gidx.PrefixedID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*IP)
+	fc.Result = res
+	return ec.marshalNIP2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐIP(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findIPByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_IP_id(ctx, field)
+			case "loadBalancers":
+				return ec.fieldContext_IP_loadBalancers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type IP", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findIPByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Entity_findLoadBalancerByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Entity_findLoadBalancerByID(ctx, field)
 	if err != nil {
@@ -4288,6 +4549,8 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerByID(ctx context
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -4296,6 +4559,8 @@ func (ec *executionContext) fieldContext_Entity_findLoadBalancerByID(ctx context
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -4872,6 +5137,113 @@ func (ec *executionContext) fieldContext_Entity_findOwnerByID(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _IP_id(ctx context.Context, field graphql.CollectedField, obj *IP) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_IP_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gidx.PrefixedID)
+	fc.Result = res
+	return ec.marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_IP_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IP",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _IP_loadBalancers(ctx context.Context, field graphql.CollectedField, obj *IP) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_IP_loadBalancers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.IP().LoadBalancers(rctx, obj, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerOrder), fc.Args["where"].(*generated.LoadBalancerWhereInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*generated.LoadBalancerConnection)
+	fc.Result = res
+	return ec.marshalNLoadBalancerConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_IP_loadBalancers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "IP",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_LoadBalancerConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LoadBalancerConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_LoadBalancerConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_IP_loadBalancers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoadBalancer_id(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoadBalancer_id(ctx, field)
 	if err != nil {
@@ -5043,6 +5415,47 @@ func (ec *executionContext) fieldContext_LoadBalancer_name(ctx context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancer_ipID(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_ipID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IPID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(gidx.PrefixedID)
+	fc.Result = res
+	return ec.marshalOID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_ipID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5290,6 +5703,56 @@ func (ec *executionContext) fieldContext_LoadBalancer_loadBalancerProvider(ctx c
 				return ec.fieldContext_LoadBalancerProvider_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerProvider", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LoadBalancer_ip(ctx context.Context, field graphql.CollectedField, obj *generated.LoadBalancer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoadBalancer_ip(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.LoadBalancer().IP(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*IP)
+	fc.Result = res
+	return ec.marshalNIP2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐIP(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoadBalancer_ip(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoadBalancer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_IP_id(ctx, field)
+			case "loadBalancers":
+				return ec.fieldContext_IP_loadBalancers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type IP", field.Name)
 		},
 	}
 	return fc, nil
@@ -5622,6 +6085,8 @@ func (ec *executionContext) fieldContext_LoadBalancerAnnotation_loadBalancer(ctx
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -5630,6 +6095,8 @@ func (ec *executionContext) fieldContext_LoadBalancerAnnotation_loadBalancer(ctx
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -6075,6 +6542,8 @@ func (ec *executionContext) fieldContext_LoadBalancerCreatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -6083,6 +6552,8 @@ func (ec *executionContext) fieldContext_LoadBalancerCreatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -6182,6 +6653,8 @@ func (ec *executionContext) fieldContext_LoadBalancerEdge_node(ctx context.Conte
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -6190,6 +6663,8 @@ func (ec *executionContext) fieldContext_LoadBalancerEdge_node(ctx context.Conte
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -8314,6 +8789,8 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_loadBalancer(ctx conte
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -8322,6 +8799,8 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_loadBalancer(ctx conte
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -9713,6 +10192,8 @@ func (ec *executionContext) fieldContext_LoadBalancerStatus_loadBalancer(ctx con
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -9721,6 +10202,8 @@ func (ec *executionContext) fieldContext_LoadBalancerStatus_loadBalancer(ctx con
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -10023,6 +10506,8 @@ func (ec *executionContext) fieldContext_LoadBalancerUpdatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -10031,6 +10516,8 @@ func (ec *executionContext) fieldContext_LoadBalancerUpdatePayload_loadBalancer(
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -11547,6 +12034,8 @@ func (ec *executionContext) fieldContext_Query_loadBalancer(ctx context.Context,
 				return ec.fieldContext_LoadBalancer_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_LoadBalancer_name(ctx, field)
+			case "ipID":
+				return ec.fieldContext_LoadBalancer_ipID(ctx, field)
 			case "annotations":
 				return ec.fieldContext_LoadBalancer_annotations(ctx, field)
 			case "statuses":
@@ -11555,6 +12044,8 @@ func (ec *executionContext) fieldContext_Query_loadBalancer(ctx context.Context,
 				return ec.fieldContext_LoadBalancer_ports(ctx, field)
 			case "loadBalancerProvider":
 				return ec.fieldContext_LoadBalancer_loadBalancerProvider(ctx, field)
+			case "ip":
+				return ec.fieldContext_LoadBalancer_ip(ctx, field)
 			case "location":
 				return ec.fieldContext_LoadBalancer_location(ctx, field)
 			case "owner":
@@ -13774,7 +14265,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "ownerID", "locationID", "portIDs", "providerID"}
+	fieldsInOrder := [...]string{"name", "ownerID", "locationID", "ipID", "portIDs", "providerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13808,6 +14299,15 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 				return it, err
 			}
 			it.LocationID = data
+		case "ipID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipID"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPID = data
 		case "portIDs":
 			var err error
 
@@ -16979,7 +17479,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerWhereInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasAnnotations", "hasAnnotationsWith", "hasStatuses", "hasStatusesWith", "hasPorts", "hasPortsWith", "hasProvider", "hasProviderWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "ipID", "ipIDNEQ", "ipIDIn", "ipIDNotIn", "ipIDGT", "ipIDGTE", "ipIDLT", "ipIDLTE", "ipIDContains", "ipIDHasPrefix", "ipIDHasSuffix", "ipIDIsNil", "ipIDNotNil", "ipIDEqualFold", "ipIDContainsFold", "hasAnnotations", "hasAnnotationsWith", "hasStatuses", "hasStatusesWith", "hasPorts", "hasPortsWith", "hasProvider", "hasProviderWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17346,6 +17846,141 @@ func (ec *executionContext) unmarshalInputLoadBalancerWhereInput(ctx context.Con
 				return it, err
 			}
 			it.NameContainsFold = data
+		case "ipID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipID"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPID = data
+		case "ipIDNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDNEQ"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDNEQ = data
+		case "ipIDIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDIn"))
+			data, err := ec.unmarshalOID2ᚕgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDIn = data
+		case "ipIDNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDNotIn"))
+			data, err := ec.unmarshalOID2ᚕgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDNotIn = data
+		case "ipIDGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDGT"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDGT = data
+		case "ipIDGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDGTE"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDGTE = data
+		case "ipIDLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDLT"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDLT = data
+		case "ipIDLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDLTE"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDLTE = data
+		case "ipIDContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDContains"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDContains = data
+		case "ipIDHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDHasPrefix"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDHasPrefix = data
+		case "ipIDHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDHasSuffix"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDHasSuffix = data
+		case "ipIDIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDIsNil = data
+		case "ipIDNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDNotNil = data
+		case "ipIDEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDEqualFold"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDEqualFold = data
+		case "ipIDContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipIDContainsFold"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPIDContainsFold = data
 		case "hasAnnotations":
 			var err error
 
@@ -17431,7 +18066,7 @@ func (ec *executionContext) unmarshalInputUpdateLoadBalancerInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "addPortIDs", "removePortIDs", "clearPorts"}
+	fieldsInOrder := [...]string{"name", "ipID", "clearIPID", "addPortIDs", "removePortIDs", "clearPorts"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17447,6 +18082,24 @@ func (ec *executionContext) unmarshalInputUpdateLoadBalancerInput(ctx context.Co
 				return it, err
 			}
 			it.Name = data
+		case "ipID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ipID"))
+			data, err := ec.unmarshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IPID = data
+		case "clearIPID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearIPID"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearIPID = data
 		case "addPortIDs":
 			var err error
 
@@ -17790,6 +18443,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case IP:
+		return ec._IP(ctx, sel, &obj)
+	case *IP:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._IP(ctx, sel, obj)
 	case generated.LoadBalancer:
 		return ec._LoadBalancer(ctx, sel, &obj)
 	case *generated.LoadBalancer:
@@ -17881,6 +18541,29 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
+		case "findIPByID":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findIPByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "findLoadBalancerByID":
 			field := field
 
@@ -18099,6 +18782,54 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 	return out
 }
 
+var iPImplementors = []string{"IP", "_Entity"}
+
+func (ec *executionContext) _IP(ctx context.Context, sel ast.SelectionSet, obj *IP) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, iPImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("IP")
+		case "id":
+
+			out.Values[i] = ec._IP_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "loadBalancers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._IP_loadBalancers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var loadBalancerImplementors = []string{"LoadBalancer", "Node", "IPv4Addressable", "_Entity"}
 
 func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.SelectionSet, obj *generated.LoadBalancer) graphql.Marshaler {
@@ -18137,6 +18868,10 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "ipID":
+
+			out.Values[i] = ec._LoadBalancer_ipID(ctx, field, obj)
+
 		case "annotations":
 			field := field
 
@@ -18207,6 +18942,26 @@ func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.Selection
 					}
 				}()
 				res = ec._LoadBalancer_loadBalancerProvider(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "ip":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._LoadBalancer_ip(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -20660,6 +21415,20 @@ func (ec *executionContext) marshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPr
 	return v
 }
 
+func (ec *executionContext) marshalNIP2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐIP(ctx context.Context, sel ast.SelectionSet, v IP) graphql.Marshaler {
+	return ec._IP(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNIP2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋgraphapiᚐIP(ctx context.Context, sel ast.SelectionSet, v *IP) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._IP(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21721,6 +22490,16 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	if v == nil {
 		return graphql.Null
 	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx context.Context, v interface{}) (gidx.PrefixedID, error) {
+	var res gidx.PrefixedID
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx context.Context, sel ast.SelectionSet, v gidx.PrefixedID) graphql.Marshaler {
 	return v
 }
 

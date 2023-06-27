@@ -41,6 +41,26 @@ func (lbu *LoadBalancerUpdate) SetName(s string) *LoadBalancerUpdate {
 	return lbu
 }
 
+// SetIPID sets the "ip_id" field.
+func (lbu *LoadBalancerUpdate) SetIPID(gi gidx.PrefixedID) *LoadBalancerUpdate {
+	lbu.mutation.SetIPID(gi)
+	return lbu
+}
+
+// SetNillableIPID sets the "ip_id" field if the given value is not nil.
+func (lbu *LoadBalancerUpdate) SetNillableIPID(gi *gidx.PrefixedID) *LoadBalancerUpdate {
+	if gi != nil {
+		lbu.SetIPID(*gi)
+	}
+	return lbu
+}
+
+// ClearIPID clears the value of the "ip_id" field.
+func (lbu *LoadBalancerUpdate) ClearIPID() *LoadBalancerUpdate {
+	lbu.mutation.ClearIPID()
+	return lbu
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the LoadBalancerAnnotation entity by IDs.
 func (lbu *LoadBalancerUpdate) AddAnnotationIDs(ids ...gidx.PrefixedID) *LoadBalancerUpdate {
 	lbu.mutation.AddAnnotationIDs(ids...)
@@ -221,6 +241,12 @@ func (lbu *LoadBalancerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lbu.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
 	}
+	if value, ok := lbu.mutation.IPID(); ok {
+		_spec.SetField(loadbalancer.FieldIPID, field.TypeString, value)
+	}
+	if lbu.mutation.IPIDCleared() {
+		_spec.ClearField(loadbalancer.FieldIPID, field.TypeString)
+	}
 	if lbu.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -379,6 +405,26 @@ type LoadBalancerUpdateOne struct {
 // SetName sets the "name" field.
 func (lbuo *LoadBalancerUpdateOne) SetName(s string) *LoadBalancerUpdateOne {
 	lbuo.mutation.SetName(s)
+	return lbuo
+}
+
+// SetIPID sets the "ip_id" field.
+func (lbuo *LoadBalancerUpdateOne) SetIPID(gi gidx.PrefixedID) *LoadBalancerUpdateOne {
+	lbuo.mutation.SetIPID(gi)
+	return lbuo
+}
+
+// SetNillableIPID sets the "ip_id" field if the given value is not nil.
+func (lbuo *LoadBalancerUpdateOne) SetNillableIPID(gi *gidx.PrefixedID) *LoadBalancerUpdateOne {
+	if gi != nil {
+		lbuo.SetIPID(*gi)
+	}
+	return lbuo
+}
+
+// ClearIPID clears the value of the "ip_id" field.
+func (lbuo *LoadBalancerUpdateOne) ClearIPID() *LoadBalancerUpdateOne {
+	lbuo.mutation.ClearIPID()
 	return lbuo
 }
 
@@ -591,6 +637,12 @@ func (lbuo *LoadBalancerUpdateOne) sqlSave(ctx context.Context) (_node *LoadBala
 	}
 	if value, ok := lbuo.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
+	}
+	if value, ok := lbuo.mutation.IPID(); ok {
+		_spec.SetField(loadbalancer.FieldIPID, field.TypeString, value)
+	}
+	if lbuo.mutation.IPIDCleared() {
+		_spec.ClearField(loadbalancer.FieldIPID, field.TypeString)
 	}
 	if lbuo.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{

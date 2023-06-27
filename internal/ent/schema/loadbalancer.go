@@ -76,6 +76,14 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.Skip(^entgql.SkipMutationCreateInput),
 				pubsubinfo.AdditionalSubject(),
 			),
+		field.String("ip_id").
+			GoType(gidx.PrefixedID("")).
+			Optional().
+			Comment("The ID of the ip address for this load balancer.").
+			Annotations(
+				entgql.Type("ID"),
+				pubsubinfo.AdditionalSubject(),
+			),
 	}
 }
 

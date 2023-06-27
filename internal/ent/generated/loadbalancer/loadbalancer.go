@@ -31,6 +31,8 @@ const (
 	FieldLocationID = "location_id"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// FieldIPID holds the string denoting the ip_id field in the database.
+	FieldIPID = "ip_id"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
 	EdgeAnnotations = "annotations"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
@@ -80,6 +82,7 @@ var Columns = []string{
 	FieldOwnerID,
 	FieldLocationID,
 	FieldProviderID,
+	FieldIPID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -145,6 +148,11 @@ func ByLocationID(opts ...sql.OrderTermOption) OrderOption {
 // ByProviderID orders the results by the provider_id field.
 func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
+// ByIPID orders the results by the ip_id field.
+func ByIPID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIPID, opts...).ToFunc()
 }
 
 // ByAnnotationsCount orders the results by annotations count.

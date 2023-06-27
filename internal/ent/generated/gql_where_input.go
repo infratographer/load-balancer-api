@@ -74,6 +74,23 @@ type LoadBalancerWhereInput struct {
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
+	// "ip_id" field predicates.
+	IPID             *gidx.PrefixedID  `json:"ipID,omitempty"`
+	IPIDNEQ          *gidx.PrefixedID  `json:"ipIDNEQ,omitempty"`
+	IPIDIn           []gidx.PrefixedID `json:"ipIDIn,omitempty"`
+	IPIDNotIn        []gidx.PrefixedID `json:"ipIDNotIn,omitempty"`
+	IPIDGT           *gidx.PrefixedID  `json:"ipIDGT,omitempty"`
+	IPIDGTE          *gidx.PrefixedID  `json:"ipIDGTE,omitempty"`
+	IPIDLT           *gidx.PrefixedID  `json:"ipIDLT,omitempty"`
+	IPIDLTE          *gidx.PrefixedID  `json:"ipIDLTE,omitempty"`
+	IPIDContains     *gidx.PrefixedID  `json:"ipIDContains,omitempty"`
+	IPIDHasPrefix    *gidx.PrefixedID  `json:"ipIDHasPrefix,omitempty"`
+	IPIDHasSuffix    *gidx.PrefixedID  `json:"ipIDHasSuffix,omitempty"`
+	IPIDIsNil        bool              `json:"ipIDIsNil,omitempty"`
+	IPIDNotNil       bool              `json:"ipIDNotNil,omitempty"`
+	IPIDEqualFold    *gidx.PrefixedID  `json:"ipIDEqualFold,omitempty"`
+	IPIDContainsFold *gidx.PrefixedID  `json:"ipIDContainsFold,omitempty"`
+
 	// "annotations" edge predicates.
 	HasAnnotations     *bool                               `json:"hasAnnotations,omitempty"`
 	HasAnnotationsWith []*LoadBalancerAnnotationWhereInput `json:"hasAnnotationsWith,omitempty"`
@@ -272,6 +289,51 @@ func (i *LoadBalancerWhereInput) P() (predicate.LoadBalancer, error) {
 	}
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, loadbalancer.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.IPID != nil {
+		predicates = append(predicates, loadbalancer.IPIDEQ(*i.IPID))
+	}
+	if i.IPIDNEQ != nil {
+		predicates = append(predicates, loadbalancer.IPIDNEQ(*i.IPIDNEQ))
+	}
+	if len(i.IPIDIn) > 0 {
+		predicates = append(predicates, loadbalancer.IPIDIn(i.IPIDIn...))
+	}
+	if len(i.IPIDNotIn) > 0 {
+		predicates = append(predicates, loadbalancer.IPIDNotIn(i.IPIDNotIn...))
+	}
+	if i.IPIDGT != nil {
+		predicates = append(predicates, loadbalancer.IPIDGT(*i.IPIDGT))
+	}
+	if i.IPIDGTE != nil {
+		predicates = append(predicates, loadbalancer.IPIDGTE(*i.IPIDGTE))
+	}
+	if i.IPIDLT != nil {
+		predicates = append(predicates, loadbalancer.IPIDLT(*i.IPIDLT))
+	}
+	if i.IPIDLTE != nil {
+		predicates = append(predicates, loadbalancer.IPIDLTE(*i.IPIDLTE))
+	}
+	if i.IPIDContains != nil {
+		predicates = append(predicates, loadbalancer.IPIDContains(*i.IPIDContains))
+	}
+	if i.IPIDHasPrefix != nil {
+		predicates = append(predicates, loadbalancer.IPIDHasPrefix(*i.IPIDHasPrefix))
+	}
+	if i.IPIDHasSuffix != nil {
+		predicates = append(predicates, loadbalancer.IPIDHasSuffix(*i.IPIDHasSuffix))
+	}
+	if i.IPIDIsNil {
+		predicates = append(predicates, loadbalancer.IPIDIsNil())
+	}
+	if i.IPIDNotNil {
+		predicates = append(predicates, loadbalancer.IPIDNotNil())
+	}
+	if i.IPIDEqualFold != nil {
+		predicates = append(predicates, loadbalancer.IPIDEqualFold(*i.IPIDEqualFold))
+	}
+	if i.IPIDContainsFold != nil {
+		predicates = append(predicates, loadbalancer.IPIDContainsFold(*i.IPIDContainsFold))
 	}
 
 	if i.HasAnnotations != nil {

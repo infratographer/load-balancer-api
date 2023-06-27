@@ -55,6 +55,7 @@ type LoadBalancerMutation struct {
 	name               *string
 	owner_id           *gidx.PrefixedID
 	location_id        *gidx.PrefixedID
+	ip_id              *gidx.PrefixedID
 	clearedFields      map[string]struct{}
 	annotations        map[gidx.PrefixedID]struct{}
 	removedannotations map[gidx.PrefixedID]struct{}
@@ -392,6 +393,55 @@ func (m *LoadBalancerMutation) ResetProviderID() {
 	m.provider = nil
 }
 
+// SetIPID sets the "ip_id" field.
+func (m *LoadBalancerMutation) SetIPID(gi gidx.PrefixedID) {
+	m.ip_id = &gi
+}
+
+// IPID returns the value of the "ip_id" field in the mutation.
+func (m *LoadBalancerMutation) IPID() (r gidx.PrefixedID, exists bool) {
+	v := m.ip_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIPID returns the old "ip_id" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldIPID(ctx context.Context) (v gidx.PrefixedID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIPID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIPID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIPID: %w", err)
+	}
+	return oldValue.IPID, nil
+}
+
+// ClearIPID clears the value of the "ip_id" field.
+func (m *LoadBalancerMutation) ClearIPID() {
+	m.ip_id = nil
+	m.clearedFields[loadbalancer.FieldIPID] = struct{}{}
+}
+
+// IPIDCleared returns if the "ip_id" field was cleared in this mutation.
+func (m *LoadBalancerMutation) IPIDCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldIPID]
+	return ok
+}
+
+// ResetIPID resets all changes to the "ip_id" field.
+func (m *LoadBalancerMutation) ResetIPID() {
+	m.ip_id = nil
+	delete(m.clearedFields, loadbalancer.FieldIPID)
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the LoadBalancerAnnotation entity by ids.
 func (m *LoadBalancerMutation) AddAnnotationIDs(ids ...gidx.PrefixedID) {
 	if m.annotations == nil {
@@ -614,7 +664,7 @@ func (m *LoadBalancerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoadBalancerMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, loadbalancer.FieldCreatedAt)
 	}
@@ -632,6 +682,9 @@ func (m *LoadBalancerMutation) Fields() []string {
 	}
 	if m.provider != nil {
 		fields = append(fields, loadbalancer.FieldProviderID)
+	}
+	if m.ip_id != nil {
+		fields = append(fields, loadbalancer.FieldIPID)
 	}
 	return fields
 }
@@ -653,6 +706,8 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 		return m.LocationID()
 	case loadbalancer.FieldProviderID:
 		return m.ProviderID()
+	case loadbalancer.FieldIPID:
+		return m.IPID()
 	}
 	return nil, false
 }
@@ -674,6 +729,8 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldLocationID(ctx)
 	case loadbalancer.FieldProviderID:
 		return m.OldProviderID(ctx)
+	case loadbalancer.FieldIPID:
+		return m.OldIPID(ctx)
 	}
 	return nil, fmt.Errorf("unknown LoadBalancer field %s", name)
 }
@@ -725,6 +782,13 @@ func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProviderID(v)
 		return nil
+	case loadbalancer.FieldIPID:
+		v, ok := value.(gidx.PrefixedID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIPID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown LoadBalancer field %s", name)
 }
@@ -754,7 +818,11 @@ func (m *LoadBalancerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *LoadBalancerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(loadbalancer.FieldIPID) {
+		fields = append(fields, loadbalancer.FieldIPID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -767,6 +835,11 @@ func (m *LoadBalancerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *LoadBalancerMutation) ClearField(name string) error {
+	switch name {
+	case loadbalancer.FieldIPID:
+		m.ClearIPID()
+		return nil
+	}
 	return fmt.Errorf("unknown LoadBalancer nullable field %s", name)
 }
 
@@ -791,6 +864,9 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 		return nil
 	case loadbalancer.FieldProviderID:
 		m.ResetProviderID()
+		return nil
+	case loadbalancer.FieldIPID:
+		m.ResetIPID()
 		return nil
 	}
 	return fmt.Errorf("unknown LoadBalancer field %s", name)
