@@ -8,11 +8,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 )
 
 func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
 

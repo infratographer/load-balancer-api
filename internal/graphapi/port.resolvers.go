@@ -7,12 +7,18 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
 func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input generated.CreateLoadBalancerPortInput) (*LoadBalancerPortCreatePayload, error) {
+	if err := permissions.CheckAccess(ctx, input.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+		return nil, err
+	}
+
 	p, err := r.client.Port.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -27,6 +33,10 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
+	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+		return nil, err
+	}
+
 	p, err = p.Update().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -37,6 +47,15 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 // LoadBalancerPortDelete is the resolver for the loadBalancerPortDelete field.
 func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPortDeletePayload, error) {
+	p, err := r.client.Port.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+		return nil, err
+	}
+
 	if err := r.client.Port.DeleteOneID(id).Exec(ctx); err != nil {
 		return nil, err
 	}
