@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -15,6 +16,10 @@ import (
 
 func TestQueryPool(t *testing.T) {
 	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
 	pool1 := (&PoolBuilder{}).MustNew(ctx)
 	pool2 := (&PoolBuilder{}).MustNew(ctx)
 
@@ -69,6 +74,9 @@ func TestQueryPool(t *testing.T) {
 func TestMutate_PoolCreate(t *testing.T) {
 	ownerID := gidx.MustNewID(ownerPrefix)
 	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	testCases := []struct {
 		TestName     string
@@ -146,6 +154,10 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 func TestMutate_PoolUpdate(t *testing.T) {
 	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
 	updateProtocolUnknown := pool.Protocol("invalid")
 	updateProtocolUDP := pool.ProtocolUDP
@@ -223,6 +235,10 @@ func TestMutate_PoolUpdate(t *testing.T) {
 
 func TestMutate_PoolDelete(t *testing.T) {
 	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
 
 	testCases := []struct {
