@@ -8,22 +8,20 @@ import (
 	"context"
 	"database/sql"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.
 func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generated.CreateLoadBalancerInput) (*LoadBalancerCreatePayload, error) {
-	// TODO: authz check here, stub of what this might look like
-	// r.authClient.CheckPermissions(
-	// 	authzclient.Check{Subject: actor.ID, Action: "loadBalancerCreate", On: input.OwnerID},
-	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: input.LocationID},
-	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: input.ProviderID},
-	// 	authzclient.Check{Subject: input.OwnerID, Action: "enabled", On: config.ResourceProvider.Name},
-	// 	authzclient.Check{Subject: config.ResourceProvider.Name, Action: "enabled", On: input.LocationID},
-	// )
+	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerCreate); err != nil {
+		return nil, err
+	}
+
 	lb, err := r.client.LoadBalancer.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -34,10 +32,10 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 
 // LoadBalancerUpdate is the resolver for the loadBalancerUpdate field.
 func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) (*LoadBalancerUpdatePayload, error) {
-	// TODO: authz check here, stub of what this might look like; using update/delete but this might be just write or mutate
-	// r.authClient.CheckPermissions(
-	// 	authzclient.Check{Subject: actor.ID, Action: "update", On: id},
-	// )
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerUpdate); err != nil {
+		return nil, err
+	}
+
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -53,10 +51,9 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 
 // LoadBalancerDelete is the resolver for the loadBalancerDelete field.
 func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error) {
-	// TODO: authz check here, stub of what this might look like; using update/delete but this might be just write or mutate
-	// r.authClient.CheckPermissions(
-	// 	authzclient.Check{Subject: actor.ID, Action: "delete", On: id},
-	// )
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerDelete); err != nil {
+		return nil, err
+	}
 
 	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -105,10 +102,10 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 // LoadBalancer is the resolver for the loadBalancer field.
 func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
-	// TODO: authz check here, stub of what this might look like
-	// r.authClient.CheckPermissions(
-	// 	authzclient.Check{Subject: actor.ID, Action: "read", On: id},
-	// )
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerGet); err != nil {
+		return nil, err
+	}
+
 	return r.client.LoadBalancer.Get(ctx, id)
 }
 

@@ -8,10 +8,12 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
@@ -66,6 +68,7 @@ func init() {
 	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
 
 	events.MustViperFlagsForPublisher(viper.GetViper(), serveCmd.Flags(), appName)
+	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 }
 
 // Write a pid file, but first make sure it doesn't exist with a running pid.
@@ -142,6 +145,8 @@ func serve(ctx context.Context) error {
 		return err
 	}
 
+	var middleware []echo.MiddlewareFunc
+
 	// jwt auth middleware
 	if viper.GetBool("oidc.enabled") {
 		auth, err := echojwtx.NewAuth(ctx, config.AppConfig.OIDC)
@@ -149,8 +154,7 @@ func serve(ctx context.Context) error {
 			logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
 		}
 
-		auth.JWTConfig.Skipper = echox.SkipDefaultEndpoints
-		config.AppConfig.Server = config.AppConfig.Server.WithMiddleware(auth.Middleware())
+		middleware = append(middleware, auth.Middleware())
 	}
 
 	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
@@ -158,8 +162,18 @@ func serve(ctx context.Context) error {
 		logger.Error("failed to create server", zap.Error(err))
 	}
 
+	perms, err := permissions.New(config.AppConfig.Permissions,
+		permissions.WithLogger(logger),
+		permissions.WithDefaultChecker(permissions.DefaultAllowChecker),
+	)
+	if err != nil {
+		logger.Fatal("failed to initialize permissions", zap.Error(err))
+	}
+
+	middleware = append(middleware, perms.Middleware())
+
 	r := graphapi.NewResolver(client, logger.Named("resolvers"))
-	handler := r.Handler(enablePlayground)
+	handler := r.Handler(enablePlayground, middleware...)
 
 	srv.AddHandler(handler)
 
