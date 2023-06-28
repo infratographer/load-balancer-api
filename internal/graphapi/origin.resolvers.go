@@ -7,12 +7,18 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerOriginCreate is the resolver for the loadBalancerOriginCreate field.
 func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input generated.CreateLoadBalancerOriginInput) (*LoadBalancerOriginCreatePayload, error) {
+	if err := permissions.CheckAccess(ctx, input.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+		return nil, err
+	}
+
 	// check if pool exists
 	_, err := r.client.Pool.Get(ctx, input.PoolID)
 	if err != nil {
@@ -34,6 +40,10 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, err
 	}
 
+	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+		return nil, err
+	}
+
 	origin, err = origin.Update().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -44,6 +54,15 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 
 // LoadBalancerOriginDelete is the resolver for the loadBalancerOriginDelete field.
 func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerOriginDeletePayload, error) {
+	origin, err := r.client.Origin.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+		return nil, err
+	}
+
 	if err := r.client.Origin.DeleteOneID(id).Exec(ctx); err != nil {
 		return nil, err
 	}

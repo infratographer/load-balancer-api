@@ -10,15 +10,20 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
 func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*LoadBalancerPoolCreatePayload, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerPoolCreate); err != nil {
+		return nil, err
+	}
+
 	pool, err := r.client.Pool.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -29,7 +34,10 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 // LoadBalancerPoolUpdate is the resolver for the LoadBalancerPoolUpdate field.
 func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*LoadBalancerPoolUpdatePayload, error) {
-	// TODO: authz check here
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolUpdate); err != nil {
+		return nil, err
+	}
+
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -45,6 +53,10 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 // LoadBalancerPoolDelete is the resolver for the loadBalancerPoolDelete field.
 func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPoolDeletePayload, error) {
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolDelete); err != nil {
+		return nil, err
+	}
+
 	// TODO: return the requestID echo generates or we could use the root trace id
 	var (
 		err error
@@ -96,5 +108,9 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 
 // LoadBalancerPool is the resolver for the loadBalancerPool field.
 func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID) (*generated.Pool, error) {
+	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolGet); err != nil {
+		return nil, err
+	}
+
 	return r.client.Pool.Get(ctx, id)
 }

@@ -13,6 +13,7 @@ data:
   LOADBALANCERAPI_OIDC_JWKS_REMOTE_TIMEOUT: "{{ .Values.api.oidc.jwksRemoteTimeout }}"
   LOADBALANCERAPI_SERVER_LISTEN: "{{ .Values.api.listenPort }}"
   LOADBALANCERAPI_SERVER_SHUTDOWN_GRACE_PERIOD: "{{ .Values.api.shutdownGracePeriod }}"
+  LOADBALANCERAPI_PERMISSIONS_URL: "{{ .Values.api.permissions.url }}"
 {{- with .Values.api.trustedProxies }}
   LOADBALANCERAPI_SERVER_TRUSTED_PROXIES: "{{ join " " . }}"
 {{- end }}

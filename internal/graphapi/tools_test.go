@@ -15,11 +15,13 @@ import (
 
 	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"go.uber.org/zap"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/events"
@@ -101,12 +103,12 @@ func setupDB() {
 
 	dia, uri, cntr := parseDBURI(ctx)
 
-	pc, _, err := eventtools.NewNatsServer()
+	nats, err := eventtools.NewNatsServer()
 	if err != nil {
 		errPanic("failed to start nats server", err)
 	}
 
-	pub, err := events.NewPublisher(pc)
+	pub, err := events.NewPublisher(nats.PublisherConfig)
 	if err != nil {
 		errPanic("failed to create events publisher", err)
 	}
@@ -199,25 +201,55 @@ func (l localRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	return w.Result(), nil
 }
 
-func newTestServer(authConfig *echojwtx.AuthConfig) (*httptest.Server, error) {
-	echoCfg := echox.Config{}
+type testServerConfig struct {
+	echoConfig        echox.Config
+	handlerMiddleware []echo.MiddlewareFunc
+}
 
-	if authConfig != nil {
+type testServerOption func(*testServerConfig) error
+
+func withAuthConfig(authConfig *echojwtx.AuthConfig) testServerOption {
+	return func(tsc *testServerConfig) error {
 		auth, err := echojwtx.NewAuth(context.Background(), *authConfig)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		echoCfg = echoCfg.WithMiddleware(auth.Middleware())
+		tsc.echoConfig = tsc.echoConfig.WithMiddleware(auth.Middleware())
+
+		return nil
+	}
+}
+
+func withPermissions(options ...permissions.Option) testServerOption {
+	return func(tsc *testServerConfig) error {
+		perms, err := permissions.New(permissions.Config{}, options...)
+		if err != nil {
+			return err
+		}
+
+		tsc.handlerMiddleware = append(tsc.handlerMiddleware, perms.Middleware())
+
+		return nil
+	}
+}
+
+func newTestServer(options ...testServerOption) (*httptest.Server, error) {
+	tsc := new(testServerConfig)
+
+	for _, opt := range options {
+		if err := opt(tsc); err != nil {
+			return nil, err
+		}
 	}
 
-	srv, err := echox.NewServer(zap.NewNop(), echoCfg, nil)
+	srv, err := echox.NewServer(zap.NewNop(), tsc.echoConfig, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	r := graphapi.NewResolver(EntClient, zap.NewNop().Sugar())
-	srv.AddHandler(r.Handler(false))
+	srv.AddHandler(r.Handler(false, tsc.handlerMiddleware...))
 
 	return httptest.NewServer(srv.Handler()), nil
 }
