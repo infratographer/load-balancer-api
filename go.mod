@@ -7,7 +7,7 @@ replace github.com/testcontainers/testcontainers-go => github.com/testcontainers
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.4-0.20230503082810-f251400818ea
-	github.com/99designs/gqlgen v0.17.31
+	github.com/99designs/gqlgen v0.17.34
 	github.com/Yamashou/gqlgenc v0.13.5
 	github.com/brianvoe/gofakeit/v6 v6.21.0
 	github.com/docker/go-connections v0.4.0
@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.20.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1
-	github.com/vektah/gqlparser/v2 v2.5.1
+	github.com/vektah/gqlparser/v2 v2.5.4
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/permissions-api v0.1.11
 	go.infratographer.com/x v0.3.2
@@ -68,7 +68,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/golang-lru/v2 v2.0.1 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
