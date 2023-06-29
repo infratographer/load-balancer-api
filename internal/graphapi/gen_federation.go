@@ -100,26 +100,6 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				list[idx[i]] = entity
 				return nil
 			}
-		case "LoadBalancerAnnotation":
-			resolverName, err := entityResolverNameForLoadBalancerAnnotation(ctx, rep)
-			if err != nil {
-				return fmt.Errorf(`finding resolver for Entity "LoadBalancerAnnotation": %w`, err)
-			}
-			switch resolverName {
-
-			case "findLoadBalancerAnnotationByID":
-				id0, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, rep["id"])
-				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findLoadBalancerAnnotationByID(): %w`, err)
-				}
-				entity, err := ec.resolvers.Entity().FindLoadBalancerAnnotationByID(ctx, id0)
-				if err != nil {
-					return fmt.Errorf(`resolving Entity "LoadBalancerAnnotation": %w`, err)
-				}
-
-				list[idx[i]] = entity
-				return nil
-			}
 		case "LoadBalancerOrigin":
 			resolverName, err := entityResolverNameForLoadBalancerOrigin(ctx, rep)
 			if err != nil {
@@ -200,26 +180,6 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				list[idx[i]] = entity
 				return nil
 			}
-		case "LoadBalancerStatus":
-			resolverName, err := entityResolverNameForLoadBalancerStatus(ctx, rep)
-			if err != nil {
-				return fmt.Errorf(`finding resolver for Entity "LoadBalancerStatus": %w`, err)
-			}
-			switch resolverName {
-
-			case "findLoadBalancerStatusByID":
-				id0, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, rep["id"])
-				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findLoadBalancerStatusByID(): %w`, err)
-				}
-				entity, err := ec.resolvers.Entity().FindLoadBalancerStatusByID(ctx, id0)
-				if err != nil {
-					return fmt.Errorf(`resolving Entity "LoadBalancerStatus": %w`, err)
-				}
-
-				list[idx[i]] = entity
-				return nil
-			}
 		case "Location":
 			resolverName, err := entityResolverNameForLocation(ctx, rep)
 			if err != nil {
@@ -240,21 +200,21 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				list[idx[i]] = entity
 				return nil
 			}
-		case "Owner":
-			resolverName, err := entityResolverNameForOwner(ctx, rep)
+		case "ResourceOwner":
+			resolverName, err := entityResolverNameForResourceOwner(ctx, rep)
 			if err != nil {
-				return fmt.Errorf(`finding resolver for Entity "Owner": %w`, err)
+				return fmt.Errorf(`finding resolver for Entity "ResourceOwner": %w`, err)
 			}
 			switch resolverName {
 
-			case "findOwnerByID":
+			case "findResourceOwnerByID":
 				id0, err := ec.unmarshalNID2goᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedID(ctx, rep["id"])
 				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findOwnerByID(): %w`, err)
+					return fmt.Errorf(`unmarshalling param 0 for findResourceOwnerByID(): %w`, err)
 				}
-				entity, err := ec.resolvers.Entity().FindOwnerByID(ctx, id0)
+				entity, err := ec.resolvers.Entity().FindResourceOwnerByID(ctx, id0)
 				if err != nil {
-					return fmt.Errorf(`resolving Entity "Owner": %w`, err)
+					return fmt.Errorf(`resolving Entity "ResourceOwner": %w`, err)
 				}
 
 				list[idx[i]] = entity
@@ -346,23 +306,6 @@ func entityResolverNameForLoadBalancer(ctx context.Context, rep map[string]inter
 	return "", fmt.Errorf("%w for LoadBalancer", ErrTypeNotFound)
 }
 
-func entityResolverNameForLoadBalancerAnnotation(ctx context.Context, rep map[string]interface{}) (string, error) {
-	for {
-		var (
-			m   map[string]interface{}
-			val interface{}
-			ok  bool
-		)
-		_ = val
-		m = rep
-		if _, ok = m["id"]; !ok {
-			break
-		}
-		return "findLoadBalancerAnnotationByID", nil
-	}
-	return "", fmt.Errorf("%w for LoadBalancerAnnotation", ErrTypeNotFound)
-}
-
 func entityResolverNameForLoadBalancerOrigin(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
@@ -431,23 +374,6 @@ func entityResolverNameForLoadBalancerProvider(ctx context.Context, rep map[stri
 	return "", fmt.Errorf("%w for LoadBalancerProvider", ErrTypeNotFound)
 }
 
-func entityResolverNameForLoadBalancerStatus(ctx context.Context, rep map[string]interface{}) (string, error) {
-	for {
-		var (
-			m   map[string]interface{}
-			val interface{}
-			ok  bool
-		)
-		_ = val
-		m = rep
-		if _, ok = m["id"]; !ok {
-			break
-		}
-		return "findLoadBalancerStatusByID", nil
-	}
-	return "", fmt.Errorf("%w for LoadBalancerStatus", ErrTypeNotFound)
-}
-
 func entityResolverNameForLocation(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
@@ -465,7 +391,7 @@ func entityResolverNameForLocation(ctx context.Context, rep map[string]interface
 	return "", fmt.Errorf("%w for Location", ErrTypeNotFound)
 }
 
-func entityResolverNameForOwner(ctx context.Context, rep map[string]interface{}) (string, error) {
+func entityResolverNameForResourceOwner(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
 			m   map[string]interface{}
@@ -477,7 +403,7 @@ func entityResolverNameForOwner(ctx context.Context, rep map[string]interface{})
 		if _, ok = m["id"]; !ok {
 			break
 		}
-		return "findOwnerByID", nil
+		return "findResourceOwnerByID", nil
 	}
-	return "", fmt.Errorf("%w for Owner", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for ResourceOwner", ErrTypeNotFound)
 }

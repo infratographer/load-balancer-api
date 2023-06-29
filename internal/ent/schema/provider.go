@@ -79,6 +79,7 @@ func (Provider) Annotations() []schema.Annotation {
 		entx.GraphKeyDirective("id"),
 		schema.Comment("Representation of a load balancer provider. Load balancer providers are responsible for provisioning and managing load balancers"),
 		entgql.Type("LoadBalancerProvider"),
+		prefixIDDirective(LoadBalancerProviderPrefix),
 		entgql.RelayConnection(),
 		entgql.Mutations(
 			entgql.MutationCreate().Description("Input information to create a load balancer provider."),

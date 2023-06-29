@@ -15,7 +15,7 @@ models:
   JSON:
     model:
       - go.infratographer.com/x/entx.RawMessage
-schema: ["schema.graphql"]
+schema: ["internal/graphclient/schema/schema.graphql"]
 query: ["internal/graphclient/*.graphql"]
 generate:
   client: true

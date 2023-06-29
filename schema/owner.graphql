@@ -1,5 +1,5 @@
-extend type Owner @key(fields: "id") {
-  id: ID! @external
+type ResourceOwner @interfaceObject @key(fields: "id") {
+  id: ID!
   loadBalancers(
     """
     Returns the elements in the list that come after the specified cursor.
@@ -99,19 +99,19 @@ extend type LoadBalancer {
   """
   The owner of the load balancer.
   """
-  owner: Owner! @goField(forceResolver: true)
+  owner: ResourceOwner! @goField(forceResolver: true)
 }
 
 extend type LoadBalancerPool {
   """
   The owner of the load balancer pool.
   """
-  owner: Owner! @goField(forceResolver: true)
+  owner: ResourceOwner! @goField(forceResolver: true)
 }
 
 extend type LoadBalancerProvider {
   """
   The owner of the load balancer provider.
   """
-  owner: Owner! @goField(forceResolver: true)
+  owner: ResourceOwner! @goField(forceResolver: true)
 }

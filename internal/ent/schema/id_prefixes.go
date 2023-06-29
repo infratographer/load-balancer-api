@@ -5,10 +5,6 @@ const (
 	ApplicationPrefix string = "load"
 	// LoadBalancerPrefix is the prefix for all load balancer IDs
 	LoadBalancerPrefix string = ApplicationPrefix + "bal"
-	// LoadBalancerAnnotationPrefix is the prefix for all load balancer annotation IDs
-	LoadBalancerAnnotationPrefix string = ApplicationPrefix + "ban"
-	// LoadBalancerStatusPrefix is the prefix for all load balancer Status IDs
-	LoadBalancerStatusPrefix string = ApplicationPrefix + "bst"
 	// LoadBalancerProviderPrefix is the prefix for all load balancer provider IDs
 	LoadBalancerProviderPrefix string = ApplicationPrefix + "pvd"
 	// OriginPrefix is the prefix for all origin IDs

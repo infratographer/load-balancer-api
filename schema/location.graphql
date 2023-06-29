@@ -1,5 +1,7 @@
-extend type Location @key(fields: "id") {
-  id: ID! @external
+directive @prefixedID(prefix: String!) on OBJECT
+
+type Location @key(fields: "id") {
+  id: ID!
   loadBalancers(
     """
     Returns the elements in the list that come after the specified cursor.

@@ -77,6 +77,7 @@ func (Pool) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
 		entgql.Type("LoadBalancerPool"),
+		prefixIDDirective(PoolPrefix),
 		entgql.RelayConnection(),
 		entgql.QueryField(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),

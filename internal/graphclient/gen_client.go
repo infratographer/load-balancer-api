@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/Yamashou/gqlgenc/client"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/x/gidx"
 )
 
@@ -48,18 +46,18 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 type Query struct {
 	LoadBalancerPools    LoadBalancerPoolConnection "json:\"loadBalancerPools\" graphql:\"loadBalancerPools\""
 	LoadBalancer         LoadBalancer               "json:\"loadBalancer\" graphql:\"loadBalancer\""
-	LoadBalancerPool     generated.Pool             "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
-	LoadBalancerProvider generated.Provider         "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
+	LoadBalancerPool     LoadBalancerPool           "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	LoadBalancerProvider LoadBalancerProvider       "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
 	Entities             []Entity                   "json:\"_entities\" graphql:\"_entities\""
 	Service              Service                    "json:\"_service\" graphql:\"_service\""
 }
 type Mutation struct {
-	LoadBalancerCreate         LoadBalancerCreatePayload         "json:\"loadBalancerCreate\" graphql:\"loadBalancerCreate\""
-	LoadBalancerUpdate         LoadBalancerUpdatePayload         "json:\"loadBalancerUpdate\" graphql:\"loadBalancerUpdate\""
-	LoadBalancerDelete         LoadBalancerDeletePayload         "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
 	LoadBalancerOriginCreate   LoadBalancerOriginCreatePayload   "json:\"loadBalancerOriginCreate\" graphql:\"loadBalancerOriginCreate\""
 	LoadBalancerOriginUpdate   LoadBalancerOriginUpdatePayload   "json:\"loadBalancerOriginUpdate\" graphql:\"loadBalancerOriginUpdate\""
 	LoadBalancerOriginDelete   LoadBalancerOriginDeletePayload   "json:\"loadBalancerOriginDelete\" graphql:\"loadBalancerOriginDelete\""
+	LoadBalancerCreate         LoadBalancerCreatePayload         "json:\"loadBalancerCreate\" graphql:\"loadBalancerCreate\""
+	LoadBalancerUpdate         LoadBalancerUpdatePayload         "json:\"loadBalancerUpdate\" graphql:\"loadBalancerUpdate\""
+	LoadBalancerDelete         LoadBalancerDeletePayload         "json:\"loadBalancerDelete\" graphql:\"loadBalancerDelete\""
 	LoadBalancerPoolCreate     LoadBalancerPoolCreatePayload     "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
 	LoadBalancerPoolUpdate     LoadBalancerPoolUpdatePayload     "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
 	LoadBalancerPoolDelete     LoadBalancerPoolDeletePayload     "json:\"loadBalancerPoolDelete\" graphql:\"loadBalancerPoolDelete\""
@@ -89,12 +87,12 @@ type GetLoadBalancer struct {
 }
 type GetLoadBalancerPool struct {
 	LoadBalancerPool struct {
-		ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
-		Name      string          "json:\"name\" graphql:\"name\""
-		Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-		OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
-		CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
-		UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+		ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+		Name      string                   "json:\"name\" graphql:\"name\""
+		Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+		OwnerID   gidx.PrefixedID          "json:\"ownerID\" graphql:\"ownerID\""
+		CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+		UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
 	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 }
 type GetLoadBalancerPoolOrigin struct {
@@ -215,12 +213,12 @@ type LoadBalancerOriginUpdate struct {
 type LoadBalancerPoolCreate struct {
 	LoadBalancerPoolCreate struct {
 		LoadBalancerPool struct {
-			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			Name      string          "json:\"name\" graphql:\"name\""
-			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-			OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
-			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
-			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+			Name      string                   "json:\"name\" graphql:\"name\""
+			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+			OwnerID   gidx.PrefixedID          "json:\"ownerID\" graphql:\"ownerID\""
+			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 	} "json:\"loadBalancerPoolCreate\" graphql:\"loadBalancerPoolCreate\""
 }
@@ -232,12 +230,12 @@ type LoadBalancerPoolDelete struct {
 type LoadBalancerPoolUpdate struct {
 	LoadBalancerPoolUpdate struct {
 		LoadBalancerPool struct {
-			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			Name      string          "json:\"name\" graphql:\"name\""
-			Protocol  pool.Protocol   "json:\"protocol\" graphql:\"protocol\""
-			OwnerID   gidx.PrefixedID "json:\"ownerID\" graphql:\"ownerID\""
-			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
-			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
+			ID        gidx.PrefixedID          "json:\"id\" graphql:\"id\""
+			Name      string                   "json:\"name\" graphql:\"name\""
+			Protocol  LoadBalancerPoolProtocol "json:\"protocol\" graphql:\"protocol\""
+			OwnerID   gidx.PrefixedID          "json:\"ownerID\" graphql:\"ownerID\""
+			CreatedAt time.Time                "json:\"createdAt\" graphql:\"createdAt\""
+			UpdatedAt time.Time                "json:\"updatedAt\" graphql:\"updatedAt\""
 		} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 	} "json:\"loadBalancerPoolUpdate\" graphql:\"loadBalancerPoolUpdate\""
 }
@@ -461,8 +459,8 @@ func (c *Client) GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID
 }
 
 const GetOwnerLoadBalancersDocument = `query GetOwnerLoadBalancers ($id: ID!, $orderBy: LoadBalancerOrder) {
-	_entities(representations: {__typename:"Owner",id:$id}) {
-		... on Owner {
+	_entities(representations: {__typename:"ResourceOwner",id:$id}) {
+		... on ResourceOwner {
 			loadBalancers(orderBy: $orderBy) {
 				edges {
 					node {
