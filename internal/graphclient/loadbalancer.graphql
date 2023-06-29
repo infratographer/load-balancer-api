@@ -17,8 +17,8 @@ query GetLoadBalancer($id: ID!) {
 }
 
 query GetOwnerLoadBalancers($id: ID!, $orderBy: LoadBalancerOrder) {
-  _entities(representations: { __typename: "Owner", id: $id }) {
-    ... on Owner {
+  _entities(representations: { __typename: "ResourceOwner", id: $id }) {
+    ... on ResourceOwner {
       loadBalancers(orderBy: $orderBy) {
         edges {
           node {

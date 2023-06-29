@@ -1,3 +1,4 @@
-h1:VqR1OSr9cOmG9cPyGgjEbDiQxwCpFRLGNlYKzYjpMZc=
+h1:c+ziReSuevRk7RBOpYWo0gncdcwco4V61ROlPMPe5EE=
 20230503185445_initial-migration.sql h1:4pqNp2MDBBRdGxU/H5mmZui9oi1SyjIiMVGatajrBeY=
 20230615194819_drop_tenant_add_owner.sql h1:KGCsItU0NYhxYEkhZOaMQjfIrBMnek5rxC6D/LhnyCk=
+20230629085916_drop_status_and_annotations.sql h1:kvDMoaMEjyoj/aRi6rw4XvCLxGH09vGGLbL0/p5tpPo=

@@ -96,3 +96,12 @@ type LoadBalancerUpdatePayload struct {
 	// The updated load balancer.
 	LoadBalancer *generated.LoadBalancer `json:"loadBalancer"`
 }
+
+type ResourceOwner struct {
+	ID                     gidx.PrefixedID                           `json:"id"`
+	LoadBalancers          *generated.LoadBalancerConnection         `json:"loadBalancers"`
+	LoadBalancerPools      *generated.LoadBalancerPoolConnection     `json:"loadBalancerPools"`
+	LoadBalancersProviders *generated.LoadBalancerProviderConnection `json:"loadBalancersProviders"`
+}
+
+func (ResourceOwner) IsEntity() {}

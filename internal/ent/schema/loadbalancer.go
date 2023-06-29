@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/vektah/gqlparser/v2/ast"
 
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
@@ -82,20 +83,6 @@ func (LoadBalancer) Fields() []ent.Field {
 // Edges of the Instance.
 func (LoadBalancer) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("annotations", LoadBalancerAnnotation.Type).
-			Ref("load_balancer").
-			Comment("Annotations for the load balancer.").
-			Annotations(
-				entgql.RelayConnection(),
-				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
-			),
-		edge.From("statuses", LoadBalancerStatus.Type).
-			Ref("load_balancer").
-			Comment("Statuses for the load balancer.").
-			Annotations(
-				entgql.RelayConnection(),
-				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
-			),
 		edge.From("ports", Port.Type).
 			Ref("load_balancer").
 			Annotations(
@@ -128,11 +115,27 @@ func (LoadBalancer) Annotations() []schema.Annotation {
 		entx.GraphKeyDirective("id"),
 		pubsubinfo.Annotation{},
 		schema.Comment("Representation of a load balancer."),
-		entgql.Implements("IPv4Addressable"),
+		prefixIDDirective(LoadBalancerPrefix),
+		entgql.Implements("IPAddressable"),
 		entgql.RelayConnection(),
 		entgql.Mutations(
 			entgql.MutationCreate().Description("Input information to create a load balancer."),
 			entgql.MutationUpdate().Description("Input information to update a load balancer."),
 		),
 	}
+}
+
+func prefixIDDirective(prefix string) entgql.Annotation {
+	var args []*ast.Argument
+	if prefix != "" {
+		args = append(args, &ast.Argument{
+			Name: "prefix",
+			Value: &ast.Value{
+				Raw:  prefix,
+				Kind: ast.StringValue,
+			},
+		})
+	}
+
+	return entgql.Directives(entgql.NewDirective("prefixedID", args...))
 }

@@ -88,7 +88,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			TestName: "create pool",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
-				Protocol: pool.ProtocolTCP,
+				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
 				OwnerID:  ownerID,
 			},
 			ExpectedPool: ent.LoadBalancerPool{
@@ -101,7 +101,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			TestName: "invalid owner ID",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "pooly",
-				Protocol: pool.ProtocolTCP,
+				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
 				OwnerID:  "not a valid ID",
 			},
 			errorMsg: "invalid id",
@@ -119,7 +119,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			TestName: "empty name",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "",
-				Protocol: pool.ProtocolUDP,
+				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
 				OwnerID:  ownerID,
 			},
 			errorMsg: "validator failed",
@@ -146,7 +146,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 			assert.Equal(t, "loadpol", createdPool.ID.Prefix())
 			assert.Equal(t, tt.ExpectedPool.Name, createdPool.Name)
-			assert.Equal(t, tt.ExpectedPool.Protocol, createdPool.Protocol)
+			assert.Equal(t, tt.ExpectedPool.Protocol.String(), createdPool.Protocol.String())
 			assert.Equal(t, tt.ExpectedPool.OwnerID, createdPool.OwnerID)
 		})
 	}
@@ -159,8 +159,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	updateProtocolUnknown := pool.Protocol("invalid")
-	updateProtocolUDP := pool.ProtocolUDP
+	updateProtocolUDP := graphclient.LoadBalancerPoolProtocolUDP
 
 	testCases := []struct {
 		TestName     string
@@ -192,14 +191,6 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			},
 		},
 		{
-			TestName: "invalid protocol",
-			Input: graphclient.UpdateLoadBalancerPoolInput{
-				Name:     newString("ImaPool"),
-				Protocol: &updateProtocolUnknown,
-			},
-			errorMsg: "not a valid LoadBalancerPoolProtocol",
-		},
-		{
 			TestName: "empty name",
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name: newString(""),
@@ -227,7 +218,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			updatedPool := updatedPoolResp.LoadBalancerPoolUpdate.LoadBalancerPool
 			assert.Equal(t, "loadpol", updatedPool.ID.Prefix())
 			assert.Equal(t, tt.ExpectedPool.Name, updatedPool.Name)
-			assert.Equal(t, tt.ExpectedPool.Protocol, updatedPool.Protocol)
+			assert.Equal(t, tt.ExpectedPool.Protocol.String(), updatedPool.Protocol.String())
 			assert.Equal(t, tt.ExpectedPool.OwnerID, updatedPool.OwnerID)
 		})
 	}

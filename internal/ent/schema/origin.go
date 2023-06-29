@@ -89,6 +89,7 @@ func (Origin) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
 		entgql.Type("LoadBalancerOrigin"),
+		prefixIDDirective(OriginPrefix),
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}

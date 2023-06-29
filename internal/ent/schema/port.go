@@ -88,6 +88,7 @@ func (Port) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
 		entgql.Type("LoadBalancerPort"),
+		prefixIDDirective(PortPrefix),
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 		pubsubinfo.Annotation{},

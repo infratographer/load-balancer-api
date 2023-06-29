@@ -1,18 +1,23 @@
-extend type Mutation {
-    """
-    Create a loadbalancer pool origin
-    """
-    loadBalancerOriginCreate(input: CreateLoadBalancerOriginInput!): LoadBalancerOriginCreatePayload!
+type Mutation {
+  """
+  Create a loadbalancer pool origin
+  """
+  loadBalancerOriginCreate(
+    input: CreateLoadBalancerOriginInput!
+  ): LoadBalancerOriginCreatePayload!
 
-    """
-    Update a loadbalancer pool origin
-    """
-    loadBalancerOriginUpdate(id: ID!, input: UpdateLoadBalancerOriginInput!): LoadBalancerOriginUpdatePayload!
+  """
+  Update a loadbalancer pool origin
+  """
+  loadBalancerOriginUpdate(
+    id: ID!
+    input: UpdateLoadBalancerOriginInput!
+  ): LoadBalancerOriginUpdatePayload!
 
-    """
-    Delete a loadbalancer pool origin
-    """
-    loadBalancerOriginDelete(id: ID!): LoadBalancerOriginDeletePayload!
+  """
+  Delete a loadbalancer pool origin
+  """
+  loadBalancerOriginDelete(id: ID!): LoadBalancerOriginDeletePayload!
 }
 
 """

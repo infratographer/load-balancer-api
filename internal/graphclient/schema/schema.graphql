@@ -1,4 +1,16 @@
+directive @composeDirective(name: String!) repeatable on SCHEMA
+directive @extends on OBJECT | INTERFACE
+directive @external on OBJECT | FIELD_DEFINITION
+directive @inaccessible on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+directive @interfaceObject on OBJECT
+directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+directive @link(import: [String!], url: String!) repeatable on SCHEMA
+directive @override(from: String!) on FIELD_DEFINITION
 directive @prefixedID(prefix: String!) on OBJECT
+directive @provides(fields: FieldSet!) on FIELD_DEFINITION
+directive @requires(fields: FieldSet!) on FIELD_DEFINITION
+directive @shareable repeatable on FIELD_DEFINITION | OBJECT
+directive @tag(name: String!) repeatable on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
 """Input information to create a load balancer."""
 input CreateLoadBalancerInput {
 	"""The name of the load balancer."""
@@ -54,6 +66,7 @@ Define a Relay Cursor type:
 https://relay.dev/graphql/connections.htm#sec-Cursor
 """
 scalar Cursor
+scalar FieldSet
 interface IPAddressable {
 	id: ID!
 }
@@ -957,18 +970,3 @@ union _Entity = LoadBalancer | LoadBalancerOrigin | LoadBalancerPool | LoadBalan
 type _Service {
 	sdl: String
 }
-
-extend schema
-  @link(
-    url: "https://specs.apollo.dev/federation/v2.3"
-    import: [
-      "@key",
-      "@interfaceObject",
-      "@shareable",
-      "@inaccessible",
-      "@override",
-      "@provides",
-      "@requires",
-      "@tag"
-    ]
-  )

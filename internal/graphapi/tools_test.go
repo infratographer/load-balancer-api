@@ -1,6 +1,3 @@
-//go:build testtools
-// +build testtools
-
 package graphapi_test
 
 import (
