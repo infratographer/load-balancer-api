@@ -20,8 +20,8 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	github.com/testcontainers/testcontainers-go v0.20.1
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.20.1
+	github.com/testcontainers/testcontainers-go v0.21.0
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.21.0
 	github.com/vektah/gqlparser/v2 v2.5.1
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/permissions-api v0.1.11
