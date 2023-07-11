@@ -34,9 +34,9 @@ api:
   listenPort: 7608
   extraLabels: {}
   extraAnnotations: {}
-  extraEnvVars: [] 
+  extraEnvVars: []
   #- value: "postgresql://user@my-db-server:26257/load_balancer_api"
-  #  name: LOADBALANCERAPI_CRDB_URI 
+  #  name: LOADBALANCERAPI_CRDB_URI
   resources: {}
   podSecurityContext: {}
   securityContext: {}
@@ -47,9 +47,9 @@ api:
       credsPath: "/nats/creds"
     topicPrefix: "com.infratographer"
   db:
-    uriSecret: "" 
+    uriSecret: ""
     certSecret: ""
-  migrateOnInit: false 
+  migrateOnInit: false
 
   oidc:
     enabled: false
@@ -66,6 +66,26 @@ api:
   # - "1.2.3.4"
   # - "1.2.3.4/32"
   # - "1.2.3.0/24"
+
+  tracing:
+    # enabled is true if OpenTelemetry tracing should be enabled for permissions-api
+    enabled: false
+    # environment is the OpenTelemetry tracing environment to use
+    environment: ""
+    # provider is the OpenTelemetry tracing provider to use
+    provider: stdout
+    jaeger:
+      # endpoint is the Jaeger collector to send traces to
+      endpoint: ""
+      # user is the user to use when authenticating against the Jaeger deployment
+      user: ""
+      # password is the password to use when authenticating against the Jaeger deployment
+      password: ""
+    otlp:
+      # endpoint is the OpenTelemetry Protocol (OTLP) collector endpoint to send traces to
+      endpoint: ""
+      # insecure is true if TLS should not be required when sending traces
+      insecure: false
 
 reloader:
   enabled: false

@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/wundergraph/graphql-go-tools/pkg/playground"
+	"go.infratographer.com/x/gqlgenx/oteltracing"
 	"go.uber.org/zap"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -47,16 +48,20 @@ type Handler struct {
 
 // Handler returns an http handler for a graph resolver
 func (r *Resolver) Handler(withPlayground bool, middleware ...echo.MiddlewareFunc) *Handler {
-	h := &Handler{
-		r: r,
-		graphqlHandler: handler.NewDefaultServer(
-			NewExecutableSchema(
-				Config{
-					Resolvers: r,
-				},
-			),
+	srv := handler.NewDefaultServer(
+		NewExecutableSchema(
+			Config{
+				Resolvers: r,
+			},
 		),
-		middleware: middleware,
+	)
+
+	srv.Use(oteltracing.Tracer{})
+
+	h := &Handler{
+		r:              r,
+		middleware:     middleware,
+		graphqlHandler: srv,
 	}
 
 	if withPlayground {
