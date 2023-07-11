@@ -14,6 +14,7 @@ data:
   LOADBALANCERAPI_SERVER_LISTEN: ":{{ .Values.api.listenPort }}"
   LOADBALANCERAPI_SERVER_SHUTDOWN_GRACE_PERIOD: "{{ .Values.api.shutdownGracePeriod }}"
   LOADBALANCERAPI_PERMISSIONS_URL: "{{ .Values.api.permissions.url }}"
+{{- if .Values.api.tracing.enabled }}
   LOADBALANCERAPI_TRACING_ENABLED: "{{ .Values.api.tracing.enabled }}"
   LOADBALANCERAPI_TRACING_PROVIDER: "{{ .Values.api.tracing.provider }}"
   LOADBALANCERAPI_TRACING_ENVIRONMENT: "{{ .Values.api.tracing.environment }}"
@@ -26,6 +27,7 @@ data:
   LOADBALANCERAPI_TRACING_OTLP_ENDPOINT: "{{ .Values.api.tracing.otlp.endpoint }}"
   LOADBALANCERAPI_TRACING_OTLP_INSECURE: "{{ .Values.api.tracing.otlp.insecure }}"
   LOADBALANCERAPI_TRACING_OTLP_CERTIFICATE: "{{ .Values.api.tracing.otlp.certificate }}"
+{{- end }}
 {{- end }}
 {{- with .Values.api.trustedProxies }}
   LOADBALANCERAPI_SERVER_TRUSTED_PROXIES: "{{ join " " . }}"
