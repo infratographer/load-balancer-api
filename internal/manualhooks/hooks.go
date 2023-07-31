@@ -296,6 +296,7 @@ func LoadBalancerHooks() []ent.Hook {
 
 func OriginHooks() []ent.Hook {
 	return []ent.Hook{
+		// Create/Update hook
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
@@ -321,6 +322,13 @@ func OriginHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
 							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
+						}
+					}
+
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
 						}
 					}
 
@@ -466,7 +474,6 @@ func OriginHooks() []ent.Hook {
 							return nil, err
 						}
 					}
-					additionalSubjects = append(additionalSubjects, pool_id)
 
 					if ok {
 						cv_pool_id = fmt.Sprintf("%s", fmt.Sprint(pool_id))
@@ -534,6 +541,13 @@ func OriginHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
 
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
+						}
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -572,6 +586,7 @@ func OriginHooks() []ent.Hook {
 
 func PoolHooks() []ent.Hook {
 	return []ent.Hook{
+		// Create/Update
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PoolFunc(func(ctx context.Context, m *generated.PoolMutation) (ent.Value, error) {
@@ -597,6 +612,7 @@ func PoolHooks() []ent.Hook {
 							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID)
 						}
 					}
+
 					addSubjOriginPoolID, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjOriginPoolID.ID) && objID != addSubjOriginPoolID.ID {
@@ -774,6 +790,13 @@ func PoolHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
+						}
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -812,6 +835,7 @@ func PoolHooks() []ent.Hook {
 
 func PortHooks() []ent.Hook {
 	return []ent.Hook{
+		// Create/Update
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
