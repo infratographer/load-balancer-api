@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
-	graphql "github.com/shurcooL/graphql"
+	graphql "github.com/hasura/go-graphql-client"
 	"go.infratographer.com/x/gidx"
 )
 
 // GQLClient is an interface for a graphql client
 type GQLClient interface {
-	Query(tx context.Context, q interface{}, variables map[string]interface{}) error
+	Query(tx context.Context, q interface{}, variables map[string]interface{}, options ...graphql.Option) error
 }
 
 // Client creates a new lb api client against a specific endpoint
