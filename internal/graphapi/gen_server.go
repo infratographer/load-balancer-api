@@ -173,7 +173,7 @@ type ComplexityRoot struct {
 		LoadBalancerID func(childComplexity int) int
 		Name           func(childComplexity int) int
 		Number         func(childComplexity int) int
-		Pools          func(childComplexity int) int
+		Pools          func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) int
 		UpdatedAt      func(childComplexity int) int
 	}
 
@@ -837,7 +837,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.LoadBalancerPort.Pools(childComplexity), true
+		args, err := ec.field_LoadBalancerPort_pools_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.LoadBalancerPort.Pools(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerPoolOrder), args["where"].(*generated.LoadBalancerPoolWhereInput)), true
 
 	case "LoadBalancerPort.updatedAt":
 		if e.complexity.LoadBalancerPort.UpdatedAt == nil {
@@ -1853,7 +1858,25 @@ type LoadBalancerPort implements Node @key(fields: "id") @prefixedID(prefix: "lo
   number: Int!
   name: String!
   loadBalancerID: ID!
-  pools: [LoadBalancerPool!]
+  pools(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: Cursor
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the elements in the list that come before the specified cursor."""
+    before: Cursor
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+
+    """Ordering options for LoadBalancerPools returned from the connection."""
+    orderBy: LoadBalancerPoolOrder
+
+    """Filtering options for LoadBalancerPools returned from the connection."""
+    where: LoadBalancerPoolWhereInput
+  ): LoadBalancerPoolConnection!
   loadBalancer: LoadBalancer!
 }
 """A connection to a list of items."""
@@ -2908,6 +2931,66 @@ func (ec *executionContext) field_LoadBalancerPool_origins_args(ctx context.Cont
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
 		arg5, err = ec.unmarshalOLoadBalancerOriginWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerOriginWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_LoadBalancerPort_pools_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[gidx.PrefixedID]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *generated.LoadBalancerPoolOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOLoadBalancerPoolOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *generated.LoadBalancerPoolWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOLoadBalancerPoolWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -6940,18 +7023,21 @@ func (ec *executionContext) _LoadBalancerPort_pools(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Pools(ctx)
+		return obj.Pools(ctx, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerPoolOrder), fc.Args["where"].(*generated.LoadBalancerPoolWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*generated.Pool)
+	res := resTmp.(*generated.LoadBalancerPoolConnection)
 	fc.Result = res
-	return ec.marshalOLoadBalancerPool2ᚕᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐPoolᚄ(ctx, field.Selections, res)
+	return ec.marshalNLoadBalancerPoolConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_LoadBalancerPort_pools(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6962,27 +7048,26 @@ func (ec *executionContext) fieldContext_LoadBalancerPort_pools(ctx context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_LoadBalancerPool_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_LoadBalancerPool_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_LoadBalancerPool_updatedAt(ctx, field)
-			case "name":
-				return ec.fieldContext_LoadBalancerPool_name(ctx, field)
-			case "protocol":
-				return ec.fieldContext_LoadBalancerPool_protocol(ctx, field)
-			case "ownerID":
-				return ec.fieldContext_LoadBalancerPool_ownerID(ctx, field)
-			case "ports":
-				return ec.fieldContext_LoadBalancerPool_ports(ctx, field)
-			case "origins":
-				return ec.fieldContext_LoadBalancerPool_origins(ctx, field)
-			case "owner":
-				return ec.fieldContext_LoadBalancerPool_owner(ctx, field)
+			case "edges":
+				return ec.fieldContext_LoadBalancerPoolConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LoadBalancerPoolConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_LoadBalancerPoolConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPool", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPoolConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_LoadBalancerPort_pools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -16511,6 +16596,9 @@ func (ec *executionContext) _LoadBalancerPort(ctx context.Context, sel ast.Selec
 					}
 				}()
 				res = ec._LoadBalancerPort_pools(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -19421,53 +19509,6 @@ func (ec *executionContext) unmarshalOLoadBalancerOriginWhereInput2ᚖgoᚗinfra
 	}
 	res, err := ec.unmarshalInputLoadBalancerOriginWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOLoadBalancerPool2ᚕᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐPoolᚄ(ctx context.Context, sel ast.SelectionSet, v []*generated.Pool) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNLoadBalancerPool2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐPool(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOLoadBalancerPool2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐPool(ctx context.Context, sel ast.SelectionSet, v *generated.Pool) graphql.Marshaler {

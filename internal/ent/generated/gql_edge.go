@@ -92,16 +92,25 @@ func (po *Pool) Origins(
 	return po.QueryOrigins().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (po *Port) Pools(ctx context.Context) (result []*Pool, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = po.NamedPools(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = po.Edges.PoolsOrErr()
+func (po *Port) Pools(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy *LoadBalancerPoolOrder, where *LoadBalancerPoolWhereInput,
+) (*LoadBalancerPoolConnection, error) {
+	opts := []LoadBalancerPoolPaginateOption{
+		WithLoadBalancerPoolOrder(orderBy),
+		WithLoadBalancerPoolFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = po.QueryPools().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := po.Edges.totalCount[0][alias]
+	if nodes, err := po.NamedPools(alias); err == nil || hasTotalCount {
+		pager, err := newLoadBalancerPoolPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &LoadBalancerPoolConnection{Edges: []*LoadBalancerPoolEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return po.QueryPools().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (po *Port) LoadBalancer(ctx context.Context) (*LoadBalancer, error) {

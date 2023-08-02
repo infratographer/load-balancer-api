@@ -406,14 +406,14 @@ type LoadBalancerPoolWhereInput struct {
 }
 
 type LoadBalancerPort struct {
-	ID             gidx.PrefixedID     `json:"id"`
-	CreatedAt      time.Time           `json:"createdAt"`
-	UpdatedAt      time.Time           `json:"updatedAt"`
-	Number         int64               `json:"number"`
-	Name           string              `json:"name"`
-	LoadBalancerID gidx.PrefixedID     `json:"loadBalancerID"`
-	Pools          []*LoadBalancerPool `json:"pools,omitempty"`
-	LoadBalancer   LoadBalancer        `json:"loadBalancer"`
+	ID             gidx.PrefixedID            `json:"id"`
+	CreatedAt      time.Time                  `json:"createdAt"`
+	UpdatedAt      time.Time                  `json:"updatedAt"`
+	Number         int64                      `json:"number"`
+	Name           string                     `json:"name"`
+	LoadBalancerID gidx.PrefixedID            `json:"loadBalancerID"`
+	Pools          LoadBalancerPoolConnection `json:"pools"`
+	LoadBalancer   LoadBalancer               `json:"loadBalancer"`
 }
 
 func (LoadBalancerPort) IsNode() {}

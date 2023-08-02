@@ -65,7 +65,11 @@ func (Port) Fields() []ent.Field {
 // Edges of the Instance.
 func (Port) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("pools", Pool.Type).Ref("ports"),
+		edge.From("pools", Pool.Type).
+			Ref("ports").
+			Annotations(
+				entgql.RelayConnection(),
+			),
 		edge.To("load_balancer", LoadBalancer.Type).
 			Unique().
 			Required().
