@@ -46,22 +46,22 @@ func WithHTTPClient(cli *http.Client) Option {
 }
 
 // GetLoadBalancer returns a load balancer by id
-func (c *Client) GetLoadBalancer(ctx context.Context, id string) (*GetLoadBalancer, error) {
+func (c *Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer, error) {
 	_, err := gidx.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
 	vars := map[string]interface{}{
-		"id": id,
+		"id": graphql.ID(id),
 	}
 
-	var lb GetLoadBalancer
-	if err := c.gqlCli.Query(ctx, &lb, vars); err != nil {
+	var q GetLoadBalancer
+	if err := c.gqlCli.Query(ctx, &q, vars); err != nil {
 		return nil, translateGQLErr(err)
 	}
 
-	return &lb, nil
+	return &q.LoadBalancer, nil
 }
 
 func translateGQLErr(err error) error {
