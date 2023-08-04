@@ -179,7 +179,21 @@ func init() {
 	// portDescName is the schema descriptor for name field.
 	portDescName := portFields[2].Descriptor()
 	// port.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	port.NameValidator = portDescName.Validators[0].(func(string) error)
+	port.NameValidator = func() func(string) error {
+		validators := portDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// portDescLoadBalancerID is the schema descriptor for load_balancer_id field.
 	portDescLoadBalancerID := portFields[3].Descriptor()
 	// port.LoadBalancerIDValidator is a validator for the "load_balancer_id" field. It is called by the builders before save.

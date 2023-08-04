@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 
 	"go.infratographer.com/x/entx"
@@ -46,6 +47,7 @@ func (Port) Fields() []ent.Field {
 				entgql.OrderField("number"),
 			),
 		field.String("name").
+			Validate(validations.PortName).
 			NotEmpty().
 			Annotations(
 				entgql.OrderField("name"),

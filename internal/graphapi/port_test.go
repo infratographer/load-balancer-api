@@ -20,7 +20,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	name := gofakeit.DomainName()
+	name := gofakeit.PetName()
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
 		Name:           name,
