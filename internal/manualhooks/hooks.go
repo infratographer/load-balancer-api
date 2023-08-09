@@ -313,15 +313,15 @@ func OriginHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					// addSubjPoolOwnerID, err := m.Client().Pool.Get(ctx, objID)
-					addSubjPoolOwnerID, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					// addSubjPool, err := m.Client().Pool.Get(ctx, objID)
+					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.ID) && objID != addSubjPoolOwnerID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPool.ID) && objID != addSubjPool.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPool.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
+						if !slices.Contains(additionalSubjects, addSubjPool.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPool.OwnerID)
 						}
 					}
 
@@ -602,25 +602,25 @@ func PoolHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					addSubjPortLoadBalancerID, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPortLoadBalancerID.ID) && objID != addSubjPortLoadBalancerID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPort.ID) && objID != addSubjPort.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPort.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID)
+						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
 						}
 					}
 
-					addSubjOriginPoolID, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
+					addSubjOrigin, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjOriginPoolID.ID) && objID != addSubjOriginPoolID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjOriginPoolID.ID)
+						if !slices.Contains(additionalSubjects, addSubjOrigin.ID) && objID != addSubjOrigin.ID {
+							additionalSubjects = append(additionalSubjects, addSubjOrigin.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjOriginPoolID.PoolID) {
-							additionalSubjects = append(additionalSubjects, addSubjOriginPoolID.PoolID)
+						if !slices.Contains(additionalSubjects, addSubjOrigin.PoolID) {
+							additionalSubjects = append(additionalSubjects, addSubjOrigin.PoolID)
 						}
 					}
 
@@ -851,44 +851,32 @@ func PortHooks() []ent.Hook {
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
-					addSubjPoolOwnerID, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.ID) && objID != addSubjPoolOwnerID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.ID)
+						if !slices.Contains(additionalSubjects, addSubjPool.ID) && objID != addSubjPool.ID {
+							additionalSubjects = append(additionalSubjects, addSubjPool.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjPoolOwnerID.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPoolOwnerID.OwnerID)
+						if !slices.Contains(additionalSubjects, addSubjPool.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPool.OwnerID)
 						}
 					}
-					addSubjLoadBalancerOwnerID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjLoadBalancer, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerOwnerID.ID) && objID != addSubjLoadBalancerOwnerID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerOwnerID.ID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) && objID != addSubjLoadBalancer.ID {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerOwnerID.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerOwnerID.OwnerID)
-						}
-					}
-					addSubjLoadBalancerLocationID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerLocationID.ID) && objID != addSubjLoadBalancerLocationID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerLocationID.ID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerLocationID.LocationID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerLocationID.LocationID)
-						}
-					}
-					addSubjLoadBalancerProviderID, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerProviderID.ID) && objID != addSubjLoadBalancerProviderID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerProviderID.ID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.OwnerID)
 						}
 
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancerProviderID.ProviderID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancerProviderID.ProviderID)
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ProviderID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ProviderID)
 						}
 					}
 
@@ -990,7 +978,10 @@ func PortHooks() []ent.Hook {
 							return nil, err
 						}
 					}
-					additionalSubjects = append(additionalSubjects, load_balancer_id)
+
+					if !slices.Contains(additionalSubjects, load_balancer_id) {
+						additionalSubjects = append(additionalSubjects, load_balancer_id)
+					}
 
 					if ok {
 						cv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(load_balancer_id))

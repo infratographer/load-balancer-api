@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 	"os"
+	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -31,6 +33,7 @@ import (
 
 const (
 	defaultLBAPIListenAddr = ":7608"
+	shutdownTimeout        = 10 * time.Second
 )
 
 var (
@@ -151,7 +154,7 @@ func serve(ctx context.Context) error {
 	if viper.GetBool("oidc.enabled") {
 		auth, err := echojwtx.NewAuth(ctx, config.AppConfig.OIDC)
 		if err != nil {
-			logger.Fatal("failed to initialize jwt authentication", zap.Error(err))
+			logger.Fatalw("failed to initialize jwt authentication", zap.Error(err))
 		}
 
 		middleware = append(middleware, auth.Middleware())
@@ -159,12 +162,13 @@ func serve(ctx context.Context) error {
 
 	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
 	if err != nil {
-		logger.Error("failed to create server", zap.Error(err))
+		logger.Fatalw("failed to create server", zap.Error(err))
 	}
 
 	perms, err := permissions.New(config.AppConfig.Permissions,
 		permissions.WithLogger(logger),
 		permissions.WithDefaultChecker(permissions.DefaultAllowChecker),
+		permissions.WithEventsPublisher(events),
 	)
 	if err != nil {
 		logger.Fatal("failed to initialize permissions", zap.Error(err))
@@ -177,9 +181,28 @@ func serve(ctx context.Context) error {
 
 	srv.AddHandler(handler)
 
-	if err := srv.Run(); err != nil {
-		logger.Error("failed to run server", zap.Error(err))
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	defer func() {
+		ctx, cancel := context.WithTimeout(ctx, shutdownTimeout)
+		defer cancel()
+
+		_ = events.Shutdown(ctx)
+	}()
+
+	go func() {
+		if err := srv.Run(); err != nil {
+			logger.Fatal("failed to run server", zap.Error(err))
+		}
+	}()
+
+	select {
+	case <-shutdown:
+		logger.Info("signal caught, shutting down")
+	case <-ctx.Done():
+		logger.Info("context done, shutting down")
 	}
 
-	return err
+	return nil
 }
