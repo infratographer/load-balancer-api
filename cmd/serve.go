@@ -67,7 +67,7 @@ func init() {
 	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
 	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
 
-	events.MustViperFlagsForPublisher(viper.GetViper(), serveCmd.Flags(), appName)
+	events.MustViperFlags(viper.GetViper(), serveCmd.Flags(), appName)
 	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 }
 
@@ -103,9 +103,9 @@ func serve(ctx context.Context) error {
 		config.AppConfig.Server.WithMiddleware(middleware.CORS())
 	}
 
-	pub, err := events.NewPublisher(config.AppConfig.Events.Publisher)
+	events, err := events.NewConnection(config.AppConfig.Events)
 	if err != nil {
-		logger.Fatalw("failed to create publisher", "error", err)
+		logger.Fatalw("failed to initialize events", "error", err)
 	}
 
 	err = otelx.InitTracer(config.AppConfig.Tracing, appName, logger)
@@ -122,7 +122,7 @@ func serve(ctx context.Context) error {
 
 	entDB := entsql.OpenDB(dialect.Postgres, db)
 
-	cOpts := []ent.Option{ent.Driver(entDB), ent.EventsPublisher(pub)}
+	cOpts := []ent.Option{ent.Driver(entDB), ent.EventsPublisher(events)}
 
 	if config.AppConfig.Logging.Debug {
 		cOpts = append(cOpts,
@@ -177,7 +177,7 @@ func serve(ctx context.Context) error {
 
 	srv.AddHandler(handler)
 
-	if err := srv.RunWithContext(ctx); err != nil {
+	if err := srv.Run(); err != nil {
 		logger.Error("failed to run server", zap.Error(err))
 	}
 

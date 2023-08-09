@@ -5,8 +5,8 @@ metadata:
   labels:
     {{- include "common.labels.standard" . | nindent 4 }}
 data:
-  LOADBALANCERAPI_EVENTS_PUBLISHER_PREFIX: "{{ .Values.api.events.topicPrefix }}"
-  LOADBALANCERAPI_EVENTS_PUBLISHER_URL: "{{ .Values.api.events.connectionURL }}"
+  LOADBALANCERAPI_EVENTS_NATS_PUBLISHPREFIX: "{{ .Values.api.events.topicPrefix }}"
+  LOADBALANCERAPI_EVENTS_NATS_URL: "{{ .Values.api.events.connectionURL }}"
   LOADBALANCERAPI_OIDC_ENABLED: "{{ .Values.api.oidc.enabled }}"
   LOADBALANCERAPI_OIDC_AUDIENCE: "{{ .Values.api.oidc.audience }}"
   LOADBALANCERAPI_OIDC_ISSUER: "{{ .Values.api.oidc.issuer }}"

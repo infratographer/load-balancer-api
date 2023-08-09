@@ -18,11 +18,6 @@ var AppConfig struct {
 	Logging     loggingx.Config
 	Server      echox.Config
 	Tracing     otelx.Config
-	Events      EventsConfig
+	Events      events.Config
 	Permissions permissions.Config
-}
-
-// EventsConfig stores the configuration for an event publisher
-type EventsConfig struct {
-	Publisher events.PublisherConfig
 }
