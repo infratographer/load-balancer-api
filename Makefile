@@ -81,7 +81,7 @@ background-run:  ## Runs in the app in the background
 	@date --rfc-3339=seconds
 	@if [ ! -f "${PID_FILE}" ]; then \
 		echo --- Running binary in the background...; \
-		go run main.go serve --pid-file=${PID_FILE} --dev & \
+		go run main.go serve --pid-file=${PID_FILE} --dev --oidc=false & \
 	else \
 		echo --- Binary already running in the background...; \
 	fi
