@@ -106,7 +106,7 @@ func serve(ctx context.Context) error {
 		config.AppConfig.Server.WithMiddleware(middleware.CORS())
 	}
 
-	events, err := events.NewConnection(config.AppConfig.Events)
+	events, err := events.NewConnection(config.AppConfig.Events, events.WithLogger(logger))
 	if err != nil {
 		logger.Fatalw("failed to initialize events", "error", err)
 	}
