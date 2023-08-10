@@ -23,7 +23,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.6
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/permissions-api v0.2.2
-	go.infratographer.com/x v0.3.6
+	go.infratographer.com/x v0.3.7-0.20230810153653-79f5c2c24800
 	go.uber.org/zap v1.25.0
 	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819
 )

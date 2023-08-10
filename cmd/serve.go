@@ -160,7 +160,7 @@ func serve(ctx context.Context) error {
 		middleware = append(middleware, auth.Middleware())
 	}
 
-	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails())
+	srv, err := echox.NewServer(logger.Desugar(), config.AppConfig.Server, versionx.BuildDetails(), echox.WithLoggingSkipper(echox.SkipDefaultEndpoints))
 	if err != nil {
 		logger.Fatalw("failed to create server", zap.Error(err))
 	}
