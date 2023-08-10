@@ -85,7 +85,7 @@ type (
 		hooks *hooks
 		// interceptors to execute on queries.
 		inters          *inters
-		EventsPublisher *events.Publisher
+		EventsPublisher events.Connection
 	}
 	// Option function to configure the client.
 	Option func(*config)
@@ -123,7 +123,7 @@ func Driver(driver dialect.Driver) Option {
 }
 
 // EventsPublisher configures the EventsPublisher.
-func EventsPublisher(v *events.Publisher) Option {
+func EventsPublisher(v events.Connection) Option {
 	return func(c *config) {
 		c.EventsPublisher = v
 	}

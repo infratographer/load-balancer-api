@@ -59,8 +59,15 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.api.extraEnvVars }}
           env:
+          {{- if .Values.api.events.nats.tokenSecretName }}
+            - name: LOADBALANCERAPI_EVENTS_NATS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.api.events.nats.tokenSecretName }}
+                  key: token
+          {{- end }}
+          {{- if .Values.api.extraEnvVars }}
           {{- range .Values.api.extraEnvVars }}
             - name: {{ .name }}
               value: {{ .value }}
@@ -94,7 +101,7 @@ spec:
               path: /readyz
               port: http
           volumeMounts:
-            {{- if .Values.api.events.auth.secretName  }}
+            {{- if .Values.api.events.nats.credsSecretName  }}
             - name: events-creds
               mountPath: /event-creds
             {{- end }}
@@ -118,10 +125,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- if .Values.api.events.auth.secretName  }}
+        {{- if .Values.api.events.nats.credsSecretName  }}
         - name: events-creds
           secret:
-            secretName: "{{ .Values.api.events.auth.secretName }}"
+            secretName: "{{ .Values.api.events.nats.credsSecretName }}"
         {{- end }}
         {{- if .Values.api.db.certSecret }}
         - name: dbcerts
