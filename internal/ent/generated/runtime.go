@@ -51,6 +51,10 @@ func init() {
 	loadbalancerDescName := loadbalancerFields[1].Descriptor()
 	// loadbalancer.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	loadbalancer.NameValidator = loadbalancerDescName.Validators[0].(func(string) error)
+	// loadbalancerDescOwnerID is the schema descriptor for owner_id field.
+	loadbalancerDescOwnerID := loadbalancerFields[2].Descriptor()
+	// loadbalancer.OwnerIDValidator is a validator for the "owner_id" field. It is called by the builders before save.
+	loadbalancer.OwnerIDValidator = loadbalancerDescOwnerID.Validators[0].(func(string) error)
 	// loadbalancerDescLocationID is the schema descriptor for location_id field.
 	loadbalancerDescLocationID := loadbalancerFields[3].Descriptor()
 	// loadbalancer.LocationIDValidator is a validator for the "location_id" field. It is called by the builders before save.
@@ -207,6 +211,10 @@ func init() {
 	providerDescName := providerFields[1].Descriptor()
 	// provider.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	provider.NameValidator = providerDescName.Validators[0].(func(string) error)
+	// providerDescOwnerID is the schema descriptor for owner_id field.
+	providerDescOwnerID := providerFields[2].Descriptor()
+	// provider.OwnerIDValidator is a validator for the "owner_id" field. It is called by the builders before save.
+	provider.OwnerIDValidator = providerDescOwnerID.Validators[0].(func(string) error)
 	// providerDescID is the schema descriptor for id field.
 	providerDescID := providerFields[0].Descriptor()
 	// provider.DefaultID holds the default value on creation for the id field.

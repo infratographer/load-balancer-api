@@ -259,6 +259,7 @@ func newBool(b bool) *bool {
 	return &b
 }
 
-func newInt64(i int64) *int64 {
-	return &i
+func newInt64(i int) *int64 {
+	r := int64(i)
+	return &r
 }

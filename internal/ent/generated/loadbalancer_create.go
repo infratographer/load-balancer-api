@@ -191,6 +191,11 @@ func (lbc *LoadBalancerCreate) check() error {
 	if _, ok := lbc.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner_id", err: errors.New(`generated: missing required field "LoadBalancer.owner_id"`)}
 	}
+	if v, ok := lbc.mutation.OwnerID(); ok {
+		if err := loadbalancer.OwnerIDValidator(string(v)); err != nil {
+			return &ValidationError{Name: "owner_id", err: fmt.Errorf(`generated: validator failed for field "LoadBalancer.owner_id": %w`, err)}
+		}
+	}
 	if _, ok := lbc.mutation.LocationID(); !ok {
 		return &ValidationError{Name: "location_id", err: errors.New(`generated: missing required field "LoadBalancer.location_id"`)}
 	}

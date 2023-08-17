@@ -173,6 +173,11 @@ func (pc *ProviderCreate) check() error {
 	if _, ok := pc.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner_id", err: errors.New(`generated: missing required field "Provider.owner_id"`)}
 	}
+	if v, ok := pc.mutation.OwnerID(); ok {
+		if err := provider.OwnerIDValidator(string(v)); err != nil {
+			return &ValidationError{Name: "owner_id", err: fmt.Errorf(`generated: validator failed for field "Provider.owner_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
