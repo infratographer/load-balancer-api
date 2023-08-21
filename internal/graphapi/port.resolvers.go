@@ -6,10 +6,12 @@ package graphapi
 
 import (
 	"context"
+	"strings"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
@@ -20,8 +22,14 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 	p, err := r.client.Port.Create().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		switch {
+		case generated.IsConstraintError(err) && strings.Contains(err.Error(), "number"):
+			return nil, ErrPortNumberInUse
+		default:
+			return nil, err
+		}
 	}
+
 	return &LoadBalancerPortCreatePayload{LoadBalancerPort: p}, nil
 }
 
@@ -38,7 +46,11 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 	p, err = p.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsConstraintError(err) && strings.Contains(err.Error(), "number") {
+			return nil, ErrPortNumberInUse
+		} else {
+			return nil, err
+		}
 	}
 
 	return &LoadBalancerPortUpdatePayload{LoadBalancerPort: p}, nil

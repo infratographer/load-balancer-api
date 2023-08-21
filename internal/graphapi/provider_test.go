@@ -48,6 +48,9 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
+			tt := tt
+			t.Parallel()
+
 			resp, err := graphTestClient().GetLoadBalancerProvider(ctx, tt.QueryID)
 
 			if tt.errorMsg != "" {
@@ -62,6 +65,176 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.LoadBalancerProvider)
 			assert.EqualValues(t, tt.ExpectedPrvovider.Name, resp.LoadBalancerProvider.Name)
+		})
+	}
+}
+
+func TestCreate_Provider(t *testing.T) {
+	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
+	ownerID := gidx.MustNewID(ownerPrefix)
+	name := gofakeit.DomainName()
+
+	testCases := []struct {
+		TestName   string
+		Input      graphclient.CreateLoadBalancerProviderInput
+		ExpectedLB *ent.LoadBalancerProvider
+		errorMsg   string
+	}{
+		{
+			TestName: "creates provider",
+			Input:    graphclient.CreateLoadBalancerProviderInput{Name: name, OwnerID: ownerID},
+			ExpectedLB: &ent.LoadBalancerProvider{
+				Name:    name,
+				OwnerID: ownerID,
+			},
+		},
+		{
+			TestName: "fails to create provider with empty name",
+			Input:    graphclient.CreateLoadBalancerProviderInput{Name: "", OwnerID: ownerID},
+			errorMsg: "value is less than the required length",
+		},
+		{
+			TestName: "fails to create provider with empty ownerID",
+			Input:    graphclient.CreateLoadBalancerProviderInput{Name: name, OwnerID: ""},
+			errorMsg: "value is less than the required length",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.TestName, func(t *testing.T) {
+			tt := tt
+			t.Parallel()
+
+			resp, err := graphTestClient().LoadBalancerProviderCreate(ctx, tt.Input)
+
+			if tt.errorMsg != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.errorMsg)
+				assert.Nil(t, resp)
+
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.LoadBalancerProviderCreate)
+
+			createdProvider := resp.LoadBalancerProviderCreate.LoadBalancerProvider
+			assert.Equal(t, tt.ExpectedLB.Name, createdProvider.Name)
+			assert.Equal(t, "loadpvd", createdProvider.ID.Prefix())
+			assert.Equal(t, ownerID, createdProvider.Owner.ID)
+		})
+	}
+}
+
+func TestUpdate_Provider(t *testing.T) {
+	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
+	prov := ProviderBuilder{}.MustNew(ctx)
+	updateName := gofakeit.DomainName()
+	emptyName := ""
+
+	testCases := []struct {
+		TestName         string
+		Input            graphclient.UpdateLoadBalancerProviderInput
+		ExpectedProvider *ent.LoadBalancerProvider
+		errorMsg         string
+	}{
+		{
+			TestName: "updates provider",
+			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: &updateName},
+			ExpectedProvider: &ent.LoadBalancerProvider{
+				Name:    updateName,
+				ID:      prov.ID,
+				OwnerID: prov.OwnerID,
+			},
+		},
+		{
+			TestName: "fails to update name to empty",
+			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: &emptyName},
+			errorMsg: "value is less than the required length",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.TestName, func(t *testing.T) {
+			resp, err := graphTestClient().LoadBalancerProviderUpdate(ctx, prov.ID, tt.Input)
+
+			if tt.errorMsg != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.errorMsg)
+				assert.Nil(t, resp)
+
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.LoadBalancerProviderUpdate)
+
+			updatedProvider := resp.LoadBalancerProviderUpdate.LoadBalancerProvider
+			assert.Equal(t, tt.ExpectedProvider.Name, updatedProvider.Name)
+			assert.Equal(t, prov.ID, updatedProvider.ID)
+		})
+	}
+}
+
+func TestDelete_Provider(t *testing.T) {
+	ctx := context.Background()
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
+	prov := ProviderBuilder{}.MustNew(ctx)
+
+	testCases := []struct {
+		TestName   string
+		Input      gidx.PrefixedID
+		ExpectedID gidx.PrefixedID
+		errorMsg   string
+	}{
+		{
+			TestName:   "deletes provider",
+			Input:      prov.ID,
+			ExpectedID: prov.ID,
+		},
+		{
+			TestName: "fails to delete provider that does not exist",
+			Input:    gidx.PrefixedID("loadpvd-dne"),
+			errorMsg: "provider not found",
+		},
+		{
+			TestName: "fails to delete empty provider ID",
+			Input:    gidx.PrefixedID(""),
+			errorMsg: "provider not found",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.TestName, func(t *testing.T) {
+			resp, err := graphTestClient().LoadBalancerProviderDelete(ctx, prov.ID)
+
+			if tt.errorMsg != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.errorMsg)
+				assert.Nil(t, resp)
+
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.LoadBalancerProviderDelete)
+
+			deletedProvider := resp.LoadBalancerProviderDelete
+			assert.Equal(t, tt.Input, deletedProvider.DeletedID)
 		})
 	}
 }

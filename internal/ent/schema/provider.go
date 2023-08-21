@@ -44,6 +44,7 @@ func (Provider) Fields() []ent.Field {
 		field.String("owner_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
+			NotEmpty().
 			Comment("The ID for the owner for this load balancer.").
 			Annotations(
 				entgql.QueryField(),
