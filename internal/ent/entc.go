@@ -17,6 +17,7 @@ import (
 func main() {
 	xExt, err := entx.NewExtension(
 		entx.WithFederation(),
+		// entx.WithEventHooks(), // TODO: additional subjects annotation
 		entx.WithJSONScalar(),
 	)
 	if err != nil {

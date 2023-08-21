@@ -22,10 +22,10 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.21.0
 	github.com/vektah/gqlparser/v2 v2.5.6
 	github.com/wundergraph/graphql-go-tools v1.62.3
-	go.infratographer.com/permissions-api v0.2.2
-	go.infratographer.com/x v0.3.7-0.20230810153653-79f5c2c24800
+	go.infratographer.com/permissions-api v0.2.3
+	go.infratographer.com/x v0.3.7
 	go.uber.org/zap v1.25.0
-	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 )
 
 require (
@@ -116,7 +116,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/subosito/gotenv v1.4.2 // indirect
+	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9 // indirect
@@ -144,11 +144,11 @@ require (
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.10.0 // indirect
+	golang.org/x/tools v0.12.1-0.20230815132531-74c255bcf846 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230807174057-1744710a1577 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230807174057-1744710a1577 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
+	google.golang.org/genproto v0.0.0-20230815205213-6bfd019c3878 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230815205213-6bfd019c3878 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230815205213-6bfd019c3878 // indirect
 	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

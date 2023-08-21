@@ -56,7 +56,7 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
 				entgql.OrderField("OWNER"),
-				pubsubinfo.AdditionalSubject(),
+				pubsubinfo.EventsHookAdditionalSubject("owner"),
 			),
 		field.String("location_id").
 			GoType(gidx.PrefixedID("")).
@@ -66,7 +66,6 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(^entgql.SkipMutationCreateInput),
-				pubsubinfo.AdditionalSubject(),
 			),
 		field.String("provider_id").
 			GoType(gidx.PrefixedID("")).
@@ -76,7 +75,6 @@ func (LoadBalancer) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(^entgql.SkipMutationCreateInput),
-				pubsubinfo.AdditionalSubject(),
 			),
 	}
 }
@@ -114,7 +112,7 @@ func (LoadBalancer) Indexes() []ent.Index {
 func (LoadBalancer) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
-		pubsubinfo.Annotation{},
+		pubsubinfo.EventsHookSubjectName("load-balancer"),
 		schema.Comment("Representation of a load balancer."),
 		prefixIDDirective(LoadBalancerPrefix),
 		entgql.Implements("IPAddressable"),

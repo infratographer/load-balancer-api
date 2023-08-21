@@ -6,6 +6,10 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/gidx"
+	"golang.org/x/exp/slices"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
@@ -13,12 +17,6 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
-
-	"go.infratographer.com/x/events"
-	"go.infratographer.com/x/gidx"
-	"golang.org/x/exp/slices"
-
-	"go.infratographer.com/load-balancer-api/internal/ent/schema"
 )
 
 func LoadBalancerHooks() []ent.Hook {
@@ -26,27 +24,21 @@ func LoadBalancerHooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
-					// complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
+					var err error
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
 
-					addSubjPortLoadBalancerID, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPortLoadBalancerID.ID) && objID != addSubjPortLoadBalancerID.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.ID)
-						}
+					additionalSubjects = append(additionalSubjects, objID)
 
-						if !slices.Contains(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPortLoadBalancerID.LoadBalancerID)
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPort.ID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.ID)
 						}
 					}
 
@@ -127,6 +119,11 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 					additionalSubjects = append(additionalSubjects, owner_id)
+
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "owner",
+						SubjectID: owner_id,
+					})
 
 					if ok {
 						cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))
@@ -215,20 +212,21 @@ func LoadBalancerHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
+					if len(relationships) != 0 {
+						if err := permissions.CreateAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -241,6 +239,7 @@ func LoadBalancerHooks() []ent.Hook {
 			func(next ent.Mutator) ent.Mutator {
 				return hook.LoadBalancerFunc(func(ctx context.Context, m *generated.LoadBalancerMutation) (ent.Value, error) {
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
@@ -249,14 +248,29 @@ func LoadBalancerHooks() []ent.Hook {
 
 					dbObj, err := m.Client().LoadBalancer.Get(ctx, objID)
 					if err != nil {
-						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "owner",
+						SubjectID: dbObj.OwnerID,
+					})
+
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
-
 					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
-
 					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
+
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
 
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
@@ -265,26 +279,9 @@ func LoadBalancerHooks() []ent.Hook {
 						Timestamp:            time.Now().UTC(),
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
-						}
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
 					}
-
-					// we have all the info we need, now complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
@@ -296,23 +293,18 @@ func LoadBalancerHooks() []ent.Hook {
 
 func OriginHooks() []ent.Hook {
 	return []ent.Hook{
-		// Create/Update hook
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
-					// complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					// queueName := ""
+					var err error
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
+
 					// addSubjPool, err := m.Client().Pool.Get(ctx, objID)
 					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
 					if err == nil {
@@ -474,6 +466,12 @@ func OriginHooks() []ent.Hook {
 							return nil, err
 						}
 					}
+					additionalSubjects = append(additionalSubjects, pool_id)
+
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancerorigin",
+						SubjectID: pool_id,
+					})
 
 					if ok {
 						cv_pool_id = fmt.Sprintf("%s", fmt.Sprint(pool_id))
@@ -502,20 +500,21 @@ func OriginHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
+					if len(relationships) != 0 {
+						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-origin", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-origin", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -528,6 +527,7 @@ func OriginHooks() []ent.Hook {
 			func(next ent.Mutator) ent.Mutator {
 				return hook.OriginFunc(func(ctx context.Context, m *generated.OriginMutation) (ent.Value, error) {
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
@@ -536,7 +536,7 @@ func OriginHooks() []ent.Hook {
 
 					dbObj, err := m.Client().Origin.Get(ctx, objID)
 					if err != nil {
-						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
@@ -548,25 +548,10 @@ func OriginHooks() []ent.Hook {
 						}
 					}
 
-					msg := events.ChangeMessage{
-						EventType:            eventType(m.Op()),
-						SubjectID:            objID,
-						AdditionalSubjectIDs: additionalSubjects,
-						Timestamp:            time.Now().UTC(),
-					}
-
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
-						}
-					}
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancerorigin",
+						SubjectID: dbObj.PoolID,
+					})
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -574,7 +559,22 @@ func OriginHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-origin", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
+
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-origin", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -586,22 +586,18 @@ func OriginHooks() []ent.Hook {
 
 func PoolHooks() []ent.Hook {
 	return []ent.Hook{
-		// Create/Update
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PoolFunc(func(ctx context.Context, m *generated.PoolMutation) (ent.Value, error) {
-					// complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
+					var err error
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
+
 					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjPort.ID) && objID != addSubjPort.ID {
@@ -724,6 +720,11 @@ func PoolHooks() []ent.Hook {
 					}
 					additionalSubjects = append(additionalSubjects, owner_id)
 
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancerpool",
+						SubjectID: owner_id,
+					})
+
 					if ok {
 						cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))
 						pv_owner_id := ""
@@ -751,20 +752,21 @@ func PoolHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
+					if len(relationships) != 0 {
+						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-pool", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -777,6 +779,7 @@ func PoolHooks() []ent.Hook {
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PoolFunc(func(ctx context.Context, m *generated.PoolMutation) (ent.Value, error) {
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
@@ -785,15 +788,32 @@ func PoolHooks() []ent.Hook {
 
 					dbObj, err := m.Client().Pool.Get(ctx, objID)
 					if err != nil {
-						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
-
-					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
 							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
+						}
+					}
+
+					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
+
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancerpool",
+						SubjectID: dbObj.OwnerID,
+					})
+
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
@@ -804,26 +824,9 @@ func PoolHooks() []ent.Hook {
 						Timestamp:            time.Now().UTC(),
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
-						}
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-pool", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
 					}
-
-					// we have all the info we need, now complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
 
 					return retValue, nil
 				})
@@ -835,22 +838,18 @@ func PoolHooks() []ent.Hook {
 
 func PortHooks() []ent.Hook {
 	return []ent.Hook{
-		// Create/Update
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
-					// complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
+					var err error
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
+
 					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjPool.ID) && objID != addSubjPool.ID {
@@ -863,10 +862,6 @@ func PortHooks() []ent.Hook {
 					}
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) && objID != addSubjLoadBalancer.ID {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
-						}
-
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
 						}
@@ -978,10 +973,12 @@ func PortHooks() []ent.Hook {
 							return nil, err
 						}
 					}
+					additionalSubjects = append(additionalSubjects, load_balancer_id)
 
-					if !slices.Contains(additionalSubjects, load_balancer_id) {
-						additionalSubjects = append(additionalSubjects, load_balancer_id)
-					}
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancer",
+						SubjectID: load_balancer_id,
+					})
 
 					if ok {
 						cv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(load_balancer_id))
@@ -1010,20 +1007,21 @@ func PortHooks() []ent.Hook {
 						FieldChanges:         changeset,
 					}
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
+					// complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
 
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
+					if len(relationships) != 0 {
+						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-port", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -1036,6 +1034,7 @@ func PortHooks() []ent.Hook {
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PortFunc(func(ctx context.Context, m *generated.PortMutation) (ent.Value, error) {
 					additionalSubjects := []gidx.PrefixedID{}
+					relationships := []events.AuthRelationshipRelation{}
 
 					objID, ok := m.ID()
 					if !ok {
@@ -1044,28 +1043,28 @@ func PortHooks() []ent.Hook {
 
 					dbObj, err := m.Client().Port.Get(ctx, objID)
 					if err != nil {
-						return nil, fmt.Errorf("failed to load object to get values for pubsub, err %w", err)
+						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
 
-					msg := events.ChangeMessage{
-						EventType:            eventType(m.Op()),
-						SubjectID:            objID,
-						AdditionalSubjectIDs: additionalSubjects,
-						Timestamp:            time.Now().UTC(),
-					}
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancer",
+						SubjectID: dbObj.LoadBalancerID,
+					})
 
-					lb_lookup := getLocation(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
+					if err != nil {
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
 						}
 
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-							msg.AdditionalSubjectIDs = additionalSubjects
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.OwnerID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.OwnerID)
+						}
+
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ProviderID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ProviderID)
 						}
 					}
 
@@ -1075,7 +1074,22 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					m.EventsPublisher.PublishChange(ctx, eventSubject(objID), msg)
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					msg := events.ChangeMessage{
+						EventType:            eventType(m.Op()),
+						SubjectID:            objID,
+						AdditionalSubjectIDs: additionalSubjects,
+						Timestamp:            time.Now().UTC(),
+					}
+
+					if _, err := m.EventsPublisher.PublishChange(ctx, "load-balancer-port", msg); err != nil {
+						return nil, fmt.Errorf("failed to publish change: %w", err)
+					}
 
 					return retValue, nil
 				})
@@ -1085,7 +1099,7 @@ func PortHooks() []ent.Hook {
 	}
 }
 
-// PubsubHooks bloops
+// PubsubHooks registers our hooks with the ent client
 func PubsubHooks(c *generated.Client) {
 	c.LoadBalancer.Use(LoadBalancerHooks()...)
 
@@ -1099,41 +1113,12 @@ func PubsubHooks(c *generated.Client) {
 func eventType(op ent.Op) string {
 	switch op {
 	case ent.OpCreate:
-		return "create"
+		return string(events.CreateChangeType)
 	case ent.OpUpdate, ent.OpUpdateOne:
-		return "update"
+		return string(events.UpdateChangeType)
 	case ent.OpDelete, ent.OpDeleteOne:
-		return "delete"
+		return string(events.DeleteChangeType)
 	default:
 		return "unknown"
 	}
-}
-
-func eventSubject(objID gidx.PrefixedID) string {
-	switch objID.Prefix() {
-	case schema.LoadBalancerPrefix:
-		return "load-balancer"
-	case schema.PortPrefix:
-		return "load-balancer-port"
-	case schema.OriginPrefix:
-		return "load-balancer-origin"
-	case schema.PoolPrefix:
-		return "load-balancer-pool"
-	default:
-		return "unknown"
-	}
-}
-
-func getLocation(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) gidx.PrefixedID {
-	if id.Prefix() == schema.LoadBalancerPrefix {
-		return id
-	}
-
-	for _, id := range addID {
-		if id.Prefix() == schema.LoadBalancerPrefix {
-			return id
-		}
-	}
-
-	return ""
 }

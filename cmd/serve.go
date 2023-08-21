@@ -138,7 +138,7 @@ func serve(ctx context.Context) error {
 	defer client.Close()
 
 	// TODO: fix generated pubsubhooks
-	// pubsubhooks.PubsubHooks(client)
+	// eventhooks.PubsubHooks(client)
 
 	manualhooks.PubsubHooks(client)
 

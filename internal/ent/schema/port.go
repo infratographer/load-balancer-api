@@ -8,10 +8,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
-
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
 const (
@@ -57,7 +57,7 @@ func (Port) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
-				pubsubinfo.AdditionalSubject(),
+				pubsubinfo.EventsHookAdditionalSubject("loadbalancer"),
 			),
 	}
 }
@@ -91,6 +91,6 @@ func (Port) Annotations() []schema.Annotation {
 		prefixIDDirective(PortPrefix),
 		entgql.RelayConnection(),
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
-		pubsubinfo.Annotation{},
+		pubsubinfo.EventsHookSubjectName("load-balancer-port"),
 	}
 }
