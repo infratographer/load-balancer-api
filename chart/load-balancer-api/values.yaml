@@ -103,3 +103,6 @@ api:
 
 reloader:
   enabled: false
+
+k8s-otel-collector:
+  include_otel_attributes: true

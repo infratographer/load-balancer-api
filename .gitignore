@@ -35,3 +35,6 @@ coverage.txt
 
 # binary
 load-balancer-api
+
+# don't ignore folders containing the name of the binary
+!load-balancer-api/
