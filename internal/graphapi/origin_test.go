@@ -5,9 +5,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/gidx"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -16,6 +18,10 @@ import (
 
 func TestQueryPoolOrigin(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -76,6 +82,10 @@ func TestQueryPoolOrigin(t *testing.T) {
 
 func TestMutate_OriginCreate(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -175,6 +185,10 @@ func TestMutate_OriginCreate(t *testing.T) {
 
 func TestMutate_OriginUpdate(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -261,6 +275,11 @@ func TestMutate_OriginUpdate(t *testing.T) {
 
 func TestMutate_OriginDelete(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	perms.On("DeleteAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)

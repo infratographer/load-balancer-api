@@ -5,7 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/gidx"
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -14,6 +17,14 @@ import (
 
 func TestOwnerLoadBalancersResolver(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
 	ownerID := gidx.MustNewID("testtnt")
 	lb1 := (&LoadBalancerBuilder{OwnerID: ownerID, LocationID: "testloc-CCCafdsaf", Name: "lb-a"}).MustNew(ctx)
 	lb2 := (&LoadBalancerBuilder{OwnerID: ownerID, LocationID: "testloc-AAAfasdf", Name: "lb-c"}).MustNew(ctx)
