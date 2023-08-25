@@ -24,7 +24,9 @@ func main() {
 		log.Fatalf("creating entx extension: %v", err)
 	}
 
-	pubsubExt, err := pubsubinfo.NewExtension()
+	pubsubExt, err := pubsubinfo.NewExtension(
+		pubsubinfo.WithEventHooks(),
+	)
 	if err != nil {
 		log.Fatalf("creating pubsubinfo extension: %v", err)
 	}

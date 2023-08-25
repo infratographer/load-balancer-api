@@ -9,6 +9,8 @@ import (
 	"entgo.io/ent/schema/index"
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
 // Provider holds the schema definition for the LoadBalancerProvider entity.
@@ -51,6 +53,7 @@ func (Provider) Fields() []ent.Field {
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput, entgql.SkipType),
 				entgql.OrderField("OWNER"),
+				pubsubinfo.EventsHookAdditionalSubject("owner"),
 			),
 	}
 }

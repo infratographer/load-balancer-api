@@ -51,7 +51,7 @@ func (Pool) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
-				pubsubinfo.EventsHookAdditionalSubject("loadbalancerpool"),
+				pubsubinfo.EventsHookAdditionalSubject("owner"),
 			),
 	}
 }

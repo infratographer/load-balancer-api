@@ -63,7 +63,7 @@ func (Origin) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
-				pubsubinfo.EventsHookAdditionalSubject("loadbalancerorigin"),
+				pubsubinfo.EventsHookAdditionalSubject("pool"),
 			),
 	}
 }

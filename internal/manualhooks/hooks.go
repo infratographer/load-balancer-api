@@ -469,7 +469,7 @@ func OriginHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, pool_id)
 
 					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancerorigin",
+						Relation:  "pool",
 						SubjectID: pool_id,
 					})
 
@@ -541,15 +541,8 @@ func OriginHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
-						}
-					}
-
 					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancerorigin",
+						Relation:  "pool",
 						SubjectID: dbObj.PoolID,
 					})
 
@@ -721,7 +714,7 @@ func PoolHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, owner_id)
 
 					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancerpool",
+						Relation:  "owner",
 						SubjectID: owner_id,
 					})
 
@@ -801,7 +794,7 @@ func PoolHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancerpool",
+						Relation:  "owner",
 						SubjectID: dbObj.OwnerID,
 					})
 
@@ -975,11 +968,6 @@ func PortHooks() []ent.Hook {
 					}
 					additionalSubjects = append(additionalSubjects, load_balancer_id)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancer",
-						SubjectID: load_balancer_id,
-					})
-
 					if ok {
 						cv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(load_balancer_id))
 						pv_load_balancer_id := ""
@@ -1048,10 +1036,10 @@ func PortHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancer",
-						SubjectID: dbObj.LoadBalancerID,
-					})
+					// relationships = append(relationships, events.AuthRelationshipRelation{
+					// 	Relation:  "owner",
+					// 	SubjectID: dbObj,
+					// })
 
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
 					if err != nil {
@@ -1108,6 +1096,7 @@ func PubsubHooks(c *generated.Client) {
 	c.Pool.Use(PoolHooks()...)
 
 	c.Port.Use(PortHooks()...)
+
 }
 
 func eventType(op ent.Op) string {
