@@ -8,10 +8,9 @@ import (
 	"context"
 	"strings"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
-
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
