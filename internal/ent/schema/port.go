@@ -57,7 +57,6 @@ func (Port) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
-				// pubsubinfo.EventsHookAdditionalSubject("loadbalancer"),
 			),
 	}
 }

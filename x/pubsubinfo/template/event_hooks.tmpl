@@ -7,7 +7,10 @@
 
 	{{ $genPackage := base $.Config.Package }}
 
-	import "go.infratographer.com/permissions-api/pkg/permissions"
+	import (
+		"go.infratographer.com/permissions-api/pkg/permissions"
+		"golang.org/x/exp/slices"
+	)
 
 	{{- range $node := $.Nodes }}
 		{{- if $nodeAnnotation := $node.Annotations.INFRA9_EVENTHOOKS }}
@@ -113,6 +116,18 @@
 								{{ end }}
 							{{ end }}
 
+						lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+						if lb_lookup != "" {
+							lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+							if err != nil {
+								return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							}
+
+							if !slices.Contains(additionalSubjects, lb.LocationID) {
+								additionalSubjects = append(additionalSubjects, lb.LocationID)
+							}
+						}
+
 						msg := events.ChangeMessage{
 							EventType:            eventType(m.Op()),
 							SubjectID:            objID,
@@ -196,6 +211,18 @@
 							}
 						}
 
+						lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+						if lb_lookup != "" {
+							lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+							if err != nil {
+								return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							}
+
+							if !slices.Contains(additionalSubjects, lb.LocationID) {
+								additionalSubjects = append(additionalSubjects, lb.LocationID)
+							}
+						}
+
 						msg := events.ChangeMessage{
 							EventType:            eventType(m.Op()),
 							SubjectID:            objID,
@@ -240,5 +267,18 @@
 		}
 	}
 
+	func getLoadBalancerID(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) (gidx.PrefixedID) {
+        if id.Prefix() == schema.LoadBalancerPrefix {
+                return id
+        }
+
+        for _, id := range addID {
+                if id.Prefix() == schema.LoadBalancerPrefix {
+                        return id
+                }
+        }
+
+        return ""
+	}
 
 {{ end }}

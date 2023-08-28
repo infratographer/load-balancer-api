@@ -17,6 +17,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema"
 )
 
 func LoadBalancerHooks() []ent.Hook {
@@ -146,14 +147,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					cv_location_id := ""
 					location_id, ok := m.LocationID()
-					if !ok && !m.Op().Is(ent.OpCreate) {
-						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						location_id, err = m.OldLocationID(ctx)
-						if err != nil {
-							return nil, err
-						}
-					}
-					additionalSubjects = append(additionalSubjects, location_id)
 
 					if ok {
 						cv_location_id = fmt.Sprintf("%s", fmt.Sprint(location_id))
@@ -176,14 +169,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					cv_provider_id := ""
 					provider_id, ok := m.ProviderID()
-					if !ok && !m.Op().Is(ent.OpCreate) {
-						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						provider_id, err = m.OldProviderID(ctx)
-						if err != nil {
-							return nil, err
-						}
-					}
-					additionalSubjects = append(additionalSubjects, provider_id)
 
 					if ok {
 						cv_provider_id = fmt.Sprintf("%s", fmt.Sprint(provider_id))
@@ -202,6 +187,18 @@ func LoadBalancerHooks() []ent.Hook {
 							PreviousValue: pv_provider_id,
 							CurrentValue:  cv_provider_id,
 						})
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
 					}
 
 					msg := events.ChangeMessage{
@@ -251,14 +248,12 @@ func LoadBalancerHooks() []ent.Hook {
 						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
+					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
+
 					relationships = append(relationships, events.AuthRelationshipRelation{
 						Relation:  "owner",
 						SubjectID: dbObj.OwnerID,
 					})
-
-					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
-					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
-					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -269,6 +264,18 @@ func LoadBalancerHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 
@@ -492,6 +499,18 @@ func OriginHooks() []ent.Hook {
 						})
 					}
 
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -555,6 +574,18 @@ func OriginHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-origin", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 
@@ -737,6 +768,18 @@ func PoolHooks() []ent.Hook {
 						})
 					}
 
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -807,6 +850,18 @@ func PoolHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 
@@ -987,6 +1042,18 @@ func PortHooks() []ent.Hook {
 						})
 					}
 
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
+					}
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -1036,11 +1103,6 @@ func PortHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
 
-					// relationships = append(relationships, events.AuthRelationshipRelation{
-					// 	Relation:  "owner",
-					// 	SubjectID: dbObj,
-					// })
-
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
 					if err != nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
@@ -1065,6 +1127,18 @@ func PortHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(additionalSubjects, lb.LocationID) {
+							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 
@@ -1096,7 +1170,6 @@ func PubsubHooks(c *generated.Client) {
 	c.Pool.Use(PoolHooks()...)
 
 	c.Port.Use(PortHooks()...)
-
 }
 
 func eventType(op ent.Op) string {
@@ -1110,4 +1183,18 @@ func eventType(op ent.Op) string {
 	default:
 		return "unknown"
 	}
+}
+
+func getLoadBalancerID(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) gidx.PrefixedID {
+	if id.Prefix() == schema.LoadBalancerPrefix {
+		return id
+	}
+
+	for _, id := range addID {
+		if id.Prefix() == schema.LoadBalancerPrefix {
+			return id
+		}
+	}
+
+	return ""
 }

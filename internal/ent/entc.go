@@ -17,7 +17,7 @@ import (
 func main() {
 	xExt, err := entx.NewExtension(
 		entx.WithFederation(),
-		// entx.WithEventHooks(), // TODO: additional subjects annotation
+		// entx.WithEventHooks(), // TODO: untangle additional subjects coupled to auth relationship
 		entx.WithJSONScalar(),
 	)
 	if err != nil {
