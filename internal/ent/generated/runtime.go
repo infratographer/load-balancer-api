@@ -89,7 +89,21 @@ func init() {
 	// originDescTarget is the schema descriptor for target field.
 	originDescTarget := originFields[2].Descriptor()
 	// origin.TargetValidator is a validator for the "target" field. It is called by the builders before save.
-	origin.TargetValidator = originDescTarget.Validators[0].(func(string) error)
+	origin.TargetValidator = func() func(string) error {
+		validators := originDescTarget.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(target string) error {
+			for _, fn := range fns {
+				if err := fn(target); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// originDescPortNumber is the schema descriptor for port_number field.
 	originDescPortNumber := originFields[3].Descriptor()
 	// origin.PortNumberValidator is a validator for the "port_number" field. It is called by the builders before save.
