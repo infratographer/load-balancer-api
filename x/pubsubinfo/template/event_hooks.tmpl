@@ -116,18 +116,6 @@
 								{{ end }}
 							{{ end }}
 
-						lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-						if lb_lookup != "" {
-							lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-							if err != nil {
-								return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-							}
-
-							if !slices.Contains(additionalSubjects, lb.LocationID) {
-								additionalSubjects = append(additionalSubjects, lb.LocationID)
-							}
-						}
-
 						msg := events.ChangeMessage{
 							EventType:            eventType(m.Op()),
 							SubjectID:            objID,
@@ -141,6 +129,18 @@
 							if err != nil {
 								return retValue, err
 							}
+
+						lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
+						if lb_lookup != "" {
+							lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+							if err != nil {
+								return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							}
+
+							if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+							}
+						}
 
 						if len(relationships) != 0 {
 							if err := permissions.CreateAuthRelationships(ctx, "{{ $nodeAnnotation.SubjectName }}", objID, relationships...); err != nil {

@@ -36,13 +36,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, objID)
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.ID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.ID)
-						}
-					}
-
 					changeset := []events.FieldChange{}
 					cv_created_at := ""
 					created_at, ok := m.CreatedAt()
@@ -189,18 +182,6 @@ func LoadBalancerHooks() []ent.Hook {
 						})
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
-
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -213,6 +194,25 @@ func LoadBalancerHooks() []ent.Hook {
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
 						return retValue, err
+					}
+
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.ID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.ID)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
 					}
 
 					if len(relationships) != 0 {
@@ -255,18 +255,6 @@ func LoadBalancerHooks() []ent.Hook {
 						SubjectID: dbObj.OwnerID,
 					})
 
-					// we have all the info we need, now complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					if len(relationships) != 0 {
-						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
-							return nil, fmt.Errorf("relationship request failed with error: %w", err)
-						}
-					}
-
 					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
@@ -276,6 +264,18 @@ func LoadBalancerHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
 							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
+					}
+
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
@@ -310,25 +310,6 @@ func OriginHooks() []ent.Hook {
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
-					}
-
-					// addSubjPool, err := m.Client().Pool.Get(ctx, objID)
-					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPool.ID) && objID != addSubjPool.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPool.ID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjPool.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPool.OwnerID)
-						}
-					}
-
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
-						}
 					}
 
 					changeset := []events.FieldChange{}
@@ -499,18 +480,6 @@ func OriginHooks() []ent.Hook {
 						})
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
-
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -523,6 +492,36 @@ func OriginHooks() []ent.Hook {
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
 						return retValue, err
+					}
+
+					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.ID) && objID != addSubjPool.ID {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.ID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.OwnerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.OwnerID)
+						}
+					}
+
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
 					}
 
 					if len(relationships) != 0 {
@@ -620,28 +619,6 @@ func PoolHooks() []ent.Hook {
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
-					}
-
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.ID) && objID != addSubjPort.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPort.ID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
-						}
-					}
-
-					addSubjOrigin, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjOrigin.ID) && objID != addSubjOrigin.ID {
-							additionalSubjects = append(additionalSubjects, addSubjOrigin.ID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjOrigin.PoolID) {
-							additionalSubjects = append(additionalSubjects, addSubjOrigin.PoolID)
-						}
 					}
 
 					changeset := []events.FieldChange{}
@@ -768,18 +745,6 @@ func PoolHooks() []ent.Hook {
 						})
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
-
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -792,6 +757,40 @@ func PoolHooks() []ent.Hook {
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
 						return retValue, err
+					}
+
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.ID) && objID != addSubjPort.ID {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.ID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID)
+						}
+					}
+
+					addSubjOrigin, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjOrigin.ID) && objID != addSubjOrigin.ID {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjOrigin.ID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjOrigin.PoolID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjOrigin.PoolID)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
 					}
 
 					if len(relationships) != 0 {
@@ -827,13 +826,6 @@ func PoolHooks() []ent.Hook {
 						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
-						}
-					}
-
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
 					relationships = append(relationships, events.AuthRelationshipRelation{
@@ -850,6 +842,13 @@ func PoolHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
+					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
+							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
 						}
 					}
 
@@ -896,31 +895,6 @@ func PortHooks() []ent.Hook {
 					objID, ok := m.ID()
 					if !ok {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
-					}
-
-					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPool.ID) && objID != addSubjPool.ID {
-							additionalSubjects = append(additionalSubjects, addSubjPool.ID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjPool.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPool.OwnerID)
-						}
-					}
-					addSubjLoadBalancer, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.OwnerID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ProviderID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ProviderID)
-						}
 					}
 
 					changeset := []events.FieldChange{}
@@ -1014,15 +988,6 @@ func PortHooks() []ent.Hook {
 
 					cv_load_balancer_id := ""
 					load_balancer_id, ok := m.LoadBalancerID()
-					if !ok && !m.Op().Is(ent.OpCreate) {
-						// since we are doing an update or delete and these fields didn't change, load the "old" value
-						load_balancer_id, err = m.OldLoadBalancerID(ctx)
-						if err != nil {
-							return nil, err
-						}
-					}
-					additionalSubjects = append(additionalSubjects, load_balancer_id)
-
 					if ok {
 						cv_load_balancer_id = fmt.Sprintf("%s", fmt.Sprint(load_balancer_id))
 						pv_load_balancer_id := ""
@@ -1042,18 +1007,6 @@ func PortHooks() []ent.Hook {
 						})
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
-						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
-
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -1066,6 +1019,47 @@ func PortHooks() []ent.Hook {
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
 						return retValue, err
+					}
+
+					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.ID) && objID != addSubjPool.ID {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.ID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.OwnerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.OwnerID)
+						}
+					}
+					addSubjLoadBalancer, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.LocationID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.OwnerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.OwnerID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ProviderID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ProviderID)
+						}
+					}
+
+					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
+					if lb_lookup != "" {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+						if err != nil {
+							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
 					}
 
 					if len(relationships) != 0 {
@@ -1103,8 +1097,24 @@ func PortHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
 
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
+						}
+					}
+
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
 					if err != nil {
+						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) {
+							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
+						}
+
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
 						}
@@ -1115,18 +1125,6 @@ func PortHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ProviderID) {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ProviderID)
-						}
-					}
-
-					// we have all the info we need, now complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					if len(relationships) != 0 {
-						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
-							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
