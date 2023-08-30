@@ -151,6 +151,17 @@ func TestMutate_OriginCreate(t *testing.T) {
 				Active:     false,
 			},
 		},
+		{
+			TestName: "invalid target ip",
+			Input: graphclient.CreateLoadBalancerOriginInput{
+				Name:       "original",
+				Target:     "not a valid target ip",
+				PortNumber: 22,
+				PoolID:     pool1.ID,
+				Active:     newBool(false),
+			},
+			errorMsg: "invalid ip address",
+		},
 	}
 
 	for _, tt := range testCases {

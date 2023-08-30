@@ -11,6 +11,7 @@ import (
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -41,6 +42,7 @@ func (Origin) Fields() []ent.Field {
 			),
 		field.String("target").
 			NotEmpty().
+			Validate(validations.IPAddress).
 			// Comment("origin address").
 			Annotations(
 				entgql.OrderField("target"),
