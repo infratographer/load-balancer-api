@@ -17,13 +17,16 @@ import (
 func main() {
 	xExt, err := entx.NewExtension(
 		entx.WithFederation(),
+		// entx.WithEventHooks(), // TODO: untangle additional subjects coupled to auth relationship
 		entx.WithJSONScalar(),
 	)
 	if err != nil {
 		log.Fatalf("creating entx extension: %v", err)
 	}
 
-	pubsubExt, err := pubsubinfo.NewExtension()
+	pubsubExt, err := pubsubinfo.NewExtension(
+		pubsubinfo.WithEventHooks(),
+	)
 	if err != nil {
 		log.Fatalf("creating pubsubinfo extension: %v", err)
 	}

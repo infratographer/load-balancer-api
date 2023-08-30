@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
 // Origin holds the schema definition for the Origin entity.
@@ -64,6 +65,7 @@ func (Origin) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				pubsubinfo.EventsHookAdditionalSubject("pool"),
 			),
 	}
 }
@@ -91,6 +93,7 @@ func (Origin) Indexes() []ent.Index {
 func (Origin) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
+		pubsubinfo.EventsHookSubjectName("load-balancer-origin"),
 		entgql.Type("LoadBalancerOrigin"),
 		prefixIDDirective(OriginPrefix),
 		entgql.RelayConnection(),

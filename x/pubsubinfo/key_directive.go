@@ -12,7 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package pubsubinfo is a package of tools for interacting with ent. Providing tools
-// to make generating federated gql easier, working with JSON values in ent, and
-// provided helpers for using idx as your ID on types.
 package pubsubinfo
+
+import (
+	"entgo.io/contrib/entgql"
+	"github.com/vektah/gqlparser/v2/ast"
+)
+
+// GraphKeyDirective returns an entgql.Directive for setting the @key field on
+// a graphql type
+func GraphKeyDirective(fields string) entgql.Annotation {
+	return entgql.Directives(keyDirective(fields))
+}
+
+func keyDirective(fields string) entgql.Directive {
+	var args []*ast.Argument
+	if fields != "" {
+		args = append(args, &ast.Argument{
+			Name: "fields",
+			Value: &ast.Value{
+				Raw:  fields,
+				Kind: ast.StringValue,
+			},
+		})
+	}
+
+	return entgql.NewDirective("key", args...)
+}

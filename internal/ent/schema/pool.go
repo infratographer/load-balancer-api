@@ -10,6 +10,8 @@ import (
 
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
 // Pool holds the schema definition for the Pool entity.
@@ -49,6 +51,7 @@ func (Pool) Fields() []ent.Field {
 			Annotations(
 				entgql.Type("ID"),
 				entgql.Skip(entgql.SkipWhereInput, entgql.SkipMutationUpdateInput),
+				pubsubinfo.EventsHookAdditionalSubject("owner"),
 			),
 	}
 }
@@ -76,6 +79,7 @@ func (Pool) Indexes() []ent.Index {
 func (Pool) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entx.GraphKeyDirective("id"),
+		pubsubinfo.EventsHookSubjectName("load-balancer-pool"),
 		entgql.Type("LoadBalancerPool"),
 		prefixIDDirective(PoolPrefix),
 		entgql.RelayConnection(),

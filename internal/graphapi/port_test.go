@@ -6,9 +6,11 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
@@ -16,6 +18,10 @@ import (
 
 func TestCreate_LoadbalancerPort(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -119,6 +125,10 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 
 func TestUpdate_LoadbalancerPort(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -210,6 +220,11 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 
 func TestDelete_LoadbalancerPort(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	perms.On("DeleteAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
@@ -265,6 +280,11 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 
 func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	perms.On("DeleteAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
 
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
