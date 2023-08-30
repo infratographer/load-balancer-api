@@ -5,7 +5,7 @@ go 1.20
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.4-0.20230503082810-f251400818ea
-	github.com/99designs/gqlgen v0.17.34
+	github.com/99designs/gqlgen v0.17.36
 	github.com/Yamashou/gqlgenc v0.14.0
 	github.com/brianvoe/gofakeit/v6 v6.23.0
 	github.com/docker/go-connections v0.4.0
@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.21.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.21.0
-	github.com/vektah/gqlparser/v2 v2.5.6
+	github.com/vektah/gqlparser/v2 v2.5.8
 	github.com/wundergraph/graphql-go-tools v1.62.3
 	go.infratographer.com/permissions-api v0.2.4
 	go.infratographer.com/x v0.3.7
