@@ -1,0 +1,3 @@
+interface MetadataNode {
+  id: ID!
+}

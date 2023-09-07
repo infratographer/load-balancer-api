@@ -1540,7 +1540,7 @@ https://relay.dev/graphql/connections.htm#sec-Cursor
 scalar Cursor
 """A valid JSON string."""
 scalar JSON
-type LoadBalancer implements Node & IPAddressable @key(fields: "id") @prefixedID(prefix: "loadbal") {
+type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "id") @prefixedID(prefix: "loadbal") {
   """The ID for the load balancer."""
   id: ID!
   createdAt: Time!
@@ -2327,6 +2327,10 @@ extend type LoadBalancer {
   The location of the load balancer.
   """
   location: Location! @goField(forceResolver: true)
+}
+`, BuiltIn: false},
+	{Name: "../../schema/metadata.graphql", Input: `interface MetadataNode {
+  id: ID!
 }
 `, BuiltIn: false},
 	{Name: "../../schema/origin.graphql", Input: `type Mutation {
@@ -15121,6 +15125,22 @@ func (ec *executionContext) _IPAddressable(ctx context.Context, sel ast.Selectio
 	}
 }
 
+func (ec *executionContext) _MetadataNode(ctx context.Context, sel ast.SelectionSet, obj generated.MetadataNode) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case generated.LoadBalancer:
+		return ec._LoadBalancer(ctx, sel, &obj)
+	case *generated.LoadBalancer:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LoadBalancer(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj generated.Noder) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -15413,7 +15433,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 	return out
 }
 
-var loadBalancerImplementors = []string{"LoadBalancer", "Node", "IPAddressable", "_Entity"}
+var loadBalancerImplementors = []string{"LoadBalancer", "Node", "IPAddressable", "MetadataNode", "_Entity"}
 
 func (ec *executionContext) _LoadBalancer(ctx context.Context, sel ast.SelectionSet, obj *generated.LoadBalancer) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, loadBalancerImplementors)

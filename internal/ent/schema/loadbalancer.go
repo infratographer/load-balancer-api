@@ -116,6 +116,7 @@ func (LoadBalancer) Annotations() []schema.Annotation {
 		schema.Comment("Representation of a load balancer."),
 		prefixIDDirective(LoadBalancerPrefix),
 		entgql.Implements("IPAddressable"),
+		entgql.Implements("MetadataNode"),
 		entgql.RelayConnection(),
 		entgql.Mutations(
 			entgql.MutationCreate().Description("Input information to create a load balancer."),

@@ -1,0 +1,15 @@
+{{ define "model/additional/metadata_node" }}
+  {{- if eq $.Name "LoadBalancer" }}
+    // IsMetadataNode implements interface for MetadataNode
+    func ({{ $.Receiver }} {{ $.Name }}) IsMetadataNode() {}
+  {{ end }}
+{{ end }}
+
+{{ define "metadata_node" }}
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+type MetadataNode interface {
+	IsMetadataNode()
+}
+{{ end }}

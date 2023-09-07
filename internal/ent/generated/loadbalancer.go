@@ -230,6 +230,9 @@ func (lb LoadBalancer) IsEntity() {}
 // IsIPAddressable implements interface for IPAddressable
 func (lb LoadBalancer) IsIPAddressable() {}
 
+// IsMetadataNode implements interface for MetadataNode
+func (lb LoadBalancer) IsMetadataNode() {}
+
 // NamedPorts returns the Ports named value or an error if the edge was not
 // loaded in eager-loading with this name.
 func (lb *LoadBalancer) NamedPorts(name string) ([]*Port, error) {

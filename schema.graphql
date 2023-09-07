@@ -59,7 +59,7 @@ interface IPAddressable {
 }
 """A valid JSON string."""
 scalar JSON
-type LoadBalancer implements Node & IPAddressable @key(fields: "id") @prefixedID(prefix: "loadbal") {
+type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "id") @prefixedID(prefix: "loadbal") {
 	"""The ID for the load balancer."""
 	id: ID!
 	createdAt: Time!
@@ -742,6 +742,9 @@ type Location @key(fields: "id") {
 		where: LoadBalancerWhereInput
 	): LoadBalancerConnection!
 }
+interface MetadataNode {
+	id: ID!
+}
 type Mutation {
 	"""Create a loadbalancer pool origin"""
 	loadBalancerOriginCreate(input: CreateLoadBalancerOriginInput!): LoadBalancerOriginCreatePayload!
@@ -952,7 +955,6 @@ input UpdateLoadBalancerProviderInput {
 	name: String
 }
 scalar _Any
-# a union of all types that use the @key directive
 union _Entity = LoadBalancer | LoadBalancerOrigin | LoadBalancerPool | LoadBalancerPort | LoadBalancerProvider | Location | ResourceOwner
 type _Service {
 	sdl: String

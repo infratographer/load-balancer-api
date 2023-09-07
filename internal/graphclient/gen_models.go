@@ -16,6 +16,11 @@ type IPAddressable interface {
 	GetID() gidx.PrefixedID
 }
 
+type MetadataNode interface {
+	IsMetadataNode()
+	GetID() gidx.PrefixedID
+}
+
 // An object with an ID.
 // Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 type Node interface {
@@ -95,6 +100,8 @@ type LoadBalancer struct {
 
 func (LoadBalancer) IsIPAddressable()            {}
 func (this LoadBalancer) GetID() gidx.PrefixedID { return this.ID }
+
+func (LoadBalancer) IsMetadataNode() {}
 
 func (LoadBalancer) IsNode() {}
 
