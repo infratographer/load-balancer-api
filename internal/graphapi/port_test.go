@@ -2,6 +2,7 @@ package graphapi_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -13,10 +14,13 @@ import (
 	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 )
 
 func TestCreate_LoadbalancerPort(t *testing.T) {
+	config.AppConfig.RestrictedPorts = []int{1234}
+
 	ctx := context.Background()
 	perms := new(mockpermissions.MockPermissions)
 	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -92,6 +96,15 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			},
 			errorMsg: "port number already in use",
 		},
+		{
+			TestName: "fails to create loadbalancer port with restricted port number",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+			},
+			errorMsg: "port number restricted",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -124,6 +137,8 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 }
 
 func TestUpdate_LoadbalancerPort(t *testing.T) {
+	config.AppConfig.RestrictedPorts = []int{1234}
+
 	ctx := context.Background()
 	perms := new(mockpermissions.MockPermissions)
 	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -149,6 +164,13 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 				Number: newInt64(8080),
 			},
 			errorMsg: "port number already in use",
+		},
+		{
+			TestName: "fails to update loadbalancer port number to restricted port",
+			Input: graphclient.UpdateLoadBalancerPortInput{
+				Number: newInt64(1234),
+			},
+			errorMsg: "port number restricted",
 		},
 		{
 			TestName: "updates loadbalancer port name",
@@ -198,6 +220,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, port.ID, tt.Input)
 
 			if tt.errorMsg != "" {
+				fmt.Println(err)
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, resp)

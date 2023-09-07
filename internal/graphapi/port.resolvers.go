@@ -8,15 +8,21 @@ import (
 	"context"
 	"strings"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+	"golang.org/x/exp/slices"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
 func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input generated.CreateLoadBalancerPortInput) (*LoadBalancerPortCreatePayload, error) {
 	if err := permissions.CheckAccess(ctx, input.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
+	}
+
+	if slices.Contains(config.AppConfig.RestrictedPorts, input.Number) {
+		return nil, ErrRestrictedPortNumber
 	}
 
 	p, err := r.client.Port.Create().SetInput(input).Save(ctx)
@@ -38,9 +44,13 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	if err != nil {
 		return nil, err
 	}
-
 	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
+	}
+	if input.Number != nil {
+		if slices.Contains(config.AppConfig.RestrictedPorts, *input.Number) {
+			return nil, ErrRestrictedPortNumber
+		}
 	}
 
 	p, err = p.Update().SetInput(input).Save(ctx)
