@@ -2,7 +2,6 @@ package graphapi_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -220,7 +219,6 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, port.ID, tt.Input)
 
 			if tt.errorMsg != "" {
-				fmt.Println(err)
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, resp)
