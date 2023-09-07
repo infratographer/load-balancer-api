@@ -11,6 +11,7 @@ import (
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -42,6 +43,7 @@ func (Port) Fields() []ent.Field {
 		field.Int("number").
 			Min(minPort).
 			Max(maxPort).
+			Validate(validations.RestrictedPorts).
 			Annotations(
 				entgql.OrderField("number"),
 			),
