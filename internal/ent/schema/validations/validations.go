@@ -2,10 +2,10 @@
 package validations
 
 import (
-	"fmt"
 	"net"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
+
 	"golang.org/x/exp/slices"
 )
 
@@ -20,7 +20,6 @@ func IPAddress(ip string) error {
 
 // RestrictedPorts validates if the given port is restricted
 func RestrictedPorts(port int) error {
-	fmt.Println(port)
 	if slices.Contains(config.AppConfig.RestrictedPorts, port) {
 		return ErrRestrictedPort
 	}
