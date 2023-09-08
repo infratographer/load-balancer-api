@@ -72,7 +72,7 @@ interface IPAddressable {
 }
 """A valid JSON string."""
 scalar JSON
-type LoadBalancer implements Node & IPAddressable @key(fields: "id") @prefixedID(prefix: "loadbal") {
+type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "id") @prefixedID(prefix: "loadbal") {
 	"""The ID for the load balancer."""
 	id: ID!
 	createdAt: Time!
@@ -754,6 +754,9 @@ type Location @key(fields: "id") {
 		"""Filtering options for LoadBalancers returned from the connection."""
 		where: LoadBalancerWhereInput
 	): LoadBalancerConnection!
+}
+interface MetadataNode {
+	id: ID!
 }
 type Mutation {
 	"""Create a loadbalancer pool origin"""
