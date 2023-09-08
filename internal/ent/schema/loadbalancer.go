@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"strings"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -28,12 +30,27 @@ func (LoadBalancer) Mixin() []ent.Mixin {
 	}
 }
 
+// newLoadBalancerID generates a new ID for a LoadBalancer
+// Prevent IDs from ending in '-' or' _' as it conflicts with applying kube labels in the provider
+func newLoadBalancerID() gidx.PrefixedID {
+	for {
+		id := gidx.MustNewID(LoadBalancerPrefix)
+
+		switch {
+		case strings.HasSuffix(id.String(), "-"):
+		case strings.HasSuffix(id.String(), "_"):
+		default:
+			return id
+		}
+	}
+}
+
 // Fields of the Instance.
 func (LoadBalancer) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").
 			GoType(gidx.PrefixedID("")).
-			DefaultFunc(func() gidx.PrefixedID { return gidx.MustNewID(LoadBalancerPrefix) }).
+			DefaultFunc(newLoadBalancerID).
 			Unique().
 			Immutable().
 			Comment("The ID for the load balancer.").
