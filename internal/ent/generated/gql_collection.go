@@ -279,6 +279,11 @@ func (o *OriginQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 				selectedFields = append(selectedFields, origin.FieldName)
 				fieldSeen[origin.FieldName] = struct{}{}
 			}
+		case "weight":
+			if _, ok := fieldSeen[origin.FieldWeight]; !ok {
+				selectedFields = append(selectedFields, origin.FieldWeight)
+				fieldSeen[origin.FieldWeight] = struct{}{}
+			}
 		case "target":
 			if _, ok := fieldSeen[origin.FieldTarget]; !ok {
 				selectedFields = append(selectedFields, origin.FieldTarget)
