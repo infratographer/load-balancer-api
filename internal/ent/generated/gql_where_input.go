@@ -372,6 +372,16 @@ type LoadBalancerOriginWhereInput struct {
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
+	// "weight" field predicates.
+	Weight      *int  `json:"weight,omitempty"`
+	WeightNEQ   *int  `json:"weightNEQ,omitempty"`
+	WeightIn    []int `json:"weightIn,omitempty"`
+	WeightNotIn []int `json:"weightNotIn,omitempty"`
+	WeightGT    *int  `json:"weightGT,omitempty"`
+	WeightGTE   *int  `json:"weightGTE,omitempty"`
+	WeightLT    *int  `json:"weightLT,omitempty"`
+	WeightLTE   *int  `json:"weightLTE,omitempty"`
+
 	// "target" field predicates.
 	Target             *string  `json:"target,omitempty"`
 	TargetNEQ          *string  `json:"targetNEQ,omitempty"`
@@ -587,6 +597,30 @@ func (i *LoadBalancerOriginWhereInput) P() (predicate.Origin, error) {
 	}
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, origin.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Weight != nil {
+		predicates = append(predicates, origin.WeightEQ(*i.Weight))
+	}
+	if i.WeightNEQ != nil {
+		predicates = append(predicates, origin.WeightNEQ(*i.WeightNEQ))
+	}
+	if len(i.WeightIn) > 0 {
+		predicates = append(predicates, origin.WeightIn(i.WeightIn...))
+	}
+	if len(i.WeightNotIn) > 0 {
+		predicates = append(predicates, origin.WeightNotIn(i.WeightNotIn...))
+	}
+	if i.WeightGT != nil {
+		predicates = append(predicates, origin.WeightGT(*i.WeightGT))
+	}
+	if i.WeightGTE != nil {
+		predicates = append(predicates, origin.WeightGTE(*i.WeightGTE))
+	}
+	if i.WeightLT != nil {
+		predicates = append(predicates, origin.WeightLT(*i.WeightLT))
+	}
+	if i.WeightLTE != nil {
+		predicates = append(predicates, origin.WeightLTE(*i.WeightLTE))
 	}
 	if i.Target != nil {
 		predicates = append(predicates, origin.TargetEQ(*i.Target))

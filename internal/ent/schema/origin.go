@@ -40,6 +40,11 @@ func (Origin) Fields() []ent.Field {
 			Annotations(
 				entgql.OrderField("name"),
 			),
+		field.Int("weight").
+			Default(100).
+			Annotations(
+				entgql.OrderField("weight"),
+			),
 		field.String("target").
 			NotEmpty().
 			Validate(validations.IPAddress).

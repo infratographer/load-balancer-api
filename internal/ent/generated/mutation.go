@@ -800,6 +800,8 @@ type OriginMutation struct {
 	created_at     *time.Time
 	updated_at     *time.Time
 	name           *string
+	weight         *int
+	addweight      *int
 	target         *string
 	port_number    *int
 	addport_number *int
@@ -1022,6 +1024,62 @@ func (m *OriginMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *OriginMutation) ResetName() {
 	m.name = nil
+}
+
+// SetWeight sets the "weight" field.
+func (m *OriginMutation) SetWeight(i int) {
+	m.weight = &i
+	m.addweight = nil
+}
+
+// Weight returns the value of the "weight" field in the mutation.
+func (m *OriginMutation) Weight() (r int, exists bool) {
+	v := m.weight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeight returns the old "weight" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldWeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeight: %w", err)
+	}
+	return oldValue.Weight, nil
+}
+
+// AddWeight adds i to the "weight" field.
+func (m *OriginMutation) AddWeight(i int) {
+	if m.addweight != nil {
+		*m.addweight += i
+	} else {
+		m.addweight = &i
+	}
+}
+
+// AddedWeight returns the value that was added to the "weight" field in this mutation.
+func (m *OriginMutation) AddedWeight() (r int, exists bool) {
+	v := m.addweight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeight resets all changes to the "weight" field.
+func (m *OriginMutation) ResetWeight() {
+	m.weight = nil
+	m.addweight = nil
 }
 
 // SetTarget sets the "target" field.
@@ -1249,7 +1307,7 @@ func (m *OriginMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OriginMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, origin.FieldCreatedAt)
 	}
@@ -1258,6 +1316,9 @@ func (m *OriginMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, origin.FieldName)
+	}
+	if m.weight != nil {
+		fields = append(fields, origin.FieldWeight)
 	}
 	if m.target != nil {
 		fields = append(fields, origin.FieldTarget)
@@ -1285,6 +1346,8 @@ func (m *OriginMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case origin.FieldName:
 		return m.Name()
+	case origin.FieldWeight:
+		return m.Weight()
 	case origin.FieldTarget:
 		return m.Target()
 	case origin.FieldPortNumber:
@@ -1308,6 +1371,8 @@ func (m *OriginMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldUpdatedAt(ctx)
 	case origin.FieldName:
 		return m.OldName(ctx)
+	case origin.FieldWeight:
+		return m.OldWeight(ctx)
 	case origin.FieldTarget:
 		return m.OldTarget(ctx)
 	case origin.FieldPortNumber:
@@ -1346,6 +1411,13 @@ func (m *OriginMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
+	case origin.FieldWeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeight(v)
+		return nil
 	case origin.FieldTarget:
 		v, ok := value.(string)
 		if !ok {
@@ -1382,6 +1454,9 @@ func (m *OriginMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *OriginMutation) AddedFields() []string {
 	var fields []string
+	if m.addweight != nil {
+		fields = append(fields, origin.FieldWeight)
+	}
 	if m.addport_number != nil {
 		fields = append(fields, origin.FieldPortNumber)
 	}
@@ -1393,6 +1468,8 @@ func (m *OriginMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *OriginMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case origin.FieldWeight:
+		return m.AddedWeight()
 	case origin.FieldPortNumber:
 		return m.AddedPortNumber()
 	}
@@ -1404,6 +1481,13 @@ func (m *OriginMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *OriginMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case origin.FieldWeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeight(v)
+		return nil
 	case origin.FieldPortNumber:
 		v, ok := value.(int)
 		if !ok {
@@ -1446,6 +1530,9 @@ func (m *OriginMutation) ResetField(name string) error {
 		return nil
 	case origin.FieldName:
 		m.ResetName()
+		return nil
+	case origin.FieldWeight:
+		m.ResetWeight()
 		return nil
 	case origin.FieldTarget:
 		m.ResetTarget()
