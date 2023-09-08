@@ -38,7 +38,6 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	if err != nil {
 		return nil, err
 	}
-
 	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}

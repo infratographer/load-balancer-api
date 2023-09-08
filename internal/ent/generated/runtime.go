@@ -184,6 +184,7 @@ func init() {
 		fns := [...]func(int) error{
 			validators[0].(func(int) error),
 			validators[1].(func(int) error),
+			validators[2].(func(int) error),
 		}
 		return func(number int) error {
 			for _, fn := range fns {

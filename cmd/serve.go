@@ -69,6 +69,7 @@ func init() {
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
 	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
 	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
+	serveCmd.Flags().IntSlice("restricted-ports", []int{}, "ports that are restricted from being used by the load balancer (e.g. 22, 8086, etc.)")
 
 	events.MustViperFlags(viper.GetViper(), serveCmd.Flags(), appName)
 	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
@@ -147,6 +148,8 @@ func serve(ctx context.Context) error {
 		logger.Errorf("failed creating schema resources", zap.Error(err))
 		return err
 	}
+
+	config.AppConfig.RestrictedPorts = viper.GetIntSlice("restricted-ports")
 
 	var middleware []echo.MiddlewareFunc
 
