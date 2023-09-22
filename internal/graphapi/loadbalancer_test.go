@@ -50,6 +50,11 @@ func TestQuery_loadBalancer(t *testing.T) {
 			QueryID:  gidx.MustNewID("testing"),
 			errorMsg: "load_balancer not found",
 		},
+		{
+			TestName: "invalid gidx format",
+			QueryID:  "test-invalid-id",
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -195,6 +200,12 @@ func TestUpdate_loadBalancer(t *testing.T) {
 			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
 			errorMsg: "load_balancer not found",
 		},
+		{
+			TestName: "fails with invalid gidx",
+			ID:       "test-invalid-id",
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -253,6 +264,11 @@ func TestDelete_loadBalancer(t *testing.T) {
 			TestName: "fails to delete empty loadbalancer ID",
 			Input:    gidx.PrefixedID(""),
 			errorMsg: "load_balancer not found",
+		},
+		{
+			TestName: "fails with invalid id",
+			Input:    "test-invalid-id",
+			errorMsg: "invalid id",
 		},
 	}
 

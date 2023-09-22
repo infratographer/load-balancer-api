@@ -39,6 +39,11 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) (*LoadBalancerUpdatePayload, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
 
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
@@ -69,6 +74,11 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 // LoadBalancerDelete is the resolver for the loadBalancerDelete field.
 func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerDelete); err != nil {
 		return nil, err
@@ -122,6 +132,11 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 // LoadBalancer is the resolver for the loadBalancer field.
 func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerGet); err != nil {
 		return nil, err

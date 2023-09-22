@@ -21,6 +21,11 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 		return nil, err
 	}
 
+	// check gidx format
+	if _, err := gidx.Parse(input.PoolID.String()); err != nil {
+		return nil, err
+	}
+
 	// check if pool exists
 	_, err := r.client.Pool.Get(ctx, input.PoolID)
 	if err != nil {
@@ -48,6 +53,11 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 // LoadBalancerOriginUpdate is the resolver for the loadBalancerOriginUpdate field.
 func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerOriginInput) (*LoadBalancerOriginUpdatePayload, error) {
 	logger := r.logger.With("originID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
 
 	origin, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
@@ -79,6 +89,11 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 // LoadBalancerOriginDelete is the resolver for the loadBalancerOriginDelete field.
 func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerOriginDeletePayload, error) {
 	logger := r.logger.With("originID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
 
 	origin, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
