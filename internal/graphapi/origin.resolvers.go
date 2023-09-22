@@ -7,13 +7,16 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerOriginCreate is the resolver for the loadBalancerOriginCreate field.
 func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input generated.CreateLoadBalancerOriginInput) (*LoadBalancerOriginCreatePayload, error) {
+	logger := r.logger.With("poolID", input.PoolID)
+
 	if err := permissions.CheckAccess(ctx, input.PoolID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
@@ -21,12 +24,22 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 	// check if pool exists
 	_, err := r.client.Pool.Get(ctx, input.PoolID)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get pool", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	origin, err := r.client.Origin.Create().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to create origin", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerOriginCreatePayload{LoadBalancerOrigin: origin}, nil
@@ -34,9 +47,16 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 
 // LoadBalancerOriginUpdate is the resolver for the loadBalancerOriginUpdate field.
 func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerOriginInput) (*LoadBalancerOriginUpdatePayload, error) {
+	logger := r.logger.With("originID", id.String())
+
 	origin, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get origin", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
@@ -45,7 +65,12 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 
 	origin, err = origin.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to update origin", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerOriginUpdatePayload{LoadBalancerOrigin: origin}, nil
@@ -53,9 +78,16 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 
 // LoadBalancerOriginDelete is the resolver for the loadBalancerOriginDelete field.
 func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerOriginDeletePayload, error) {
+	logger := r.logger.With("originID", id.String())
+
 	origin, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get origin", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
@@ -63,7 +95,8 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 	}
 
 	if err := r.client.Origin.DeleteOneID(id).Exec(ctx); err != nil {
-		return nil, err
+		logger.Errorw("failed to delete origin", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerOriginDeletePayload{DeletedID: id}, nil
