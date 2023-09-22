@@ -164,16 +164,17 @@ func TestUpdate_loadBalancer(t *testing.T) {
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	updateName := gofakeit.DomainName()
-	emptyName := ""
 
 	testCases := []struct {
 		TestName   string
+		ID         gidx.PrefixedID
 		Input      graphclient.UpdateLoadBalancerInput
 		ExpectedLB *ent.LoadBalancer
 		errorMsg   string
 	}{
 		{
 			TestName: "updates loadbalancer",
+			ID:       lb.ID,
 			Input:    graphclient.UpdateLoadBalancerInput{Name: &updateName},
 			ExpectedLB: &ent.LoadBalancer{
 				Name:       updateName,
@@ -184,14 +185,21 @@ func TestUpdate_loadBalancer(t *testing.T) {
 		},
 		{
 			TestName: "fails to update name to empty",
-			Input:    graphclient.UpdateLoadBalancerInput{Name: &emptyName},
+			ID:       lb.ID,
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("")},
 			errorMsg: "value is less than the required length",
+		},
+		{
+			TestName: "fails to update loadbalancer that does not exist",
+			ID:       gidx.PrefixedID("loadbal-dne"),
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
+			errorMsg: "load_balancer not found",
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerUpdate(ctx, lb.ID, tt.Input)
+			resp, err := graphTestClient().LoadBalancerUpdate(ctx, tt.ID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
