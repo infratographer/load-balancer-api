@@ -266,7 +266,7 @@ func TestDelete_loadBalancer(t *testing.T) {
 			errorMsg: "load_balancer not found",
 		},
 		{
-			TestName: "fails with invalid id",
+			TestName: "fails with invalid gidx",
 			Input:    "test-invalid-id",
 			errorMsg: "invalid id",
 		},

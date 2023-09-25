@@ -7,14 +7,13 @@ package graphapi
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
-	"github.com/labstack/gommon/log"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
@@ -23,9 +22,19 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 		return nil, err
 	}
 
+	// check gidx owner format
+	if _, err := gidx.Parse(input.OwnerID.String()); err != nil {
+		return nil, err
+	}
+
 	pool, err := r.client.Pool.Create().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		r.logger.Errorw("failed to create loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPoolCreatePayload{LoadBalancerPool: pool}, nil
@@ -33,18 +42,35 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 // LoadBalancerPoolUpdate is the resolver for the LoadBalancerPoolUpdate field.
 func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*LoadBalancerPoolUpdatePayload, error) {
+	logger := r.logger.With("loadbalancerPoolID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	pool, err = pool.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to update loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPoolUpdatePayload{LoadBalancerPool: pool}, nil
@@ -52,54 +78,59 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 // LoadBalancerPoolDelete is the resolver for the loadBalancerPoolDelete field.
 func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPoolDeletePayload, error) {
+	logger := r.logger.With("loadbalancerPoolID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolDelete); err != nil {
 		return nil, err
 	}
 
-	// TODO: return the requestID echo generates or we could use the root trace id
-	var (
-		err error
-		tx  *generated.Tx
-	)
+	if _, err := r.client.Pool.Get(ctx, id); err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
 
-	tx, err = r.client.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return nil, err
+		logger.Errorw("failed to get loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
 	}
+
+	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		logger.Errorw("failed to begin transaction", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	defer tx.Rollback()
 
 	// todo: cleanup pool assigments
 
 	// cleanup origins associated with pool
 	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)
 	if err != nil {
-		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-		}
-		return nil, err
+		logger.Errorw("failed to query origins", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	for _, o := range origins {
 		if err = tx.Origin.DeleteOne(o).Exec(ctx); err != nil {
-			if rerr := tx.Rollback(); rerr != nil {
-				log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-			}
-			return nil, err
+			logger.Errorw("failed to delete origin", "origin", o.ID, "error", err)
+			return nil, ErrInternalServerError
 		}
 	}
 
 	// delete pool
-	if err = tx.Pool.DeleteOneID(id).Exec(ctx); err != nil {
-		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-		}
-		return nil, err
+	if err := tx.Pool.DeleteOneID(id).Exec(ctx); err != nil {
+		logger.Errorw("failed to delete loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
 	}
 
-	if err = tx.Commit(); err != nil {
-		if rerr := tx.Rollback(); rerr != nil {
-			log.Error(fmt.Errorf("%w: %v", err, rerr).Error())
-		}
-		return nil, err
+	if err := tx.Commit(); err != nil {
+		logger.Errorw("failed to commit transaction", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPoolDeletePayload{DeletedID: &id}, nil
@@ -107,9 +138,26 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 
 // LoadBalancerPool is the resolver for the loadBalancerPool field.
 func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID) (*generated.Pool, error) {
+	logger := r.logger.With("loadbalancerPoolID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolGet); err != nil {
 		return nil, err
 	}
 
-	return r.client.Pool.Get(ctx, id)
+	pool, err := r.client.Pool.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	return pool, nil
 }
