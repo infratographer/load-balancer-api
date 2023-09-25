@@ -18,12 +18,12 @@ import (
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
 func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*LoadBalancerPoolCreatePayload, error) {
-	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerPoolCreate); err != nil {
+	// check gidx owner format
+	if _, err := gidx.Parse(input.OwnerID.String()); err != nil {
 		return nil, err
 	}
 
-	// check gidx owner format
-	if _, err := gidx.Parse(input.OwnerID.String()); err != nil {
+	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerPoolCreate); err != nil {
 		return nil, err
 	}
 
@@ -33,7 +33,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 			return nil, err
 		}
 
-		r.logger.Errorw("failed to create loadbalancer", "error", err)
+		r.logger.Errorw("failed to create loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
 	}
 

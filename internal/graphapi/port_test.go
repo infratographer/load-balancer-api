@@ -104,6 +104,16 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			},
 			errorMsg: "port number restricted",
 		},
+		{
+			TestName: "fails to create loadbalancer port with invalid pool id",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+				PoolIDs:        []gidx.PrefixedID{"not-a-valid-pool-id"},
+			},
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -154,11 +164,13 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 	testCases := []struct {
 		TestName string
 		Input    graphclient.UpdateLoadBalancerPortInput
+		ID       gidx.PrefixedID
 		Expected *graphclient.LoadBalancerPort
 		errorMsg string
 	}{
 		{
 			TestName: "fails to update loadbalancer port number to duplicate of another port",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(8080),
 			},
@@ -166,6 +178,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number to restricted port",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(1234),
 			},
@@ -173,6 +186,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "updates loadbalancer port name",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Name: newString("lb-port"),
 			},
@@ -183,6 +197,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "updates loadbalancer port number",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(22),
 			},
@@ -193,6 +208,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port name to empty",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Name: newString(""),
 			},
@@ -200,6 +216,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number < min",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(0),
 			},
@@ -207,16 +224,29 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number > max",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(65536),
 			},
 			errorMsg: "value out of range",
 		},
+		{
+			TestName: "fails to update port that does not exist",
+			ID:       gidx.PrefixedID("loadprt-doesnotexist"),
+			Input:    graphclient.UpdateLoadBalancerPortInput{},
+			errorMsg: "not found",
+		},
+		{
+			TestName: "fails to update port with invalid gidx",
+			ID:       gidx.PrefixedID("not a valid gidx"),
+			Input:    graphclient.UpdateLoadBalancerPortInput{},
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, port.ID, tt.Input)
+			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, tt.ID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -271,6 +301,11 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 			TestName: "fails to delete empty loadbalancer port ID",
 			Input:    gidx.PrefixedID(""),
 			errorMsg: "port not found",
+		},
+		{
+			TestName: "fails to delete with invalid gidx port ID",
+			Input:    gidx.PrefixedID("not-a-valid-gidx"),
+			errorMsg: "invalid id",
 		},
 	}
 
