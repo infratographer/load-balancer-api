@@ -18,6 +18,8 @@ import (
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
 func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*LoadBalancerPoolCreatePayload, error) {
+	logger := r.logger.With("ownerID", input.OwnerID)
+
 	// check gidx owner format
 	if _, err := gidx.Parse(input.OwnerID.String()); err != nil {
 		return nil, err
@@ -33,7 +35,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 			return nil, err
 		}
 
-		r.logger.Errorw("failed to create loadbalancer pool", "error", err)
+		logger.Errorw("failed to create loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
 	}
 
@@ -42,7 +44,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 // LoadBalancerPoolUpdate is the resolver for the LoadBalancerPoolUpdate field.
 func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPoolInput) (*LoadBalancerPoolUpdatePayload, error) {
-	logger := r.logger.With("loadbalancerPoolID", id.String())
+	logger := r.logger.With("loadbalancerPoolID", id)
 
 	// check gidx format
 	if _, err := gidx.Parse(id.String()); err != nil {
@@ -78,7 +80,7 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 // LoadBalancerPoolDelete is the resolver for the loadBalancerPoolDelete field.
 func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPoolDeletePayload, error) {
-	logger := r.logger.With("loadbalancerPoolID", id.String())
+	logger := r.logger.With("loadbalancerPoolID", id)
 
 	// check gidx format
 	if _, err := gidx.Parse(id.String()); err != nil {
@@ -105,8 +107,6 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	}
 
 	defer tx.Rollback()
-
-	// todo: cleanup pool assigments
 
 	// cleanup origins associated with pool
 	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)

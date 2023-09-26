@@ -16,6 +16,8 @@ import (
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
 func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input generated.CreateLoadBalancerPortInput) (*LoadBalancerPortCreatePayload, error) {
+	logger := r.logger.With("loadbalancerID", input.LoadBalancerID, "loadbalancerPools", input.PoolIDs)
+
 	// check gidx lb id format
 	if _, err := gidx.Parse(input.LoadBalancerID.String()); err != nil {
 		return nil, err
@@ -40,7 +42,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 		case generated.IsValidationError(err):
 			return nil, err
 		default:
-			r.logger.Errorw("failed to create loadbalancer port", "error", err)
+			logger.Errorw("failed to create loadbalancer port", "error", err)
 			return nil, ErrInternalServerError
 		}
 	}
@@ -50,7 +52,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 // LoadBalancerPortUpdate is the resolver for the loadBalancerPortUpdate field.
 func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPortInput) (*LoadBalancerPortUpdatePayload, error) {
-	logger := r.logger.With("loadbalancerPortID", id.String())
+	logger := r.logger.With("loadbalancerPortID", id)
 
 	// check gidx format
 	if _, err := gidx.Parse(id.String()); err != nil {

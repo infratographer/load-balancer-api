@@ -17,12 +17,12 @@ import (
 func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input generated.CreateLoadBalancerOriginInput) (*LoadBalancerOriginCreatePayload, error) {
 	logger := r.logger.With("poolID", input.PoolID)
 
-	if err := permissions.CheckAccess(ctx, input.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+	// check gidx format
+	if _, err := gidx.Parse(input.PoolID.String()); err != nil {
 		return nil, err
 	}
 
-	// check gidx format
-	if _, err := gidx.Parse(input.PoolID.String()); err != nil {
+	if err := permissions.CheckAccess(ctx, input.PoolID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
