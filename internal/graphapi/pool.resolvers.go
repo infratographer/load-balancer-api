@@ -23,6 +23,26 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 		return nil, err
 	}
 
+	for _, portId := range input.PortIDs {
+		port, err := r.client.Port.Get(ctx, portId)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+			return nil, err
+		}
+
+		portLb, err := port.LoadBalancer(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if input.OwnerID != portLb.OwnerID {
+			return nil, ErrOwnerConflict
+		}
+	}
+
 	pool, err := r.client.Pool.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -40,6 +60,26 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, portId := range input.AddPortIDs {
+		port, err := r.client.Port.Get(ctx, portId)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerGet); err != nil {
+			return nil, err
+		}
+
+		portLb, err := port.LoadBalancer(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		if pool.OwnerID != portLb.OwnerID {
+			return nil, ErrOwnerConflict
+		}
 	}
 
 	pool, err = pool.Update().SetInput(input).Save(ctx)
