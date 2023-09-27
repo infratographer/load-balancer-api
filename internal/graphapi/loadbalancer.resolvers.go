@@ -99,7 +99,11 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		return nil, ErrInternalServerError
 	}
 
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			logger.Errorw("failed to rollback transaction", "error", err)
+		}
+	}()
 
 	// cleanup ports associated with loadbalancer
 	ports, err := tx.Port.Query().Where(predicate.Port(port.LoadBalancerIDEQ(id))).All(ctx)

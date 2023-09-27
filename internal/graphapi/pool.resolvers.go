@@ -106,7 +106,11 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			logger.Errorw("failed to rollback transaction", "error", err)
+		}
+	}()
 
 	// cleanup origins associated with pool
 	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)
