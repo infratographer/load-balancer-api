@@ -90,6 +90,9 @@ func TestCreate_loadBalancer(t *testing.T) {
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
 
+	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+
 	testCases := []struct {
 		TestName   string
 		Input      graphclient.CreateLoadBalancerInput
@@ -120,6 +123,11 @@ func TestCreate_loadBalancer(t *testing.T) {
 			TestName: "fails to create loadbalancer with empty locationID",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: ""},
 			errorMsg: "value is less than the required length",
+		},
+		{
+			TestName: "fails to create loadbalancer with conflicting port",
+			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: locationID, PortIDs: []gidx.PrefixedID{port.ID}},
+			errorMsg: "is already connected to a different load_balancer_id",
 		},
 	}
 

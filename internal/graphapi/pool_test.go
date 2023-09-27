@@ -89,6 +89,9 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 	ownerID := gidx.MustNewID(ownerPrefix)
 
+	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+
 	testCases := []struct {
 		TestName     string
 		Input        graphclient.CreateLoadBalancerPoolInput
@@ -134,6 +137,16 @@ func TestMutate_PoolCreate(t *testing.T) {
 				OwnerID:  ownerID,
 			},
 			errorMsg: "validator failed",
+		},
+		{
+			TestName: "invalid port",
+			Input: graphclient.CreateLoadBalancerPoolInput{
+				Name:     "",
+				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
+				OwnerID:  ownerID,
+				PortIDs:  []gidx.PrefixedID{port.ID},
+			},
+			errorMsg: "conflicting ownership",
 		},
 	}
 

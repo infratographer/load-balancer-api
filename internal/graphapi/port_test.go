@@ -30,6 +30,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	poolBad := (&PoolBuilder{}).MustNew(ctx)
 	_ = (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
@@ -66,7 +67,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				LoadBalancerID: "",
 				Number:         22,
 			},
-			errorMsg: "value is less than the required length",
+			errorMsg: "load_balancer not found",
 		},
 		{
 			TestName: "fails to create loadbalancer port with number < min",
@@ -103,6 +104,16 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				Number:         1234,
 			},
 			errorMsg: "port number restricted",
+		},
+		{
+			TestName: "fails to create loadbalancer port with someone else's pool",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+				PoolIDs:        []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "conflicting ownership",
 		},
 	}
 
@@ -149,6 +160,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	poolBad := (&PoolBuilder{}).MustNew(ctx)
 	_ = (&PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
 
 	testCases := []struct {
@@ -211,6 +223,13 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 				Number: newInt64(65536),
 			},
 			errorMsg: "value out of range",
+		},
+		{
+			TestName: "fails to update loadbalancer port with someone else's pool",
+			Input: graphclient.UpdateLoadBalancerPortInput{
+				AddPoolIDs: []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "conflicting ownership",
 		},
 	}
 
