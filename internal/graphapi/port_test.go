@@ -106,7 +106,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			errorMsg: "port number restricted",
 		},
 		{
-			TestName: "fails to create loadbalancer port with someone else's pool",
+			TestName: "fails to create loadbalancer port with pool with conflicting OwnerID",
 			Input: graphclient.CreateLoadBalancerPortInput{
 				Name:           "lb-port",
 				LoadBalancerID: lb.ID,
@@ -225,7 +225,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			errorMsg: "value out of range",
 		},
 		{
-			TestName: "fails to update loadbalancer port with someone else's pool",
+			TestName: "fails to update loadbalancer port with pool with conflicting OwnerID",
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				AddPoolIDs: []gidx.PrefixedID{poolBad.ID},
 			},
