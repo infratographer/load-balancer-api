@@ -25,7 +25,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 	}
 
 	for _, poolId := range input.PoolIDs {
-		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolUpdate); err != nil {
+		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
 			return nil, err
 		}
 
@@ -68,7 +68,7 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	}
 
 	for _, poolId := range input.AddPoolIDs {
-		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolUpdate); err != nil {
+		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
 			return nil, err
 		}
 

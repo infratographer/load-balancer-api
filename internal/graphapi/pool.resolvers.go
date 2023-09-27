@@ -29,7 +29,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 			return nil, err
 		}
 
-		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerGet); err != nil {
 			return nil, err
 		}
 
