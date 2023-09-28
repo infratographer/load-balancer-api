@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
 )
@@ -24,18 +25,18 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 		return nil, err
 	}
 
+	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.PoolIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.PoolIDs) {
+		return nil, ErrOwnerConflict
+	}
+
 	for _, poolId := range input.PoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
 			return nil, err
-		}
-
-		pool, err := r.client.Pool.Get(ctx, poolId)
-		if err != nil {
-			return nil, err
-		}
-
-		if lb.OwnerID != pool.OwnerID {
-			return nil, ErrOwnerConflict
 		}
 	}
 
@@ -67,18 +68,18 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
+	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.AddPoolIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.AddPoolIDs) {
+		return nil, ErrOwnerConflict
+	}
+
 	for _, poolId := range input.AddPoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
 			return nil, err
-		}
-
-		pool, err := r.client.Pool.Get(ctx, poolId)
-		if err != nil {
-			return nil, err
-		}
-
-		if lb.OwnerID != pool.OwnerID {
-			return nil, ErrOwnerConflict
 		}
 	}
 

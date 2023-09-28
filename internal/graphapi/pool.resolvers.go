@@ -11,7 +11,9 @@ import (
 
 	"github.com/labstack/gommon/log"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
@@ -23,23 +25,18 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 		return nil, err
 	}
 
+	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(input.OwnerID))).Where(port.IDIn(input.PortIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.PortIDs) {
+		return nil, ErrOwnerConflict
+	}
+
 	for _, portId := range input.PortIDs {
-		port, err := r.client.Port.Get(ctx, portId)
-		if err != nil {
+		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
 			return nil, err
-		}
-
-		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerGet); err != nil {
-			return nil, err
-		}
-
-		portLb, err := port.LoadBalancer(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if input.OwnerID != portLb.OwnerID {
-			return nil, ErrOwnerConflict
 		}
 	}
 
@@ -62,23 +59,18 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
+	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(pool.OwnerID))).Where(port.IDIn(input.AddPortIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.AddPortIDs) {
+		return nil, ErrOwnerConflict
+	}
+
 	for _, portId := range input.AddPortIDs {
-		port, err := r.client.Port.Get(ctx, portId)
-		if err != nil {
+		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
 			return nil, err
-		}
-
-		if err := permissions.CheckAccess(ctx, port.LoadBalancerID, actionLoadBalancerGet); err != nil {
-			return nil, err
-		}
-
-		portLb, err := port.LoadBalancer(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if pool.OwnerID != portLb.OwnerID {
-			return nil, ErrOwnerConflict
 		}
 	}
 
