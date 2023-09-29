@@ -196,10 +196,12 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).Only(ctx)
+					addSubjPortIDs, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).IDs(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.ID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.ID)
+						for _, portID := range addSubjPortIDs {
+							if !slices.Contains(msg.AdditionalSubjectIDs, portID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, portID)
+							}
 						}
 					}
 
@@ -494,21 +496,25 @@ func OriginHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).Only(ctx)
+					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.ID) && objID != addSubjPool.ID {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.ID)
-						}
+						for _, pool := range addSubjPools {
+							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) && objID != pool.ID {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.OwnerID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.OwnerID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, pool.OwnerID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.OwnerID)
+							}
 						}
 					}
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).Only(ctx)
+					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID)
+						for _, port := range addSubjPorts {
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
+							}
 						}
 					}
 
@@ -759,25 +765,29 @@ func PoolHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.ID) && objID != addSubjPort.ID {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.ID)
-						}
+						for _, port := range addSubjPorts {
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.ID) && objID != port.ID {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.ID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
+							}
 						}
 					}
 
-					addSubjOrigin, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).Only(ctx)
+					addSubjOrigins, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjOrigin.ID) && objID != addSubjOrigin.ID {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjOrigin.ID)
-						}
+						for _, origin := range addSubjOrigins {
+							if !slices.Contains(msg.AdditionalSubjectIDs, origin.ID) && objID != origin.ID {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, origin.ID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjOrigin.PoolID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjOrigin.PoolID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, origin.PoolID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, origin.PoolID)
+							}
 						}
 					}
 
@@ -845,10 +855,12 @@ func PoolHooks() []ent.Hook {
 						}
 					}
 
-					addSubjPort, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).Only(ctx)
+					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjPort.LoadBalancerID) {
-							additionalSubjects = append(additionalSubjects, addSubjPort.LoadBalancerID)
+						for _, port := range addSubjPorts {
+							if !slices.Contains(additionalSubjects, port.LoadBalancerID) {
+								additionalSubjects = append(additionalSubjects, port.LoadBalancerID)
+							}
 						}
 					}
 
@@ -1021,32 +1033,36 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPool, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.ID) && objID != addSubjPool.ID {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.ID)
-						}
+						for _, pool := range addSubjPools {
+							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) && objID != pool.ID {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPool.OwnerID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPool.OwnerID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, pool.OwnerID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.OwnerID)
+							}
 						}
 					}
-					addSubjLoadBalancer, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).Only(ctx)
+					addSubjLoadBalancers, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).All(ctx)
 					if err == nil {
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ID)
-						}
+						for _, lb := range addSubjLoadBalancers {
+							if !slices.Contains(msg.AdditionalSubjectIDs, lb.ID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.LocationID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.LocationID)
-						}
+							if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.OwnerID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.OwnerID)
-						}
+							if !slices.Contains(msg.AdditionalSubjectIDs, lb.OwnerID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.OwnerID)
+							}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ProviderID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjLoadBalancer.ProviderID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
+							}
 						}
 					}
 
