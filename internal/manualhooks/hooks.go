@@ -565,6 +565,28 @@ func OriginHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
 
+					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).All(ctx)
+					if err == nil {
+						for _, pool := range addSubjPools {
+							if !slices.Contains(additionalSubjects, pool.ID) && objID != pool.ID {
+								additionalSubjects = append(additionalSubjects, pool.ID)
+							}
+
+							if !slices.Contains(additionalSubjects, pool.OwnerID) {
+								additionalSubjects = append(additionalSubjects, pool.OwnerID)
+							}
+						}
+					}
+
+					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
+					if err == nil {
+						for _, port := range addSubjPorts {
+							if !slices.Contains(additionalSubjects, port.LoadBalancerID) {
+								additionalSubjects = append(additionalSubjects, port.LoadBalancerID)
+							}
+						}
+					}
+
 					relationships = append(relationships, events.AuthRelationshipRelation{
 						Relation:  "pool",
 						SubjectID: dbObj.PoolID,
@@ -838,23 +860,6 @@ func PoolHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "owner",
-						SubjectID: dbObj.OwnerID,
-					})
-
-					// we have all the info we need, now complete the mutation before we process the event
-					retValue, err := next.Mutate(ctx, m)
-					if err != nil {
-						return retValue, err
-					}
-
-					if len(relationships) != 0 {
-						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
-							return nil, fmt.Errorf("relationship request failed with error: %w", err)
-						}
-					}
-
 					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
@@ -863,6 +868,11 @@ func PoolHooks() []ent.Hook {
 							}
 						}
 					}
+
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "owner",
+						SubjectID: dbObj.OwnerID,
+					})
 
 					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
 					if lb_lookup != "" {
@@ -873,6 +883,18 @@ func PoolHooks() []ent.Hook {
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
 							additionalSubjects = append(additionalSubjects, lb.LocationID)
+						}
+					}
+
+					// we have all the info we need, now complete the mutation before we process the event
+					retValue, err := next.Mutate(ctx, m)
+					if err != nil {
+						return retValue, err
+					}
+
+					if len(relationships) != 0 {
+						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
+							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
 					}
 
