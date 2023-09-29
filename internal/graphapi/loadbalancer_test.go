@@ -90,9 +90,6 @@ func TestCreate_loadBalancer(t *testing.T) {
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
-
 	testCases := []struct {
 		TestName   string
 		Input      graphclient.CreateLoadBalancerInput
@@ -123,11 +120,6 @@ func TestCreate_loadBalancer(t *testing.T) {
 			TestName: "fails to create loadbalancer with empty locationID",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: ""},
 			errorMsg: "value is less than the required length",
-		},
-		{
-			TestName: "fails to create loadbalancer with another loadbalancer's port",
-			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: locationID, PortIDs: []gidx.PrefixedID{port.ID}},
-			errorMsg: "is already connected to a different load_balancer_id",
 		},
 	}
 
@@ -171,8 +163,6 @@ func TestUpdate_loadBalancer(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{LoadBalancerID: lb2.ID}).MustNew(ctx)
 	updateName := gofakeit.DomainName()
 	emptyName := ""
 
@@ -196,11 +186,6 @@ func TestUpdate_loadBalancer(t *testing.T) {
 			TestName: "fails to update name to empty",
 			Input:    graphclient.UpdateLoadBalancerInput{Name: &emptyName},
 			errorMsg: "value is less than the required length",
-		},
-		{
-			TestName: "fails to update loadbalancer with another loadbalancer's port",
-			Input:    graphclient.UpdateLoadBalancerInput{AddPortIDs: []gidx.PrefixedID{port.ID}},
-			errorMsg: "is already connected to a different load_balancer_id",
 		},
 	}
 

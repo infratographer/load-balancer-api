@@ -1491,7 +1491,6 @@ input CreateLoadBalancerInput {
   ownerID: ID!
   """The ID for the location of this load balancer."""
   locationID: ID!
-  portIDs: [ID!]
   providerID: ID!
 }
 """
@@ -2174,9 +2173,6 @@ scalar Time
 input UpdateLoadBalancerInput {
   """The name of the load balancer."""
   name: String
-  addPortIDs: [ID!]
-  removePortIDs: [ID!]
-  clearPorts: Boolean
 }
 """
 UpdateLoadBalancerOriginInput is used for update LoadBalancerOrigin object.
@@ -11956,7 +11952,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "ownerID", "locationID", "portIDs", "providerID"}
+	fieldsInOrder := [...]string{"name", "ownerID", "locationID", "providerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11990,15 +11986,6 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerInput(ctx context.Co
 				return it, err
 			}
 			it.LocationID = data
-		case "portIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("portIDs"))
-			data, err := ec.unmarshalOID2ᚕgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PortIDs = data
 		case "providerID":
 			var err error
 
@@ -14814,7 +14801,7 @@ func (ec *executionContext) unmarshalInputUpdateLoadBalancerInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "addPortIDs", "removePortIDs", "clearPorts"}
+	fieldsInOrder := [...]string{"name"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14830,33 +14817,6 @@ func (ec *executionContext) unmarshalInputUpdateLoadBalancerInput(ctx context.Co
 				return it, err
 			}
 			it.Name = data
-		case "addPortIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addPortIDs"))
-			data, err := ec.unmarshalOID2ᚕgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddPortIDs = data
-		case "removePortIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removePortIDs"))
-			data, err := ec.unmarshalOID2ᚕgoᚗinfratographerᚗcomᚋxᚋgidxᚐPrefixedIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemovePortIDs = data
-		case "clearPorts":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPorts"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearPorts = data
 		}
 	}
 
