@@ -449,6 +449,7 @@ func (m *LoadBalancerMutation) ResetPorts() {
 // ClearProvider clears the "provider" edge to the Provider entity.
 func (m *LoadBalancerMutation) ClearProvider() {
 	m.clearedprovider = true
+	m.clearedFields[loadbalancer.FieldProviderID] = struct{}{}
 }
 
 // ProviderCleared reports if the "provider" edge to the Provider entity was cleared.
@@ -1190,6 +1191,7 @@ func (m *OriginMutation) ResetPoolID() {
 // ClearPool clears the "pool" edge to the Pool entity.
 func (m *OriginMutation) ClearPool() {
 	m.clearedpool = true
+	m.clearedFields[origin.FieldPoolID] = struct{}{}
 }
 
 // PoolCleared reports if the "pool" edge to the Pool entity was cleared.
@@ -2642,6 +2644,7 @@ func (m *PortMutation) ResetPools() {
 // ClearLoadBalancer clears the "load_balancer" edge to the LoadBalancer entity.
 func (m *PortMutation) ClearLoadBalancer() {
 	m.clearedload_balancer = true
+	m.clearedFields[port.FieldLoadBalancerID] = struct{}{}
 }
 
 // LoadBalancerCleared reports if the "load_balancer" edge to the LoadBalancer entity was cleared.

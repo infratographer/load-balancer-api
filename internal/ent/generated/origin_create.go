@@ -302,11 +302,15 @@ func (oc *OriginCreate) createSpec() (*Origin, *sqlgraph.CreateSpec) {
 // OriginCreateBulk is the builder for creating many Origin entities in bulk.
 type OriginCreateBulk struct {
 	config
+	err      error
 	builders []*OriginCreate
 }
 
 // Save creates the Origin entities in the database.
 func (ocb *OriginCreateBulk) Save(ctx context.Context) ([]*Origin, error) {
+	if ocb.err != nil {
+		return nil, ocb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(ocb.builders))
 	nodes := make([]*Origin, len(ocb.builders))
 	mutators := make([]Mutator, len(ocb.builders))
