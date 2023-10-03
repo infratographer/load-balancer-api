@@ -1,5 +1,0 @@
-2365dbe80974dd8723a840772a4c5ee80b77c5b269382aa95d9d892612ef0b62  load-balancer-api_v0.0.26-next_linux_amd64
-a1a303a9e363e9a626971d30852f6f2327e91b45a1ca007b1b3fedfe53c1143b  load-balancer-api_v0.0.26-next_darwin_arm64
-d72a3342433141645fa4c593cbda047c79a21a423aa3a21f597ed709130fd8e5  load-balancer-api_v0.0.26-next_linux_arm64
-e00ee386cb284d9b96e428e250b8949d095f9a73f1adb7c49c697682b790d291  load-balancer-api_v0.0.26-next_linux_386
-e726bb51208d80655d86ea6dcc730c2b6f4ddd9ba7a64e5bec128f9502e8dfeb  load-balancer-api_v0.0.26-next_darwin_amd64
