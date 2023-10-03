@@ -10,13 +10,14 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
@@ -31,7 +32,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 	}
 
 	if len(ids) < len(input.PortIDs) {
-		return nil, ErrOwnerConflict
+		return nil, ErrPortNotFound
 	}
 
 	for _, portId := range input.PortIDs {
@@ -65,7 +66,7 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 	}
 
 	if len(ids) < len(input.AddPortIDs) {
-		return nil, ErrOwnerConflict
+		return nil, ErrPortNotFound
 	}
 
 	for _, portId := range input.AddPortIDs {

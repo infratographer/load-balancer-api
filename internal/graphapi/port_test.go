@@ -113,7 +113,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				Number:         1234,
 				PoolIDs:        []gidx.PrefixedID{poolBad.ID},
 			},
-			errorMsg: "conflicting ownership",
+			errorMsg: "one or more pools not found",
 		},
 	}
 
@@ -229,7 +229,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				AddPoolIDs: []gidx.PrefixedID{poolBad.ID},
 			},
-			errorMsg: "conflicting ownership",
+			errorMsg: "one or more pools not found",
 		},
 	}
 

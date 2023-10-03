@@ -8,10 +8,11 @@ import (
 	"context"
 	"strings"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
@@ -31,7 +32,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 	}
 
 	if len(ids) < len(input.PoolIDs) {
-		return nil, ErrOwnerConflict
+		return nil, ErrPoolNotFound
 	}
 
 	for _, poolId := range input.PoolIDs {
@@ -74,7 +75,7 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	}
 
 	if len(ids) < len(input.AddPoolIDs) {
-		return nil, ErrOwnerConflict
+		return nil, ErrPoolNotFound
 	}
 
 	for _, poolId := range input.AddPoolIDs {

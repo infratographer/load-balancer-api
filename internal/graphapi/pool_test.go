@@ -146,7 +146,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 				OwnerID:  ownerID,
 				PortIDs:  []gidx.PrefixedID{port.ID},
 			},
-			errorMsg: "conflicting ownership",
+			errorMsg: "one or more ports not found",
 		},
 	}
 
@@ -233,7 +233,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 				Name:       newString("ImaPool"),
 				AddPortIDs: []gidx.PrefixedID{port.ID},
 			},
-			errorMsg: "conflicting ownership",
+			errorMsg: "one or more ports not found",
 		},
 	}
 
