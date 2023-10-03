@@ -1148,7 +1148,7 @@ func PortHooks() []ent.Hook {
 					}
 
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
-					if err != nil {
+					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
 						}
