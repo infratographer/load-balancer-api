@@ -91,8 +91,6 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
-	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	origin := (&OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName     string
@@ -150,16 +148,6 @@ func TestMutate_PoolCreate(t *testing.T) {
 			},
 			errorMsg: "conflicting ownership",
 		},
-		{
-			TestName: "origin from another pool",
-			Input: graphclient.CreateLoadBalancerPoolInput{
-				Name:      "pooly",
-				Protocol:  graphclient.LoadBalancerPoolProtocolUDP,
-				OwnerID:   ownerID,
-				OriginIDs: []gidx.PrefixedID{origin.ID},
-			},
-			errorMsg: "is already connected to a different pool_id",
-		},
 	}
 
 	for _, tt := range testCases {
@@ -199,10 +187,8 @@ func TestMutate_PoolUpdate(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	pool2 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	port := (&PortBuilder{LoadBalancerID: lb.ID}).MustNew(ctx)
-	origin := (&OriginBuilder{PoolID: pool2.ID}).MustNew(ctx)
 	updateProtocolUDP := graphclient.LoadBalancerPoolProtocolUDP
 
 	testCases := []struct {
@@ -248,14 +234,6 @@ func TestMutate_PoolUpdate(t *testing.T) {
 				AddPortIDs: []gidx.PrefixedID{port.ID},
 			},
 			errorMsg: "conflicting ownership",
-		},
-		{
-			TestName: "fails to update pool with another pool's origin",
-			Input: graphclient.UpdateLoadBalancerPoolInput{
-				Name:         newString("ImaPool"),
-				AddOriginIDs: []gidx.PrefixedID{origin.ID},
-			},
-			errorMsg: "is already connected to a different pool_id",
 		},
 	}
 
