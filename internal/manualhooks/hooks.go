@@ -252,11 +252,6 @@ func LoadBalancerHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "owner",
-						SubjectID: dbObj.OwnerID,
-					})
-
 					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
 					for _, lb := range lbs {
 						lb, err := m.Client().LoadBalancer.Get(ctx, lb)

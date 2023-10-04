@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
 )
 
@@ -49,51 +50,76 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 }
 
 // LoadBalancerDelete is the resolver for the loadBalancerDelete field.
-func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error) {
+func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (ldbp *LoadBalancerDeletePayload, err error) {
+	logger := r.logger.With("loadbalancer", id)
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerDelete); err != nil {
 		return nil, err
 	}
 
+	lb, err := r.client.LoadBalancer.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
 	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to begin transaction", "error", err)
+		return nil, ErrInternalServerError
 	}
+
+	defer func() {
+		if err != nil {
+			logger.Debugw("rolling back transaction")
+			if err := tx.Rollback(); err != nil {
+				logger.Errorw("failed to rollback transaction", "error", err)
+			}
+
+			return
+		}
+
+		logger.Debugw("committing transaction")
+		if err := tx.Commit(); err != nil {
+			logger.Errorw("failed to commit transaction", "error", err)
+		}
+	}()
 
 	// cleanup ports associated with loadbalancer
 	ports, err := tx.Port.Query().Where(predicate.Port(port.LoadBalancerIDEQ(id))).All(ctx)
 	if err != nil {
-		r.logger.Errorw("failed to query ports", "error", err)
-		if rerr := tx.Rollback(); rerr != nil {
-			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "query ports")
-		}
-		return nil, err
+		logger.Errorw("failed to query ports", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	for _, p := range ports {
 		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
-			r.logger.Errorw("failed to delete port", "port", p.ID, "error", err)
-			if rerr := tx.Rollback(); rerr != nil {
-				r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "delete port")
-			}
-			return nil, err
+			logger.Errorw("failed to delete port", "port", p.ID, "error", err)
+			return nil, ErrInternalServerError
 		}
 	}
 
 	// delete loadbalancer
 	if err = tx.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
-		r.logger.Errorw("failed to delete loadbalancer", "loadbalancer", id.String(), "error", err)
-		if rerr := tx.Rollback(); rerr != nil {
-			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "delete loadbalancer")
-		}
-		return nil, err
+		logger.Errorw("failed to delete loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
-	if err = tx.Commit(); err != nil {
-		r.logger.Errorw("failed to commit transaction", "error", err)
-		if rerr := tx.Rollback(); rerr != nil {
-			r.logger.Errorw("failed to rollback transaction", "error", rerr, "stage", "commit transaction")
-		}
-		return nil, err
+	// delete auth relationship
+	relationship := events.AuthRelationshipRelation{
+		Relation:  "owner",
+		SubjectID: lb.OwnerID,
+	}
+
+	// Strip cancellation from context so the auth-relationship delete fully succeeds or fails due something other than cancellation
+	noCancelCtx := context.WithoutCancel(ctx)
+	if err := permissions.DeleteAuthRelationships(noCancelCtx, "load-balancer", id, relationship); err != nil {
+		logger.Errorw("failed to delete auth relationship", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerDeletePayload{DeletedID: id}, nil
