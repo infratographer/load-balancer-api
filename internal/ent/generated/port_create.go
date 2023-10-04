@@ -291,11 +291,15 @@ func (pc *PortCreate) createSpec() (*Port, *sqlgraph.CreateSpec) {
 // PortCreateBulk is the builder for creating many Port entities in bulk.
 type PortCreateBulk struct {
 	config
+	err      error
 	builders []*PortCreate
 }
 
 // Save creates the Port entities in the database.
 func (pcb *PortCreateBulk) Save(ctx context.Context) ([]*Port, error) {
+	if pcb.err != nil {
+		return nil, pcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
 	nodes := make([]*Port, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))

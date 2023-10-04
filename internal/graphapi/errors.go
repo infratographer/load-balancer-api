@@ -9,6 +9,12 @@ var (
 	// ErrRestrictedPortNumber is returned when a port number is restricted.
 	ErrRestrictedPortNumber = errors.New("port number restricted")
 
+	// ErrPortNotFound is returned when one or more ports are not found
+	ErrPortNotFound = errors.New("one or more ports not found")
+
+	// ErrPoolNotFound is returned when one or more pools are not found
+	ErrPoolNotFound = errors.New("one or more pools not found")
+
 	// ErrInternalServerError is returned when an internal error occurs.
 	ErrInternalServerError = errors.New("internal server error")
 )

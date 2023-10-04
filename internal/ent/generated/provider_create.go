@@ -251,11 +251,15 @@ func (pc *ProviderCreate) createSpec() (*Provider, *sqlgraph.CreateSpec) {
 // ProviderCreateBulk is the builder for creating many Provider entities in bulk.
 type ProviderCreateBulk struct {
 	config
+	err      error
 	builders []*ProviderCreate
 }
 
 // Save creates the Provider entities in the database.
 func (pcb *ProviderCreateBulk) Save(ctx context.Context) ([]*Provider, error) {
+	if pcb.err != nil {
+		return nil, pcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
 	nodes := make([]*Provider, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))
