@@ -89,6 +89,9 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 	ownerID := gidx.MustNewID(ownerPrefix)
 
+	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+
 	testCases := []struct {
 		TestName     string
 		Input        graphclient.CreateLoadBalancerPoolInput
@@ -135,6 +138,16 @@ func TestMutate_PoolCreate(t *testing.T) {
 			},
 			errorMsg: "validator failed",
 		},
+		{
+			TestName: "port with conflicting OwnerID",
+			Input: graphclient.CreateLoadBalancerPoolInput{
+				Name:     "",
+				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
+				OwnerID:  ownerID,
+				PortIDs:  []gidx.PrefixedID{port.ID},
+			},
+			errorMsg: "one or more ports not found",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -174,6 +187,8 @@ func TestMutate_PoolUpdate(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&PortBuilder{LoadBalancerID: lb.ID}).MustNew(ctx)
 	updateProtocolUDP := graphclient.LoadBalancerPoolProtocolUDP
 
 	testCases := []struct {
@@ -211,6 +226,14 @@ func TestMutate_PoolUpdate(t *testing.T) {
 				Name: newString(""),
 			},
 			errorMsg: "validator failed",
+		},
+		{
+			TestName: "fails to update pool with port with conflicting OwnerID",
+			Input: graphclient.UpdateLoadBalancerPoolInput{
+				Name:       newString("ImaPool"),
+				AddPortIDs: []gidx.PrefixedID{port.ID},
+			},
+			errorMsg: "one or more ports not found",
 		},
 	}
 

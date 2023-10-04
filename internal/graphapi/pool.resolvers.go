@@ -10,17 +10,35 @@ import (
 	"fmt"
 
 	"github.com/labstack/gommon/log"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
 func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input generated.CreateLoadBalancerPoolInput) (*LoadBalancerPoolCreatePayload, error) {
 	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerPoolCreate); err != nil {
 		return nil, err
+	}
+
+	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(input.OwnerID))).Where(port.IDIn(input.PortIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.PortIDs) {
+		return nil, ErrPortNotFound
+	}
+
+	for _, portId := range input.PortIDs {
+		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
+			return nil, err
+		}
 	}
 
 	pool, err := r.client.Pool.Create().SetInput(input).Save(ctx)
@@ -40,6 +58,21 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(pool.OwnerID))).Where(port.IDIn(input.AddPortIDs...)).IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ids) < len(input.AddPortIDs) {
+		return nil, ErrPortNotFound
+	}
+
+	for _, portId := range input.AddPortIDs {
+		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
+			return nil, err
+		}
 	}
 
 	pool, err = pool.Update().SetInput(input).Save(ctx)
