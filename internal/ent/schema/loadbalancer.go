@@ -86,6 +86,8 @@ func (LoadBalancer) Edges() []ent.Edge {
 			Ref("load_balancer").
 			Annotations(
 				entgql.RelayConnection(),
+				entgql.Skip(entgql.SkipMutationCreateInput),
+				entgql.Skip(entgql.SkipMutationUpdateInput),
 			),
 		edge.To("provider", Provider.Type).
 			Unique().
