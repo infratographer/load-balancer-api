@@ -7,15 +7,13 @@ package graphapi
 import (
 	"context"
 	"database/sql"
-	"time"
-
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/events"
-	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.
@@ -50,13 +48,6 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 
 	return &LoadBalancerUpdatePayload{LoadBalancer: lb}, nil
 }
-
-// valueOnlyContext is a context that only returns values and never returns cancellation
-type valueOnlyContext struct{ context.Context }
-
-func (valueOnlyContext) Deadline() (deadline time.Time, ok bool) { return }
-func (valueOnlyContext) Done() <-chan struct{}                   { return nil }
-func (valueOnlyContext) Err() error                              { return nil }
 
 // LoadBalancerDelete is the resolver for the loadBalancerDelete field.
 func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (ldbp *LoadBalancerDeletePayload, err error) {
@@ -125,7 +116,8 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	}
 
 	// Strip cancellation from context so the auth-relationship delete fully succeeds or fails due something other than cancellation
-	if err := permissions.DeleteAuthRelationships(valueOnlyContext{ctx}, "load-balancer", id, relationship); err != nil {
+	noCancelCtx := context.WithoutCancel(ctx)
+	if err := permissions.DeleteAuthRelationships(noCancelCtx, "load-balancer", id, relationship); err != nil {
 		logger.Errorw("failed to delete auth relationship", "error", err)
 		return nil, ErrInternalServerError
 	}
