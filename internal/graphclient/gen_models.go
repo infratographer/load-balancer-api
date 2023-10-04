@@ -40,9 +40,8 @@ type CreateLoadBalancerInput struct {
 	// The ID for the owner for this load balancer.
 	OwnerID gidx.PrefixedID `json:"ownerID"`
 	// The ID for the location of this load balancer.
-	LocationID gidx.PrefixedID   `json:"locationID"`
-	PortIDs    []gidx.PrefixedID `json:"portIDs,omitempty"`
-	ProviderID gidx.PrefixedID   `json:"providerID"`
+	LocationID gidx.PrefixedID `json:"locationID"`
+	ProviderID gidx.PrefixedID `json:"providerID"`
 }
 
 // CreateLoadBalancerOriginInput is used for create LoadBalancerOrigin object.
@@ -746,10 +745,7 @@ func (ResourceOwner) IsEntity() {}
 // Input information to update a load balancer.
 type UpdateLoadBalancerInput struct {
 	// The name of the load balancer.
-	Name          *string           `json:"name,omitempty"`
-	AddPortIDs    []gidx.PrefixedID `json:"addPortIDs,omitempty"`
-	RemovePortIDs []gidx.PrefixedID `json:"removePortIDs,omitempty"`
-	ClearPorts    *bool             `json:"clearPorts,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // UpdateLoadBalancerOriginInput is used for update LoadBalancerOrigin object.

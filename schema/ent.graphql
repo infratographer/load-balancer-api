@@ -8,7 +8,6 @@ input CreateLoadBalancerInput {
   ownerID: ID!
   """The ID for the location of this load balancer."""
   locationID: ID!
-  portIDs: [ID!]
   providerID: ID!
 }
 """
@@ -691,9 +690,6 @@ scalar Time
 input UpdateLoadBalancerInput {
   """The name of the load balancer."""
   name: String
-  addPortIDs: [ID!]
-  removePortIDs: [ID!]
-  clearPorts: Boolean
 }
 """
 UpdateLoadBalancerOriginInput is used for update LoadBalancerOrigin object.
