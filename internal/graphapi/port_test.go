@@ -30,6 +30,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	poolBad := (&PoolBuilder{}).MustNew(ctx)
 	_ = (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
@@ -66,7 +67,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				LoadBalancerID: "",
 				Number:         22,
 			},
-			errorMsg: "value is less than the required length",
+			errorMsg: "load_balancer not found",
 		},
 		{
 			TestName: "fails to create loadbalancer port with number < min",
@@ -114,6 +115,16 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			},
 			errorMsg: "invalid id",
 		},
+		{
+			TestName: "fails to create loadbalancer port with pool with conflicting OwnerID",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+				PoolIDs:        []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "one or more pools not found",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -159,6 +170,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 
 	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
 	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	poolBad := (&PoolBuilder{}).MustNew(ctx)
 	_ = (&PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
 
 	testCases := []struct {
@@ -241,6 +253,14 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			ID:       gidx.PrefixedID("not a valid gidx"),
 			Input:    graphclient.UpdateLoadBalancerPortInput{},
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails to update loadbalancer port with pool with conflicting OwnerID",
+			ID:       port.ID,
+			Input: graphclient.UpdateLoadBalancerPortInput{
+				AddPoolIDs: []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "one or more pools not found",
 		},
 	}
 
