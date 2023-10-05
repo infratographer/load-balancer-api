@@ -37,12 +37,18 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 	lb, err := r.client.LoadBalancer.Get(ctx, input.LoadBalancerID)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.PoolIDs...)).IDs(ctx)
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to query input pools", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if len(ids) < len(input.PoolIDs) {
@@ -51,6 +57,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 	for _, poolId := range input.PoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPoolID", poolId)
 			return nil, err
 		}
 	}
@@ -96,12 +103,18 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 	lb, err := r.client.LoadBalancer.Get(ctx, p.LoadBalancerID)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.AddPoolIDs...)).IDs(ctx)
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to query input pools", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if len(ids) < len(input.AddPoolIDs) {
@@ -110,6 +123,7 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 	for _, poolId := range input.AddPoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPoolID", poolId)
 			return nil, err
 		}
 	}

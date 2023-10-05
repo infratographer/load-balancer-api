@@ -126,7 +126,7 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 	for _, p := range ports {
 		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
-			logger.Errorw("failed to delete port", "port", p.ID, "error", err)
+			logger.Errorw("failed to delete port", "loadbalancerPortID", p.ID, "error", err)
 			return nil, ErrInternalServerError
 		}
 	}

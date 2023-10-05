@@ -33,7 +33,8 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(input.OwnerID))).Where(port.IDIn(input.PortIDs...)).IDs(ctx)
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to query input ports", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if len(ids) < len(input.PortIDs) {
@@ -42,6 +43,7 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 	for _, portId := range input.PortIDs {
 		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPortID", portId)
 			return nil, err
 		}
 	}
@@ -94,6 +96,7 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 	for _, portId := range input.AddPortIDs {
 		if err := permissions.CheckAccess(ctx, portId, actionLoadBalancerGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPortID", portId)
 			return nil, err
 		}
 	}
@@ -154,7 +157,7 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 
 	for _, o := range origins {
 		if err = tx.Origin.DeleteOne(o).Exec(ctx); err != nil {
-			logger.Errorw("failed to delete origin", "origin", o.ID, "error", err)
+			logger.Errorw("failed to delete origin", "loadbalancerOriginID", o.ID, "error", err)
 			return nil, ErrInternalServerError
 		}
 	}
