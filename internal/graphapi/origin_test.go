@@ -14,6 +14,7 @@ import (
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestQueryPoolOrigin(t *testing.T) {
@@ -26,9 +27,9 @@ func TestQueryPoolOrigin(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{}).MustNew(ctx)
-	origin1 := (&OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
-	origin2 := (&OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{}).MustNew(ctx)
+	origin1 := (&testutils.OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
+	origin2 := (&testutils.OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName       string
@@ -90,7 +91,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName       string
@@ -204,8 +205,8 @@ func TestMutate_OriginUpdate(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{}).MustNew(ctx)
-	origin1 := (&OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{}).MustNew(ctx)
+	origin1 := (&testutils.OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName       string
@@ -295,8 +296,8 @@ func TestMutate_OriginDelete(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{}).MustNew(ctx)
-	origin1 := (&OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{}).MustNew(ctx)
+	origin1 := (&testutils.OriginBuilder{PoolID: pool1.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string

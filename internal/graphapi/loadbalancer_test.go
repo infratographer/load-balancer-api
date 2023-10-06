@@ -14,6 +14,7 @@ import (
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestQuery_loadBalancer(t *testing.T) {
@@ -26,8 +27,8 @@ func TestQuery_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
-	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string
@@ -90,7 +91,7 @@ func TestCreate_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := (&ProviderBuilder{}).MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	ownerID := gidx.MustNewID(ownerPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
@@ -167,7 +168,7 @@ func TestUpdate_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	updateName := gofakeit.DomainName()
 
 	testCases := []struct {
@@ -242,7 +243,7 @@ func TestDelete_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string
@@ -305,7 +306,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := (&ProviderBuilder{}).MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	ownerID := gidx.MustNewID(ownerPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
