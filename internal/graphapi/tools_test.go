@@ -38,7 +38,6 @@ const (
 )
 
 var (
-	TestDBURI   = os.Getenv("LOADBALANCERAPI_TESTDB_URI")
 	EntClient   *ent.Client
 	DBContainer *testcontainersx.DBContainer
 )

@@ -23,13 +23,33 @@ import (
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 )
 
-var (
+const (
 	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
 	defualtTimeout = 2 * time.Second
 )
 
-func setup(subChangesTopic string) (context.Context, *ent.Client, <-chan events.Message[events.ChangeMessage], func()) {
+var (
+	EventsConn  events.Connection
+	EntClient   *ent.Client
+	DBContainer *testcontainersx.DBContainer
+)
+
+func TestManualHooks(t *testing.T) {
+	setup()
+	defer teardown()
+
+	t.Run("LoadbalancerCreateUpdateHook", LoadbalancerCreateUpdateHookTest)
+	t.Run("LoadbalancerDeleteHookTest", LoadbalancerDeleteHookTest)
+	t.Run("OriginCreateUpdateHookTest", OriginCreateUpdateHookTest)
+	t.Run("OriginDeleteHookTest", OriginDeleteHookTest)
+	t.Run("PoolCreateUpdateHookTest", PoolCreateUpdateHookTest)
+	t.Run("PoolDeleteHookTest", PoolDeleteHookTest)
+	t.Run("PortCreateUpdateHookTest", PortCreateUpdateHookTest)
+	t.Run("PortDeleteHookTest", PortDeleteHookTest)
+}
+
+func setup() {
 	ctx := context.Background()
 
 	// NATS setup
@@ -39,13 +59,10 @@ func setup(subChangesTopic string) (context.Context, *ent.Client, <-chan events.
 	conn, err := events.NewConnection(nats.Config)
 	testutils.IfErrPanic("failed to create events connection", err)
 
-	subChan, err := conn.SubscribeChanges(ctx, subChangesTopic)
-	testutils.IfErrPanic("failed to subscribe to changes", err)
-
 	// DB and EntClient setup
 	dia, uri, cntr := testutils.ParseDBURI(ctx)
 
-	entClient, err := ent.Open(dia, uri, ent.Debug(), ent.EventsPublisher(conn))
+	c, err := ent.Open(dia, uri, ent.Debug(), ent.EventsPublisher(conn))
 	if err != nil {
 		log.Println(err)
 		testutils.IfErrPanic("failed terminating test db container after failing to connect to the db", cntr.Container.Terminate(ctx))
@@ -55,12 +72,30 @@ func setup(subChangesTopic string) (context.Context, *ent.Client, <-chan events.
 	switch dia {
 	case dialect.SQLite:
 		// Run automatic migrations for SQLite
-		testutils.IfErrPanic("failed creating db schema", entClient.Schema.Create(ctx))
+		testutils.IfErrPanic("failed creating db schema", c.Schema.Create(ctx))
 	case dialect.Postgres:
 		log.Println("Running database migrations")
 		goosex.MigrateUp(uri, db.Migrations)
 	}
 
+	EventsConn = conn
+	EntClient = c
+	DBContainer = cntr
+}
+
+func teardown() {
+	ctx := context.Background()
+
+	if EntClient != nil {
+		testutils.IfErrPanic("teardown failed to close database connection", EntClient.Close())
+	}
+
+	if DBContainer != nil && DBContainer.Container.IsRunning() {
+		testutils.IfErrPanic("teardown failed to terminate test db container", DBContainer.Container.Terminate(ctx))
+	}
+}
+
+func mockPermissions(ctx context.Context) context.Context {
 	// mock permissions
 	perms := new(mockpermissions.MockPermissions)
 	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -68,36 +103,24 @@ func setup(subChangesTopic string) (context.Context, *ent.Client, <-chan events.
 
 	ctx = perms.ContextWithHandler(ctx)
 
-	teardown := func() { teardown(entClient, cntr) }
-
-	return ctx, entClient, subChan, teardown
+	return ctx
 }
 
-func teardown(entClient *ent.Client, dbc *testcontainersx.DBContainer) {
-	ctx := context.Background()
-
-	if entClient != nil {
-		testutils.IfErrPanic("teardown failed to close database connection", entClient.Close())
-	}
-
-	if dbc != nil && dbc.Container.IsRunning() {
-		testutils.IfErrPanic("teardown failed to terminate test db container", dbc.Container.Terminate(ctx))
-	}
-}
-
-func Test_LoadbalancerCreateUpdateHook(t *testing.T) {
+func LoadbalancerCreateUpdateHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("update.load-balancer")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "update.load-balancer")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
 
-	entClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
+	EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
 
 	// Act
-	entClient.LoadBalancer.UpdateOne(lb).SetName(("other-lb-name")).ExecX(ctx)
+	EntClient.LoadBalancer.UpdateOne(lb).SetName(("other-lb-name")).ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -108,19 +131,21 @@ func Test_LoadbalancerCreateUpdateHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_LoadbalancerDeleteHook(t *testing.T) {
+func LoadbalancerDeleteHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("delete.load-balancer")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "delete.load-balancer")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
 
-	entClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
+	EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
 
 	// Act
-	entClient.LoadBalancer.DeleteOneID(lb.ID).ExecX(ctx)
+	EntClient.LoadBalancer.DeleteOneID(lb.ID).ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -131,23 +156,25 @@ func Test_LoadbalancerDeleteHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_OriginCreateUpdateHook(t *testing.T) {
+func OriginCreateUpdateHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("update.load-balancer-origin")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "update.load-balancer-origin")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	entClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
-	origin := entClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	EntClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
+	origin := EntClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
 
-	entClient.Origin.Use(manualhooks.OriginHooks()...)
+	EntClient.Origin.Use(manualhooks.OriginHooks()...)
 
 	// Act
-	entClient.Origin.UpdateOne(origin).SetName("other-origin-name").ExecX(ctx)
+	EntClient.Origin.UpdateOne(origin).SetName("other-origin-name").ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -158,23 +185,25 @@ func Test_OriginCreateUpdateHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_OriginDeleteHook(t *testing.T) {
+func OriginDeleteHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("delete.load-balancer-origin")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	entClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
-	origin := entClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	EntClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
+	origin := EntClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
 
-	entClient.Origin.Use(manualhooks.OriginHooks()...)
+	EntClient.Origin.Use(manualhooks.OriginHooks()...)
 
 	// Act
-	entClient.Origin.DeleteOne(origin).ExecX(ctx)
+	EntClient.Origin.DeleteOne(origin).ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -185,23 +214,25 @@ func Test_OriginDeleteHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_PoolCreateUpdateHook(t *testing.T) {
+func PoolCreateUpdateHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("update.load-balancer-pool")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "update.load-balancer-pool")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	port := entClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
-	origin := entClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	port := EntClient.Port.Create().SetName("port-name").AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetNumber(11).SaveX(ctx)
+	origin := EntClient.Origin.Create().SetName("origin-name").SetPool(pool).SetTarget("127.0.0.1").SetPortNumber(12).SaveX(ctx)
 
-	entClient.Pool.Use(manualhooks.PoolHooks()...)
+	EntClient.Pool.Use(manualhooks.PoolHooks()...)
 
 	// Act
-	entClient.Pool.UpdateOne(pool).SetName("other-pool-name").ExecX(ctx)
+	EntClient.Pool.UpdateOne(pool).SetName("other-pool-name").ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -212,22 +243,24 @@ func Test_PoolCreateUpdateHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_PoolDeleteHook(t *testing.T) {
+func PoolDeleteHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("delete.load-balancer-pool")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "delete.load-balancer-pool")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	entClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	EntClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
 
-	entClient.Pool.Use(manualhooks.PoolHooks()...)
+	EntClient.Pool.Use(manualhooks.PoolHooks()...)
 
 	// Act
-	entClient.Pool.DeleteOne(pool).ExecX(ctx)
+	EntClient.Pool.DeleteOne(pool).ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -238,22 +271,24 @@ func Test_PoolDeleteHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_PortCreateUpdateHook(t *testing.T) {
+func PortCreateUpdateHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("update.load-balancer-port")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "update.load-balancer-port")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	port := entClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	port := EntClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
 
-	entClient.Port.Use(manualhooks.PortHooks()...)
+	EntClient.Port.Use(manualhooks.PortHooks()...)
 
 	// Act
-	entClient.Port.UpdateOne(port).SetName("other-port-name").ExecX(ctx)
+	EntClient.Port.UpdateOne(port).SetName("other-port-name").ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
@@ -264,22 +299,24 @@ func Test_PortCreateUpdateHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func Test_PortDeleteHook(t *testing.T) {
+func PortDeleteHookTest(t *testing.T) {
 	// Arrange
-	ctx, entClient, changesChannel, teardown := setup("delete.load-balancer-port")
-	defer teardown()
+	ctx := mockPermissions(context.Background())
+
+	changesChannel, err := EventsConn.SubscribeChanges(ctx, "delete.load-balancer-port")
+	testutils.IfErrPanic("failed to subscribe to changes", err)
 
 	ownerId := gidx.MustNewID(ownerPrefix)
 
-	provider := entClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
-	lb := entClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
-	pool := entClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
-	port := entClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
+	provider := EntClient.Provider.Create().SetName("provider-name").SetOwnerID(ownerId).SaveX(ctx)
+	lb := EntClient.LoadBalancer.Create().SetName("lb-name").SetProvider(provider).SetOwnerID(ownerId).SetLocationID(gidx.MustNewID(locationPrefix)).SaveX(ctx)
+	pool := EntClient.Pool.Create().SetName("pool-name").SetOwnerID(ownerId).SetProtocol(pool.ProtocolTCP).SaveX(ctx)
+	port := EntClient.Port.Create().AddPoolIDs(pool.ID).SetLoadBalancer(lb).SetName("port-name").SetNumber(11).SaveX(ctx)
 
-	entClient.Port.Use(manualhooks.PortHooks()...)
+	EntClient.Port.Use(manualhooks.PortHooks()...)
 
 	// Act
-	entClient.Port.DeleteOne(port).ExecX(ctx)
+	EntClient.Port.DeleteOne(port).ExecX(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
 
