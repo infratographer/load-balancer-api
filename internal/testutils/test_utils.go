@@ -4,58 +4,23 @@ package testutils
 import (
 	"context"
 	"log"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"time"
 
-	"entgo.io/ent/dialect"
-	_ "github.com/lib/pq"           // used by the ent client using ParseDBURI return values
-	_ "github.com/mattn/go-sqlite3" // used by the ent client using ParseDBURI return values
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/stretchr/testify/mock"
 
-	"go.infratographer.com/load-balancer-api/x/testcontainersx"
+	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 )
 
-var testDBURI = os.Getenv("LOADBALANCERAPI_TESTDB_URI")
+// MockPermissions creates a context from the given context with mocks for permission-api methods
+func MockPermissions(ctx context.Context) context.Context {
+	// mock permissions
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	perms.On("DeleteAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-// ParseDBURI parses the kind of query language from TESTDB_URI env var and initializes DBContainer as required
-func ParseDBURI(ctx context.Context) (string, string, *testcontainersx.DBContainer) {
-	switch {
-	// if you don't pass in a database we default to an in memory sqlite
-	case testDBURI == "":
-		return dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1", nil
-	case strings.HasPrefix(testDBURI, "sqlite://"):
-		return dialect.SQLite, strings.TrimPrefix(testDBURI, "sqlite://"), nil
-	case strings.HasPrefix(testDBURI, "postgres://"), strings.HasPrefix(testDBURI, "postgresql://"):
-		return dialect.Postgres, testDBURI, nil
-	case strings.HasPrefix(testDBURI, "docker://"):
-		dbImage := strings.TrimPrefix(testDBURI, "docker://")
+	ctx = perms.ContextWithHandler(ctx)
 
-		switch {
-		case strings.HasPrefix(dbImage, "cockroach"), strings.HasPrefix(dbImage, "cockroachdb"), strings.HasPrefix(dbImage, "crdb"):
-			cntr, err := testcontainersx.NewCockroachDB(ctx, dbImage)
-			IfErrPanic("error starting db test container", err)
-
-			return dialect.Postgres, cntr.URI, cntr
-		case strings.HasPrefix(dbImage, "postgres"):
-			_, b, _, _ := runtime.Caller(0)
-			initScriptPath := filepath.Join(filepath.Dir(b), "testdata", "postgres_init.sh")
-
-			cntr, err := testcontainersx.NewPostgresDB(ctx, dbImage,
-				postgres.WithInitScripts(initScriptPath),
-			)
-			IfErrPanic("error starting db test container", err)
-
-			return dialect.Postgres, cntr.URI, cntr
-		default:
-			panic("invalid testcontainer URI, uri: " + testDBURI)
-		}
-
-	default:
-		panic("invalid DB URI, uri: " + testDBURI)
-	}
+	return ctx
 }
 
 // IfErrPanic conditionally panics on err with msg

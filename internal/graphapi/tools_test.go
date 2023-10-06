@@ -2,13 +2,11 @@ package graphapi_test
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
-	"entgo.io/ent/dialect"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
@@ -18,17 +16,12 @@ import (
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
-	"go.infratographer.com/x/events"
-	"go.infratographer.com/x/goosex"
-	"go.infratographer.com/x/testing/eventtools"
 
-	"go.infratographer.com/load-balancer-api/db"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/internal/manualhooks"
 	"go.infratographer.com/load-balancer-api/internal/testutils"
-	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 )
 
 const (
@@ -37,80 +30,26 @@ const (
 	lbPrefix       = "loadbal"
 )
 
-var (
-	EntClient   *ent.Client
-	DBContainer *testcontainersx.DBContainer
-)
+var EntClient *ent.Client
 
 func TestMain(m *testing.M) {
-	// setup the database if needed
-	setupDB()
+	// setup the database
+	testutils.SetupDB()
+
+	// assign package variables
+	EntClient = testutils.EntClient
+
+	// setup the resolver hooks
+	manualhooks.PubsubHooks(EntClient)
+
 	// run the tests
 	code := m.Run()
+
 	// teardown the database
-	teardownDB()
+	testutils.TeardownDB()
+
 	// return the test response code
 	os.Exit(code)
-}
-
-func setupDB() {
-	// don't setup the datastore if we already have one
-	if EntClient != nil {
-		return
-	}
-
-	ctx := context.Background()
-
-	dia, uri, cntr := testutils.ParseDBURI(ctx)
-
-	nats, err := eventtools.NewNatsServer()
-	if err != nil {
-		errPanic("failed to start nats server", err)
-	}
-
-	conn, err := events.NewConnection(nats.Config)
-	if err != nil {
-		errPanic("failed to create events publisher", err)
-	}
-
-	c, err := ent.Open(dia, uri, ent.Debug(), ent.EventsPublisher(conn))
-	if err != nil {
-		errPanic("failed terminating test db container after failing to connect to the db", cntr.Container.Terminate(ctx))
-		errPanic("failed opening connection to database:", err)
-	}
-
-	switch dia {
-	case dialect.SQLite:
-		// Run automatic migrations for SQLite
-		errPanic("failed creating db scema", c.Schema.Create(ctx))
-	case dialect.Postgres:
-		log.Println("Running database migrations")
-		goosex.MigrateUp(uri, db.Migrations)
-	}
-
-	// TODO: fix generated pubsubhooks
-	// pubsubhooks.PubsubHooks(c)
-	manualhooks.PubsubHooks(c)
-
-	EntClient = c
-}
-
-func teardownDB() {
-	ctx := context.Background()
-
-	if EntClient != nil {
-		errPanic("teardown failed to close database connection", EntClient.Close())
-	}
-
-	if DBContainer != nil {
-		errPanic("teardown failed to terminate test db container", DBContainer.Container.Terminate(ctx))
-	}
-}
-
-func errPanic(msg string, err error) {
-	if err != nil {
-		log.Panicf("%s err: %s", msg, err.Error())
-	}
 }
 
 type graphClient struct {
