@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"entgo.io/ent/dialect"
@@ -15,7 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"go.uber.org/zap"
 
 	"go.infratographer.com/permissions-api/pkg/permissions"
@@ -30,6 +27,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/graphapi"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/internal/manualhooks"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 	"go.infratographer.com/load-balancer-api/x/testcontainersx"
 )
 
@@ -56,40 +54,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func parseDBURI(ctx context.Context) (string, string, *testcontainersx.DBContainer) {
-	switch {
-	// if you don't pass in a database we default to an in memory sqlite
-	case TestDBURI == "":
-		return dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1", nil
-	case strings.HasPrefix(TestDBURI, "sqlite://"):
-		return dialect.SQLite, strings.TrimPrefix(TestDBURI, "sqlite://"), nil
-	case strings.HasPrefix(TestDBURI, "postgres://"), strings.HasPrefix(TestDBURI, "postgresql://"):
-		return dialect.Postgres, TestDBURI, nil
-	case strings.HasPrefix(TestDBURI, "docker://"):
-		dbImage := strings.TrimPrefix(TestDBURI, "docker://")
-
-		switch {
-		case strings.HasPrefix(dbImage, "cockroach"), strings.HasPrefix(dbImage, "cockroachdb"), strings.HasPrefix(dbImage, "crdb"):
-			cntr, err := testcontainersx.NewCockroachDB(ctx, dbImage)
-			errPanic("error starting db test container", err)
-
-			return dialect.Postgres, cntr.URI, cntr
-		case strings.HasPrefix(dbImage, "postgres"):
-			cntr, err := testcontainersx.NewPostgresDB(ctx, dbImage,
-				postgres.WithInitScripts(filepath.Join("testdata", "postgres_init.sh")),
-			)
-			errPanic("error starting db test container", err)
-
-			return dialect.Postgres, cntr.URI, cntr
-		default:
-			panic("invalid testcontainer URI, uri: " + TestDBURI)
-		}
-
-	default:
-		panic("invalid DB URI, uri: " + TestDBURI)
-	}
-}
-
 func setupDB() {
 	// don't setup the datastore if we already have one
 	if EntClient != nil {
@@ -98,7 +62,7 @@ func setupDB() {
 
 	ctx := context.Background()
 
-	dia, uri, cntr := parseDBURI(ctx)
+	dia, uri, cntr := testutils.ParseDBURI(ctx)
 
 	nats, err := eventtools.NewNatsServer()
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -39,8 +40,11 @@ func ParseDBURI(ctx context.Context) (string, string, *testcontainersx.DBContain
 
 			return dialect.Postgres, cntr.URI, cntr
 		case strings.HasPrefix(dbImage, "postgres"):
+			_, b, _, _ := runtime.Caller(0)
+			initScriptPath := filepath.Join(filepath.Dir(b), "testdata", "postgres_init.sh")
+
 			cntr, err := testcontainersx.NewPostgresDB(ctx, dbImage,
-				postgres.WithInitScripts(filepath.Join("testdata", "postgres_init.sh")),
+				postgres.WithInitScripts(initScriptPath),
 			)
 			IfErrPanic("error starting db test container", err)
 
