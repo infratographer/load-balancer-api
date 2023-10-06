@@ -7,10 +7,9 @@ package graphapi
 import (
 	"context"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
-
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerOriginCreate is the resolver for the loadBalancerOriginCreate field.
