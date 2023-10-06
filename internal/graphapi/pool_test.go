@@ -14,6 +14,7 @@ import (
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	pool "go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestQueryPool(t *testing.T) {
@@ -26,8 +27,8 @@ func TestQueryPool(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{}).MustNew(ctx)
-	pool2 := (&PoolBuilder{}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{}).MustNew(ctx)
+	pool2 := (&testutils.PoolBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName     string
@@ -89,8 +90,8 @@ func TestMutate_PoolCreate(t *testing.T) {
 
 	ownerID := gidx.MustNewID(ownerPrefix)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName     string
@@ -186,9 +187,9 @@ func TestMutate_PoolUpdate(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{LoadBalancerID: lb.ID}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{LoadBalancerID: lb.ID}).MustNew(ctx)
 	updateProtocolUDP := graphclient.LoadBalancerPoolProtocolUDP
 
 	testCases := []struct {
@@ -290,9 +291,9 @@ func TestMutate_PoolDelete(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	pool2 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
-	_ = (&OriginBuilder{PoolID: pool2.ID}).MustNew(ctx)
+	pool1 := (&testutils.PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	pool2 := (&testutils.PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	_ = (&testutils.OriginBuilder{PoolID: pool2.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string

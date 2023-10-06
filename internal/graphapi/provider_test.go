@@ -12,6 +12,7 @@ import (
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestQuery_loadBalancerProvider(t *testing.T) {
@@ -20,8 +21,8 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	p1 := ProviderBuilder{}.MustNew(ctx)
-	p2 := ProviderBuilder{}.MustNew(ctx)
+	p1 := (&testutils.ProviderBuilder{}).MustNew(ctx)
+	p2 := (&testutils.ProviderBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName          string
@@ -147,7 +148,7 @@ func TestUpdate_Provider(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := ProviderBuilder{}.MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	updateName := gofakeit.DomainName()
 
 	testCases := []struct {
@@ -216,7 +217,7 @@ func TestDelete_Provider(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := ProviderBuilder{}.MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string

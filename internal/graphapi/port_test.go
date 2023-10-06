@@ -15,6 +15,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestCreate_LoadbalancerPort(t *testing.T) {
@@ -29,9 +30,9 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	poolBad := (&PoolBuilder{}).MustNew(ctx)
-	_ = (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	poolBad := (&testutils.PoolBuilder{}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -168,10 +169,10 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
-	poolBad := (&PoolBuilder{}).MustNew(ctx)
-	_ = (&PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	poolBad := (&testutils.PoolBuilder{}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -300,8 +301,8 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -365,7 +366,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
