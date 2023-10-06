@@ -8,12 +8,13 @@ import (
 	"context"
 	"database/sql"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.
@@ -24,7 +25,12 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 
 	lb, err := r.client.LoadBalancer.Create().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		r.logger.Errorw("failed to create loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerCreatePayload{LoadBalancer: lb}, nil
@@ -32,26 +38,48 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 
 // LoadBalancerUpdate is the resolver for the loadBalancerUpdate field.
 func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) (*LoadBalancerUpdatePayload, error) {
+	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	lb, err = lb.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to update loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerUpdatePayload{LoadBalancer: lb}, nil
 }
 
 // LoadBalancerDelete is the resolver for the loadBalancerDelete field.
-func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (ldbp *LoadBalancerDeletePayload, err error) {
-	logger := r.logger.With("loadbalancer", id)
+func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error) {
+	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerDelete); err != nil {
 		return nil, err
@@ -98,7 +126,7 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 	for _, p := range ports {
 		if err = tx.Port.DeleteOne(p).Exec(ctx); err != nil {
-			logger.Errorw("failed to delete port", "port", p.ID, "error", err)
+			logger.Errorw("failed to delete port", "loadbalancerPortID", p.ID, "error", err)
 			return nil, ErrInternalServerError
 		}
 	}
@@ -127,9 +155,26 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 // LoadBalancer is the resolver for the loadBalancer field.
 func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
+	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerGet); err != nil {
 		return nil, err
 	}
 
-	return r.client.LoadBalancer.Get(ctx, id)
+	lb, err := r.client.LoadBalancer.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	return lb, nil
 }

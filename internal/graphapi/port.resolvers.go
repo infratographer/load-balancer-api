@@ -17,18 +17,38 @@ import (
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
 func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input generated.CreateLoadBalancerPortInput) (*LoadBalancerPortCreatePayload, error) {
+	logger := r.logger.With("loadbalancerID", input.LoadBalancerID, "loadbalancerPools", input.PoolIDs)
+
+	// check gidx lb id format
+	if _, err := gidx.Parse(input.LoadBalancerID.String()); err != nil {
+		return nil, err
+	}
+
+	// check gidx pool id format
+	for _, p := range input.PoolIDs {
+		if _, err := gidx.Parse(p.String()); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := permissions.CheckAccess(ctx, input.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, input.LoadBalancerID)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.PoolIDs...)).IDs(ctx)
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to query input pools", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if len(ids) < len(input.PoolIDs) {
@@ -37,6 +57,7 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 	for _, poolId := range input.PoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPoolID", poolId)
 			return nil, err
 		}
 	}
@@ -46,8 +67,11 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 		switch {
 		case generated.IsConstraintError(err) && strings.Contains(err.Error(), "number"):
 			return nil, ErrPortNumberInUse
-		default:
+		case generated.IsValidationError(err):
 			return nil, err
+		default:
+			logger.Errorw("failed to create loadbalancer port", "error", err)
+			return nil, ErrInternalServerError
 		}
 	}
 
@@ -56,22 +80,41 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 
 // LoadBalancerPortUpdate is the resolver for the loadBalancerPortUpdate field.
 func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerPortInput) (*LoadBalancerPortUpdatePayload, error) {
-	p, err := r.client.Port.Get(ctx, id)
-	if err != nil {
+	logger := r.logger.With("loadbalancerPortID", id)
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
 		return nil, err
 	}
+
+	p, err := r.client.Port.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer port", "error", err)
+		return nil, ErrInternalServerError
+	}
+
 	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, p.LoadBalancerID)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	ids, err := r.client.Pool.Query().Where(pool.OwnerIDEQ(lb.OwnerID)).Where(pool.IDIn(input.AddPoolIDs...)).IDs(ctx)
 	if err != nil {
-		return nil, err
+		logger.Errorw("failed to query input pools", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if len(ids) < len(input.AddPoolIDs) {
@@ -80,16 +123,21 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 	for _, poolId := range input.AddPoolIDs {
 		if err := permissions.CheckAccess(ctx, poolId, actionLoadBalancerPoolGet); err != nil {
+			logger.Errorw("failed to check access", "error", err, "loadbalancerPoolID", poolId)
 			return nil, err
 		}
 	}
 
 	p, err = p.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		if generated.IsConstraintError(err) && strings.Contains(err.Error(), "number") {
-			return nil, ErrPortNumberInUse
-		} else {
+		switch {
+		case generated.IsValidationError(err):
 			return nil, err
+		case generated.IsConstraintError(err) && strings.Contains(err.Error(), "number"):
+			return nil, ErrPortNumberInUse
+		default:
+			logger.Errorw("failed to update loadbalancer port", "error", err)
+			return nil, ErrInternalServerError
 		}
 	}
 
@@ -98,9 +146,21 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 
 // LoadBalancerPortDelete is the resolver for the loadBalancerPortDelete field.
 func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerPortDeletePayload, error) {
+	logger := r.logger.With("loadbalancerPortID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	p, err := r.client.Port.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer port", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
@@ -108,7 +168,8 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 	}
 
 	if err := r.client.Port.DeleteOneID(id).Exec(ctx); err != nil {
-		return nil, err
+		logger.Errorw("failed to delete loadbalancer port", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPortDeletePayload{DeletedID: id}, nil

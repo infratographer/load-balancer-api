@@ -47,11 +47,11 @@ func TestQueryPool(t *testing.T) {
 		},
 		{
 			TestName: "pool not found",
-			QueryID:  gidx.MustNewID("testing"),
+			QueryID:  gidx.MustNewID("loadpol"),
 			errorMsg: "not found",
 		},
 		{
-			TestName: "invalid pool query ID",
+			TestName: "invalid pool ID",
 			QueryID:  "an invalid pool id",
 			errorMsg: "invalid id",
 		},
@@ -193,12 +193,14 @@ func TestMutate_PoolUpdate(t *testing.T) {
 
 	testCases := []struct {
 		TestName     string
+		ID           gidx.PrefixedID
 		Input        graphclient.UpdateLoadBalancerPoolInput
 		ExpectedPool ent.LoadBalancerPool
 		errorMsg     string
 	}{
 		{
 			TestName: "successfully updates name",
+			ID:       pool1.ID,
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name: newString("ImaPool"),
 			},
@@ -210,6 +212,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 		},
 		{
 			TestName: "successfully updates protocol",
+			ID:       pool1.ID,
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name:     newString("ImaPool"),
 				Protocol: &updateProtocolUDP,
@@ -222,13 +225,27 @@ func TestMutate_PoolUpdate(t *testing.T) {
 		},
 		{
 			TestName: "empty name",
+			ID:       pool1.ID,
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name: newString(""),
 			},
 			errorMsg: "validator failed",
 		},
 		{
+			TestName: "fails with invalid gidx",
+			ID:       gidx.PrefixedID("not a valid gidx"),
+			Input:    graphclient.UpdateLoadBalancerPoolInput{},
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails to update pool that does not exist",
+			ID:       gidx.MustNewID("loadpol"),
+			Input:    graphclient.UpdateLoadBalancerPoolInput{},
+			errorMsg: "not found",
+		},
+		{
 			TestName: "fails to update pool with port with conflicting OwnerID",
+			ID:       pool1.ID,
 			Input: graphclient.UpdateLoadBalancerPoolInput{
 				Name:       newString("ImaPool"),
 				AddPortIDs: []gidx.PrefixedID{port.ID},
@@ -242,7 +259,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 		tt := tt
 
 		t.Run(tt.TestName, func(t *testing.T) {
-			updatedPoolResp, err := graphTestClient().LoadBalancerPoolUpdate(ctx, pool1.ID, tt.Input)
+			updatedPoolResp, err := graphTestClient().LoadBalancerPoolUpdate(ctx, tt.ID, tt.Input)
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
@@ -274,6 +291,8 @@ func TestMutate_PoolDelete(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	pool1 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	pool2 := (&PoolBuilder{Protocol: "tcp"}).MustNew(ctx)
+	_ = (&OriginBuilder{PoolID: pool2.ID}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -285,14 +304,23 @@ func TestMutate_PoolDelete(t *testing.T) {
 			DeleteID: pool1.ID,
 		},
 		{
-			TestName: "invalid ID",
+			TestName: "fails with invalid gidx",
 			DeleteID: "not a valid ID",
 			errorMsg: "invalid id",
 		},
 		{
-			TestName: "non-existent ID",
-			DeleteID: gidx.MustNewID(ownerPrefix),
+			TestName: "fails to delete pool that does not exist",
+			DeleteID: gidx.MustNewID("loadpol"),
 			errorMsg: "not found",
+		},
+		{
+			TestName: "fails to delete empty pool id",
+			DeleteID: gidx.PrefixedID(""),
+			errorMsg: "not found",
+		},
+		{
+			TestName: "deletes pool with associated origins",
+			DeleteID: pool2.ID,
 		},
 	}
 

@@ -44,6 +44,11 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 			QueryID:  gidx.MustNewID("testing"),
 			errorMsg: "provider not found",
 		},
+		{
+			TestName: "Invalid load balancer provider ID",
+			QueryID:  gidx.PrefixedID("invalid"),
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -102,6 +107,11 @@ func TestCreate_Provider(t *testing.T) {
 			Input:    graphclient.CreateLoadBalancerProviderInput{Name: name, OwnerID: ""},
 			errorMsg: "value is less than the required length",
 		},
+		{
+			TestName: "fails to create provider with invalid ownerID",
+			Input:    graphclient.CreateLoadBalancerProviderInput{Name: name, OwnerID: gidx.PrefixedID("invalid")},
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -139,16 +149,17 @@ func TestUpdate_Provider(t *testing.T) {
 
 	prov := ProviderBuilder{}.MustNew(ctx)
 	updateName := gofakeit.DomainName()
-	emptyName := ""
 
 	testCases := []struct {
 		TestName         string
+		ID               gidx.PrefixedID
 		Input            graphclient.UpdateLoadBalancerProviderInput
 		ExpectedProvider *ent.LoadBalancerProvider
 		errorMsg         string
 	}{
 		{
 			TestName: "updates provider",
+			ID:       prov.ID,
 			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: &updateName},
 			ExpectedProvider: &ent.LoadBalancerProvider{
 				Name:    updateName,
@@ -158,14 +169,27 @@ func TestUpdate_Provider(t *testing.T) {
 		},
 		{
 			TestName: "fails to update name to empty",
-			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: &emptyName},
+			ID:       prov.ID,
+			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: newString("")},
 			errorMsg: "value is less than the required length",
+		},
+		{
+			TestName: "fails to update provider that does not exist",
+			ID:       gidx.PrefixedID("loadpvd-dne"),
+			Input:    graphclient.UpdateLoadBalancerProviderInput{},
+			errorMsg: "provider not found",
+		},
+		{
+			TestName: "fails to update provider with invalid id",
+			ID:       gidx.PrefixedID("invalid"),
+			Input:    graphclient.UpdateLoadBalancerProviderInput{},
+			errorMsg: "invalid id",
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerProviderUpdate(ctx, prov.ID, tt.Input)
+			resp, err := graphTestClient().LoadBalancerProviderUpdate(ctx, tt.ID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -215,11 +239,16 @@ func TestDelete_Provider(t *testing.T) {
 			Input:    gidx.PrefixedID(""),
 			errorMsg: "provider not found",
 		},
+		{
+			TestName: "fails to delete invalid gidx id",
+			Input:    gidx.PrefixedID("not-a-valid-gidx-id"),
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerProviderDelete(ctx, prov.ID)
+			resp, err := graphTestClient().LoadBalancerProviderDelete(ctx, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)

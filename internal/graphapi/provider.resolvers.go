@@ -7,20 +7,31 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
 // LoadBalancerProviderCreate is the resolver for the loadBalancerProviderCreate field.
 func (r *mutationResolver) LoadBalancerProviderCreate(ctx context.Context, input generated.CreateLoadBalancerProviderInput) (*LoadBalancerProviderCreatePayload, error) {
+	// check gidx owner format
+	if _, err := gidx.Parse(input.OwnerID.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerProviderCreate); err != nil {
 		return nil, err
 	}
 
 	p, err := r.client.Provider.Create().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		r.logger.Errorw("failed to create loadbalancer provider", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerProviderCreatePayload{LoadBalancerProvider: p}, nil
@@ -28,29 +39,59 @@ func (r *mutationResolver) LoadBalancerProviderCreate(ctx context.Context, input
 
 // LoadBalancerProviderUpdate is the resolver for the loadBalancerProviderUpdate field.
 func (r *mutationResolver) LoadBalancerProviderUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerProviderInput) (*LoadBalancerProviderUpdatePayload, error) {
+	logger := r.logger.With("loadbalancerProviderID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderUpdate); err != nil {
 		return nil, err
 	}
 
 	p, err := r.client.Provider.Get(ctx, id)
 	if err != nil {
-		return nil, err
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer provider", "error", err)
+		return nil, ErrInternalServerError
 	}
 
 	p, err = p.Update().SetInput(input).Save(ctx)
 	if err != nil {
-		return nil, err
+		if generated.IsValidationError(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to update loadbalancer provider", "error", err)
+		return nil, ErrInternalServerError
 	}
+
 	return &LoadBalancerProviderUpdatePayload{LoadBalancerProvider: p}, nil
 }
 
 // LoadBalancerProviderDelete is the resolver for the loadBalancerProviderDelete field.
 func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerProviderDeletePayload, error) {
+	logger := r.logger.With("loadbalancerProviderID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderDelete); err != nil {
 		return nil, err
 	}
 
 	if err := r.client.Provider.DeleteOneID(id).Exec(ctx); err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to delete loadbalancer provider", "error", err)
 		return nil, err
 	}
 
@@ -59,9 +100,26 @@ func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gi
 
 // LoadBalancerProvider is the resolver for the loadBalancerProvider field.
 func (r *queryResolver) LoadBalancerProvider(ctx context.Context, id gidx.PrefixedID) (*generated.Provider, error) {
+	logger := r.logger.With("loadbalancerProviderID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderGet); err != nil {
 		return nil, err
 	}
 
-	return r.client.Provider.Get(ctx, id)
+	p, err := r.client.Provider.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer provider", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	return p, nil
 }
