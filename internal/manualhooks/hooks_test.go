@@ -80,7 +80,7 @@ func teardown(entClient *ent.Client, dbc *testcontainersx.DBContainer) {
 		testutils.IfErrPanic("teardown failed to close database connection", entClient.Close())
 	}
 
-	if dbc != nil {
+	if dbc != nil && dbc.Container.IsRunning() {
 		testutils.IfErrPanic("teardown failed to terminate test db container", dbc.Container.Terminate(ctx))
 	}
 }
