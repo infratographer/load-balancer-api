@@ -25,7 +25,7 @@ type ProviderBuilder struct {
 }
 
 // MustNew creates a provider from the receiver
-func (p ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
+func (p *ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
 	if p.Name == "" {
 		p.Name = gofakeit.JobTitle()
 	}
@@ -46,7 +46,7 @@ type LoadBalancerBuilder struct {
 }
 
 // MustNew creates a loadbalancer from the receiver
-func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
+func (b *LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 	if b.Provider == nil {
 		pb := &ProviderBuilder{OwnerID: b.OwnerID}
 		b.Provider = pb.MustNew(ctx)
@@ -76,7 +76,7 @@ type PortBuilder struct {
 }
 
 // MustNew creates a port from the receiver
-func (p PortBuilder) MustNew(ctx context.Context) *ent.Port {
+func (p *PortBuilder) MustNew(ctx context.Context) *ent.Port {
 	if p.Name == "" {
 		p.Name = gofakeit.AppName()
 	}
@@ -100,7 +100,7 @@ type PoolBuilder struct {
 }
 
 // MustNew creates a pool from the receiver
-func (p PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
+func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 	if p.Name == "" {
 		p.Name = gofakeit.AppName()
 	}
@@ -126,7 +126,7 @@ type OriginBuilder struct {
 }
 
 // MustNew creates an origin from the receiver
-func (o OriginBuilder) MustNew(ctx context.Context) *ent.Origin {
+func (o *OriginBuilder) MustNew(ctx context.Context) *ent.Origin {
 	if o.Name == "" {
 		o.Name = gofakeit.AppName()
 	}

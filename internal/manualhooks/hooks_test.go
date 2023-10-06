@@ -41,7 +41,7 @@ func LoadbalancerCreateUpdateHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testutils.EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
 
@@ -64,7 +64,7 @@ func LoadbalancerDeleteHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testutils.EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
 
@@ -87,10 +87,10 @@ func OriginCreateUpdateHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-origin")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
-	origin := testutils.OriginBuilder{PoolID: pool.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	(&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+	origin := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
 
@@ -113,10 +113,10 @@ func OriginDeleteHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
-	origin := testutils.OriginBuilder{PoolID: pool.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	(&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+	origin := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
 
@@ -139,10 +139,10 @@ func PoolCreateUpdateHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-pool")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	port := testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
-	origin := testutils.OriginBuilder{PoolID: pool.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+	origin := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	testutils.EntClient.Pool.Use(manualhooks.PoolHooks()...)
 
@@ -165,9 +165,9 @@ func PoolDeleteHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-pool")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	(&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
 
 	testutils.EntClient.Pool.Use(manualhooks.PoolHooks()...)
 
@@ -190,9 +190,9 @@ func PortCreateUpdateHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-port")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	port := testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
 
 	testutils.EntClient.Port.Use(manualhooks.PortHooks()...)
 
@@ -215,9 +215,9 @@ func PortDeleteHookTest(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-port")
 	testutils.IfErrPanic("failed to subscribe to changes", err)
 
-	lb := testutils.LoadBalancerBuilder{}.MustNew(ctx)
-	pool := testutils.PoolBuilder{}.MustNew(ctx)
-	port := testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}.MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
 
 	testutils.EntClient.Port.Use(manualhooks.PortHooks()...)
 
