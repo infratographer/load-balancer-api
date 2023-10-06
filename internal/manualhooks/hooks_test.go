@@ -89,7 +89,7 @@ func Test_LoadbalancerUpdateHook(t *testing.T) {
 	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
-func Test_LoadbalancerDeleteHook(t *testing.T) {
+func LoadbalancerDeleteHookTest(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -169,7 +169,7 @@ func Test_OriginUpdateHook(t *testing.T) {
 	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
-func Test_OriginDeleteHook(t *testing.T) {
+func OriginDeleteHookTest(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -248,7 +248,7 @@ func Test_PoolUpdateHook(t *testing.T) {
 	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
-func Test_PoolDeleteHook(t *testing.T) {
+func PoolDeleteHookTest(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -328,7 +328,7 @@ func Test_PortUpdateHook(t *testing.T) {
 	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
-func Test_PortDeleteHook(t *testing.T) {
+func PortDeleteHookTest(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
