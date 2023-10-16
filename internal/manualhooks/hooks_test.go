@@ -2,10 +2,12 @@ package manualhooks_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
 
@@ -19,27 +21,26 @@ const (
 	defualtTimeout = 2 * time.Second
 )
 
-func TestManualHooks(t *testing.T) {
+func TestMain(m *testing.M) {
+	// setup the database
 	testutils.SetupDB()
 
-	defer testutils.TeardownDB()
+	// run the tests
+	code := m.Run()
 
-	t.Run("LoadbalancerCreateUpdateHook", LoadbalancerCreateUpdateHookTest)
-	t.Run("LoadbalancerDeleteHookTest", LoadbalancerDeleteHookTest)
-	t.Run("OriginCreateUpdateHookTest", OriginCreateUpdateHookTest)
-	t.Run("OriginDeleteHookTest", OriginDeleteHookTest)
-	t.Run("PoolCreateUpdateHookTest", PoolCreateUpdateHookTest)
-	t.Run("PoolDeleteHookTest", PoolDeleteHookTest)
-	t.Run("PortCreateUpdateHookTest", PortCreateUpdateHookTest)
-	t.Run("PortDeleteHookTest", PortDeleteHookTest)
+	// teardown the database
+	testutils.TeardownDB()
+
+	// return the test response code
+	os.Exit(code)
 }
 
-func LoadbalancerCreateUpdateHookTest(t *testing.T) {
+func Test_LoadbalancerCreateUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
@@ -48,7 +49,7 @@ func LoadbalancerCreateUpdateHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.LoadBalancer.UpdateOne(lb).SetName(("other-lb-name")).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
@@ -57,12 +58,12 @@ func LoadbalancerCreateUpdateHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func LoadbalancerDeleteHookTest(t *testing.T) {
+func Test_LoadbalancerDeleteHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
@@ -71,7 +72,7 @@ func LoadbalancerDeleteHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.LoadBalancer.DeleteOneID(lb.ID).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID}
@@ -80,12 +81,12 @@ func LoadbalancerDeleteHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func OriginCreateUpdateHookTest(t *testing.T) {
+func Test_OriginCreateUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-origin")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -97,7 +98,7 @@ func OriginCreateUpdateHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Origin.UpdateOne(origin).SetName("other-origin-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
@@ -106,12 +107,12 @@ func OriginCreateUpdateHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func OriginDeleteHookTest(t *testing.T) {
+func Test_OriginDeleteHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -123,7 +124,7 @@ func OriginDeleteHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Origin.DeleteOne(origin).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
@@ -132,12 +133,12 @@ func OriginDeleteHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func PoolCreateUpdateHookTest(t *testing.T) {
+func Test_PoolCreateUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-pool")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -149,7 +150,7 @@ func PoolCreateUpdateHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Pool.UpdateOne(pool).SetName("other-pool-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, origin.ID, port.ID}
@@ -158,12 +159,12 @@ func PoolCreateUpdateHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func PoolDeleteHookTest(t *testing.T) {
+func Test_PoolDeleteHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-pool")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -174,7 +175,7 @@ func PoolDeleteHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Pool.DeleteOne(pool).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID}
@@ -183,12 +184,12 @@ func PoolDeleteHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func PortCreateUpdateHookTest(t *testing.T) {
+func Test_PortCreateUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "update.load-balancer-port")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -199,7 +200,7 @@ func PortCreateUpdateHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Port.UpdateOne(port).SetName("other-port-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
@@ -208,12 +209,12 @@ func PortCreateUpdateHookTest(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 }
 
-func PortDeleteHookTest(t *testing.T) {
+func Test_PortDeleteHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-port")
-	testutils.IfErrPanic("failed to subscribe to changes", err)
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
@@ -224,7 +225,7 @@ func PortDeleteHookTest(t *testing.T) {
 	// Act
 	testutils.EntClient.Port.DeleteOne(port).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}

@@ -4,6 +4,7 @@ package testutils
 import (
 	"context"
 	"log"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -31,11 +32,11 @@ func IfErrPanic(msg string, err error) {
 }
 
 // ChannelReceiveWithTimeout returns the next message from channel chan or panics if it timesout before
-func ChannelReceiveWithTimeout[T any](channel <-chan T, timeout time.Duration) (msg T) {
+func ChannelReceiveWithTimeout[T any](t *testing.T, channel <-chan T, timeout time.Duration) (msg T) {
 	select {
 	case msg = <-channel:
 	case <-time.After(timeout):
-		log.Panicln("timed out waiting to receive from channel")
+		t.Fatal("timed out waiting to receive from channel")
 	}
 
 	return
