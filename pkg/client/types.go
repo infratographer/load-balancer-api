@@ -1,5 +1,7 @@
 package client
 
+import "encoding/json"
+
 // OriginNode is a struct that represents the OriginNode GraphQL type
 type OriginNode struct {
 	ID         string
@@ -63,6 +65,7 @@ type LoadBalancer struct {
 	Owner       OwnerNode
 	Location    LocationNode
 	IPAddresses []IPAddress `graphql:"IPAddresses" json:"IPAddresses"`
+	Metadata    Metadata    `graphql:"metadata" json:"metadata"`
 	Ports       Ports
 }
 
@@ -78,13 +81,55 @@ type IPAddress struct {
 	Reserved bool
 }
 
+// MetadataStatusNode is a struct that represents the Metadata status node GraphQL type
+type MetadataStatusNode struct {
+	ID                string          `graphql:"id"`
+	Data              json.RawMessage `graphql:"data"`
+	Source            string          `graphql:"source"`
+	StatusNamespaceID string          `graphql:"statusNamespaceID"`
+}
+
+// MetadataStatusEdges is a struct that represents the Metadata status edges GraphQL type
+type MetadataStatusEdges struct {
+	Node MetadataStatusNode
+}
+
+// MetadataStatuses is a struct that represents the Metadata statuses GraphQL type
+type MetadataStatuses struct {
+	Edges []MetadataStatusEdges
+}
+
+// Metadata is a struct that represents the metadata GraphQL type
+type Metadata struct {
+	ID       string           `graphql:"id"`
+	NodeID   string           `graphql:"nodeID"`
+	Statuses MetadataStatuses `graphql:"statuses" json:"statuses"`
+}
+
 // Readable version of the above:
 // type GetLoadBalancer struct {
 // 	LoadBalancer struct {
 // 		ID    string
 //      Owner string
 // 		Name  string
-//		IPAddressableFragment
+//      IPAddresses {
+// 	      id string
+// 	      ip
+//  	}
+// 	    metadata struct {
+// 	      id     string
+// 	      nodeID string
+// 	      statuses struct {
+// 		    edges []struct {
+// 		      node struct {
+// 		        source            string
+// 		        statusNamespaceID string
+// 		        id                string
+// 		        data              json bytes
+// 		      }
+// 		    }
+// 	      }
+// 	    }
 // 		Ports struct {
 // 			Edges []struct {
 // 				Node struct {

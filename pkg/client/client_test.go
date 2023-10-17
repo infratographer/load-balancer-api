@@ -105,6 +105,58 @@ func TestGetLoadBalancer(t *testing.T) {
 		assert.True(t, lb.IPAddresses[1].Reserved)
 	})
 
+	t.Run("successful query with metadata status", func(t *testing.T) {
+		respJSON := `{
+	"data": {
+		"loadBalancer": {
+			"id": "loadbal-testing",
+			"name": "some lb",
+			"location": {
+				"id": "lctnloc-testing"
+			},
+			"metadata": {
+				"id": "metadat-testing",
+				"nodeID": "loadbal-testing",
+				"statuses": {
+					"edges": [
+						{
+							"node": {
+								"source": "lctnloc-testing",
+								"statusNamespaceID": "metasns-testing",
+								"id": "metasts-testing",
+								"data": {
+									"status": "creating"
+								}
+							}
+						}
+					]
+				}
+			}
+		}
+	}
+}`
+
+		cli.gqlCli = mustNewGQLTestClient(respJSON, http.StatusOK)
+		lb, err := cli.GetLoadBalancer(context.Background(), "loadbal-randovalue")
+		require.NoError(t, err)
+		require.NotNil(t, lb)
+
+		assert.Equal(t, "loadbal-testing", lb.ID)
+		assert.Equal(t, "some lb", lb.Name)
+		assert.Equal(t, "lctnloc-testing", lb.Location.ID)
+
+		assert.Equal(t, "metadat-testing", lb.Metadata.ID)
+		assert.Equal(t, "loadbal-testing", lb.Metadata.NodeID)
+		assert.Len(t, lb.IPAddresses, 0)
+		assert.Len(t, lb.Ports.Edges, 0)
+
+		require.Len(t, lb.Metadata.Statuses.Edges, 1)
+		assert.Equal(t, "lctnloc-testing", lb.Metadata.Statuses.Edges[0].Node.Source)
+		assert.Equal(t, "metasts-testing", lb.Metadata.Statuses.Edges[0].Node.ID)
+		assert.Equal(t, "metasns-testing", lb.Metadata.Statuses.Edges[0].Node.StatusNamespaceID)
+		assert.JSONEq(t, `{"status": "creating"}`, string(lb.Metadata.Statuses.Edges[0].Node.Data))
+	})
+
 	t.Run("unauthorized", func(t *testing.T) {
 		respJSON := `{"message":"invalid or expired jwt"}`
 
