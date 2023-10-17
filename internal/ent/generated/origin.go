@@ -40,7 +40,7 @@ type Origin struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Weight holds the value of the "weight" field.
-	Weight int `json:"weight,omitempty"`
+	Weight int32 `json:"weight,omitempty"`
 	// Target holds the value of the "target" field.
 	Target string `json:"target,omitempty"`
 	// PortNumber holds the value of the "port_number" field.
@@ -137,7 +137,7 @@ func (o *Origin) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field weight", values[i])
 			} else if value.Valid {
-				o.Weight = int(value.Int64)
+				o.Weight = int32(value.Int64)
 			}
 		case origin.FieldTarget:
 			if value, ok := values[i].(*sql.NullString); !ok {

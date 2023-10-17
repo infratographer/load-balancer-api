@@ -89,7 +89,7 @@ func init() {
 	// originDescWeight is the schema descriptor for weight field.
 	originDescWeight := originFields[2].Descriptor()
 	// origin.DefaultWeight holds the default value on creation for the weight field.
-	origin.DefaultWeight = originDescWeight.Default.(int)
+	origin.DefaultWeight = originDescWeight.Default.(int32)
 	// originDescTarget is the schema descriptor for target field.
 	originDescTarget := originFields[3].Descriptor()
 	// origin.TargetValidator is a validator for the "target" field. It is called by the builders before save.

@@ -79,7 +79,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
-		{Name: "weight", Type: field.TypeInt, Default: 100},
+		{Name: "weight", Type: field.TypeInt32, Default: 100},
 		{Name: "target", Type: field.TypeString},
 		{Name: "port_number", Type: field.TypeInt},
 		{Name: "active", Type: field.TypeBool, Default: true},

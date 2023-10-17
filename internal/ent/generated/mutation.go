@@ -800,8 +800,8 @@ type OriginMutation struct {
 	created_at     *time.Time
 	updated_at     *time.Time
 	name           *string
-	weight         *int
-	addweight      *int
+	weight         *int32
+	addweight      *int32
 	target         *string
 	port_number    *int
 	addport_number *int
@@ -1027,13 +1027,13 @@ func (m *OriginMutation) ResetName() {
 }
 
 // SetWeight sets the "weight" field.
-func (m *OriginMutation) SetWeight(i int) {
+func (m *OriginMutation) SetWeight(i int32) {
 	m.weight = &i
 	m.addweight = nil
 }
 
 // Weight returns the value of the "weight" field in the mutation.
-func (m *OriginMutation) Weight() (r int, exists bool) {
+func (m *OriginMutation) Weight() (r int32, exists bool) {
 	v := m.weight
 	if v == nil {
 		return
@@ -1044,7 +1044,7 @@ func (m *OriginMutation) Weight() (r int, exists bool) {
 // OldWeight returns the old "weight" field's value of the Origin entity.
 // If the Origin object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OriginMutation) OldWeight(ctx context.Context) (v int, err error) {
+func (m *OriginMutation) OldWeight(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWeight is only allowed on UpdateOne operations")
 	}
@@ -1059,7 +1059,7 @@ func (m *OriginMutation) OldWeight(ctx context.Context) (v int, err error) {
 }
 
 // AddWeight adds i to the "weight" field.
-func (m *OriginMutation) AddWeight(i int) {
+func (m *OriginMutation) AddWeight(i int32) {
 	if m.addweight != nil {
 		*m.addweight += i
 	} else {
@@ -1068,7 +1068,7 @@ func (m *OriginMutation) AddWeight(i int) {
 }
 
 // AddedWeight returns the value that was added to the "weight" field in this mutation.
-func (m *OriginMutation) AddedWeight() (r int, exists bool) {
+func (m *OriginMutation) AddedWeight() (r int32, exists bool) {
 	v := m.addweight
 	if v == nil {
 		return
@@ -1412,7 +1412,7 @@ func (m *OriginMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case origin.FieldWeight:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1482,7 +1482,7 @@ func (m *OriginMutation) AddedField(name string) (ent.Value, bool) {
 func (m *OriginMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case origin.FieldWeight:
-		v, ok := value.(int)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

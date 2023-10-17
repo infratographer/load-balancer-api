@@ -71,13 +71,13 @@ func (oc *OriginCreate) SetName(s string) *OriginCreate {
 }
 
 // SetWeight sets the "weight" field.
-func (oc *OriginCreate) SetWeight(i int) *OriginCreate {
+func (oc *OriginCreate) SetWeight(i int32) *OriginCreate {
 	oc.mutation.SetWeight(i)
 	return oc
 }
 
 // SetNillableWeight sets the "weight" field if the given value is not nil.
-func (oc *OriginCreate) SetNillableWeight(i *int) *OriginCreate {
+func (oc *OriginCreate) SetNillableWeight(i *int32) *OriginCreate {
 	if i != nil {
 		oc.SetWeight(*i)
 	}
@@ -289,7 +289,7 @@ func (oc *OriginCreate) createSpec() (*Origin, *sqlgraph.CreateSpec) {
 		_node.Name = value
 	}
 	if value, ok := oc.mutation.Weight(); ok {
-		_spec.SetField(origin.FieldWeight, field.TypeInt, value)
+		_spec.SetField(origin.FieldWeight, field.TypeInt32, value)
 		_node.Weight = value
 	}
 	if value, ok := oc.mutation.Target(); ok {

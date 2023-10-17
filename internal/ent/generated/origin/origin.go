@@ -91,7 +91,7 @@ var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// DefaultWeight holds the default value on creation for the "weight" field.
-	DefaultWeight int
+	DefaultWeight int32
 	// TargetValidator is a validator for the "target" field. It is called by the builders before save.
 	TargetValidator func(string) error
 	// PortNumberValidator is a validator for the "port_number" field. It is called by the builders before save.

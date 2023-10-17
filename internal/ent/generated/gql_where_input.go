@@ -373,14 +373,14 @@ type LoadBalancerOriginWhereInput struct {
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
 	// "weight" field predicates.
-	Weight      *int  `json:"weight,omitempty"`
-	WeightNEQ   *int  `json:"weightNEQ,omitempty"`
-	WeightIn    []int `json:"weightIn,omitempty"`
-	WeightNotIn []int `json:"weightNotIn,omitempty"`
-	WeightGT    *int  `json:"weightGT,omitempty"`
-	WeightGTE   *int  `json:"weightGTE,omitempty"`
-	WeightLT    *int  `json:"weightLT,omitempty"`
-	WeightLTE   *int  `json:"weightLTE,omitempty"`
+	Weight      *int32  `json:"weight,omitempty"`
+	WeightNEQ   *int32  `json:"weightNEQ,omitempty"`
+	WeightIn    []int32 `json:"weightIn,omitempty"`
+	WeightNotIn []int32 `json:"weightNotIn,omitempty"`
+	WeightGT    *int32  `json:"weightGT,omitempty"`
+	WeightGTE   *int32  `json:"weightGTE,omitempty"`
+	WeightLT    *int32  `json:"weightLT,omitempty"`
+	WeightLTE   *int32  `json:"weightLTE,omitempty"`
 
 	// "target" field predicates.
 	Target             *string  `json:"target,omitempty"`

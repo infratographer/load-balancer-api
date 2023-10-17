@@ -5194,9 +5194,9 @@ func (ec *executionContext) _LoadBalancerOrigin_weight(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int32)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_LoadBalancerOrigin_weight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12114,7 +12114,7 @@ func (ec *executionContext) unmarshalInputCreateLoadBalancerOriginInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12782,7 +12782,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12791,7 +12791,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightNEQ"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12800,7 +12800,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOInt2ᚕint32ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12809,7 +12809,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightNotIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOInt2ᚕint32ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12818,7 +12818,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightGT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12827,7 +12827,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightGTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12836,7 +12836,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightLT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12845,7 +12845,7 @@ func (ec *executionContext) unmarshalInputLoadBalancerOriginWhereInput(ctx conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weightLTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15044,7 +15044,7 @@ func (ec *executionContext) unmarshalInputUpdateLoadBalancerOriginInput(ctx cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18405,6 +18405,21 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v interface{}) (int32, error) {
+	res, err := graphql.UnmarshalInt32(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.SelectionSet, v int32) graphql.Marshaler {
+	res := graphql.MarshalInt32(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNLoadBalancer2goᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancer(ctx context.Context, sel ast.SelectionSet, v generated.LoadBalancer) graphql.Marshaler {
 	return ec._LoadBalancer(ctx, sel, &v)
 }
@@ -19403,6 +19418,44 @@ func (ec *executionContext) marshalOID2ᚖgoᚗinfratographerᚗcomᚋxᚋgidx�
 	return v
 }
 
+func (ec *executionContext) unmarshalOInt2ᚕint32ᚄ(ctx context.Context, v interface{}) ([]int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int32, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int32(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕint32ᚄ(ctx context.Context, sel ast.SelectionSet, v []int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int32(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
 	if v == nil {
 		return nil, nil
@@ -19454,6 +19507,22 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v interface{}) (*int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt32(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt32(*v)
 	return res
 }
 

@@ -86,7 +86,7 @@ func (c *LoadBalancerUpdateOne) SetInput(i UpdateLoadBalancerInput) *LoadBalance
 // CreateLoadBalancerOriginInput represents a mutation input for creating loadbalancerorigins.
 type CreateLoadBalancerOriginInput struct {
 	Name       string
-	Weight     *int
+	Weight     *int32
 	Target     string
 	PortNumber int
 	Active     *bool
@@ -116,7 +116,7 @@ func (c *OriginCreate) SetInput(i CreateLoadBalancerOriginInput) *OriginCreate {
 // UpdateLoadBalancerOriginInput represents a mutation input for updating loadbalancerorigins.
 type UpdateLoadBalancerOriginInput struct {
 	Name       *string
-	Weight     *int
+	Weight     *int32
 	Target     *string
 	PortNumber *int
 	Active     *bool
