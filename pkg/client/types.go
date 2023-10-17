@@ -6,6 +6,7 @@ type OriginNode struct {
 	Name       string
 	Target     string
 	PortNumber int64
+	Weight     int64
 	Active     bool
 }
 
