@@ -18,7 +18,13 @@ import (
 const (
 	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
-	defualtTimeout = 2 * time.Second
+	defaultTimeout = 2 * time.Second
+)
+
+var (
+	createEventType = string(events.CreateChangeType)
+	updateEventType = string(events.UpdateChangeType)
+	deleteEventType = string(events.DeleteChangeType)
 )
 
 func TestMain(m *testing.M) {
@@ -35,7 +41,36 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func Test_LoadbalancerCreateUpdateHook(t *testing.T) {
+func Test_LoadbalancerCreateHook(t *testing.T) {
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	testutils.EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
+
+	// Act
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	expectedSubjectId := lb.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := createEventType
+	actualEventType := msg.Message().EventType
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
+}
+
+func Test_LoadbalancerUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -49,13 +84,21 @@ func Test_LoadbalancerCreateUpdateHook(t *testing.T) {
 	// Act
 	testutils.EntClient.LoadBalancer.UpdateOne(lb).SetName(("other-lb-name")).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := lb.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := updateEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
 func Test_LoadbalancerDeleteHook(t *testing.T) {
@@ -72,16 +115,57 @@ func Test_LoadbalancerDeleteHook(t *testing.T) {
 	// Act
 	testutils.EntClient.LoadBalancer.DeleteOneID(lb.ID).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := lb.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := deleteEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
-func Test_OriginCreateUpdateHook(t *testing.T) {
+func Test_OriginCreateHook(t *testing.T) {
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-origin")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+	(&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+
+	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
+
+	// Act
+	origin := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	expectedSubjectId := origin.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := createEventType
+	actualEventType := msg.Message().EventType
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
+}
+
+func Test_OriginUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -98,13 +182,21 @@ func Test_OriginCreateUpdateHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Origin.UpdateOne(origin).SetName("other-origin-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := origin.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := updateEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
 func Test_OriginDeleteHook(t *testing.T) {
@@ -124,16 +216,53 @@ func Test_OriginDeleteHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Origin.DeleteOne(origin).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := origin.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := deleteEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
-func Test_PoolCreateUpdateHook(t *testing.T) {
+func Test_PoolCreateHook(t *testing.T) {
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-pool")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	testutils.EntClient.Pool.Use(manualhooks.PoolHooks()...)
+
+	// Act
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	expectedSubjectId := pool.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := createEventType
+	actualEventType := msg.Message().EventType
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
+}
+
+func Test_PoolUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -150,13 +279,21 @@ func Test_PoolCreateUpdateHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Pool.UpdateOne(pool).SetName("other-pool-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, origin.ID, port.ID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := pool.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := updateEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
 func Test_PoolDeleteHook(t *testing.T) {
@@ -175,16 +312,56 @@ func Test_PoolDeleteHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Pool.DeleteOne(pool).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := pool.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := deleteEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
-func Test_PortCreateUpdateHook(t *testing.T) {
+func Test_PortCreateHook(t *testing.T) {
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-port")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
+
+	testutils.EntClient.Port.Use(manualhooks.PortHooks()...)
+
+	// Act
+	port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	expectedSubjectId := port.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := createEventType
+	actualEventType := msg.Message().EventType
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
+}
+
+func Test_PortUpdateHook(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
@@ -200,13 +377,21 @@ func Test_PortCreateUpdateHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Port.UpdateOne(port).SetName("other-port-name").ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := port.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := updateEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
 
 func Test_PortDeleteHook(t *testing.T) {
@@ -225,11 +410,19 @@ func Test_PortDeleteHook(t *testing.T) {
 	// Act
 	testutils.EntClient.Port.DeleteOne(port).ExecX(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defualtTimeout)
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
+	expectedSubjectId := port.ID
+	actualSubjectId := msg.Message().SubjectID
+
+	expectedEventType := deleteEventType
+	actualEventType := msg.Message().EventType
+
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, expectedSubjectId, actualSubjectId)
+	assert.Equal(t, expectedEventType, actualEventType)
 }
