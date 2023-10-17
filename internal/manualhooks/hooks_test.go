@@ -59,15 +59,9 @@ func Test_LoadbalancerCreateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := lb.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := createEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, lb.ID, msg.Message().SubjectID)
+	assert.Equal(t, createEventType, msg.Message().EventType)
 }
 
 func Test_LoadbalancerUpdateHook(t *testing.T) {
@@ -90,15 +84,9 @@ func Test_LoadbalancerUpdateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := lb.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := updateEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, lb.ID, msg.Message().SubjectID)
+	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
 func Test_LoadbalancerDeleteHook(t *testing.T) {
@@ -121,15 +109,9 @@ func Test_LoadbalancerDeleteHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := lb.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := deleteEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, lb.ID, msg.Message().SubjectID)
+	assert.Equal(t, deleteEventType, msg.Message().EventType)
 }
 
 func Test_OriginCreateHook(t *testing.T) {
@@ -154,15 +136,9 @@ func Test_OriginCreateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := origin.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := createEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, origin.ID, msg.Message().SubjectID)
+	assert.Equal(t, createEventType, msg.Message().EventType)
 }
 
 func Test_OriginUpdateHook(t *testing.T) {
@@ -188,15 +164,9 @@ func Test_OriginUpdateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := origin.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := updateEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, origin.ID, msg.Message().SubjectID)
+	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
 func Test_OriginDeleteHook(t *testing.T) {
@@ -222,15 +192,9 @@ func Test_OriginDeleteHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := origin.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := deleteEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, origin.ID, msg.Message().SubjectID)
+	assert.Equal(t, deleteEventType, msg.Message().EventType)
 }
 
 func Test_PoolCreateHook(t *testing.T) {
@@ -251,15 +215,9 @@ func Test_PoolCreateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := pool.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := createEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, pool.ID, msg.Message().SubjectID)
+	assert.Equal(t, createEventType, msg.Message().EventType)
 }
 
 func Test_PoolUpdateHook(t *testing.T) {
@@ -285,15 +243,9 @@ func Test_PoolUpdateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, origin.ID, port.ID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := pool.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := updateEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, pool.ID, msg.Message().SubjectID)
+	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
 func Test_PoolDeleteHook(t *testing.T) {
@@ -318,15 +270,9 @@ func Test_PoolDeleteHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := pool.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := deleteEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, pool.ID, msg.Message().SubjectID)
+	assert.Equal(t, deleteEventType, msg.Message().EventType)
 }
 
 func Test_PortCreateHook(t *testing.T) {
@@ -350,15 +296,9 @@ func Test_PortCreateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := port.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := createEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, port.ID, msg.Message().SubjectID)
+	assert.Equal(t, createEventType, msg.Message().EventType)
 }
 
 func Test_PortUpdateHook(t *testing.T) {
@@ -383,15 +323,9 @@ func Test_PortUpdateHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := port.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := updateEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, port.ID, msg.Message().SubjectID)
+	assert.Equal(t, updateEventType, msg.Message().EventType)
 }
 
 func Test_PortDeleteHook(t *testing.T) {
@@ -416,13 +350,7 @@ func Test_PortDeleteHook(t *testing.T) {
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	expectedSubjectId := port.ID
-	actualSubjectId := msg.Message().SubjectID
-
-	expectedEventType := deleteEventType
-	actualEventType := msg.Message().EventType
-
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, expectedSubjectId, actualSubjectId)
-	assert.Equal(t, expectedEventType, actualEventType)
+	assert.Equal(t, port.ID, msg.Message().SubjectID)
+	assert.Equal(t, deleteEventType, msg.Message().EventType)
 }
