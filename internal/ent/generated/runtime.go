@@ -86,8 +86,12 @@ func init() {
 	originDescName := originFields[1].Descriptor()
 	// origin.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	origin.NameValidator = originDescName.Validators[0].(func(string) error)
+	// originDescWeight is the schema descriptor for weight field.
+	originDescWeight := originFields[2].Descriptor()
+	// origin.DefaultWeight holds the default value on creation for the weight field.
+	origin.DefaultWeight = originDescWeight.Default.(int32)
 	// originDescTarget is the schema descriptor for target field.
-	originDescTarget := originFields[2].Descriptor()
+	originDescTarget := originFields[3].Descriptor()
 	// origin.TargetValidator is a validator for the "target" field. It is called by the builders before save.
 	origin.TargetValidator = func() func(string) error {
 		validators := originDescTarget.Validators
@@ -105,7 +109,7 @@ func init() {
 		}
 	}()
 	// originDescPortNumber is the schema descriptor for port_number field.
-	originDescPortNumber := originFields[3].Descriptor()
+	originDescPortNumber := originFields[4].Descriptor()
 	// origin.PortNumberValidator is a validator for the "port_number" field. It is called by the builders before save.
 	origin.PortNumberValidator = func() func(int) error {
 		validators := originDescPortNumber.Validators
@@ -123,11 +127,11 @@ func init() {
 		}
 	}()
 	// originDescActive is the schema descriptor for active field.
-	originDescActive := originFields[4].Descriptor()
+	originDescActive := originFields[5].Descriptor()
 	// origin.DefaultActive holds the default value on creation for the active field.
 	origin.DefaultActive = originDescActive.Default.(bool)
 	// originDescPoolID is the schema descriptor for pool_id field.
-	originDescPoolID := originFields[5].Descriptor()
+	originDescPoolID := originFields[6].Descriptor()
 	// origin.PoolIDValidator is a validator for the "pool_id" field. It is called by the builders before save.
 	origin.PoolIDValidator = originDescPoolID.Validators[0].(func(string) error)
 	// originDescID is the schema descriptor for id field.
