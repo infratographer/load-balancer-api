@@ -59,7 +59,8 @@ func TestGetLoadBalancer(t *testing.T) {
 													"id": "loadori-origin",
 													"name": "origin",
 													"target": "1.2.3.4",
-													"portNumber": 80
+													"portNumber": 80,
+													"weight": 100
 												}
 											}
 										]
@@ -94,6 +95,7 @@ func TestGetLoadBalancer(t *testing.T) {
 		assert.Equal(t, "origin", lb.Ports.Edges[0].Node.Pools[0].Origins.Edges[0].Node.Name)
 		assert.Equal(t, "1.2.3.4", lb.Ports.Edges[0].Node.Pools[0].Origins.Edges[0].Node.Target)
 		assert.Equal(t, int64(80), lb.Ports.Edges[0].Node.Pools[0].Origins.Edges[0].Node.PortNumber)
+		assert.Equal(t, int64(100), lb.Ports.Edges[0].Node.Pools[0].Origins.Edges[0].Node.Weight)
 
 		require.Len(t, lb.IPAddresses, 2)
 		assert.Equal(t, "ipamipa-randovalue", lb.IPAddresses[0].ID)
