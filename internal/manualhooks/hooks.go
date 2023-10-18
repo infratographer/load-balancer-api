@@ -205,11 +205,11 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
@@ -252,16 +252,11 @@ func LoadBalancerHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "owner",
-						SubjectID: dbObj.OwnerID,
-					})
-
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
@@ -518,11 +513,11 @@ func OriginHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
@@ -604,11 +599,11 @@ func OriginHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
@@ -813,11 +808,11 @@ func PoolHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
@@ -874,11 +869,11 @@ func PoolHooks() []ent.Hook {
 						SubjectID: dbObj.OwnerID,
 					})
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
@@ -1088,11 +1083,11 @@ func PortHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, msg.AdditionalSubjectIDs)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
@@ -1148,7 +1143,7 @@ func PortHooks() []ent.Hook {
 					}
 
 					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
-					if err != nil {
+					if err == nil {
 						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) {
 							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
 						}
@@ -1166,11 +1161,11 @@ func PortHooks() []ent.Hook {
 						}
 					}
 
-					lb_lookup := getLoadBalancerID(ctx, objID, additionalSubjects)
-					if lb_lookup != "" {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb_lookup)
+					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
+					for _, lb := range lbs {
+						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
 						if err != nil {
-							return nil, fmt.Errorf("unable to lookup location %s", lb_lookup)
+							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
 						}
 
 						if !slices.Contains(additionalSubjects, lb.LocationID) {
@@ -1221,16 +1216,18 @@ func eventType(op ent.Op) string {
 	}
 }
 
-func getLoadBalancerID(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) gidx.PrefixedID {
+func getLoadBalancerIDs(ctx context.Context, id gidx.PrefixedID, addID []gidx.PrefixedID) []gidx.PrefixedID {
+	lbIDs := []gidx.PrefixedID{}
+
 	if id.Prefix() == schema.LoadBalancerPrefix {
-		return id
+		lbIDs = append(lbIDs, id)
 	}
 
 	for _, id := range addID {
 		if id.Prefix() == schema.LoadBalancerPrefix {
-			return id
+			lbIDs = append(lbIDs, id)
 		}
 	}
 
-	return ""
+	return lbIDs
 }

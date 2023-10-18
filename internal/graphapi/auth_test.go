@@ -12,6 +12,8 @@ import (
 	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/testing/auth"
+
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestJWTEnabledLoadbalancerGETWithAuthClient(t *testing.T) {
@@ -44,7 +46,7 @@ func TestJWTEnabledLoadbalancerGETWithAuthClient(t *testing.T) {
 
 	defer srv.Close()
 
-	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	resp, err := graphTestClient(
 		withGraphClientHTTPClient(oauthCLI),
@@ -85,7 +87,7 @@ func TestJWTENabledLoadbalancerGETWithDefaultClient(t *testing.T) {
 
 	defer srv.Close()
 
-	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	resp, err := graphTestClient(
 		withGraphClientHTTPClient(http.DefaultClient),
