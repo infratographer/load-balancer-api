@@ -47,6 +47,27 @@ func (ou *OriginUpdate) SetName(s string) *OriginUpdate {
 	return ou
 }
 
+// SetWeight sets the "weight" field.
+func (ou *OriginUpdate) SetWeight(i int32) *OriginUpdate {
+	ou.mutation.ResetWeight()
+	ou.mutation.SetWeight(i)
+	return ou
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableWeight(i *int32) *OriginUpdate {
+	if i != nil {
+		ou.SetWeight(*i)
+	}
+	return ou
+}
+
+// AddWeight adds i to the "weight" field.
+func (ou *OriginUpdate) AddWeight(i int32) *OriginUpdate {
+	ou.mutation.AddWeight(i)
+	return ou
+}
+
 // SetTarget sets the "target" field.
 func (ou *OriginUpdate) SetTarget(s string) *OriginUpdate {
 	ou.mutation.SetTarget(s)
@@ -162,6 +183,12 @@ func (ou *OriginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)
 	}
+	if value, ok := ou.mutation.Weight(); ok {
+		_spec.SetField(origin.FieldWeight, field.TypeInt32, value)
+	}
+	if value, ok := ou.mutation.AddedWeight(); ok {
+		_spec.AddField(origin.FieldWeight, field.TypeInt32, value)
+	}
 	if value, ok := ou.mutation.Target(); ok {
 		_spec.SetField(origin.FieldTarget, field.TypeString, value)
 	}
@@ -197,6 +224,27 @@ type OriginUpdateOne struct {
 // SetName sets the "name" field.
 func (ouo *OriginUpdateOne) SetName(s string) *OriginUpdateOne {
 	ouo.mutation.SetName(s)
+	return ouo
+}
+
+// SetWeight sets the "weight" field.
+func (ouo *OriginUpdateOne) SetWeight(i int32) *OriginUpdateOne {
+	ouo.mutation.ResetWeight()
+	ouo.mutation.SetWeight(i)
+	return ouo
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableWeight(i *int32) *OriginUpdateOne {
+	if i != nil {
+		ouo.SetWeight(*i)
+	}
+	return ouo
+}
+
+// AddWeight adds i to the "weight" field.
+func (ouo *OriginUpdateOne) AddWeight(i int32) *OriginUpdateOne {
+	ouo.mutation.AddWeight(i)
 	return ouo
 }
 
@@ -344,6 +392,12 @@ func (ouo *OriginUpdateOne) sqlSave(ctx context.Context) (_node *Origin, err err
 	}
 	if value, ok := ouo.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)
+	}
+	if value, ok := ouo.mutation.Weight(); ok {
+		_spec.SetField(origin.FieldWeight, field.TypeInt32, value)
+	}
+	if value, ok := ouo.mutation.AddedWeight(); ok {
+		_spec.AddField(origin.FieldWeight, field.TypeInt32, value)
 	}
 	if value, ok := ouo.mutation.Target(); ok {
 		_spec.SetField(origin.FieldTarget, field.TypeString, value)

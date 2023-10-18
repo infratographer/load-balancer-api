@@ -70,6 +70,20 @@ func (oc *OriginCreate) SetName(s string) *OriginCreate {
 	return oc
 }
 
+// SetWeight sets the "weight" field.
+func (oc *OriginCreate) SetWeight(i int32) *OriginCreate {
+	oc.mutation.SetWeight(i)
+	return oc
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (oc *OriginCreate) SetNillableWeight(i *int32) *OriginCreate {
+	if i != nil {
+		oc.SetWeight(*i)
+	}
+	return oc
+}
+
 // SetTarget sets the "target" field.
 func (oc *OriginCreate) SetTarget(s string) *OriginCreate {
 	oc.mutation.SetTarget(s)
@@ -164,6 +178,10 @@ func (oc *OriginCreate) defaults() {
 		v := origin.DefaultUpdatedAt()
 		oc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := oc.mutation.Weight(); !ok {
+		v := origin.DefaultWeight
+		oc.mutation.SetWeight(v)
+	}
 	if _, ok := oc.mutation.Active(); !ok {
 		v := origin.DefaultActive
 		oc.mutation.SetActive(v)
@@ -189,6 +207,9 @@ func (oc *OriginCreate) check() error {
 		if err := origin.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Origin.name": %w`, err)}
 		}
+	}
+	if _, ok := oc.mutation.Weight(); !ok {
+		return &ValidationError{Name: "weight", err: errors.New(`generated: missing required field "Origin.weight"`)}
 	}
 	if _, ok := oc.mutation.Target(); !ok {
 		return &ValidationError{Name: "target", err: errors.New(`generated: missing required field "Origin.target"`)}
@@ -266,6 +287,10 @@ func (oc *OriginCreate) createSpec() (*Origin, *sqlgraph.CreateSpec) {
 	if value, ok := oc.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := oc.mutation.Weight(); ok {
+		_spec.SetField(origin.FieldWeight, field.TypeInt32, value)
+		_node.Weight = value
 	}
 	if value, ok := oc.mutation.Target(); ok {
 		_spec.SetField(origin.FieldTarget, field.TypeString, value)

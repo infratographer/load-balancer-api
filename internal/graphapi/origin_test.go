@@ -162,6 +162,43 @@ func TestMutate_OriginCreate(t *testing.T) {
 			},
 			errorMsg: "invalid ip address",
 		},
+		{
+			TestName: "Default weight to 100",
+			Input: graphclient.CreateLoadBalancerOriginInput{
+				Name:       "weightless",
+				Target:     "1.2.3.4",
+				PortNumber: 22,
+				PoolID:     pool1.ID,
+				Active:     newBool(false),
+			},
+			ExpectedOrigin: ent.LoadBalancerOrigin{
+				Name:       "weightless",
+				Target:     "1.2.3.4",
+				PortNumber: 22,
+				PoolID:     pool1.ID,
+				Weight:     100,
+				Active:     false,
+			},
+		},
+		{
+			TestName: "Set specific weight",
+			Input: graphclient.CreateLoadBalancerOriginInput{
+				Name:       "weighted",
+				Target:     "1.2.3.4",
+				PortNumber: 22,
+				PoolID:     pool1.ID,
+				Active:     newBool(false),
+				Weight:     newInt64(50),
+			},
+			ExpectedOrigin: ent.LoadBalancerOrigin{
+				Name:       "weighted",
+				Target:     "1.2.3.4",
+				PortNumber: 22,
+				PoolID:     pool1.ID,
+				Weight:     50,
+				Active:     false,
+			},
+		},
 	}
 
 	for _, tt := range testCases {

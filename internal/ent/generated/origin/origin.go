@@ -35,6 +35,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldWeight holds the string denoting the weight field in the database.
+	FieldWeight = "weight"
 	// FieldTarget holds the string denoting the target field in the database.
 	FieldTarget = "target"
 	// FieldPortNumber holds the string denoting the port_number field in the database.
@@ -62,6 +64,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldName,
+	FieldWeight,
 	FieldTarget,
 	FieldPortNumber,
 	FieldActive,
@@ -87,6 +90,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultWeight holds the default value on creation for the "weight" field.
+	DefaultWeight int32
 	// TargetValidator is a validator for the "target" field. It is called by the builders before save.
 	TargetValidator func(string) error
 	// PortNumberValidator is a validator for the "port_number" field. It is called by the builders before save.
@@ -120,6 +125,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByWeight orders the results by the weight field.
+func ByWeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeight, opts...).ToFunc()
 }
 
 // ByTarget orders the results by the target field.

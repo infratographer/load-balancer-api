@@ -79,6 +79,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
+		{Name: "weight", Type: field.TypeInt32, Default: 100},
 		{Name: "target", Type: field.TypeString},
 		{Name: "port_number", Type: field.TypeInt},
 		{Name: "active", Type: field.TypeBool, Default: true},
@@ -92,7 +93,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "origins_pools_pool",
-				Columns:    []*schema.Column{OriginsColumns[7]},
+				Columns:    []*schema.Column{OriginsColumns[8]},
 				RefColumns: []*schema.Column{PoolsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -111,7 +112,7 @@ var (
 			{
 				Name:    "origin_pool_id",
 				Unique:  false,
-				Columns: []*schema.Column{OriginsColumns[7]},
+				Columns: []*schema.Column{OriginsColumns[8]},
 			},
 		},
 	}
