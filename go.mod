@@ -99,7 +99,7 @@ require (
 	github.com/moby/term v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/nats-io/jwt/v2 v2.5.2 // indirect
-	github.com/nats-io/nats-server/v2 v2.10.1 // indirect
+	github.com/nats-io/nats-server/v2 v2.10.2 // indirect
 	github.com/nats-io/nats.go v1.30.2 // indirect
 	github.com/nats-io/nkeys v0.4.5 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
