@@ -105,6 +105,7 @@ type GetLoadBalancerPoolOrigin struct {
 					Target     string          "json:\"target\" graphql:\"target\""
 					PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
 					Active     bool            "json:\"active\" graphql:\"active\""
+					Weight     int64           "json:\"weight\" graphql:\"weight\""
 					PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
 					CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 					UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
@@ -185,6 +186,7 @@ type LoadBalancerOriginCreate struct {
 			Name       string          "json:\"name\" graphql:\"name\""
 			PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
 			Target     string          "json:\"target\" graphql:\"target\""
+			Weight     int64           "json:\"weight\" graphql:\"weight\""
 			PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
 			CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
@@ -204,6 +206,7 @@ type LoadBalancerOriginUpdate struct {
 			Name       string          "json:\"name\" graphql:\"name\""
 			PortNumber int64           "json:\"portNumber\" graphql:\"portNumber\""
 			Target     string          "json:\"target\" graphql:\"target\""
+			Weight     int64           "json:\"weight\" graphql:\"weight\""
 			PoolID     gidx.PrefixedID "json:\"poolID\" graphql:\"poolID\""
 			CreatedAt  time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt  time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""
@@ -375,6 +378,7 @@ const GetLoadBalancerPoolOriginDocument = `query GetLoadBalancerPoolOrigin ($id:
 					target
 					portNumber
 					active
+					weight
 					poolID
 					createdAt
 					updatedAt
@@ -550,6 +554,7 @@ const LoadBalancerOriginCreateDocument = `mutation LoadBalancerOriginCreate ($in
 			name
 			portNumber
 			target
+			weight
 			poolID
 			createdAt
 			updatedAt
@@ -599,6 +604,7 @@ const LoadBalancerOriginUpdateDocument = `mutation LoadBalancerOriginUpdate ($id
 			name
 			portNumber
 			target
+			weight
 			poolID
 			createdAt
 			updatedAt
