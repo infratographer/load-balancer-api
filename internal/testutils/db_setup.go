@@ -23,6 +23,7 @@ import (
 
 var (
 	testDBURI   = os.Getenv("LOADBALANCERAPI_TESTDB_URI")
+	NATSConn    *eventtools.TestNats         // NATSConn exported if needed for subscribers
 	EventsConn  events.Connection            // EventsConn exported if needed for subscribers
 	EntClient   *ent.Client                  // EntClient to use as ent client
 	DBContainer *testcontainersx.DBContainer // DBContainer to use through entire test suite
@@ -37,6 +38,7 @@ func SetupDB() {
 	IfErrPanic("failed to start nats server", err)
 
 	conn, err := events.NewConnection(nats.Config)
+
 	IfErrPanic("failed to create events connection", err)
 
 	// DB and EntClient setup
@@ -61,6 +63,7 @@ func SetupDB() {
 	EventsConn = conn
 	EntClient = c
 	DBContainer = cntr
+	NATSConn = nats
 }
 
 // TeardownDB used for clean up test setup
@@ -74,6 +77,10 @@ func TeardownDB() {
 	if DBContainer != nil && DBContainer.Container.IsRunning() {
 		IfErrPanic("teardown failed to terminate test db container", DBContainer.Container.Terminate(ctx))
 	}
+
+	_ = EventsConn.Shutdown(ctx)
+
+	NATSConn.Close()
 }
 
 // ParseDBURI parses the kind of query language from TESTDB_URI env var and initializes DBContainer as required
