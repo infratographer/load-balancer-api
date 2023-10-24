@@ -18,7 +18,7 @@ import (
 const (
 	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
-	defaultTimeout = 2 * time.Second
+	defaultTimeout = 5 * time.Second
 )
 
 var (

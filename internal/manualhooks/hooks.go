@@ -198,20 +198,20 @@ func LoadBalancerHooks() []ent.Hook {
 
 					// Ensure we have additional relevant subjects in the msg
 					lb, err := m.Client().LoadBalancer.Query().WithPorts().Where(loadbalancer.IDEQ(objID)).Only(ctx)
-					if err != nil {
-						return nil, fmt.Errorf("failed to get loadbalancer to lookup additional subject ids %s: %w", lb, err)
-					}
+					if err == nil {
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
 
-					if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
-					}
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
+						}
 
-					if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
-						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
-					}
-
-					for _, p := range lb.Edges.Ports {
-						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, p.ID)
+						for _, p := range lb.Edges.Ports {
+							if !slices.Contains(msg.AdditionalSubjectIDs, p.ID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, p.ID)
+							}
+						}
 					}
 
 					if len(relationships) != 0 {
@@ -757,6 +757,7 @@ func PoolHooks() []ent.Hook {
 						return retValue, err
 					}
 
+					// Ensure we have additional relevant subjects in the msg
 					addSubjPorts, err := m.Client().Port.Query().WithLoadBalancer().WithPools(func(q *generated.PoolQuery) {
 						q.WithOrigins()
 					}).Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
@@ -823,6 +824,7 @@ func PoolHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
+					// Ensure we have additional relevant subjects in the msg
 					addSubjPorts, err := m.Client().Port.Query().WithLoadBalancer().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
