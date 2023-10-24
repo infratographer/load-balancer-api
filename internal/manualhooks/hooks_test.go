@@ -133,7 +133,7 @@ func Test_OriginCreateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -161,7 +161,7 @@ func Test_OriginUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -189,7 +189,7 @@ func Test_OriginDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -240,7 +240,7 @@ func Test_PoolUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, origin.ID, port.ID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, origin.ID, port.ID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -267,7 +267,7 @@ func Test_PoolDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
