@@ -365,9 +365,9 @@ func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
 
 	// create 2 loadbalancers with a shared pool of origins
 	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
-	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
-	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
-	pool := (&testutils.PoolBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{OwnerID: "tnttent-testing"}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb1.ID}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb2.ID}).MustNew(ctx)
 	_ = (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
@@ -384,7 +384,8 @@ func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{
-		prov.OwnerID,
+		prov.ID,
+		lb1.OwnerID,
 		lb1.ID,
 		lb2.ID,
 		lb1.LocationID,
@@ -408,9 +409,9 @@ func Test_MultipleLoadbalancersSharedPoolDeleteOrigin(t *testing.T) {
 
 	// create 2 loadbalancers with a shared pool of origins
 	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
-	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
-	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
-	pool := (&testutils.PoolBuilder{OwnerID: prov.OwnerID}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{OwnerID: "tnttent-testing"}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb1.ID}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb2.ID}).MustNew(ctx)
 	_ = (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
@@ -428,7 +429,8 @@ func Test_MultipleLoadbalancersSharedPoolDeleteOrigin(t *testing.T) {
 
 	// Assert
 	expectedAdditionalSubjectIDs := []gidx.PrefixedID{
-		prov.OwnerID,
+		prov.ID,
+		lb1.OwnerID,
 		lb1.ID,
 		lb2.ID,
 		lb1.LocationID,
