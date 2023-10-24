@@ -56,7 +56,7 @@ func Test_LoadbalancerCreateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -81,7 +81,7 @@ func Test_LoadbalancerUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -106,7 +106,7 @@ func Test_LoadbalancerDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)

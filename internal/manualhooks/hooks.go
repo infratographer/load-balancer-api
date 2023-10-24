@@ -196,25 +196,22 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPortIDs, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).IDs(ctx)
-					if err == nil {
-						for _, portID := range addSubjPortIDs {
-							if !slices.Contains(msg.AdditionalSubjectIDs, portID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, portID)
-							}
-						}
+					// Ensure we have additional relevant subjects in the msg
+					lb, err := m.Client().LoadBalancer.Query().WithPorts().Where(loadbalancer.IDEQ(objID)).Only(ctx)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get loadbalancer to lookup additional subject ids %s: %w", lb, err)
 					}
 
-					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
+					if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
+						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+					}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
-						}
+					if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
+						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
+					}
+
+					for _, p := range lb.Edges.Ports {
+						msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, p.ID)
 					}
 
 					if len(relationships) != 0 {
@@ -251,18 +248,8 @@ func LoadBalancerHooks() []ent.Hook {
 					}
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
-
-					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
+					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
+					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
