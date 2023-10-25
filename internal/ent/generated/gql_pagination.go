@@ -733,6 +733,20 @@ var (
 			}
 		},
 	}
+	// OriginOrderFieldWeight orders Origin by weight.
+	OriginOrderFieldWeight = &LoadBalancerOriginOrderField{
+		Value: func(o *LoadBalancerOrigin) (ent.Value, error) {
+			return o.Weight, nil
+		},
+		column: origin.FieldWeight,
+		toTerm: origin.ByWeight,
+		toCursor: func(o *LoadBalancerOrigin) Cursor {
+			return Cursor{
+				ID:    o.ID,
+				Value: o.Weight,
+			}
+		},
+	}
 	// OriginOrderFieldTarget orders Origin by target.
 	OriginOrderFieldTarget = &LoadBalancerOriginOrderField{
 		Value: func(o *LoadBalancerOrigin) (ent.Value, error) {
@@ -787,6 +801,8 @@ func (f LoadBalancerOriginOrderField) String() string {
 		str = "UPDATED_AT"
 	case OriginOrderFieldName.column:
 		str = "name"
+	case OriginOrderFieldWeight.column:
+		str = "weight"
 	case OriginOrderFieldTarget.column:
 		str = "target"
 	case OriginOrderFieldPortNumber.column:
@@ -815,6 +831,8 @@ func (f *LoadBalancerOriginOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *OriginOrderFieldUpdatedAt
 	case "name":
 		*f = *OriginOrderFieldName
+	case "weight":
+		*f = *OriginOrderFieldWeight
 	case "target":
 		*f = *OriginOrderFieldTarget
 	case "number":

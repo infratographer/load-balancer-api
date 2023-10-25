@@ -14,6 +14,7 @@ import (
 
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestQuery_loadBalancer(t *testing.T) {
@@ -26,8 +27,8 @@ func TestQuery_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb1 := (&LoadBalancerBuilder{}).MustNew(ctx)
-	lb2 := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string
@@ -49,6 +50,11 @@ func TestQuery_loadBalancer(t *testing.T) {
 			TestName: "No load balancer found with ID",
 			QueryID:  gidx.MustNewID("testing"),
 			errorMsg: "load_balancer not found",
+		},
+		{
+			TestName: "invalid gidx format",
+			QueryID:  "test-invalid-id",
+			errorMsg: "invalid id",
 		},
 	}
 
@@ -85,7 +91,7 @@ func TestCreate_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := (&ProviderBuilder{}).MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	ownerID := gidx.MustNewID(ownerPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
@@ -162,18 +168,19 @@ func TestUpdate_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	updateName := gofakeit.DomainName()
-	emptyName := ""
 
 	testCases := []struct {
 		TestName   string
+		ID         gidx.PrefixedID
 		Input      graphclient.UpdateLoadBalancerInput
 		ExpectedLB *ent.LoadBalancer
 		errorMsg   string
 	}{
 		{
 			TestName: "updates loadbalancer",
+			ID:       lb.ID,
 			Input:    graphclient.UpdateLoadBalancerInput{Name: &updateName},
 			ExpectedLB: &ent.LoadBalancer{
 				Name:       updateName,
@@ -184,14 +191,27 @@ func TestUpdate_loadBalancer(t *testing.T) {
 		},
 		{
 			TestName: "fails to update name to empty",
-			Input:    graphclient.UpdateLoadBalancerInput{Name: &emptyName},
+			ID:       lb.ID,
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("")},
 			errorMsg: "value is less than the required length",
+		},
+		{
+			TestName: "fails to update loadbalancer that does not exist",
+			ID:       gidx.PrefixedID("loadbal-dne"),
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
+			errorMsg: "load_balancer not found",
+		},
+		{
+			TestName: "fails with invalid gidx",
+			ID:       "test-invalid-id",
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
+			errorMsg: "invalid id",
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerUpdate(ctx, lb.ID, tt.Input)
+			resp, err := graphTestClient().LoadBalancerUpdate(ctx, tt.ID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -223,7 +243,7 @@ func TestDelete_loadBalancer(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName   string
@@ -245,6 +265,11 @@ func TestDelete_loadBalancer(t *testing.T) {
 			TestName: "fails to delete empty loadbalancer ID",
 			Input:    gidx.PrefixedID(""),
 			errorMsg: "load_balancer not found",
+		},
+		{
+			TestName: "fails with invalid gidx",
+			Input:    "test-invalid-id",
+			errorMsg: "invalid id",
 		},
 	}
 
@@ -281,7 +306,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	prov := (&ProviderBuilder{}).MustNew(ctx)
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	ownerID := gidx.MustNewID(ownerPrefix)
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()

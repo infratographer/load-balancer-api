@@ -15,6 +15,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
+	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
 
 func TestCreate_LoadbalancerPort(t *testing.T) {
@@ -29,8 +30,9 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	_ = (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	poolBad := (&testutils.PoolBuilder{}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -66,7 +68,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				LoadBalancerID: "",
 				Number:         22,
 			},
-			errorMsg: "value is less than the required length",
+			errorMsg: "load_balancer not found",
 		},
 		{
 			TestName: "fails to create loadbalancer port with number < min",
@@ -103,6 +105,26 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 				Number:         1234,
 			},
 			errorMsg: "port number restricted",
+		},
+		{
+			TestName: "fails to create loadbalancer port with invalid pool id",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+				PoolIDs:        []gidx.PrefixedID{"not-a-valid-pool-id"},
+			},
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails to create loadbalancer port with pool with conflicting OwnerID",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           "lb-port",
+				LoadBalancerID: lb.ID,
+				Number:         1234,
+				PoolIDs:        []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "one or more pools not found",
 		},
 	}
 
@@ -147,18 +169,21 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
-	_ = (&PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	poolBad := (&testutils.PoolBuilder{}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{Name: "dupeport8080", LoadBalancerID: lb.ID, Number: 8080}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
 		Input    graphclient.UpdateLoadBalancerPortInput
+		ID       gidx.PrefixedID
 		Expected *graphclient.LoadBalancerPort
 		errorMsg string
 	}{
 		{
 			TestName: "fails to update loadbalancer port number to duplicate of another port",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(8080),
 			},
@@ -166,6 +191,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number to restricted port",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(1234),
 			},
@@ -173,6 +199,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "updates loadbalancer port name",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Name: newString("lb-port"),
 			},
@@ -183,6 +210,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "updates loadbalancer port number",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(22),
 			},
@@ -193,6 +221,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port name to empty",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Name: newString(""),
 			},
@@ -200,6 +229,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number < min",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(0),
 			},
@@ -207,16 +237,37 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 		},
 		{
 			TestName: "fails to update loadbalancer port number > max",
+			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Number: newInt64(65536),
 			},
 			errorMsg: "value out of range",
 		},
+		{
+			TestName: "fails to update port that does not exist",
+			ID:       gidx.PrefixedID("loadprt-doesnotexist"),
+			Input:    graphclient.UpdateLoadBalancerPortInput{},
+			errorMsg: "not found",
+		},
+		{
+			TestName: "fails to update port with invalid gidx",
+			ID:       gidx.PrefixedID("not a valid gidx"),
+			Input:    graphclient.UpdateLoadBalancerPortInput{},
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails to update loadbalancer port with pool with conflicting OwnerID",
+			ID:       port.ID,
+			Input: graphclient.UpdateLoadBalancerPortInput{
+				AddPoolIDs: []gidx.PrefixedID{poolBad.ID},
+			},
+			errorMsg: "one or more pools not found",
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
-			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, port.ID, tt.Input)
+			resp, err := graphTestClient().LoadBalancerPortUpdate(ctx, tt.ID, tt.Input)
 
 			if tt.errorMsg != "" {
 				require.Error(t, err)
@@ -250,8 +301,8 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
-	port := (&PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "port80", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
 
 	testCases := []struct {
 		TestName string
@@ -271,6 +322,11 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 			TestName: "fails to delete empty loadbalancer port ID",
 			Input:    gidx.PrefixedID(""),
 			errorMsg: "port not found",
+		},
+		{
+			TestName: "fails to delete with invalid gidx port ID",
+			Input:    gidx.PrefixedID("not-a-valid-gidx"),
+			errorMsg: "invalid id",
 		},
 	}
 
@@ -310,7 +366,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	// Permit request
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
-	lb := (&LoadBalancerBuilder{}).MustNew(ctx)
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
 	name := gofakeit.DomainName()
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
