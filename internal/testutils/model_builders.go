@@ -1,4 +1,4 @@
-package graphapi_test
+package testutils
 
 import (
 	"context"
@@ -10,12 +10,22 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 )
 
+const (
+	ownerPrefix    = "testown"
+	locationPrefix = "testloc"
+	lbPrefix       = "loadbal"
+	minPortNum     = 1
+	maxPortNum     = 65535
+)
+
+// ProviderBuilder is a provider-like struct for use in generating a provider using the ent client
 type ProviderBuilder struct {
 	Name    string
 	OwnerID gidx.PrefixedID
 }
 
-func (p ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
+// MustNew creates a provider from the receiver
+func (p *ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
 	if p.Name == "" {
 		p.Name = gofakeit.JobTitle()
 	}
@@ -27,6 +37,7 @@ func (p ProviderBuilder) MustNew(ctx context.Context) *ent.Provider {
 	return EntClient.Provider.Create().SetName(p.Name).SetOwnerID(p.OwnerID).SaveX(ctx)
 }
 
+// LoadBalancerBuilder is a loadbalancer-like struct for use in generating a loadbalancer using the ent client
 type LoadBalancerBuilder struct {
 	Name       string
 	OwnerID    gidx.PrefixedID
@@ -34,7 +45,8 @@ type LoadBalancerBuilder struct {
 	Provider   *ent.Provider
 }
 
-func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
+// MustNew creates a loadbalancer from the receiver
+func (b *LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 	if b.Provider == nil {
 		pb := &ProviderBuilder{OwnerID: b.OwnerID}
 		b.Provider = pb.MustNew(ctx)
@@ -55,13 +67,16 @@ func (b LoadBalancerBuilder) MustNew(ctx context.Context) *ent.LoadBalancer {
 	return EntClient.LoadBalancer.Create().SetName(b.Name).SetOwnerID(b.OwnerID).SetLocationID(b.LocationID).SetProvider(b.Provider).SaveX(ctx)
 }
 
+// PortBuilder is a port-like struct for use in generating a port using the ent client
 type PortBuilder struct {
 	Name           string
 	LoadBalancerID gidx.PrefixedID
 	Number         int
+	PoolIDs        []gidx.PrefixedID
 }
 
-func (p PortBuilder) MustNew(ctx context.Context) *ent.Port {
+// MustNew creates a port from the receiver
+func (p *PortBuilder) MustNew(ctx context.Context) *ent.Port {
 	if p.Name == "" {
 		p.Name = gofakeit.AppName()
 	}
@@ -71,18 +86,20 @@ func (p PortBuilder) MustNew(ctx context.Context) *ent.Port {
 	}
 
 	if p.Number == 0 {
-		p.Number = gofakeit.Number(1, 65535)
+		p.Number = gofakeit.Number(minPortNum, maxPortNum)
 	}
 
-	return EntClient.Port.Create().SetName(p.Name).SetLoadBalancerID(p.LoadBalancerID).SetNumber(p.Number).SaveX(ctx)
+	return EntClient.Port.Create().SetName(p.Name).SetLoadBalancerID(p.LoadBalancerID).SetNumber(p.Number).AddPoolIDs(p.PoolIDs...).SaveX(ctx)
 }
 
+// PoolBuilder is a pool-like struct for use in generating a pool using the ent client
 type PoolBuilder struct {
 	Name     string
 	OwnerID  gidx.PrefixedID
 	Protocol pool.Protocol
 }
 
+// MustNew creates a pool from the receiver
 func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 	if p.Name == "" {
 		p.Name = gofakeit.AppName()
@@ -99,6 +116,7 @@ func (p *PoolBuilder) MustNew(ctx context.Context) *ent.Pool {
 	return EntClient.Pool.Create().SetName(p.Name).SetOwnerID(p.OwnerID).SetProtocol(p.Protocol).SaveX(ctx)
 }
 
+// OriginBuilder is an origin-like struct for use in generating an origin using the ent client
 type OriginBuilder struct {
 	Name       string
 	Target     string
@@ -107,6 +125,7 @@ type OriginBuilder struct {
 	PoolID     gidx.PrefixedID
 }
 
+// MustNew creates an origin from the receiver
 func (o *OriginBuilder) MustNew(ctx context.Context) *ent.Origin {
 	if o.Name == "" {
 		o.Name = gofakeit.AppName()
@@ -117,7 +136,7 @@ func (o *OriginBuilder) MustNew(ctx context.Context) *ent.Origin {
 	}
 
 	if o.PortNumber == 0 {
-		o.PortNumber = gofakeit.Number(1, 65535)
+		o.PortNumber = gofakeit.Number(minPortNum, maxPortNum)
 	}
 
 	if o.PoolID == "" {

@@ -309,11 +309,15 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 // LoadBalancerCreateBulk is the builder for creating many LoadBalancer entities in bulk.
 type LoadBalancerCreateBulk struct {
 	config
+	err      error
 	builders []*LoadBalancerCreate
 }
 
 // Save creates the LoadBalancer entities in the database.
 func (lbcb *LoadBalancerCreateBulk) Save(ctx context.Context) ([]*LoadBalancer, error) {
+	if lbcb.err != nil {
+		return nil, lbcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(lbcb.builders))
 	nodes := make([]*LoadBalancer, len(lbcb.builders))
 	mutators := make([]Mutator, len(lbcb.builders))

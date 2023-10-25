@@ -15,6 +15,8 @@ import (
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
+var defaultOriginWeight int32 = 100
+
 // Origin holds the schema definition for the Origin entity.
 type Origin struct {
 	ent.Schema
@@ -39,6 +41,11 @@ func (Origin) Fields() []ent.Field {
 			NotEmpty().
 			Annotations(
 				entgql.OrderField("name"),
+			),
+		field.Int32("weight").
+			Default(defaultOriginWeight).
+			Annotations(
+				entgql.OrderField("weight"),
 			),
 		field.String("target").
 			NotEmpty().

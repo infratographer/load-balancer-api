@@ -301,11 +301,15 @@ func (pc *PoolCreate) createSpec() (*Pool, *sqlgraph.CreateSpec) {
 // PoolCreateBulk is the builder for creating many Pool entities in bulk.
 type PoolCreateBulk struct {
 	config
+	err      error
 	builders []*PoolCreate
 }
 
 // Save creates the Pool entities in the database.
 func (pcb *PoolCreateBulk) Save(ctx context.Context) ([]*Pool, error) {
+	if pcb.err != nil {
+		return nil, pcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
 	nodes := make([]*Pool, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))

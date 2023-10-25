@@ -39,6 +39,8 @@ type Origin struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Weight holds the value of the "weight" field.
+	Weight int32 `json:"weight,omitempty"`
 	// Target holds the value of the "target" field.
 	Target string `json:"target,omitempty"`
 	// PortNumber holds the value of the "port_number" field.
@@ -86,7 +88,7 @@ func (*Origin) scanValues(columns []string) ([]any, error) {
 			values[i] = new(gidx.PrefixedID)
 		case origin.FieldActive:
 			values[i] = new(sql.NullBool)
-		case origin.FieldPortNumber:
+		case origin.FieldWeight, origin.FieldPortNumber:
 			values[i] = new(sql.NullInt64)
 		case origin.FieldName, origin.FieldTarget:
 			values[i] = new(sql.NullString)
@@ -130,6 +132,12 @@ func (o *Origin) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				o.Name = value.String
+			}
+		case origin.FieldWeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field weight", values[i])
+			} else if value.Valid {
+				o.Weight = int32(value.Int64)
 			}
 		case origin.FieldTarget:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -204,6 +212,9 @@ func (o *Origin) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(o.Name)
+	builder.WriteString(", ")
+	builder.WriteString("weight=")
+	builder.WriteString(fmt.Sprintf("%v", o.Weight))
 	builder.WriteString(", ")
 	builder.WriteString("target=")
 	builder.WriteString(o.Target)
