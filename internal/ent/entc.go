@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/schema/field"
+	"github.com/hedwigz/entviz"
 	"go.infratographer.com/x/entx"
 )
 
@@ -49,6 +50,7 @@ func main() {
 		entc.Extensions(
 			xExt,
 			gqlExt,
+			entviz.Extension{},
 			// pubsubExt,
 		),
 		entc.TemplateDir("./internal/ent/templates"),

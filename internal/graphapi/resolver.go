@@ -22,6 +22,9 @@ var (
 	playgroundPath = "playground"
 
 	graphFullPath = fmt.Sprintf("/%s", graphPath)
+
+	vizPath = "viz"
+	vizFile = "./internal/ent/generated/schema-viz.html"
 )
 
 // Resolver provides a graph response resolver
@@ -90,6 +93,10 @@ func (h *Handler) Routes(e *echo.Group) {
 	})
 
 	if h.playground != nil {
+		e.GET("/"+vizPath, func(c echo.Context) error {
+			return c.File(vizFile)
+		})
+
 		handlers, err := h.playground.Handlers()
 		if err != nil {
 			h.r.logger.Fatal("error configuring playground handlers", "error", err)
