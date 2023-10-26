@@ -363,6 +363,9 @@ func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
 
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-origin")
+	require.NoError(t, err, "failed to subscribe to changes")
+
 	// create 2 loadbalancers with a shared pool of origins
 	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
 	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
@@ -370,15 +373,11 @@ func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
 	pool := (&testutils.PoolBuilder{OwnerID: "tnttent-testing"}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb1.ID}).MustNew(ctx)
 	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb2.ID}).MustNew(ctx)
-	_ = (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
 
-	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-origin")
-	require.NoError(t, err, "failed to subscribe to changes")
-
 	// Act - add another origin to the pool
-	ogn2 := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
+	ogn := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
@@ -395,7 +394,7 @@ func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, ogn2.ID, msg.Message().SubjectID)
+	assert.Equal(t, ogn.ID, msg.Message().SubjectID)
 	assert.Equal(t, createEventType, msg.Message().EventType)
 }
 
@@ -406,6 +405,9 @@ func Test_MultipleLoadbalancersSharedPoolDeleteOrigin(t *testing.T) {
 
 	// Arrange
 	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
+	require.NoError(t, err, "failed to subscribe to changes")
 
 	// create 2 loadbalancers with a shared pool of origins
 	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
@@ -418,9 +420,6 @@ func Test_MultipleLoadbalancersSharedPoolDeleteOrigin(t *testing.T) {
 	ogn2 := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
 
 	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
-
-	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
-	require.NoError(t, err, "failed to subscribe to changes")
 
 	// Act - update the pool to remove an origin
 	testutils.EntClient.Origin.DeleteOne(ogn2).ExecX(ctx)
