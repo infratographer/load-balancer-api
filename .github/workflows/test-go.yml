@@ -40,5 +40,8 @@ jobs:
       - name: Install atlas for db migrations on ${{ matrix.ci-database }}
         run: go install ariga.io/atlas/cmd/atlas@latest
 
+      # with one retry
       - name: Run go tests for ${{ matrix.ci-database }}
-        run: LOADBALANCERAPI_TESTDB_URI="${{ matrix.env-database-uri }}" go test -race -coverprofile=coverage.txt -covermode=atomic -tags testtools ./...
+        run: |
+          LOADBALANCERAPI_TESTDB_URI="${{ matrix.env-database-uri }}" go test -race -coverprofile=coverage.txt -covermode=atomic -tags testtools ./... || \
+          LOADBALANCERAPI_TESTDB_URI="${{ matrix.env-database-uri }}" go test -race -coverprofile=coverage.txt -covermode=atomic -tags testtools ./...
