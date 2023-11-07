@@ -14,13 +14,16 @@ data:
 {{- if .Values.api.events.nats.credsSecretName }}
   LOADBALANCERAPI_EVENTS_NATS_CREDSFILE: "{{ .Values.api.events.nats.credsFile }}"
 {{- end }}
+  LOADBALANCERAPI_METADATA_STATUS_NAMESPACE_ID: "{{ .Values.api.metadata.statusNamespaceID }}"
+  LOADBALANCERAPI_METADATA_TIMEOUT: "{{ .Values.api.metadata.timeout }}"
   LOADBALANCERAPI_OIDC_ENABLED: "{{ .Values.api.oidc.enabled }}"
   LOADBALANCERAPI_OIDC_AUDIENCE: "{{ .Values.api.oidc.audience }}"
   LOADBALANCERAPI_OIDC_ISSUER: "{{ .Values.api.oidc.issuer }}"
   LOADBALANCERAPI_OIDC_JWKS_REMOTE_TIMEOUT: "{{ .Values.api.oidc.jwksRemoteTimeout }}"
+  LOADBALANCERAPI_PERMISSIONS_URL: "{{ .Values.api.permissions.url }}"
   LOADBALANCERAPI_SERVER_LISTEN: ":{{ .Values.api.listenPort }}"
   LOADBALANCERAPI_SERVER_SHUTDOWN_GRACE_PERIOD: "{{ .Values.api.shutdownGracePeriod }}"
-  LOADBALANCERAPI_PERMISSIONS_URL: "{{ .Values.api.permissions.url }}"
+  LOADBALANCERAPI_SUPERGRAPH_URL: "{{ .Values.api.supergraph.url }}"
 {{- if .Values.api.tracing.enabled }}
   LOADBALANCERAPI_TRACING_ENABLED: "{{ .Values.api.tracing.enabled }}"
   LOADBALANCERAPI_TRACING_PROVIDER: "{{ .Values.api.tracing.provider }}"

@@ -21,6 +21,7 @@ import (
 	"go.infratographer.com/x/echox"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
+	"go.infratographer.com/x/viperx"
 	"go.uber.org/zap"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
@@ -64,15 +65,17 @@ func init() {
 
 	echox.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
 	echojwtx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
+	events.MustViperFlags(viper.GetViper(), serveCmd.Flags(), appName)
+	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
+
+	serveCmd.Flags().String("metadata-status-namespace-id", "", "status namespace id to update loadbalancer metadata status")
+	viperx.MustBindFlag(viper.GetViper(), "metadata.statusNamespaceID", serveCmd.Flags().Lookup("metadata-status-namespace-id"))
 
 	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
 	serveCmd.Flags().BoolVar(&enablePlayground, "playground", false, "enable the graph playground")
 	serveCmd.Flags().StringVar(&pidFileName, "pid-file", "", "path to the pid file")
 	serveCmd.Flags().IntSlice("restricted-ports", []int{}, "ports that are restricted from being used by the load balancer (e.g. 22, 8086, etc.)")
-
-	events.MustViperFlags(viper.GetViper(), serveCmd.Flags(), appName)
-	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 }
 
 // Write a pid file, but first make sure it doesn't exist with a running pid.

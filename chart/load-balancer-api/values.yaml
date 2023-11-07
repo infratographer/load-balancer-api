@@ -65,6 +65,14 @@ api:
     certSecret: ""
   migrateOnInit: false
 
+  metadata:
+    # statusNamespaceID the namespace ID to use for status updates
+    statusNamespaceID: ""
+
+    # timeout client timeout
+    timeout: 5s
+
+
   oidc:
     enabled: false
     audience: ""
@@ -76,6 +84,10 @@ api:
     url: ""
 
   shutdownGracePeriod: 5s
+
+  supergraph:
+    url: ""
+
   trustedProxies: []
   # - "1.2.3.4"
   # - "1.2.3.4/32"
