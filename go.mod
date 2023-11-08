@@ -13,7 +13,7 @@ require (
 	github.com/hasura/go-graphql-client v0.10.0
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/lib/pq v1.10.9
-	github.com/mattn/go-sqlite3 v1.14.17
+	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.17.0
