@@ -7,13 +7,18 @@ package graphapi
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
+	metadata "go.infratographer.com/metadata-api/pkg/client"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/internal/config"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.
@@ -29,6 +34,16 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 		}
 
 		r.logger.Errorw("failed to create loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
+		NodeID:      lb.ID.String(),
+		NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
+		Source:      metadataStatusSource,
+		Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, metadata.LoadBalancerStatusCreating)),
+	}); err != nil {
+		r.logger.Errorw("failed to update loadbalancer status", "error", err, "loadbalancerID", lb.ID)
 		return nil, ErrInternalServerError
 	}
 
@@ -65,6 +80,16 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 		}
 
 		logger.Errorw("failed to update loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
+		NodeID:      lb.ID.String(),
+		NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
+		Source:      metadataStatusSource,
+		Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, metadata.LoadBalancerStatusUpdating)),
+	}); err != nil {
+		logger.Errorw("failed to update loadbalancer status", "error", err)
 		return nil, ErrInternalServerError
 	}
 
@@ -133,6 +158,16 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	// delete loadbalancer
 	if err = tx.LoadBalancer.DeleteOneID(id).Exec(ctx); err != nil {
 		logger.Errorw("failed to delete loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
+		NodeID:      lb.ID.String(),
+		NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
+		Source:      metadataStatusSource,
+		Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, metadata.LoadBalancerStatusTerminating)),
+	}); err != nil {
+		logger.Errorw("failed to update loadbalancer status", "error", err)
 		return nil, ErrInternalServerError
 	}
 

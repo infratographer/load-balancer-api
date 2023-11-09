@@ -19,10 +19,13 @@ import (
 	"go.infratographer.com/x/crdbx"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
+	"go.infratographer.com/x/oauth2x"
 	"go.infratographer.com/x/otelx"
 	"go.infratographer.com/x/versionx"
 	"go.infratographer.com/x/viperx"
 	"go.uber.org/zap"
+
+	metadata "go.infratographer.com/metadata-api/pkg/client"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
@@ -35,6 +38,7 @@ import (
 const (
 	defaultLBAPIListenAddr = ":7608"
 	shutdownTimeout        = 10 * time.Second
+	metadataDefaultTimeout = 5 * time.Second
 )
 
 var (
@@ -66,10 +70,17 @@ func init() {
 	echox.MustViperFlags(viper.GetViper(), serveCmd.Flags(), defaultLBAPIListenAddr)
 	echojwtx.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 	events.MustViperFlags(viper.GetViper(), serveCmd.Flags(), appName)
+	oauth2x.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 	permissions.MustViperFlags(viper.GetViper(), serveCmd.Flags())
 
 	serveCmd.Flags().String("metadata-status-namespace-id", "", "status namespace id to update loadbalancer metadata status")
-	viperx.MustBindFlag(viper.GetViper(), "metadata.statusNamespaceID", serveCmd.Flags().Lookup("metadata-status-namespace-id"))
+	viperx.MustBindFlag(viper.GetViper(), "metadata.status-namespace-id", serveCmd.Flags().Lookup("metadata-status-namespace-id"))
+
+	serveCmd.Flags().Duration("metadata-timeout", metadataDefaultTimeout, "client timeout")
+	viperx.MustBindFlag(viper.GetViper(), "metadata.timeout", serveCmd.Flags().Lookup("metadata-timeout"))
+
+	serveCmd.Flags().String("supergraph-url", "", "endpoint for supergraph gateway")
+	viperx.MustBindFlag(viper.GetViper(), "supergraph-url", serveCmd.Flags().Lookup("supergraph-url"))
 
 	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
@@ -103,6 +114,8 @@ func writePidFile(pidFile string) error {
 }
 
 func serve(ctx context.Context) error {
+	logger.Fatalf("config: %+v", config.AppConfig)
+
 	if serveDevMode {
 		enablePlayground = true
 		config.AppConfig.Logging.Debug = true
@@ -140,6 +153,25 @@ func serve(ctx context.Context) error {
 
 	client := ent.NewClient(cOpts...)
 	defer client.Close()
+
+	// TODO - @rizzza - supergraph client
+	var metadataClient *metadata.Client
+
+	if config.AppConfig.OIDCClient.Config.Issuer != "" {
+		oidcTS, err := oauth2x.NewClientCredentialsTokenSrc(ctx, config.AppConfig.OIDCClient.Config)
+		if err != nil {
+			logger.Fatalw("failed to create oauth2 token source", "error", err)
+		}
+
+		oauthHTTPClient := oauth2x.NewClient(ctx, oidcTS)
+		oauthHTTPClient.Timeout = config.AppConfig.Metadata.Timeout
+
+		metadataClient = metadata.New(config.AppConfig.SupergraphURL,
+			metadata.WithHTTPClient(oauthHTTPClient),
+		)
+	} else {
+		metadataClient = metadata.New(config.AppConfig.SupergraphURL)
+	}
 
 	// TODO: fix generated pubsubhooks
 	// eventhooks.PubsubHooks(client)
@@ -182,7 +214,7 @@ func serve(ctx context.Context) error {
 
 	middleware = append(middleware, perms.Middleware())
 
-	r := graphapi.NewResolver(client, logger.Named("resolvers"))
+	r := graphapi.NewResolver(client, logger.Named("resolvers"), graphapi.WithMetadataClient(metadataClient))
 	handler := r.Handler(enablePlayground, middleware...)
 
 	srv.AddHandler(handler)

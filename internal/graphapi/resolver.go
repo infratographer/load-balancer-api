@@ -1,6 +1,7 @@
 package graphapi
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -10,6 +11,8 @@ import (
 	"go.infratographer.com/x/gqlgenx/oteltracing"
 	"go.uber.org/zap"
 
+	metadata "go.infratographer.com/metadata-api/pkg/client"
+
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
@@ -17,24 +20,49 @@ import (
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-var (
-	graphPath      = "query"
-	playgroundPath = "playground"
-
-	graphFullPath = fmt.Sprintf("/%s", graphPath)
+const (
+	graphPath            = "query"
+	playgroundPath       = "playground"
+	metadataStatusSource = "load-balancer-api"
 )
+
+var graphFullPath = fmt.Sprintf("/%s", graphPath)
+
+// Metadata interface for the metadata client
+type Metadata interface {
+	StatusUpdate(ctx context.Context, input *metadata.StatusUpdateInput) (*metadata.StatusUpdate, error)
+}
 
 // Resolver provides a graph response resolver
 type Resolver struct {
-	client *ent.Client
-	logger *zap.SugaredLogger
+	client   *ent.Client
+	logger   *zap.SugaredLogger
+	metadata Metadata
 }
 
+// Option is a function that modifies a resolver
+type Option func(*Resolver)
+
 // NewResolver returns a resolver configured with the given ent client
-func NewResolver(client *ent.Client, logger *zap.SugaredLogger) *Resolver {
-	return &Resolver{
+func NewResolver(client *ent.Client, logger *zap.SugaredLogger, opts ...Option) *Resolver {
+	r := &Resolver{
 		client: client,
 		logger: logger,
+	}
+
+	for _, opt := range opts {
+		opt(r)
+	}
+
+	return r
+}
+
+// TODO - @rizzza - This should be an all-purpose supergraph client
+
+// WithMetadataClient sets the metadata client on the resolver
+func WithMetadataClient(m Metadata) func(*Resolver) {
+	return func(r *Resolver) {
+		r.metadata = m
 	}
 }
 
