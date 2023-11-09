@@ -78,6 +78,8 @@ api:
 
   permissions:
     url: ""
+    # ignoreNoResponders whether or not to ignore errors when no AuthRelationship request-reply responders are available
+    ignoreNoResponders: false
 
   shutdownGracePeriod: 5s
 

@@ -472,6 +472,8 @@ github.com/prometheus/procfs v0.11.1 h1:xRC8Iq1yyca5ypa9n1EZnWZkt7dwcoRPQwX/5gwa
 github.com/prometheus/procfs v0.11.1/go.mod h1:eesXgaPo1q7lBpVMoMy0ZOFTth9hBn4W/y0/p/ScXhY=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
+github.com/rizzza/metadata-api v0.0.0-20231109211857-854ec64c49ca h1:gIKeVm68DnTMe0CKqdEzZn4E9fibWovPRQ13xAWOo/k=
+github.com/rizzza/metadata-api v0.0.0-20231109211857-854ec64c49ca/go.mod h1:pT8sHE2tBi4YXqQLV4ONhwemqBPFXJceObDSKGdrpPg=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
@@ -577,10 +579,8 @@ github.com/yusufpapurcu/wmi v1.2.3/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQ
 github.com/zclconf/go-cty v1.8.0 h1:s4AvqaeQzJIu3ndv4gVIhplVD0krU+bgrcLSVUnaWuA=
 github.com/zclconf/go-cty v1.8.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
-go.infratographer.com/metadata-api v0.0.2 h1:GwF+zcK/qAREVCarIkT2ua8mfAJ3bFfDXUDTPcHP34k=
-go.infratographer.com/metadata-api v0.0.2/go.mod h1:pT8sHE2tBi4YXqQLV4ONhwemqBPFXJceObDSKGdrpPg=
-go.infratographer.com/permissions-api v0.2.6 h1:Xet3HF18SJHCoP5S3KTF7JAhD9RA1jGTa80QSII7ieY=
-go.infratographer.com/permissions-api v0.2.6/go.mod h1:2uNlcC/gsWXhxPaQ+NP/Kwf02Wu3bCPQ3FF7vGgbnwU=
+go.infratographer.com/permissions-api v0.2.7-0.20231103213152-84681822dedd h1:1PgyFVRttmnz5l1aIjZKft9Bd18DUZz6QBFSXZkhZc4=
+go.infratographer.com/permissions-api v0.2.7-0.20231103213152-84681822dedd/go.mod h1:2uNlcC/gsWXhxPaQ+NP/Kwf02Wu3bCPQ3FF7vGgbnwU=
 go.infratographer.com/x v0.3.9 h1:fsfF/w5zHgiNAHvYmvsWlICNha2X53WNLVSKOkyPnWo=
 go.infratographer.com/x v0.3.9/go.mod h1:n/61MZRKFbGlS8xUwAhTyDhqcL2Wk6uPsXADC2n5t1I=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=

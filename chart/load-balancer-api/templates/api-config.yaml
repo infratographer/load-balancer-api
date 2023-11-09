@@ -19,6 +19,7 @@ data:
   LOADBALANCERAPI_OIDC_AUDIENCE: "{{ .Values.api.oidc.audience }}"
   LOADBALANCERAPI_OIDC_ISSUER: "{{ .Values.api.oidc.issuer }}"
   LOADBALANCERAPI_OIDC_JWKS_REMOTE_TIMEOUT: "{{ .Values.api.oidc.jwksRemoteTimeout }}"
+  LOADBALANCERAPI_PERMISSIONS_IGNORENORESPONDERS: "{{ .Values.api.permissions.ignoreNoResponders }}"
   LOADBALANCERAPI_PERMISSIONS_URL: "{{ .Values.api.permissions.url }}"
   LOADBALANCERAPI_SERVER_LISTEN: ":{{ .Values.api.listenPort }}"
   LOADBALANCERAPI_SERVER_SHUTDOWN_GRACE_PERIOD: "{{ .Values.api.shutdownGracePeriod }}"
