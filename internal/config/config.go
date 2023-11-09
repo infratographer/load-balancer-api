@@ -25,16 +25,20 @@ var AppConfig struct {
 	Tracing         otelx.Config
 	Events          events.Config
 	Permissions     permissions.Config
-	Metadata        Metadata
+	Metadata        MetadataConfig
 	RestrictedPorts []int
-
-	SupergraphURL string `mapstructure:"supergraph-url"`
+	Supergraph      SupergraphConfig
 }
 
-// Metadata stores the configuration for metadata client
-type Metadata struct {
+// MetadataConfig stores the configuration for metadata
+type MetadataConfig struct {
 	StatusNamespaceID gidx.PrefixedID `mapstructure:"status-namespace-id"`
-	Timeout           time.Duration
+}
+
+// SupergraphConfig stores the configuration for the supergraph
+type SupergraphConfig struct {
+	URL     string
+	Timeout time.Duration
 }
 
 // OIDCClientConfig stores the configuration for an OIDC client

@@ -38,7 +38,7 @@ import (
 const (
 	defaultLBAPIListenAddr = ":7608"
 	shutdownTimeout        = 10 * time.Second
-	metadataDefaultTimeout = 5 * time.Second
+	defaultTimeout         = 5 * time.Second
 )
 
 var (
@@ -76,11 +76,11 @@ func init() {
 	serveCmd.Flags().String("metadata-status-namespace-id", "", "status namespace id to update loadbalancer metadata status")
 	viperx.MustBindFlag(viper.GetViper(), "metadata.status-namespace-id", serveCmd.Flags().Lookup("metadata-status-namespace-id"))
 
-	serveCmd.Flags().Duration("metadata-timeout", metadataDefaultTimeout, "client timeout")
-	viperx.MustBindFlag(viper.GetViper(), "metadata.timeout", serveCmd.Flags().Lookup("metadata-timeout"))
+	serveCmd.Flags().Duration("supergraph-timeout", defaultTimeout, "client timeout")
+	viperx.MustBindFlag(viper.GetViper(), "supergraph.timeout", serveCmd.Flags().Lookup("supergraph-timeout"))
 
 	serveCmd.Flags().String("supergraph-url", "", "endpoint for supergraph gateway")
-	viperx.MustBindFlag(viper.GetViper(), "supergraph-url", serveCmd.Flags().Lookup("supergraph-url"))
+	viperx.MustBindFlag(viper.GetViper(), "supergraph.url", serveCmd.Flags().Lookup("supergraph-url"))
 
 	// only available as a CLI arg because it shouldn't be something that could accidentially end up in a config file or env var
 	serveCmd.Flags().BoolVar(&serveDevMode, "dev", false, "dev mode: enables playground, disables all auth checks, sets CORS to allow all, pretty logging, etc.")
@@ -114,8 +114,6 @@ func writePidFile(pidFile string) error {
 }
 
 func serve(ctx context.Context) error {
-	logger.Fatalf("config: %+v", config.AppConfig)
-
 	if serveDevMode {
 		enablePlayground = true
 		config.AppConfig.Logging.Debug = true
@@ -164,13 +162,13 @@ func serve(ctx context.Context) error {
 		}
 
 		oauthHTTPClient := oauth2x.NewClient(ctx, oidcTS)
-		oauthHTTPClient.Timeout = config.AppConfig.Metadata.Timeout
+		oauthHTTPClient.Timeout = config.AppConfig.Supergraph.Timeout
 
-		metadataClient = metadata.New(config.AppConfig.SupergraphURL,
+		metadataClient = metadata.New(config.AppConfig.Supergraph.URL,
 			metadata.WithHTTPClient(oauthHTTPClient),
 		)
 	} else {
-		metadataClient = metadata.New(config.AppConfig.SupergraphURL)
+		metadataClient = metadata.New(config.AppConfig.Supergraph.URL)
 	}
 
 	// TODO: fix generated pubsubhooks

@@ -66,12 +66,8 @@ api:
   migrateOnInit: false
 
   metadata:
-    # statusNamespaceID the namespace ID to use for status updates
+    # statusNamespaceID is the namespace ID to use for status updates
     statusNamespaceID: ""
-
-    # timeout client timeout
-    timeout: 5s
-
 
   oidc:
     enabled: false
@@ -87,6 +83,7 @@ api:
 
   supergraph:
     url: ""
+    timeout: 5s
 
   trustedProxies: []
   # - "1.2.3.4"
