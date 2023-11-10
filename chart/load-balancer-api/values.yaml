@@ -75,6 +75,8 @@ api:
     issuer: ""
     jwks:
       remoteTimeout: 1m
+    client:
+      issuer: ""
 
   permissions:
     url: ""
