@@ -1,7 +1,6 @@
 package graphapi
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -11,8 +10,6 @@ import (
 	"go.infratographer.com/x/gqlgenx/oteltracing"
 	"go.uber.org/zap"
 
-	metadata "go.infratographer.com/metadata-api/pkg/client"
-
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 )
 
@@ -21,17 +18,11 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 const (
-	graphPath            = "query"
-	playgroundPath       = "playground"
-	metadataStatusSource = "load-balancer-api"
+	graphPath      = "query"
+	playgroundPath = "playground"
 )
 
 var graphFullPath = fmt.Sprintf("/%s", graphPath)
-
-// Metadata interface for the metadata client
-type Metadata interface {
-	StatusUpdate(ctx context.Context, input *metadata.StatusUpdateInput) (*metadata.StatusUpdate, error)
-}
 
 // Resolver provides a graph response resolver
 type Resolver struct {

@@ -6,14 +6,11 @@ package graphapi
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	metadata "go.infratographer.com/metadata-api/pkg/client"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
 
-	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
@@ -52,6 +49,17 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 
 		logger.Errorw("failed to create origin", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	// find loadbalancers associated with this origin to update loadbalancer metadata status
+	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.IDEQ(ogn.PoolID))).All(ctx)
+	if err == nil {
+		for _, p := range ports {
+			if _, err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
+				return nil, ErrInternalServerError
+			}
+		}
 	}
 
 	return &LoadBalancerOriginCreatePayload{LoadBalancerOrigin: ogn}, nil
@@ -94,12 +102,7 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
 	if err == nil {
 		for _, p := range ports {
-			if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
-				NodeID:      p.LoadBalancerID.String(),
-				NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
-				Source:      metadataStatusSource,
-				Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, metadata.LoadBalancerStatusUpdating)),
-			}); err != nil {
+			if _, err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}
@@ -141,12 +144,7 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
 	if err == nil {
 		for _, p := range ports {
-			if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
-				NodeID:      p.LoadBalancerID.String(),
-				NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
-				Source:      metadataStatusSource,
-				Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, metadata.LoadBalancerStatusUpdating)),
-			}); err != nil {
+			if _, err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}
