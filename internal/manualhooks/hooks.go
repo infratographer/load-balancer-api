@@ -196,24 +196,21 @@ func LoadBalancerHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPortIDs, err := m.Client().Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.IDEQ(objID))).IDs(ctx)
+					// Ensure we have additional relevant subjects in the msg
+					lb, err := m.Client().LoadBalancer.Query().WithPorts().Where(loadbalancer.IDEQ(objID)).Only(ctx)
 					if err == nil {
-						for _, portID := range addSubjPortIDs {
-							if !slices.Contains(msg.AdditionalSubjectIDs, portID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, portID)
-							}
-						}
-					}
-
-					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
 						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
 							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+						}
+
+						if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
+						}
+
+						for _, p := range lb.Edges.Ports {
+							if !slices.Contains(msg.AdditionalSubjectIDs, p.ID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, p.ID)
+							}
 						}
 					}
 
@@ -251,18 +248,8 @@ func LoadBalancerHooks() []ent.Hook {
 					}
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
-
-					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
+					additionalSubjects = append(additionalSubjects, dbObj.LocationID)
+					additionalSubjects = append(additionalSubjects, dbObj.ProviderID)
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -491,37 +478,31 @@ func OriginHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).All(ctx)
-					if err == nil {
-						for _, pool := range addSubjPools {
-							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) && objID != pool.ID {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
-							}
-
-							if !slices.Contains(msg.AdditionalSubjectIDs, pool.OwnerID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.OwnerID)
-							}
-						}
-					}
-
-					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
+					// Ensure we have additional relevant subjects in the msg
+					addSubjPorts, err := m.Client().Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID)
+							}
+
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID)
+							}
+
 							if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
 							}
-						}
-					}
 
-					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
+							for _, pool := range port.Edges.Pools {
+								if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
+								}
 
-						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
+								if !slices.Contains(msg.AdditionalSubjectIDs, pool.OwnerID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.OwnerID)
+								}
+							}
 						}
 					}
 
@@ -560,24 +541,30 @@ func OriginHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.PoolID)
 
-					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasOriginsWith(origin.IDEQ(objID))).All(ctx)
-					if err == nil {
-						for _, pool := range addSubjPools {
-							if !slices.Contains(additionalSubjects, pool.ID) && objID != pool.ID {
-								additionalSubjects = append(additionalSubjects, pool.ID)
-							}
-
-							if !slices.Contains(additionalSubjects, pool.OwnerID) {
-								additionalSubjects = append(additionalSubjects, pool.OwnerID)
-							}
-						}
-					}
-
-					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
+					// Ensure we have additional relevant subjects in the msg
+					addSubjPorts, err := m.Client().Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(objID)))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
+							for _, pool := range port.Edges.Pools {
+								if !slices.Contains(additionalSubjects, pool.ID) {
+									additionalSubjects = append(additionalSubjects, pool.ID)
+								}
+
+								if !slices.Contains(additionalSubjects, pool.OwnerID) {
+									additionalSubjects = append(additionalSubjects, pool.OwnerID)
+								}
+							}
+
 							if !slices.Contains(additionalSubjects, port.LoadBalancerID) {
 								additionalSubjects = append(additionalSubjects, port.LoadBalancerID)
+							}
+
+							if !slices.Contains(additionalSubjects, port.Edges.LoadBalancer.LocationID) {
+								additionalSubjects = append(additionalSubjects, port.Edges.LoadBalancer.LocationID)
+							}
+
+							if !slices.Contains(additionalSubjects, port.Edges.LoadBalancer.ProviderID) {
+								additionalSubjects = append(additionalSubjects, port.Edges.LoadBalancer.ProviderID)
 							}
 						}
 					}
@@ -596,18 +583,6 @@ func OriginHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-origin", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
-						}
-					}
-
-					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 
@@ -782,9 +757,20 @@ func PoolHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
+					// Ensure we have additional relevant subjects in the msg
+					addSubjPorts, err := m.Client().Port.Query().WithLoadBalancer().WithPools(func(q *generated.PoolQuery) {
+						q.WithOrigins()
+					}).Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
+							for _, pool := range port.Edges.Pools {
+								for _, origin := range pool.Edges.Origins {
+									if !slices.Contains(msg.AdditionalSubjectIDs, origin.ID) {
+										msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, origin.ID)
+									}
+								}
+							}
+
 							if !slices.Contains(msg.AdditionalSubjectIDs, port.ID) && objID != port.ID {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.ID)
 							}
@@ -792,31 +778,14 @@ func PoolHooks() []ent.Hook {
 							if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
 							}
-						}
-					}
 
-					addSubjOrigins, err := m.Client().Origin.Query().Where(origin.HasPoolWith(pool.IDEQ(objID))).All(ctx)
-					if err == nil {
-						for _, origin := range addSubjOrigins {
-							if !slices.Contains(msg.AdditionalSubjectIDs, origin.ID) && objID != origin.ID {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, origin.ID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID)
 							}
 
-							if !slices.Contains(msg.AdditionalSubjectIDs, origin.PoolID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, origin.PoolID)
+							if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID) {
+								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID)
 							}
-						}
-					}
-
-					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
 						}
 					}
 
@@ -855,9 +824,18 @@ func PoolHooks() []ent.Hook {
 
 					additionalSubjects = append(additionalSubjects, dbObj.OwnerID)
 
-					addSubjPorts, err := m.Client().Port.Query().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
+					// Ensure we have additional relevant subjects in the msg
+					addSubjPorts, err := m.Client().Port.Query().WithLoadBalancer().Where(port.HasPoolsWith(pool.IDEQ(objID))).All(ctx)
 					if err == nil {
 						for _, port := range addSubjPorts {
+							if !slices.Contains(additionalSubjects, port.Edges.LoadBalancer.LocationID) {
+								additionalSubjects = append(additionalSubjects, port.Edges.LoadBalancer.LocationID)
+							}
+
+							if !slices.Contains(additionalSubjects, port.Edges.LoadBalancer.ProviderID) {
+								additionalSubjects = append(additionalSubjects, port.Edges.LoadBalancer.ProviderID)
+							}
+
 							if !slices.Contains(additionalSubjects, port.LoadBalancerID) {
 								additionalSubjects = append(additionalSubjects, port.LoadBalancerID)
 							}
@@ -868,18 +846,6 @@ func PoolHooks() []ent.Hook {
 						Relation:  "owner",
 						SubjectID: dbObj.OwnerID,
 					})
-
-					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
-						}
-					}
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -1050,9 +1016,30 @@ func PortHooks() []ent.Hook {
 						return retValue, err
 					}
 
-					addSubjPools, err := m.Client().Pool.Query().Where(pool.HasPortsWith(port.IDEQ(objID))).All(ctx)
+					// Ensure we have additional relevant subjects in the event msg
+					addSubjPools, err := m.Client().Pool.Query().WithPorts(func(q *generated.PortQuery) {
+						q.WithLoadBalancer()
+					}).Where(pool.HasPortsWith(port.IDEQ(objID))).All(ctx)
 					if err == nil {
 						for _, pool := range addSubjPools {
+							for _, port := range pool.Edges.Ports {
+								if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
+								}
+
+								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID)
+								}
+
+								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID)
+								}
+
+								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.OwnerID) {
+									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.OwnerID)
+								}
+							}
+
 							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) && objID != pool.ID {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
 							}
@@ -1060,38 +1047,6 @@ func PortHooks() []ent.Hook {
 							if !slices.Contains(msg.AdditionalSubjectIDs, pool.OwnerID) {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.OwnerID)
 							}
-						}
-					}
-					addSubjLoadBalancers, err := m.Client().LoadBalancer.Query().Where(loadbalancer.HasPortsWith(port.IDEQ(objID))).All(ctx)
-					if err == nil {
-						for _, lb := range addSubjLoadBalancers {
-							if !slices.Contains(msg.AdditionalSubjectIDs, lb.ID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ID)
-							}
-
-							if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
-							}
-
-							if !slices.Contains(msg.AdditionalSubjectIDs, lb.OwnerID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.OwnerID)
-							}
-
-							if !slices.Contains(msg.AdditionalSubjectIDs, lb.ProviderID) {
-								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.ProviderID)
-							}
-						}
-					}
-
-					lbs := getLoadBalancerIDs(ctx, objID, msg.AdditionalSubjectIDs)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(msg.AdditionalSubjectIDs, lb.LocationID) {
-							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, lb.LocationID)
 						}
 					}
 
@@ -1123,12 +1078,16 @@ func PortHooks() []ent.Hook {
 						return nil, fmt.Errorf("object doesn't have an id %s", objID)
 					}
 
-					dbObj, err := m.Client().Port.Get(ctx, objID)
+					dbObj, err := m.Client().Port.Query().WithLoadBalancer().Where(port.IDEQ(objID)).Only(ctx)
 					if err != nil {
 						return nil, fmt.Errorf("failed to load object to get values for event, err %w", err)
 					}
 
+					// Ensure we have additional relevant subjects in the event msg
 					additionalSubjects = append(additionalSubjects, dbObj.LoadBalancerID)
+					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.LocationID)
+					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.OwnerID)
+					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.ProviderID)
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -1139,37 +1098,6 @@ func PortHooks() []ent.Hook {
 					if len(relationships) != 0 {
 						if err := permissions.DeleteAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
-						}
-					}
-
-					addSubjLoadBalancer, err := m.Client().LoadBalancer.Get(ctx, dbObj.LoadBalancerID)
-					if err == nil {
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.LocationID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.LocationID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.OwnerID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.OwnerID)
-						}
-
-						if !slices.Contains(additionalSubjects, addSubjLoadBalancer.ProviderID) {
-							additionalSubjects = append(additionalSubjects, addSubjLoadBalancer.ProviderID)
-						}
-					}
-
-					lbs := getLoadBalancerIDs(ctx, objID, additionalSubjects)
-					for _, lb := range lbs {
-						lb, err := m.Client().LoadBalancer.Get(ctx, lb)
-						if err != nil {
-							return nil, fmt.Errorf("failed to get loadbalancer to lookup location %s", lb)
-						}
-
-						if !slices.Contains(additionalSubjects, lb.LocationID) {
-							additionalSubjects = append(additionalSubjects, lb.LocationID)
 						}
 					}
 

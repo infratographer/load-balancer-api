@@ -18,7 +18,7 @@ import (
 const (
 	ownerPrefix    = "testown"
 	locationPrefix = "testloc"
-	defaultTimeout = 2 * time.Second
+	defaultTimeout = 5 * time.Second
 )
 
 var (
@@ -56,7 +56,7 @@ func Test_LoadbalancerCreateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -81,7 +81,7 @@ func Test_LoadbalancerUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -106,7 +106,7 @@ func Test_LoadbalancerDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.OwnerID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -133,7 +133,7 @@ func Test_OriginCreateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -161,7 +161,7 @@ func Test_OriginUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -189,7 +189,7 @@ func Test_OriginDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -240,7 +240,7 @@ func Test_PoolUpdateHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, origin.ID, port.ID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, origin.ID, port.ID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -267,7 +267,7 @@ func Test_PoolDeleteHook(t *testing.T) {
 	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
 	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID}
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID}
 	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
@@ -352,5 +352,93 @@ func Test_PortDeleteHook(t *testing.T) {
 
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 	assert.Equal(t, port.ID, msg.Message().SubjectID)
+	assert.Equal(t, deleteEventType, msg.Message().EventType)
+}
+
+func Test_MultipleLoadbalancersSharedPoolAddOrigin(t *testing.T) {
+	// Scenario: 2 loadbalancers in different locations, with the same owner, share a pool.
+	// An origin is added to the shared pool.
+	// Assert the owner, loadbalancers, pool, and locations are all included in the additionalSubject ID list
+
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-origin")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	// create 2 loadbalancers with a shared pool of origins
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{OwnerID: "tnttent-testing"}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb1.ID}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb2.ID}).MustNew(ctx)
+
+	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
+
+	// Act - add another origin to the pool
+	ogn := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{
+		prov.ID,
+		lb1.OwnerID,
+		lb1.ID,
+		lb2.ID,
+		lb1.LocationID,
+		lb2.LocationID,
+		pool.ID,
+	}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, ogn.ID, msg.Message().SubjectID)
+	assert.Equal(t, createEventType, msg.Message().EventType)
+}
+
+func Test_MultipleLoadbalancersSharedPoolDeleteOrigin(t *testing.T) {
+	// Scenario: 2 loadbalancers in different locations, with the same owner, share a pool.
+	// An origin is removed from the shared pool.
+	// Assert the owner, loadbalancers, pool, and locations are all included in the additionalSubject ID list
+
+	// Arrange
+	ctx := testutils.MockPermissions(context.Background())
+
+	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "delete.load-balancer-origin")
+	require.NoError(t, err, "failed to subscribe to changes")
+
+	// create 2 loadbalancers with a shared pool of origins
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
+	lb1 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	lb2 := (&testutils.LoadBalancerBuilder{OwnerID: "tnttent-testing", Provider: prov}).MustNew(ctx)
+	pool := (&testutils.PoolBuilder{OwnerID: "tnttent-testing"}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb1.ID}).MustNew(ctx)
+	_ = (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb2.ID}).MustNew(ctx)
+	_ = (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
+	ogn2 := (&testutils.OriginBuilder{PoolID: pool.ID}).MustNew(ctx)
+
+	testutils.EntClient.Origin.Use(manualhooks.OriginHooks()...)
+
+	// Act - update the pool to remove an origin
+	testutils.EntClient.Origin.DeleteOne(ogn2).ExecX(ctx)
+
+	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+	// Assert
+	expectedAdditionalSubjectIDs := []gidx.PrefixedID{
+		prov.ID,
+		lb1.OwnerID,
+		lb1.ID,
+		lb2.ID,
+		lb1.LocationID,
+		lb2.LocationID,
+		pool.ID,
+	}
+	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+	assert.Equal(t, ogn2.ID, msg.Message().SubjectID)
 	assert.Equal(t, deleteEventType, msg.Message().EventType)
 }

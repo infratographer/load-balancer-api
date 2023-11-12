@@ -8,6 +8,7 @@ query GetLoadBalancerPoolOrigin($id: ID!, $originid: ID!) {
           target
           portNumber
           active
+          weight
           poolID
           createdAt
           updatedAt
@@ -25,6 +26,7 @@ mutation LoadBalancerOriginCreate($input: CreateLoadBalancerOriginInput!) {
       name
       portNumber
       target
+      weight
       poolID
       createdAt
       updatedAt
@@ -40,6 +42,7 @@ mutation LoadBalancerOriginUpdate($id: ID!, $input: UpdateLoadBalancerOriginInpu
       name
       portNumber
       target
+      weight
       poolID
       createdAt
       updatedAt
