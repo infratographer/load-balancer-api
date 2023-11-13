@@ -22,7 +22,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.26.0
 	github.com/vektah/gqlparser/v2 v2.5.10
 	github.com/wundergraph/graphql-go-tools v1.67.0
-	go.infratographer.com/metadata-api v0.0.2
+	go.infratographer.com/metadata-api v0.0.4-0.20231113202341-c8f116fbcde2
 	go.infratographer.com/permissions-api v0.2.7-0.20231103213152-84681822dedd
 	go.infratographer.com/x v0.3.9
 	go.uber.org/zap v1.26.0
@@ -167,5 +167,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
-
-replace go.infratographer.com/metadata-api v0.0.2 => github.com/rizzza/metadata-api v0.0.0-20231110212739-317f2e32099d

@@ -8,10 +8,11 @@ import (
 	"context"
 	"database/sql"
 
-	metadata "go.infratographer.com/metadata-api/pkg/client"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
@@ -147,7 +148,6 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		logger.Errorw("failed to delete loadbalancer", "error", err)
 		return nil, ErrInternalServerError
 	}
-
 
 	if err := r.LoadBalancerStatusUpdate(ctx, id, metadata.LoadBalancerStateTerminating); err != nil {
 		logger.Errorw("failed to update loadbalancer metadata status", "error", err)

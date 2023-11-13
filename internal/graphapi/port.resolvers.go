@@ -8,9 +8,10 @@ import (
 	"context"
 	"strings"
 
-	metadata "go.infratographer.com/metadata-api/pkg/client"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
