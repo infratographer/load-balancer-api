@@ -19,11 +19,20 @@ type Metadata interface {
 }
 
 // LoadBalancerStatusUpdate updates the state of a load balancer in the metadata service
-func (r Resolver) LoadBalancerStatusUpdate(ctx context.Context, loadBalancerID gidx.PrefixedID, state metadata.LoadBalancerState) (*metadata.StatusUpdate, error) {
-	return r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
+func (r Resolver) LoadBalancerStatusUpdate(ctx context.Context, loadBalancerID gidx.PrefixedID, state metadata.LoadBalancerState) error {
+	if r.metadata == nil {
+		r.logger.Warnln("metadata client not configured")
+		return nil
+	}
+
+	if _, err := r.metadata.StatusUpdate(ctx, &metadata.StatusUpdateInput{
 		NodeID:      loadBalancerID.String(),
 		NamespaceID: config.AppConfig.Metadata.StatusNamespaceID.String(),
 		Source:      metadataStatusSource,
 		Data:        json.RawMessage(fmt.Sprintf(`{"state": "%s"}`, state)),
-	})
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

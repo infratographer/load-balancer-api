@@ -155,22 +155,23 @@ func serve(ctx context.Context) error {
 	// TODO - @rizzza - supergraph client
 	var metadataClient *metadata.Client
 
-	if config.AppConfig.OIDCClient.Config.Issuer != "" {
-		oidcTS, err := oauth2x.NewClientCredentialsTokenSrc(ctx, config.AppConfig.OIDCClient.Config)
-		if err != nil {
-			logger.Fatalw("failed to create oauth2 token source", "error", err)
+	if config.AppConfig.Supergraph.URL != "" {
+		if config.AppConfig.OIDCClient.Config.Issuer != "" {
+			oidcTS, err := oauth2x.NewClientCredentialsTokenSrc(ctx, config.AppConfig.OIDCClient.Config)
+			if err != nil {
+				logger.Fatalw("failed to create oauth2 token source", "error", err)
+			}
+
+			oauthHTTPClient := oauth2x.NewClient(ctx, oidcTS)
+			oauthHTTPClient.Timeout = config.AppConfig.Supergraph.Timeout
+
+			metadataClient = metadata.New(config.AppConfig.Supergraph.URL,
+				metadata.WithHTTPClient(oauthHTTPClient),
+			)
+		} else {
+			metadataClient = metadata.New(config.AppConfig.Supergraph.URL)
 		}
-
-		oauthHTTPClient := oauth2x.NewClient(ctx, oidcTS)
-		oauthHTTPClient.Timeout = config.AppConfig.Supergraph.Timeout
-
-		metadataClient = metadata.New(config.AppConfig.Supergraph.URL,
-			metadata.WithHTTPClient(oauthHTTPClient),
-		)
-	} else {
-		metadataClient = metadata.New(config.AppConfig.Supergraph.URL)
 	}
-
 	// TODO: fix generated pubsubhooks
 	// eventhooks.PubsubHooks(client)
 

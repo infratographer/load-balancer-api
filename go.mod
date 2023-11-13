@@ -168,4 +168,4 @@ require (
 	nhooyr.io/websocket v1.8.7 // indirect
 )
 
-replace go.infratographer.com/metadata-api v0.0.2 => github.com/rizzza/metadata-api v0.0.0-20231109211857-854ec64c49ca
+replace go.infratographer.com/metadata-api v0.0.2 => github.com/rizzza/metadata-api v0.0.0-20231110212739-317f2e32099d
