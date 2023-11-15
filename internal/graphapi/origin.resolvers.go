@@ -7,9 +7,15 @@ package graphapi
 import (
 	"context"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 )
 
 // LoadBalancerOriginCreate is the resolver for the loadBalancerOriginCreate field.
@@ -36,7 +42,7 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 		return nil, ErrInternalServerError
 	}
 
-	origin, err := r.client.Origin.Create().SetInput(input).Save(ctx)
+	ogn, err := r.client.Origin.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		if generated.IsValidationError(err) {
 			return nil, err
@@ -46,7 +52,18 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 		return nil, ErrInternalServerError
 	}
 
-	return &LoadBalancerOriginCreatePayload{LoadBalancerOrigin: origin}, nil
+	// find loadbalancers associated with this origin to update loadbalancer metadata status
+	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.IDEQ(ogn.PoolID))).All(ctx)
+	if err == nil {
+		for _, p := range ports {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
+				return nil, ErrInternalServerError
+			}
+		}
+	}
+
+	return &LoadBalancerOriginCreatePayload{LoadBalancerOrigin: ogn}, nil
 }
 
 // LoadBalancerOriginUpdate is the resolver for the loadBalancerOriginUpdate field.
@@ -58,7 +75,7 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, err
 	}
 
-	origin, err := r.client.Origin.Get(ctx, id)
+	ogn, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -68,11 +85,11 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, ogn.PoolID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
-	origin, err = origin.Update().SetInput(input).Save(ctx)
+	ogn, err = ogn.Update().SetInput(input).Save(ctx)
 	if err != nil {
 		if generated.IsValidationError(err) {
 			return nil, err
@@ -82,7 +99,18 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, ErrInternalServerError
 	}
 
-	return &LoadBalancerOriginUpdatePayload{LoadBalancerOrigin: origin}, nil
+	// find loadbalancers associated with this origin to update loadbalancer metadata status
+	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
+	if err == nil {
+		for _, p := range ports {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
+				return nil, ErrInternalServerError
+			}
+		}
+	}
+
+	return &LoadBalancerOriginUpdatePayload{LoadBalancerOrigin: ogn}, nil
 }
 
 // LoadBalancerOriginDelete is the resolver for the loadBalancerOriginDelete field.
@@ -94,7 +122,7 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 		return nil, err
 	}
 
-	origin, err := r.client.Origin.Get(ctx, id)
+	ogn, err := r.client.Origin.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -104,13 +132,24 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, origin.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, ogn.PoolID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
 	if err := r.client.Origin.DeleteOneID(id).Exec(ctx); err != nil {
 		logger.Errorw("failed to delete origin", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	// find loadbalancers associated with this origin to update loadbalancer metadata status
+	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
+	if err == nil {
+		for _, p := range ports {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
+				return nil, ErrInternalServerError
+			}
+		}
 	}
 
 	return &LoadBalancerOriginDeletePayload{DeletedID: id}, nil

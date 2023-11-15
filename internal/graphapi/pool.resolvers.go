@@ -8,13 +8,18 @@ import (
 	"context"
 	"database/sql"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+	"golang.org/x/exp/slices"
+
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
@@ -30,13 +35,13 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 		return nil, err
 	}
 
-	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(input.OwnerID))).Where(port.IDIn(input.PortIDs...)).IDs(ctx)
+	ports, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(input.OwnerID))).Where(port.IDIn(input.PortIDs...)).All(ctx)
 	if err != nil {
 		logger.Errorw("failed to query input ports", "error", err)
 		return nil, ErrInternalServerError
 	}
 
-	if len(ids) < len(input.PortIDs) {
+	if len(ports) < len(input.PortIDs) {
 		return nil, ErrPortNotFound
 	}
 
@@ -55,6 +60,19 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 		logger.Errorw("failed to create loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	// if there are multiple loadbalancer ports with the same loadbalancer id, ensure the slice unique
+	p := slices.CompactFunc(ports, func(x, y *generated.Port) bool {
+		return x.LoadBalancerID == y.LoadBalancerID
+	})
+
+	// update metadata status for the port loadbalancer
+	for _, port := range p {
+		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
+			return nil, ErrInternalServerError
+		}
 	}
 
 	return &LoadBalancerPoolCreatePayload{LoadBalancerPool: pool}, nil
@@ -83,13 +101,13 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	ids, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(pool.OwnerID))).Where(port.IDIn(input.AddPortIDs...)).IDs(ctx)
+	ports, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(pool.OwnerID))).Where(port.IDIn(input.AddPortIDs...)).All(ctx)
 	if err != nil {
 		logger.Errorw("failed to query input ports", "error", err)
 		return nil, ErrInternalServerError
 	}
 
-	if len(ids) < len(input.AddPortIDs) {
+	if len(ports) < len(input.AddPortIDs) {
 		return nil, ErrPortNotFound
 	}
 
@@ -108,6 +126,19 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 		logger.Errorw("failed to update loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	// if there are multiple loadbalancer ports with the same loadbalancer id, ensure the slice unique
+	p := slices.CompactFunc(ports, func(x, y *generated.Port) bool {
+		return x.LoadBalancerID == y.LoadBalancerID
+	})
+
+	// update metadata status for the port loadbalancer
+	for _, port := range p {
+		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
+			return nil, ErrInternalServerError
+		}
 	}
 
 	return &LoadBalancerPoolUpdatePayload{LoadBalancerPool: pool}, nil
@@ -142,8 +173,18 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	}
 
 	defer func() {
-		if err := tx.Rollback(); err != nil {
-			logger.Errorw("failed to rollback transaction", "error", err)
+		if err != nil {
+			logger.Debugw("rolling back transaction")
+			if err := tx.Rollback(); err != nil {
+				logger.Errorw("failed to rollback transaction", "error", err)
+			}
+
+			return
+		}
+
+		logger.Debugw("committing transaction")
+		if err := tx.Commit(); err != nil {
+			logger.Errorw("failed to commit transaction", "error", err)
 		}
 	}()
 
@@ -167,9 +208,15 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Errorw("failed to commit transaction", "error", err)
-		return nil, ErrInternalServerError
+	// find loadbalancers associated with this pool to update loadbalancer metadata status
+	ports, err := r.client.Port.Query().Where(port.HasPoolsWith(pool.IDEQ(id))).All(ctx)
+	if err == nil {
+		for _, p := range ports {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
+				return nil, ErrInternalServerError
+			}
+		}
 	}
 
 	return &LoadBalancerPoolDeletePayload{DeletedID: &id}, nil

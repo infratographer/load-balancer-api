@@ -11,8 +11,11 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 
+	metadata "go.infratographer.com/metadata-api/pkg/client"
+	"go.infratographer.com/metadata-api/pkg/client/mockmetadata"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/echojwtx"
 	"go.infratographer.com/x/echox"
@@ -72,11 +75,14 @@ func withGraphClientHTTPClient(httpcli *http.Client) graphClientOptions {
 }
 
 func graphTestClient(options ...graphClientOptions) graphclient.GraphClient {
+	metadataMock := new(mockmetadata.MockMetadata)
+	metadataMock.On("StatusUpdate", mock.Anything, mock.Anything).Return(&metadata.StatusUpdate{}, nil)
+
 	g := &graphClient{
 		srvURL: "graph",
 		httpClient: &http.Client{Transport: localRoundTripper{handler: handler.NewDefaultServer(
 			graphapi.NewExecutableSchema(
-				graphapi.Config{Resolvers: graphapi.NewResolver(EntClient, zap.NewNop().Sugar())},
+				graphapi.Config{Resolvers: graphapi.NewResolver(EntClient, zap.NewNop().Sugar(), graphapi.WithMetadataClient(metadataMock))},
 			))}},
 	}
 

@@ -65,17 +65,30 @@ api:
     certSecret: ""
   migrateOnInit: false
 
+  metadata:
+    # statusNamespaceID is the namespace ID to use for status updates
+    statusNamespaceID: ""
+
   oidc:
     enabled: false
     audience: ""
     issuer: ""
     jwks:
       remoteTimeout: 1m
+    client:
+      issuer: ""
 
   permissions:
     url: ""
+    # ignoreNoResponders whether or not to ignore errors when no AuthRelationship request-reply responders are available
+    ignoreNoResponders: false
 
   shutdownGracePeriod: 5s
+
+  supergraph:
+    url: ""
+    timeout: 5s
+
   trustedProxies: []
   # - "1.2.3.4"
   # - "1.2.3.4/32"

@@ -17,24 +17,43 @@ import (
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-var (
+const (
 	graphPath      = "query"
 	playgroundPath = "playground"
-
-	graphFullPath = fmt.Sprintf("/%s", graphPath)
 )
+
+var graphFullPath = fmt.Sprintf("/%s", graphPath)
 
 // Resolver provides a graph response resolver
 type Resolver struct {
-	client *ent.Client
-	logger *zap.SugaredLogger
+	client   *ent.Client
+	logger   *zap.SugaredLogger
+	metadata Metadata
 }
 
+// Option is a function that modifies a resolver
+type Option func(*Resolver)
+
 // NewResolver returns a resolver configured with the given ent client
-func NewResolver(client *ent.Client, logger *zap.SugaredLogger) *Resolver {
-	return &Resolver{
+func NewResolver(client *ent.Client, logger *zap.SugaredLogger, opts ...Option) *Resolver {
+	r := &Resolver{
 		client: client,
 		logger: logger,
+	}
+
+	for _, opt := range opts {
+		opt(r)
+	}
+
+	return r
+}
+
+// TODO - @rizzza - This should be an all-purpose supergraph client
+
+// WithMetadataClient sets the metadata client on the resolver
+func WithMetadataClient(m Metadata) func(*Resolver) {
+	return func(r *Resolver) {
+		r.metadata = m
 	}
 }
 

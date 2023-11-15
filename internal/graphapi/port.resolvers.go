@@ -8,10 +8,13 @@ import (
 	"context"
 	"strings"
 
-	"go.infratographer.com/load-balancer-api/internal/ent/generated"
-	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
+
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
+
+	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
@@ -72,6 +75,11 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 			logger.Errorw("failed to create loadbalancer port", "error", err)
 			return nil, ErrInternalServerError
 		}
+	}
+
+	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, metadata.LoadBalancerStateUpdating); err != nil {
+		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", lb.ID)
+		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPortCreatePayload{LoadBalancerPort: p}, nil
@@ -140,6 +148,11 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 		}
 	}
 
+	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, metadata.LoadBalancerStateUpdating); err != nil {
+		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", lb.ID)
+		return nil, ErrInternalServerError
+	}
+
 	return &LoadBalancerPortUpdatePayload{LoadBalancerPort: p}, nil
 }
 
@@ -168,6 +181,11 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 
 	if err := r.client.Port.DeleteOneID(id).Exec(ctx); err != nil {
 		logger.Errorw("failed to delete loadbalancer port", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 		return nil, ErrInternalServerError
 	}
 

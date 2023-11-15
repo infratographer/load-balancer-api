@@ -5,7 +5,7 @@ go 1.21
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.4
-	github.com/99designs/gqlgen v0.17.38
+	github.com/99designs/gqlgen v0.17.39
 	github.com/Yamashou/gqlgenc v0.15.1
 	github.com/brianvoe/gofakeit/v6 v6.24.0
 	github.com/docker/go-connections v0.4.0
@@ -21,8 +21,9 @@ require (
 	github.com/testcontainers/testcontainers-go v0.26.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.26.0
 	github.com/vektah/gqlparser/v2 v2.5.10
-	github.com/wundergraph/graphql-go-tools v1.66.4
-	go.infratographer.com/permissions-api v0.2.6
+	github.com/wundergraph/graphql-go-tools v1.67.0
+	go.infratographer.com/metadata-api v0.0.4-0.20231113202341-c8f116fbcde2
+	go.infratographer.com/permissions-api v0.2.7-0.20231103213152-84681822dedd
 	go.infratographer.com/x v0.3.9
 	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
@@ -58,11 +59,9 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/gofrs/uuid v4.3.1+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
-	github.com/golang/glog v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.1 // indirect
@@ -121,6 +120,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.9 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/sosodev/duration v1.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
