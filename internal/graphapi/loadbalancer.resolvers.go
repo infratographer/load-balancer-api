@@ -35,7 +35,8 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 		return nil, ErrInternalServerError
 	}
 
-	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, metadata.LoadBalancerStateCreating); err != nil {
+	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateCreating}
+	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, status); err != nil {
 		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err)
 		return nil, ErrInternalServerError
 	}
@@ -76,7 +77,8 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 		return nil, ErrInternalServerError
 	}
 
-	if err := r.LoadBalancerStatusUpdate(ctx, id, metadata.LoadBalancerStateUpdating); err != nil {
+	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
+	if err := r.LoadBalancerStatusUpdate(ctx, id, status); err != nil {
 		logger.Errorw("failed to update loadbalancer metadata status", "error", err)
 		return nil, ErrInternalServerError
 	}
@@ -149,7 +151,8 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		return nil, ErrInternalServerError
 	}
 
-	if err := r.LoadBalancerStatusUpdate(ctx, id, metadata.LoadBalancerStateTerminating); err != nil {
+	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateTerminating}
+	if err := r.LoadBalancerStatusUpdate(ctx, id, status); err != nil {
 		logger.Errorw("failed to update loadbalancer metadata status", "error", err)
 		return nil, ErrInternalServerError
 	}

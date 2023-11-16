@@ -69,7 +69,8 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 
 	// update metadata status for the port loadbalancer
 	for _, port := range p {
-		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
+		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, status); err != nil {
 			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
 			return nil, ErrInternalServerError
 		}
@@ -135,7 +136,8 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 	// update metadata status for the port loadbalancer
 	for _, port := range p {
-		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
+		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, status); err != nil {
 			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
 			return nil, ErrInternalServerError
 		}
@@ -212,7 +214,8 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	ports, err := r.client.Port.Query().Where(port.HasPoolsWith(pool.IDEQ(id))).All(ctx)
 	if err == nil {
 		for _, p := range ports {
-			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}

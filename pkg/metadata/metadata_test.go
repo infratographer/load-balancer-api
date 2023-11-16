@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"go.infratographer.com/load-balancer-api/pkg/client"
 )
 
-func TestGetLoadbalancerState(t *testing.T) {
+func TestGetLoadbalancerStatus(t *testing.T) {
 	t.Run("valid status", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
 			Edges: []client.MetadataStatusEdges{
@@ -28,9 +29,9 @@ func TestGetLoadbalancerState(t *testing.T) {
 			},
 		}
 
-		state, err := GetLoadbalancerState(statuses, "metasns-loadbalancer-status")
-		assert.Nil(t, err)
-		assert.Equal(t, LoadBalancerStateActive, state)
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		require.Nil(t, err)
+		assert.Equal(t, LoadBalancerStateActive, status.State)
 	})
 
 	t.Run("bad json data", func(t *testing.T) {
@@ -45,9 +46,9 @@ func TestGetLoadbalancerState(t *testing.T) {
 			},
 		}
 
-		state, err := GetLoadbalancerState(statuses, "metasns-loadbalancer-status")
-		assert.NotNil(t, err)
-		assert.Empty(t, state)
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		require.NotNil(t, err)
+		require.Nil(t, status)
 		assert.ErrorIs(t, err, ErrInvalidStatusData)
 	})
 
@@ -56,27 +57,27 @@ func TestGetLoadbalancerState(t *testing.T) {
 			Edges: []client.MetadataStatusEdges{},
 		}
 
-		state, err := GetLoadbalancerState(statuses, "metasns-loadbalancer-status")
-		assert.NotNil(t, err)
-		assert.Empty(t, state)
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		require.NotNil(t, err)
+		require.Nil(t, status)
 		assert.ErrorIs(t, err, ErrStatusNotFound)
 	})
 
-	t.Run("unknown state", func(t *testing.T) {
+	t.Run("no status data", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
 			Edges: []client.MetadataStatusEdges{
 				{
 					Node: client.MetadataStatusNode{
 						StatusNamespaceID: "metasns-loadbalancer-status",
-						Data:              json.RawMessage(`{"state": "unknown"}`),
+						Data:              json.RawMessage(``),
 					},
 				},
 			},
 		}
 
-		state, err := GetLoadbalancerState(statuses, "metasns-loadbalancer-status")
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
 		assert.NotNil(t, err)
-		assert.Empty(t, state)
-		assert.ErrorIs(t, err, ErrUnknownLoadBalancerState{State: "unknown"})
+		assert.Nil(t, status)
+		assert.ErrorIs(t, err, ErrInvalidStatusData)
 	})
 }
