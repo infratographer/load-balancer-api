@@ -55,8 +55,9 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 	// find loadbalancers associated with this origin to update loadbalancer metadata status
 	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.IDEQ(ogn.PoolID))).All(ctx)
 	if err == nil {
+		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 		for _, p := range ports {
-			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}
@@ -102,8 +103,9 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 	// find loadbalancers associated with this origin to update loadbalancer metadata status
 	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
 	if err == nil {
+		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 		for _, p := range ports {
-			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}
@@ -144,8 +146,9 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 	// find loadbalancers associated with this origin to update loadbalancer metadata status
 	ports, err := r.client.Port.Query().WithPools().WithLoadBalancer().Where(port.HasPoolsWith(pool.HasOriginsWith(origin.IDEQ(id)))).All(ctx)
 	if err == nil {
+		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 		for _, p := range ports {
-			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, metadata.LoadBalancerStateUpdating); err != nil {
+			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
 				return nil, ErrInternalServerError
 			}

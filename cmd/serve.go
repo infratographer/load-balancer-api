@@ -114,6 +114,8 @@ func writePidFile(pidFile string) error {
 }
 
 func serve(ctx context.Context) error {
+	var resolverOpts []graphapi.Option
+
 	if serveDevMode {
 		enablePlayground = true
 		config.AppConfig.Logging.Debug = true
@@ -172,6 +174,11 @@ func serve(ctx context.Context) error {
 			metadataClient = metadata.New(config.AppConfig.Supergraph.URL)
 		}
 	}
+
+	if metadataClient != nil {
+		resolverOpts = append(resolverOpts, graphapi.WithMetadataClient(metadataClient))
+	}
+
 	// TODO: fix generated pubsubhooks
 	// eventhooks.PubsubHooks(client)
 
@@ -213,7 +220,7 @@ func serve(ctx context.Context) error {
 
 	middleware = append(middleware, perms.Middleware())
 
-	r := graphapi.NewResolver(client, logger.Named("resolvers"), graphapi.WithMetadataClient(metadataClient))
+	r := graphapi.NewResolver(client, logger.Named("resolvers"), resolverOpts...)
 	handler := r.Handler(enablePlayground, middleware...)
 
 	srv.AddHandler(handler)
