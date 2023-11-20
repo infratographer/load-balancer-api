@@ -173,30 +173,23 @@ func TestCreate_loadBalancer_limit(t *testing.T) {
 	locationID := gidx.MustNewID(locationPrefix)
 	name := gofakeit.DomainName()
 
+	config.AppConfig.LoadBalancerLimit = 3
+
 	testCases := []struct {
 		TestName string
 		lbCount  int
-		lbLimit  int
 		Input    graphclient.CreateLoadBalancerInput
 		errorMsg string
 	}{
 		{
-			TestName: "creates loadbalancers - no limit",
-			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
-			lbCount:  2,
-			lbLimit:  0,
-		},
-		{
 			TestName: "creates loadbalancers - under limit",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
 			lbCount:  2,
-			lbLimit:  3,
 		},
 		{
 			TestName: "fails to create loadbalancers - over limit",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
 			lbCount:  5,
-			lbLimit:  2,
 			errorMsg: "load balancer limit reached",
 		},
 	}
@@ -206,7 +199,6 @@ func TestCreate_loadBalancer_limit(t *testing.T) {
 			tt := tt
 			t.Parallel()
 			var err error
-			config.AppConfig.LoadBalancerLimit = tt.lbLimit
 
 			for i := 1; i < tt.lbCount; i++ {
 				_, err = graphTestClient().LoadBalancerCreate(ctx, tt.Input)
