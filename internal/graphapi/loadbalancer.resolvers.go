@@ -14,7 +14,9 @@ import (
 
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 )
@@ -23,6 +25,18 @@ import (
 func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generated.CreateLoadBalancerInput) (*LoadBalancerCreatePayload, error) {
 	if err := permissions.CheckAccess(ctx, input.OwnerID, actionLoadBalancerCreate); err != nil {
 		return nil, err
+	}
+
+	if config.AppConfig.LoadBalancerLimit > 0 {
+		count, err := r.client.LoadBalancer.Query().Where(predicate.LoadBalancer(loadbalancer.OwnerIDEQ(input.OwnerID))).Count(ctx)
+
+		if err != nil {
+			r.logger.Errorw("failed to query loadbalancer count", "error", err)
+		}
+
+		if count >= config.AppConfig.LoadBalancerLimit {
+			return nil, ErrLoadBalancerLimitReached
+		}
 	}
 
 	lb, err := r.client.LoadBalancer.Create().SetInput(input).Save(ctx)

@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/internal/testutils"
@@ -154,6 +155,73 @@ func TestCreate_loadBalancer(t *testing.T) {
 			assert.Equal(t, prov.ID, createdLB.LoadBalancerProvider.ID)
 			assert.Equal(t, locationID, createdLB.Location.ID)
 			assert.Equal(t, ownerID, createdLB.Owner.ID)
+		})
+	}
+}
+
+func TestCreate_loadBalancer_limit(t *testing.T) {
+	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
+	prov := (&testutils.ProviderBuilder{}).MustNew(ctx)
+	locationID := gidx.MustNewID(locationPrefix)
+	name := gofakeit.DomainName()
+
+	testCases := []struct {
+		TestName string
+		lbCount  int
+		lbLimit  int
+		Input    graphclient.CreateLoadBalancerInput
+		errorMsg string
+	}{
+		{
+			TestName: "creates loadbalancers - no limit",
+			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
+			lbCount:  2,
+			lbLimit:  0,
+		},
+		{
+			TestName: "creates loadbalancers - under limit",
+			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
+			lbCount:  2,
+			lbLimit:  3,
+		},
+		{
+			TestName: "fails to create loadbalancers - over limit",
+			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: gidx.MustNewID(ownerPrefix), LocationID: locationID},
+			lbCount:  5,
+			lbLimit:  2,
+			errorMsg: "load balancer limit reached",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.TestName, func(t *testing.T) {
+			tt := tt
+			t.Parallel()
+			var err error
+			config.AppConfig.LoadBalancerLimit = tt.lbLimit
+
+			for i := 1; i < tt.lbCount; i++ {
+				_, err = graphTestClient().LoadBalancerCreate(ctx, tt.Input)
+				if err != nil {
+					return
+				}
+			}
+
+			if tt.errorMsg != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.errorMsg)
+				return
+			}
+
+			require.NoError(t, err)
 		})
 	}
 }
