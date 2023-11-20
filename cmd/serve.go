@@ -116,6 +116,8 @@ func writePidFile(pidFile string) error {
 func serve(ctx context.Context) error {
 	var resolverOpts []graphapi.Option
 
+	config.AppConfig.LoadBalancerLimit = viper.GetInt("load-balancer-limit")
+
 	if serveDevMode {
 		enablePlayground = true
 		config.AppConfig.Logging.Debug = true

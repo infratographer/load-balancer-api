@@ -17,4 +17,7 @@ var (
 
 	// ErrInternalServerError is returned when an internal error occurs.
 	ErrInternalServerError = errors.New("internal server error")
+
+	// ErrLoadBalancerLimitReached is returned when the load balancer limit has been reached for an owner.
+	ErrLoadBalancerLimitReached = errors.New("load balancer limit reached")
 )
