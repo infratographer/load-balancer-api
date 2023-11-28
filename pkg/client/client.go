@@ -64,13 +64,13 @@ func (c Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer, 
 	return &q.LoadBalancer, nil
 }
 
-// NodeMetadata returns the metadata-api subgraph node for a load balancer
-// Once a load balancer is deleted, it is fully removed from load-balancer-api.
-// There are no soft-deletes due to permissions complications.
-// However, it's metadata remains to query via the node-resolver subgraph.
+// NodeMetadata return the metadata-api subgraph node for a load balancer.
+// Once a load balancer is deleted, it is gone. There are no soft-deletes.
+// However, it's metadata remains to query via the node-resolver metadata-api subgraph.
+// TODO: Move this to a supergraph client
 func (c Client) NodeMetadata(ctx context.Context, id string) (*Metadata, error) {
-	//	query Test {
-	//	  node(id:"loadbal-RelHb0FU59uEjlhtT7MAl") {
+	//	query {
+	//	  node(id:"loadbal-example") {
 	//	    ... on MetadataNode {
 	//	      metadata {
 	//	        statuses {
@@ -85,7 +85,6 @@ func (c Client) NodeMetadata(ctx context.Context, id string) (*Metadata, error) 
 	//	    }
 	//	  }
 	//	}
-
 	_, err := gidx.Parse(id)
 	if err != nil {
 		return nil, err
@@ -100,7 +99,7 @@ func (c Client) NodeMetadata(ctx context.Context, id string) (*Metadata, error) 
 		return nil, translateGQLErr(err)
 	}
 
-	if q.MetadataNode.Metadata.Statuses.TotalCount == 0 {
+	if q.MetadataNode.Metadata.ID == "" || q.MetadataNode.Metadata.Statuses.TotalCount == 0 {
 		return nil, ErrMetadataStatusNotFound
 	}
 

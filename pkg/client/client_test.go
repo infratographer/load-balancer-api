@@ -217,6 +217,64 @@ func TestGetLoadBalancer(t *testing.T) {
 	})
 }
 
+func TestNodeMetadata(t *testing.T) {
+	cli := Client{}
+
+	t.Run("bad prefix", func(t *testing.T) {
+		md, err := cli.NodeMetadata(context.Background(), "badprefix-test")
+		require.Error(t, err)
+		require.Nil(t, md)
+		assert.ErrorContains(t, err, "invalid id")
+	})
+
+	t.Run("successful query", func(t *testing.T) {
+		respJSON := `{
+	"data": {
+		"node": {
+			"metadata": {
+				"id": "metadat-testing",
+				"nodeID": "loadbal-testing",
+				"statuses": {
+					"totalCount": 1,
+					"edges": [
+						{
+							"node": {
+								"source": "loadbalancer-api",
+								"statusNamespaceID": "metasns-testing",
+								"id": "metasts-testing",
+								"data": {
+									"status": "creating"
+								}
+							}
+						}
+					]
+				}
+			}
+		}
+	}
+}`
+		cli.gqlCli = mustNewGQLTestClient(respJSON, http.StatusOK)
+		md, err := cli.NodeMetadata(context.Background(), "loadbal-testing")
+		require.NoError(t, err)
+		require.NotNil(t, md)
+	})
+
+	t.Run("metadata not found", func(t *testing.T) {
+		respJSON := `{
+	"data": {
+		"node": {
+			"metadata": null
+		}
+  	}
+}`
+		cli.gqlCli = mustNewGQLTestClient(respJSON, http.StatusOK)
+		md, err := cli.NodeMetadata(context.Background(), "loadbal-testing")
+		require.Error(t, err)
+		require.Nil(t, md)
+		assert.ErrorIs(t, err, ErrMetadataStatusNotFound)
+	})
+}
+
 func mustNewGQLTestClient(respJSON string, respCode int) *graphql.Client {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/query", func(w http.ResponseWriter, req *http.Request) {
