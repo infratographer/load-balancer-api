@@ -16,4 +16,10 @@ var (
 
 	// ErrHTTPError returned when the http response is an error
 	ErrHTTPError = errors.New("loadbalancer api http error")
+
+	// ErrInternalServerError returned when the server returns an internal server error
+	ErrInternalServerError = errors.New("internal server error")
+
+	// ErrMetadataStatusNotFound returned when the status data is invalid
+	ErrMetadataStatusNotFound = errors.New("metadata status not found")
 )

@@ -28,15 +28,17 @@ type LoadBalancerStatus struct {
 
 // GetLoadbalancerStatus returns the status of a load balancer
 func GetLoadbalancerStatus(metadataStatuses client.MetadataStatuses, statusNamespaceID gidx.PrefixedID) (*LoadBalancerStatus, error) {
-	for _, s := range metadataStatuses.Edges {
-		if s.Node.StatusNamespaceID == statusNamespaceID.String() {
-			status := &LoadBalancerStatus{}
+	if metadataStatuses.TotalCount > 0 {
+		for _, s := range metadataStatuses.Edges {
+			if s.Node.StatusNamespaceID == statusNamespaceID.String() {
+				status := &LoadBalancerStatus{}
 
-			if err := json.Unmarshal(s.Node.Data, status); err != nil {
-				return nil, fmt.Errorf("%w: %s", ErrInvalidStatusData, err)
+				if err := json.Unmarshal(s.Node.Data, status); err != nil {
+					return nil, fmt.Errorf("%w: %s", ErrInvalidStatusData, err)
+				}
+
+				return status, nil
 			}
-
-			return status, nil
 		}
 	}
 

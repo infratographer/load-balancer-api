@@ -96,7 +96,8 @@ type MetadataStatusEdges struct {
 
 // MetadataStatuses is a struct that represents the Metadata statuses GraphQL type
 type MetadataStatuses struct {
-	Edges []MetadataStatusEdges `graphql:"edges" json:"edges"`
+	TotalCount int                   `graphql:"totalCount" json:"totalCount"`
+	Edges      []MetadataStatusEdges `graphql:"edges" json:"edges"`
 }
 
 // Metadata is a struct that represents the metadata GraphQL type
@@ -104,6 +105,21 @@ type Metadata struct {
 	ID       string           `graphql:"id" json:"id"`
 	NodeID   string           `graphql:"nodeID" json:"nodeID"`
 	Statuses MetadataStatuses `graphql:"statuses" json:"statuses"`
+}
+
+// MetadataNodeFragment is a struct that represents the MetadataNodeFragment GraphQL fragment
+type MetadataNodeFragment struct {
+	Metadata Metadata `graphql:"metadata" json:"metadata"`
+}
+
+// MetadataNode is a struct that represents the MetadataNode GraphQL type
+type MetadataNode struct {
+	MetadataNodeFragment `graphql:"... on MetadataNode"`
+}
+
+// GetMetadataNode is a struct that represents the node-resolver subgraph query
+type GetMetadataNode struct {
+	MetadataNode MetadataNode `graphql:"node(id: $id)"`
 }
 
 // Readable version of the above:

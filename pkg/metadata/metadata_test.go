@@ -13,6 +13,7 @@ import (
 func TestGetLoadbalancerStatus(t *testing.T) {
 	t.Run("valid status", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
+			TotalCount: 2,
 			Edges: []client.MetadataStatusEdges{
 				{
 					Node: client.MetadataStatusNode{
@@ -36,6 +37,7 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 
 	t.Run("bad json data", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
+			TotalCount: 1,
 			Edges: []client.MetadataStatusEdges{
 				{
 					Node: client.MetadataStatusNode{
@@ -54,7 +56,8 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 
 	t.Run("status not found", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
-			Edges: []client.MetadataStatusEdges{},
+			TotalCount: 0,
+			Edges:      []client.MetadataStatusEdges{},
 		}
 
 		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
@@ -65,6 +68,7 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 
 	t.Run("no status data", func(t *testing.T) {
 		statuses := client.MetadataStatuses{
+			TotalCount: 1,
 			Edges: []client.MetadataStatusEdges{
 				{
 					Node: client.MetadataStatusNode{

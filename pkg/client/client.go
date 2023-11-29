@@ -46,7 +46,7 @@ func WithHTTPClient(cli *http.Client) Option {
 }
 
 // GetLoadBalancer returns a load balancer by id
-func (c *Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer, error) {
+func (c Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer, error) {
 	_, err := gidx.Parse(id)
 	if err != nil {
 		return nil, err
@@ -64,6 +64,48 @@ func (c *Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer,
 	return &q.LoadBalancer, nil
 }
 
+// NodeMetadata return the metadata-api subgraph node for a load balancer.
+// Once a load balancer is deleted, it is gone. There are no soft-deletes.
+// However, it's metadata remains to query via the node-resolver metadata-api subgraph.
+// TODO: Move this to a supergraph client
+func (c Client) NodeMetadata(ctx context.Context, id string) (*Metadata, error) {
+	//	query {
+	//	  node(id:"loadbal-example") {
+	//	    ... on MetadataNode {
+	//	      metadata {
+	//	        statuses {
+	//	          totalCount
+	//	          edges {
+	//	            node {
+	//	              data
+	//	            }
+	//	          }
+	//	        }
+	//	      }
+	//	    }
+	//	  }
+	//	}
+	_, err := gidx.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	vars := map[string]interface{}{
+		"id": graphql.ID(id),
+	}
+
+	var q GetMetadataNode
+	if err := c.gqlCli.Query(ctx, &q, vars); err != nil {
+		return nil, translateGQLErr(err)
+	}
+
+	if q.MetadataNode.Metadata.ID == "" || q.MetadataNode.Metadata.Statuses.TotalCount == 0 {
+		return nil, ErrMetadataStatusNotFound
+	}
+
+	return &q.MetadataNode.Metadata, nil
+}
+
 func translateGQLErr(err error) error {
 	switch {
 	case strings.Contains(err.Error(), "load_balancer not found"):
@@ -72,6 +114,8 @@ func translateGQLErr(err error) error {
 		return ErrUnauthorized
 	case strings.Contains(err.Error(), "subject doesn't have access"):
 		return ErrPermissionDenied
+	case strings.Contains(err.Error(), "internal server error"):
+		return ErrInternalServerError
 	}
 
 	return err
