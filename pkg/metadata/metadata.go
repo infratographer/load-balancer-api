@@ -22,6 +22,8 @@ const (
 
 	LoadBalancerStateIPAssigned   LoadBalancerState = "ip-address.assigned"
 	LoadBalancerStateIPUnassigned LoadBalancerState = "ip-address.unassigned"
+
+	LoadBalancerAPISource string = "load-balancer-api"
 )
 
 // LoadBalancerStatus is the status of a load balancer
