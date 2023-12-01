@@ -19,18 +19,20 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 					Node: client.MetadataStatusNode{
 						StatusNamespaceID: "metasns-loadbalancer-status",
 						Data:              json.RawMessage(`{"state": "active"}`),
+						Source:            "load-balancer-api",
 					},
 				},
 				{
 					Node: client.MetadataStatusNode{
 						StatusNamespaceID: "metasns-some-other-namespace",
 						Data:              json.RawMessage(`{"key": "value"}`),
+						Source:            "some-other-source",
 					},
 				},
 			},
 		}
 
-		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status", "load-balancer-api")
 		require.Nil(t, err)
 		assert.Equal(t, LoadBalancerStateActive, status.State)
 	})
@@ -43,12 +45,13 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 					Node: client.MetadataStatusNode{
 						StatusNamespaceID: "metasns-loadbalancer-status",
 						Data:              json.RawMessage(`{"state"}`),
+						Source:            "load-balancer-api",
 					},
 				},
 			},
 		}
 
-		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status", "load-balancer-api")
 		require.NotNil(t, err)
 		require.Nil(t, status)
 		assert.ErrorIs(t, err, ErrInvalidStatusData)
@@ -60,7 +63,7 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 			Edges:      []client.MetadataStatusEdges{},
 		}
 
-		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status", "load-balancer-api")
 		require.NotNil(t, err)
 		require.Nil(t, status)
 		assert.ErrorIs(t, err, ErrStatusNotFound)
@@ -74,12 +77,13 @@ func TestGetLoadbalancerStatus(t *testing.T) {
 					Node: client.MetadataStatusNode{
 						StatusNamespaceID: "metasns-loadbalancer-status",
 						Data:              json.RawMessage(``),
+						Source:            "load-balancer-api",
 					},
 				},
 			},
 		}
 
-		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status")
+		status, err := GetLoadbalancerStatus(statuses, "metasns-loadbalancer-status", "load-balancer-api")
 		assert.NotNil(t, err)
 		assert.Nil(t, status)
 		assert.ErrorIs(t, err, ErrInvalidStatusData)
