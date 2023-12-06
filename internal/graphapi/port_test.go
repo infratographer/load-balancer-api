@@ -53,13 +53,16 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			},
 		},
 		{
-			TestName: "fails to create loadbalancer port with empty name",
+			TestName: "succeeds in creating loadbalancer port with empty name",
 			Input: graphclient.CreateLoadBalancerPortInput{
 				Name:           "",
 				LoadBalancerID: lb.ID,
-				Number:         22,
+				Number:         23,
 			},
-			errorMsg: "value is less than the required length",
+			Expected: &graphclient.LoadBalancerPort{
+				Name:   "",
+				Number: 23,
+			},
 		},
 		{
 			TestName: "fails to create loadbalancer port with empty loadbalancer id",
@@ -220,12 +223,15 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			},
 		},
 		{
-			TestName: "fails to update loadbalancer port name to empty",
+			TestName: "succeeds in updating loadbalancer port name to empty",
 			ID:       port.ID,
 			Input: graphclient.UpdateLoadBalancerPortInput{
 				Name: newString(""),
 			},
-			errorMsg: "value is less than the required length",
+			Expected: &graphclient.LoadBalancerPort{
+				Name:   "",
+				Number: 22,
+			},
 		},
 		{
 			TestName: "fails to update loadbalancer port number < min",
