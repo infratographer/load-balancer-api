@@ -8,17 +8,15 @@ import (
 	"context"
 	"database/sql"
 
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/events"
-	"go.infratographer.com/x/gidx"
-
-	"go.infratographer.com/load-balancer-api/pkg/metadata"
-
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
+	"go.infratographer.com/load-balancer-api/pkg/metadata"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.

@@ -94,8 +94,6 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NumberValidator is a validator for the "number" field. It is called by the builders before save.
 	NumberValidator func(int) error
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
 	// LoadBalancerIDValidator is a validator for the "load_balancer_id" field. It is called by the builders before save.
 	LoadBalancerIDValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
