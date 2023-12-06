@@ -48,7 +48,6 @@ func (Port) Fields() []ent.Field {
 				entgql.OrderField("number"),
 			),
 		field.String("name").
-			NotEmpty().
 			Annotations(
 				entgql.OrderField("name"),
 			),
