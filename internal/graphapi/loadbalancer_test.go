@@ -397,7 +397,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	assert.Equal(t, ownerID, createdLB.Owner.ID)
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
-		Name:           gofakeit.DomainName(),
+		Name:           newString(gofakeit.DomainName()),
 		Number:         8080,
 		LoadBalancerID: createdLB.ID,
 	})

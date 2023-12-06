@@ -133,6 +133,14 @@ func (pc *PortCreate) SetName(s string) *PortCreate {
 	return pc
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (pc *PortCreate) SetNillableName(s *string) *PortCreate {
+	if s != nil {
+		pc.SetName(*s)
+	}
+	return pc
+}
+
 // SetLoadBalancerID sets the "load_balancer_id" field.
 func (pc *PortCreate) SetLoadBalancerID(gi gidx.PrefixedID) *PortCreate {
 	pc.mutation.SetLoadBalancerID(gi)
@@ -249,9 +257,6 @@ func (pc *PortCreate) check() error {
 		if err := port.NumberValidator(v); err != nil {
 			return &ValidationError{Name: "number", err: fmt.Errorf(`generated: validator failed for field "Port.number": %w`, err)}
 		}
-	}
-	if _, ok := pc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Port.name"`)}
 	}
 	if _, ok := pc.mutation.LoadBalancerID(); !ok {
 		return &ValidationError{Name: "load_balancer_id", err: errors.New(`generated: missing required field "Port.load_balancer_id"`)}
