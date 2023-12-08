@@ -34,6 +34,7 @@ api:
   listenPort: 7608
   extraLabels: {}
   extraAnnotations: {}
+  extraEnvFrom: {}
   extraEnvVars: []
   #- value: "postgresql://user@my-db-server:26257/load_balancer_api"
   #  name: LOADBALANCERAPI_CRDB_URI
