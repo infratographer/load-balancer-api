@@ -8,11 +8,12 @@ import (
 	"context"
 	"strings"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerPortCreate is the resolver for the loadBalancerPortCreate field.
@@ -78,7 +79,6 @@ func (r *mutationResolver) LoadBalancerPortCreate(ctx context.Context, input gen
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, status); err != nil {
 		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", lb.ID)
-		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPortCreatePayload{LoadBalancerPort: p}, nil
@@ -150,7 +150,6 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, status); err != nil {
 		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", lb.ID)
-		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPortUpdatePayload{LoadBalancerPort: p}, nil
@@ -187,7 +186,6 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 	if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
-		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerPortDeletePayload{DeletedID: id}, nil

@@ -8,6 +8,10 @@ import (
 	"context"
 	"database/sql"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+	"golang.org/x/exp/slices"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
@@ -15,9 +19,6 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
-	"golang.org/x/exp/slices"
 )
 
 // LoadBalancerPoolCreate is the resolver for the LoadBalancerPoolCreate field.
@@ -70,7 +71,6 @@ func (r *mutationResolver) LoadBalancerPoolCreate(ctx context.Context, input gen
 		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, status); err != nil {
 			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
-			return nil, ErrInternalServerError
 		}
 	}
 
@@ -137,7 +137,6 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 		status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 		if err := r.LoadBalancerStatusUpdate(ctx, port.LoadBalancerID, status); err != nil {
 			logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", port.LoadBalancerID)
-			return nil, ErrInternalServerError
 		}
 	}
 
@@ -215,7 +214,6 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 			status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
-				return nil, ErrInternalServerError
 			}
 		}
 	}
