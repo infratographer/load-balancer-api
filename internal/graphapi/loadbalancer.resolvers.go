@@ -8,15 +8,16 @@ import (
 	"context"
 	"database/sql"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/events"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/events"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerCreate is the resolver for the loadBalancerCreate field.
@@ -27,7 +28,6 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 
 	if config.AppConfig.LoadBalancerLimit > 0 {
 		count, err := r.client.LoadBalancer.Query().Where(predicate.LoadBalancer(loadbalancer.OwnerIDEQ(input.OwnerID))).Count(ctx)
-
 		if err != nil {
 			r.logger.Errorw("failed to query loadbalancer count", "error", err)
 		}
@@ -50,7 +50,6 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateCreating}
 	if err := r.LoadBalancerStatusUpdate(ctx, lb.ID, status); err != nil {
 		r.logger.Errorw("failed to update loadbalancer metadata status", "error", err)
-		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerCreatePayload{LoadBalancer: lb}, nil
@@ -92,7 +91,6 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateUpdating}
 	if err := r.LoadBalancerStatusUpdate(ctx, id, status); err != nil {
 		logger.Errorw("failed to update loadbalancer metadata status", "error", err)
-		return nil, ErrInternalServerError
 	}
 
 	return &LoadBalancerUpdatePayload{LoadBalancer: lb}, nil
@@ -166,7 +164,6 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 	status := &metadata.LoadBalancerStatus{State: metadata.LoadBalancerStateTerminating}
 	if err := r.LoadBalancerStatusUpdate(ctx, id, status); err != nil {
 		logger.Errorw("failed to update loadbalancer metadata status", "error", err)
-		return nil, ErrInternalServerError
 	}
 
 	// delete auth relationship

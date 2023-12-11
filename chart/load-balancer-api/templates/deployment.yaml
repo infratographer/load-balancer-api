@@ -74,6 +74,9 @@ spec:
           {{- end }}
           {{- end }}
           envFrom:
+          {{- if .Values.api.extraEnvFrom }}
+            {{- toYaml .Values.api.extraEnvFrom | nindent 12 }}
+          {{- end }}
           {{- if .Values.api.db.uriSecret }}
             - secretRef:
                 name: {{ .Values.api.db.uriSecret }}

@@ -7,13 +7,14 @@ package graphapi
 import (
 	"context"
 
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/origin"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
 )
 
 // LoadBalancerOriginCreate is the resolver for the loadBalancerOriginCreate field.
@@ -57,7 +58,6 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 		for _, p := range ports {
 			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
-				return nil, ErrInternalServerError
 			}
 		}
 	}
@@ -105,7 +105,6 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		for _, p := range ports {
 			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
-				return nil, ErrInternalServerError
 			}
 		}
 	}
@@ -148,7 +147,6 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 		for _, p := range ports {
 			if err := r.LoadBalancerStatusUpdate(ctx, p.LoadBalancerID, status); err != nil {
 				logger.Errorw("failed to update loadbalancer metadata status", "error", err, "loadbalancerID", p.LoadBalancerID)
-				return nil, ErrInternalServerError
 			}
 		}
 	}
