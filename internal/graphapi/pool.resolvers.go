@@ -86,10 +86,6 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolUpdate); err != nil {
-		return nil, err
-	}
-
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -98,6 +94,10 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 
 		logger.Errorw("failed to get loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, pool.OwnerID, actionLoadBalancerPoolUpdate); err != nil {
+		return nil, err
 	}
 
 	ports, err := r.client.Port.Query().Where(port.HasLoadBalancerWith(loadbalancer.OwnerIDEQ(pool.OwnerID))).Where(port.IDIn(input.AddPortIDs...)).All(ctx)
@@ -152,17 +152,18 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolDelete); err != nil {
-		return nil, err
-	}
-
-	if _, err := r.client.Pool.Get(ctx, id); err != nil {
+	p, err := r.client.Pool.Get(ctx, id)
+	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
 		}
 
 		logger.Errorw("failed to get loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, p.OwnerID, actionLoadBalancerPoolDelete); err != nil {
+		return nil, err
 	}
 
 	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
@@ -230,10 +231,6 @@ func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerPoolGet); err != nil {
-		return nil, err
-	}
-
 	pool, err := r.client.Pool.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -242,6 +239,10 @@ func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID
 
 		logger.Errorw("failed to get loadbalancer pool", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, pool.OwnerID, actionLoadBalancerPoolGet); err != nil {
+		return nil, err
 	}
 
 	return pool, nil

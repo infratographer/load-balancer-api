@@ -27,7 +27,7 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 	}
 
 	if config.AppConfig.LoadBalancerLimit > 0 {
-		count, err := r.client.LoadBalancer.Query().Where(predicate.LoadBalancer(loadbalancer.OwnerIDEQ(input.OwnerID))).Count(ctx)
+		count, err := r.client.LoadBalancer.Query().Where(loadbalancer.OwnerIDEQ(input.OwnerID)).Count(ctx)
 		if err != nil {
 			r.logger.Errorw("failed to query loadbalancer count", "error", err)
 		}
@@ -64,10 +64,6 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerUpdate); err != nil {
-		return nil, err
-	}
-
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -76,6 +72,10 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 
 		logger.Errorw("failed to get loadbalancer", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, lb.OwnerID, actionLoadBalancerUpdate); err != nil {
+		return nil, err
 	}
 
 	lb, err = lb.Update().SetInput(input).Save(ctx)
@@ -105,10 +105,6 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerDelete); err != nil {
-		return nil, err
-	}
-
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -117,6 +113,10 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 
 		logger.Errorw("failed to get loadbalancer", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, lb.OwnerID, actionLoadBalancerDelete); err != nil {
+		return nil, err
 	}
 
 	tx, err := r.client.BeginTx(ctx, &sql.TxOptions{})
@@ -191,10 +191,6 @@ func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*
 		return nil, err
 	}
 
-	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerGet); err != nil {
-		return nil, err
-	}
-
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
 	if err != nil {
 		if generated.IsNotFound(err) {
@@ -203,6 +199,10 @@ func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*
 
 		logger.Errorw("failed to get loadbalancer", "error", err)
 		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, lb.OwnerID, actionLoadBalancerGet); err != nil {
+		return nil, err
 	}
 
 	return lb, nil

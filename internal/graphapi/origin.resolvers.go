@@ -74,7 +74,7 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, err
 	}
 
-	ogn, err := r.client.Origin.Get(ctx, id)
+	ogn, err := r.client.Origin.Query().WithPool().Where(origin.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -84,7 +84,7 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, ogn.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, ogn.Edges.Pool.OwnerID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +121,7 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 		return nil, err
 	}
 
-	ogn, err := r.client.Origin.Get(ctx, id)
+	ogn, err := r.client.Origin.Query().WithPool().Where(origin.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -131,7 +131,7 @@ func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, ogn.PoolID, actionLoadBalancerPoolUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, ogn.Edges.Pool.OwnerID, actionLoadBalancerPoolUpdate); err != nil {
 		return nil, err
 	}
 
