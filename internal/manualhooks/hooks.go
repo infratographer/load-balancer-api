@@ -1002,6 +1002,11 @@ func PortHooks() []ent.Hook {
 						})
 					}
 
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancer",
+						SubjectID: load_balancer_id,
+					})
+
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -1089,6 +1094,11 @@ func PortHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.OwnerID)
 					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.ProviderID)
 
+					relationships = append(relationships, events.AuthRelationshipRelation{
+						Relation:  "loadbalancer",
+						SubjectID: dbObj.LoadBalancerID,
+					})
+					
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
