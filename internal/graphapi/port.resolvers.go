@@ -13,6 +13,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
+	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
 )
 
@@ -93,7 +94,7 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
-	p, err := r.client.Port.Get(ctx, id)
+	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -103,7 +104,7 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, p.Edges.LoadBalancer.OwnerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
 
@@ -164,7 +165,7 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 		return nil, err
 	}
 
-	p, err := r.client.Port.Get(ctx, id)
+	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if generated.IsNotFound(err) {
 			return nil, err
@@ -174,7 +175,7 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	if err := permissions.CheckAccess(ctx, p.LoadBalancerID, actionLoadBalancerUpdate); err != nil {
+	if err := permissions.CheckAccess(ctx, p.Edges.LoadBalancer.OwnerID, actionLoadBalancerUpdate); err != nil {
 		return nil, err
 	}
 
