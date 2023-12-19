@@ -34,7 +34,7 @@ jobs:
       - name: Checkout code for ${{ matrix.ci-database }}
         uses: actions/checkout@v4
       - name: Set up Go for ${{ matrix.ci-database }}
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
       - name: Install atlas for db migrations on ${{ matrix.ci-database }}
