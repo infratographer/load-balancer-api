@@ -172,21 +172,7 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 		return nil, ErrInternalServerError
 	}
 
-	defer func() {
-		if err != nil {
-			logger.Debugw("rolling back transaction")
-			if err := tx.Rollback(); err != nil {
-				logger.Errorw("failed to rollback transaction", "error", err)
-			}
-
-			return
-		}
-
-		logger.Debugw("committing transaction")
-		if err := tx.Commit(); err != nil {
-			logger.Errorw("failed to commit transaction", "error", err)
-		}
-	}()
+	defer tx.Rollback()
 
 	// cleanup origins associated with pool
 	origins, err := tx.Origin.Query().Where(predicate.Origin(origin.PoolIDEQ(id))).All(ctx)
@@ -205,6 +191,12 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	// delete pool
 	if err := tx.Pool.DeleteOneID(id).Exec(ctx); err != nil {
 		logger.Errorw("failed to delete loadbalancer pool", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	logger.Debugw("committing transaction")
+	if err := tx.Commit(); err != nil {
+		logger.Errorw("failed to commit transaction", "error", err)
 		return nil, ErrInternalServerError
 	}
 
