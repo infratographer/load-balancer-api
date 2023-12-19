@@ -214,7 +214,7 @@ func LoadBalancerHooks() []ent.Hook {
 						}
 					}
 
-					if len(relationships) != 0 {
+					if len(relationships) != 0 && eventType(m.Op()) == string(events.CreateChangeType) {
 						if err := permissions.CreateAuthRelationships(ctx, "load-balancer", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
@@ -506,7 +506,7 @@ func OriginHooks() []ent.Hook {
 						}
 					}
 
-					if len(relationships) != 0 {
+					if len(relationships) != 0 && eventType(m.Op()) == string(events.CreateChangeType) {
 						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-origin", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
@@ -789,7 +789,7 @@ func PoolHooks() []ent.Hook {
 						}
 					}
 
-					if len(relationships) != 0 {
+					if len(relationships) != 0 && eventType(m.Op()) == string(events.CreateChangeType) {
 						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-pool", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
@@ -1055,7 +1055,7 @@ func PortHooks() []ent.Hook {
 						}
 					}
 
-					if len(relationships) != 0 {
+					if len(relationships) != 0 && eventType(m.Op()) == string(events.CreateChangeType) {
 						if err := permissions.CreateAuthRelationships(ctx, "load-balancer-port", objID, relationships...); err != nil {
 							return nil, fmt.Errorf("relationship request failed with error: %w", err)
 						}
@@ -1098,7 +1098,7 @@ func PortHooks() []ent.Hook {
 						Relation:  "loadbalancer",
 						SubjectID: dbObj.LoadBalancerID,
 					})
-					
+
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
 					if err != nil {
