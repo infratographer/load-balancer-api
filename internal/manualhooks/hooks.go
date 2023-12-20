@@ -440,11 +440,6 @@ func OriginHooks() []ent.Hook {
 					}
 					additionalSubjects = append(additionalSubjects, pool_id)
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "pool",
-						SubjectID: pool_id,
-					})
-
 					if ok {
 						cv_pool_id = fmt.Sprintf("%s", fmt.Sprint(pool_id))
 						pv_pool_id := ""
@@ -568,11 +563,6 @@ func OriginHooks() []ent.Hook {
 							}
 						}
 					}
-
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "pool",
-						SubjectID: dbObj.PoolID,
-					})
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
@@ -1002,11 +992,6 @@ func PortHooks() []ent.Hook {
 						})
 					}
 
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancer",
-						SubjectID: load_balancer_id,
-					})
-
 					msg := events.ChangeMessage{
 						EventType:            eventType(m.Op()),
 						SubjectID:            objID,
@@ -1093,11 +1078,6 @@ func PortHooks() []ent.Hook {
 					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.LocationID)
 					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.OwnerID)
 					additionalSubjects = append(additionalSubjects, dbObj.Edges.LoadBalancer.ProviderID)
-
-					relationships = append(relationships, events.AuthRelationshipRelation{
-						Relation:  "loadbalancer",
-						SubjectID: dbObj.LoadBalancerID,
-					})
 
 					// we have all the info we need, now complete the mutation before we process the event
 					retValue, err := next.Mutate(ctx, m)
