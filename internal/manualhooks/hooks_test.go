@@ -282,23 +282,58 @@ func Test_PortCreateHook(t *testing.T) {
 	changesChannel, err := testutils.EventsConn.SubscribeChanges(ctx, "create.load-balancer-port")
 	require.NoError(t, err, "failed to subscribe to changes")
 
-	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
-	pool := (&testutils.PoolBuilder{}).MustNew(ctx)
-
 	testutils.EntClient.Port.Use(manualhooks.PortHooks()...)
 
-	// Act
-	port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+	t.Run("with pool", func(t *testing.T) {
+		// Act
+		lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+		pool := (&testutils.PoolBuilder{OwnerID: lb.OwnerID}).MustNew(ctx)
+		port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
 
-	msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+		msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
 
-	// Assert
-	expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool.OwnerID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
-	actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+		// Assert
+		expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
+		actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
 
-	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
-	assert.Equal(t, port.ID, msg.Message().SubjectID)
-	assert.Equal(t, createEventType, msg.Message().EventType)
+		assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+		assert.Equal(t, port.ID, msg.Message().SubjectID)
+		assert.Equal(t, createEventType, msg.Message().EventType)
+	})
+
+	t.Run("with multiple pools", func(t *testing.T) {
+		// Act
+		lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+		pool := (&testutils.PoolBuilder{OwnerID: lb.OwnerID}).MustNew(ctx)
+		pool2 := (&testutils.PoolBuilder{OwnerID: lb.OwnerID}).MustNew(ctx)
+		port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{pool.ID, pool2.ID}, LoadBalancerID: lb.ID}).MustNew(ctx)
+
+		msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+		// Assert
+		expectedAdditionalSubjectIDs := []gidx.PrefixedID{pool.ID, pool2.ID, lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
+		actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+		assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+		assert.Equal(t, port.ID, msg.Message().SubjectID)
+		assert.Equal(t, createEventType, msg.Message().EventType)
+	})
+
+	t.Run("with no pool", func(t *testing.T) {
+		// Act
+		lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+		port := (&testutils.PortBuilder{PoolIDs: []gidx.PrefixedID{}, LoadBalancerID: lb.ID}).MustNew(ctx)
+
+		msg := testutils.ChannelReceiveWithTimeout[events.Message[events.ChangeMessage]](t, changesChannel, defaultTimeout)
+
+		// Assert
+		expectedAdditionalSubjectIDs := []gidx.PrefixedID{lb.ID, lb.LocationID, lb.ProviderID, lb.OwnerID}
+		actualAdditionalSubjectIDs := msg.Message().AdditionalSubjectIDs
+
+		assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
+		assert.Equal(t, port.ID, msg.Message().SubjectID)
+		assert.Equal(t, createEventType, msg.Message().EventType)
+	})
 }
 
 func Test_PortUpdateHook(t *testing.T) {
