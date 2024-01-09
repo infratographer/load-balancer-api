@@ -1007,30 +1007,26 @@ func PortHooks() []ent.Hook {
 					}
 
 					// Ensure we have additional relevant subjects in the event msg
-					addSubjPools, err := m.Client().Pool.Query().WithPorts(func(q *generated.PortQuery) {
-						q.WithLoadBalancer()
-					}).Where(pool.HasPortsWith(port.IDEQ(objID))).All(ctx)
+					addSubjPort, err := m.Client().Port.Query().WithPools().WithLoadBalancer().Where(port.IDEQ(objID)).Only(ctx)
 					if err == nil {
-						for _, pool := range addSubjPools {
-							for _, port := range pool.Edges.Ports {
-								if !slices.Contains(msg.AdditionalSubjectIDs, port.LoadBalancerID) {
-									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.LoadBalancerID)
-								}
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.LoadBalancerID)
+						}
 
-								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID) {
-									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.LocationID)
-								}
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.LocationID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.LocationID)
+						}
 
-								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID) {
-									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.ProviderID)
-								}
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.OwnerID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.OwnerID)
+						}
 
-								if !slices.Contains(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.OwnerID) {
-									msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, port.Edges.LoadBalancer.OwnerID)
-								}
-							}
+						if !slices.Contains(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.ProviderID) {
+							msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, addSubjPort.Edges.LoadBalancer.ProviderID)
+						}
 
-							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) && objID != pool.ID {
+						for _, pool := range addSubjPort.Edges.Pools {
+							if !slices.Contains(msg.AdditionalSubjectIDs, pool.ID) {
 								msg.AdditionalSubjectIDs = append(msg.AdditionalSubjectIDs, pool.ID)
 							}
 
