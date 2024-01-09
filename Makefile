@@ -75,7 +75,7 @@ generate: background-run .generate kill-running ## Generates code
 go-run: ## Runs the app
 	@echo --- Running binary...
 	@date --rfc-3339=seconds
-	@go run main.go serve --dev
+	@go run main.go serve --dev --oidc=false
 
 background-run:  ## Runs in the app in the background
 	@date --rfc-3339=seconds
