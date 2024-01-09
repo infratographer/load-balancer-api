@@ -24,6 +24,10 @@ debugConfig.yaml
 .devcontainer/nats/resolver.conf
 .devcontainer/nsc
 
+# go work
+go.work
+go.work.sum
+
 # helm test
 test-output/
 
