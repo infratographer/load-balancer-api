@@ -8,7 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.38
 	github.com/Yamashou/gqlgenc v0.15.1
 	github.com/brianvoe/gofakeit/v6 v6.26.3
-	github.com/docker/go-connections v0.4.0
+	github.com/docker/go-connections v0.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hasura/go-graphql-client v0.10.2
 	github.com/labstack/echo/v4 v4.11.4
