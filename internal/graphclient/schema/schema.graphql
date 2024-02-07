@@ -13,6 +13,8 @@ directive @shareable repeatable on FIELD_DEFINITION | OBJECT
 directive @tag(name: String!) repeatable on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
 """Input information to create a load balancer."""
 input CreateLoadBalancerInput {
+	createdBy: String
+	updatedBy: String
 	"""The name of the load balancer."""
 	name: String!
 	"""The ID for the owner for this load balancer."""
@@ -78,6 +80,8 @@ type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "i
 	id: ID!
 	createdAt: Time!
 	updatedAt: Time!
+	createdBy: String
+	updatedBy: String
 	"""The name of the load balancer."""
 	name: String!
 	ports(
@@ -724,6 +728,38 @@ input LoadBalancerWhereInput {
 	updatedAtGTE: Time
 	updatedAtLT: Time
 	updatedAtLTE: Time
+	"""created_by field predicates"""
+	createdBy: String
+	createdByNEQ: String
+	createdByIn: [String!]
+	createdByNotIn: [String!]
+	createdByGT: String
+	createdByGTE: String
+	createdByLT: String
+	createdByLTE: String
+	createdByContains: String
+	createdByHasPrefix: String
+	createdByHasSuffix: String
+	createdByIsNil: Boolean
+	createdByNotNil: Boolean
+	createdByEqualFold: String
+	createdByContainsFold: String
+	"""updated_by field predicates"""
+	updatedBy: String
+	updatedByNEQ: String
+	updatedByIn: [String!]
+	updatedByNotIn: [String!]
+	updatedByGT: String
+	updatedByGTE: String
+	updatedByLT: String
+	updatedByLTE: String
+	updatedByContains: String
+	updatedByHasPrefix: String
+	updatedByHasSuffix: String
+	updatedByIsNil: Boolean
+	updatedByNotNil: Boolean
+	updatedByEqualFold: String
+	updatedByContainsFold: String
 	"""name field predicates"""
 	name: String
 	nameNEQ: String
@@ -933,6 +969,8 @@ type ResourceOwner @interfaceObject @key(fields: "id") {
 scalar Time
 """Input information to update a load balancer."""
 input UpdateLoadBalancerInput {
+	updatedBy: String
+	clearUpdatedBy: Boolean
 	"""The name of the load balancer."""
 	name: String
 	addPortIDs: [ID!]
