@@ -2,9 +2,8 @@ package audit
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
@@ -21,8 +20,16 @@ func (AuditMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("created_by").
 			Immutable().
+			Annotations(
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+				entgql.OrderField("CREATED_BY"),
+			).
 			Optional(),
 		field.String("updated_by").
+			Annotations(
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+				entgql.OrderField("UPDATED_BY"),
+			).
 			Optional(),
 	}
 }
@@ -46,7 +53,7 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		ml, ok := m.(AuditLogger)
 		if !ok {
-			return nil, errors.New("unexpected mutation type")
+			return nil, newUnexpectedMutationError(m)
 		}
 		actor := "unknown-actor"
 		id, ok := ctx.Value(echojwtx.ActorCtxKey).(string)
@@ -58,7 +65,6 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 		case op.Is(ent.OpCreate):
 			ml.SetCreatedBy(actor)
 			ml.SetUpdatedBy(actor)
-			fmt.Println("chacha")
 
 		case op.Is(ent.OpUpdateOne | ent.OpUpdate):
 			ml.SetUpdatedBy(actor)

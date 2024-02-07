@@ -23,8 +23,6 @@ import (
 
 // CreateLoadBalancerInput represents a mutation input for creating loadbalancers.
 type CreateLoadBalancerInput struct {
-	CreatedBy  *string
-	UpdatedBy  *string
 	Name       string
 	OwnerID    gidx.PrefixedID
 	LocationID gidx.PrefixedID
@@ -34,12 +32,6 @@ type CreateLoadBalancerInput struct {
 
 // Mutate applies the CreateLoadBalancerInput on the LoadBalancerMutation builder.
 func (i *CreateLoadBalancerInput) Mutate(m *LoadBalancerMutation) {
-	if v := i.CreatedBy; v != nil {
-		m.SetCreatedBy(*v)
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	m.SetName(i.Name)
 	m.SetOwnerID(i.OwnerID)
 	m.SetLocationID(i.LocationID)
@@ -57,22 +49,14 @@ func (c *LoadBalancerCreate) SetInput(i CreateLoadBalancerInput) *LoadBalancerCr
 
 // UpdateLoadBalancerInput represents a mutation input for updating loadbalancers.
 type UpdateLoadBalancerInput struct {
-	ClearUpdatedBy bool
-	UpdatedBy      *string
-	Name           *string
-	ClearPorts     bool
-	AddPortIDs     []gidx.PrefixedID
-	RemovePortIDs  []gidx.PrefixedID
+	Name          *string
+	ClearPorts    bool
+	AddPortIDs    []gidx.PrefixedID
+	RemovePortIDs []gidx.PrefixedID
 }
 
 // Mutate applies the UpdateLoadBalancerInput on the LoadBalancerMutation builder.
 func (i *UpdateLoadBalancerInput) Mutate(m *LoadBalancerMutation) {
-	if i.ClearUpdatedBy {
-		m.ClearUpdatedBy()
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
@@ -101,8 +85,6 @@ func (c *LoadBalancerUpdateOne) SetInput(i UpdateLoadBalancerInput) *LoadBalance
 
 // CreateLoadBalancerOriginInput represents a mutation input for creating loadbalancerorigins.
 type CreateLoadBalancerOriginInput struct {
-	CreatedBy  *string
-	UpdatedBy  *string
 	Name       string
 	Weight     *int32
 	Target     string
@@ -113,12 +95,6 @@ type CreateLoadBalancerOriginInput struct {
 
 // Mutate applies the CreateLoadBalancerOriginInput on the OriginMutation builder.
 func (i *CreateLoadBalancerOriginInput) Mutate(m *OriginMutation) {
-	if v := i.CreatedBy; v != nil {
-		m.SetCreatedBy(*v)
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	m.SetName(i.Name)
 	if v := i.Weight; v != nil {
 		m.SetWeight(*v)
@@ -139,23 +115,15 @@ func (c *OriginCreate) SetInput(i CreateLoadBalancerOriginInput) *OriginCreate {
 
 // UpdateLoadBalancerOriginInput represents a mutation input for updating loadbalancerorigins.
 type UpdateLoadBalancerOriginInput struct {
-	ClearUpdatedBy bool
-	UpdatedBy      *string
-	Name           *string
-	Weight         *int32
-	Target         *string
-	PortNumber     *int
-	Active         *bool
+	Name       *string
+	Weight     *int32
+	Target     *string
+	PortNumber *int
+	Active     *bool
 }
 
 // Mutate applies the UpdateLoadBalancerOriginInput on the OriginMutation builder.
 func (i *UpdateLoadBalancerOriginInput) Mutate(m *OriginMutation) {
-	if i.ClearUpdatedBy {
-		m.ClearUpdatedBy()
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
@@ -187,8 +155,6 @@ func (c *OriginUpdateOne) SetInput(i UpdateLoadBalancerOriginInput) *OriginUpdat
 
 // CreateLoadBalancerPoolInput represents a mutation input for creating loadbalancerpools.
 type CreateLoadBalancerPoolInput struct {
-	CreatedBy *string
-	UpdatedBy *string
 	Name      string
 	Protocol  pool.Protocol
 	OwnerID   gidx.PrefixedID
@@ -198,12 +164,6 @@ type CreateLoadBalancerPoolInput struct {
 
 // Mutate applies the CreateLoadBalancerPoolInput on the PoolMutation builder.
 func (i *CreateLoadBalancerPoolInput) Mutate(m *PoolMutation) {
-	if v := i.CreatedBy; v != nil {
-		m.SetCreatedBy(*v)
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	m.SetName(i.Name)
 	m.SetProtocol(i.Protocol)
 	m.SetOwnerID(i.OwnerID)
@@ -223,8 +183,6 @@ func (c *PoolCreate) SetInput(i CreateLoadBalancerPoolInput) *PoolCreate {
 
 // UpdateLoadBalancerPoolInput represents a mutation input for updating loadbalancerpools.
 type UpdateLoadBalancerPoolInput struct {
-	ClearUpdatedBy  bool
-	UpdatedBy       *string
 	Name            *string
 	Protocol        *pool.Protocol
 	ClearPorts      bool
@@ -237,12 +195,6 @@ type UpdateLoadBalancerPoolInput struct {
 
 // Mutate applies the UpdateLoadBalancerPoolInput on the PoolMutation builder.
 func (i *UpdateLoadBalancerPoolInput) Mutate(m *PoolMutation) {
-	if i.ClearUpdatedBy {
-		m.ClearUpdatedBy()
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
@@ -283,8 +235,6 @@ func (c *PoolUpdateOne) SetInput(i UpdateLoadBalancerPoolInput) *PoolUpdateOne {
 
 // CreateLoadBalancerPortInput represents a mutation input for creating loadbalancerports.
 type CreateLoadBalancerPortInput struct {
-	CreatedBy      *string
-	UpdatedBy      *string
 	Number         int
 	Name           string
 	PoolIDs        []gidx.PrefixedID
@@ -293,12 +243,6 @@ type CreateLoadBalancerPortInput struct {
 
 // Mutate applies the CreateLoadBalancerPortInput on the PortMutation builder.
 func (i *CreateLoadBalancerPortInput) Mutate(m *PortMutation) {
-	if v := i.CreatedBy; v != nil {
-		m.SetCreatedBy(*v)
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	m.SetNumber(i.Number)
 	m.SetName(i.Name)
 	if v := i.PoolIDs; len(v) > 0 {
@@ -315,23 +259,15 @@ func (c *PortCreate) SetInput(i CreateLoadBalancerPortInput) *PortCreate {
 
 // UpdateLoadBalancerPortInput represents a mutation input for updating loadbalancerports.
 type UpdateLoadBalancerPortInput struct {
-	ClearUpdatedBy bool
-	UpdatedBy      *string
-	Number         *int
-	Name           *string
-	ClearPools     bool
-	AddPoolIDs     []gidx.PrefixedID
-	RemovePoolIDs  []gidx.PrefixedID
+	Number        *int
+	Name          *string
+	ClearPools    bool
+	AddPoolIDs    []gidx.PrefixedID
+	RemovePoolIDs []gidx.PrefixedID
 }
 
 // Mutate applies the UpdateLoadBalancerPortInput on the PortMutation builder.
 func (i *UpdateLoadBalancerPortInput) Mutate(m *PortMutation) {
-	if i.ClearUpdatedBy {
-		m.ClearUpdatedBy()
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	if v := i.Number; v != nil {
 		m.SetNumber(*v)
 	}
@@ -363,20 +299,12 @@ func (c *PortUpdateOne) SetInput(i UpdateLoadBalancerPortInput) *PortUpdateOne {
 
 // CreateLoadBalancerProviderInput represents a mutation input for creating loadbalancerproviders.
 type CreateLoadBalancerProviderInput struct {
-	CreatedBy *string
-	UpdatedBy *string
-	Name      string
-	OwnerID   gidx.PrefixedID
+	Name    string
+	OwnerID gidx.PrefixedID
 }
 
 // Mutate applies the CreateLoadBalancerProviderInput on the ProviderMutation builder.
 func (i *CreateLoadBalancerProviderInput) Mutate(m *ProviderMutation) {
-	if v := i.CreatedBy; v != nil {
-		m.SetCreatedBy(*v)
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	m.SetName(i.Name)
 	m.SetOwnerID(i.OwnerID)
 }
@@ -389,19 +317,11 @@ func (c *ProviderCreate) SetInput(i CreateLoadBalancerProviderInput) *ProviderCr
 
 // UpdateLoadBalancerProviderInput represents a mutation input for updating loadbalancerproviders.
 type UpdateLoadBalancerProviderInput struct {
-	ClearUpdatedBy bool
-	UpdatedBy      *string
-	Name           *string
+	Name *string
 }
 
 // Mutate applies the UpdateLoadBalancerProviderInput on the ProviderMutation builder.
 func (i *UpdateLoadBalancerProviderInput) Mutate(m *ProviderMutation) {
-	if i.ClearUpdatedBy {
-		m.ClearUpdatedBy()
-	}
-	if v := i.UpdatedBy; v != nil {
-		m.SetUpdatedBy(*v)
-	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
