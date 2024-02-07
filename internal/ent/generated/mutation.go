@@ -60,6 +60,8 @@ type LoadBalancerMutation struct {
 	updated_at      *time.Time
 	created_by      *string
 	updated_by      *string
+	deleted_at      *time.Time
+	deleted_by      *string
 	name            *string
 	owner_id        *gidx.PrefixedID
 	location_id     *gidx.PrefixedID
@@ -348,6 +350,104 @@ func (m *LoadBalancerMutation) ResetUpdatedBy() {
 	delete(m.clearedFields, loadbalancer.FieldUpdatedBy)
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (m *LoadBalancerMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *LoadBalancerMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *LoadBalancerMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[loadbalancer.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *LoadBalancerMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *LoadBalancerMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, loadbalancer.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *LoadBalancerMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *LoadBalancerMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *LoadBalancerMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[loadbalancer.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *LoadBalancerMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *LoadBalancerMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, loadbalancer.FieldDeletedBy)
+}
+
 // SetName sets the "name" field.
 func (m *LoadBalancerMutation) SetName(s string) {
 	m.name = &s
@@ -607,7 +707,7 @@ func (m *LoadBalancerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoadBalancerMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, loadbalancer.FieldCreatedAt)
 	}
@@ -619,6 +719,12 @@ func (m *LoadBalancerMutation) Fields() []string {
 	}
 	if m.updated_by != nil {
 		fields = append(fields, loadbalancer.FieldUpdatedBy)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, loadbalancer.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, loadbalancer.FieldDeletedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, loadbalancer.FieldName)
@@ -648,6 +754,10 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedBy()
 	case loadbalancer.FieldUpdatedBy:
 		return m.UpdatedBy()
+	case loadbalancer.FieldDeletedAt:
+		return m.DeletedAt()
+	case loadbalancer.FieldDeletedBy:
+		return m.DeletedBy()
 	case loadbalancer.FieldName:
 		return m.Name()
 	case loadbalancer.FieldOwnerID:
@@ -673,6 +783,10 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCreatedBy(ctx)
 	case loadbalancer.FieldUpdatedBy:
 		return m.OldUpdatedBy(ctx)
+	case loadbalancer.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case loadbalancer.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
 	case loadbalancer.FieldName:
 		return m.OldName(ctx)
 	case loadbalancer.FieldOwnerID:
@@ -717,6 +831,20 @@ func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedBy(v)
+		return nil
+	case loadbalancer.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
 		return nil
 	case loadbalancer.FieldName:
 		v, ok := value.(string)
@@ -782,6 +910,12 @@ func (m *LoadBalancerMutation) ClearedFields() []string {
 	if m.FieldCleared(loadbalancer.FieldUpdatedBy) {
 		fields = append(fields, loadbalancer.FieldUpdatedBy)
 	}
+	if m.FieldCleared(loadbalancer.FieldDeletedAt) {
+		fields = append(fields, loadbalancer.FieldDeletedAt)
+	}
+	if m.FieldCleared(loadbalancer.FieldDeletedBy) {
+		fields = append(fields, loadbalancer.FieldDeletedBy)
+	}
 	return fields
 }
 
@@ -802,6 +936,12 @@ func (m *LoadBalancerMutation) ClearField(name string) error {
 	case loadbalancer.FieldUpdatedBy:
 		m.ClearUpdatedBy()
 		return nil
+	case loadbalancer.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
 	}
 	return fmt.Errorf("unknown LoadBalancer nullable field %s", name)
 }
@@ -821,6 +961,12 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 		return nil
 	case loadbalancer.FieldUpdatedBy:
 		m.ResetUpdatedBy()
+		return nil
+	case loadbalancer.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		m.ResetDeletedBy()
 		return nil
 	case loadbalancer.FieldName:
 		m.ResetName()

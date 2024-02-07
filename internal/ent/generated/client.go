@@ -404,7 +404,8 @@ func (c *LoadBalancerClient) Hooks() []Hook {
 
 // Interceptors returns the client interceptors.
 func (c *LoadBalancerClient) Interceptors() []Interceptor {
-	return c.inters.LoadBalancer
+	inters := c.inters.LoadBalancer
+	return append(inters[:len(inters):len(inters)], loadbalancer.Interceptors[:]...)
 }
 
 func (c *LoadBalancerClient) mutate(ctx context.Context, m *LoadBalancerMutation) (Value, error) {

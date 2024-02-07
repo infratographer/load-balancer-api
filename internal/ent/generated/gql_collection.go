@@ -171,6 +171,16 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedBy)
 				fieldSeen[loadbalancer.FieldUpdatedBy] = struct{}{}
 			}
+		case "deletedAt":
+			if _, ok := fieldSeen[loadbalancer.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldDeletedAt)
+				fieldSeen[loadbalancer.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[loadbalancer.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldDeletedBy)
+				fieldSeen[loadbalancer.FieldDeletedBy] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[loadbalancer.FieldName]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldName)

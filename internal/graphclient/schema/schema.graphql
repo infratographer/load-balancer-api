@@ -80,6 +80,8 @@ type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "i
 	updatedAt: Time!
 	createdBy: String
 	updatedBy: String
+	deletedAt: Time
+	deletedBy: String
 	"""The name of the load balancer."""
 	name: String!
 	ports(
@@ -148,6 +150,8 @@ enum LoadBalancerOrderField {
 	UPDATED_AT
 	CREATED_BY
 	UPDATED_BY
+	DELETED_AT
+	DELETED_BY
 	NAME
 	OWNER
 }
@@ -904,6 +908,33 @@ input LoadBalancerWhereInput {
 	updatedByNotNil: Boolean
 	updatedByEqualFold: String
 	updatedByContainsFold: String
+	"""deleted_at field predicates"""
+	deletedAt: Time
+	deletedAtNEQ: Time
+	deletedAtIn: [Time!]
+	deletedAtNotIn: [Time!]
+	deletedAtGT: Time
+	deletedAtGTE: Time
+	deletedAtLT: Time
+	deletedAtLTE: Time
+	deletedAtIsNil: Boolean
+	deletedAtNotNil: Boolean
+	"""deleted_by field predicates"""
+	deletedBy: String
+	deletedByNEQ: String
+	deletedByIn: [String!]
+	deletedByNotIn: [String!]
+	deletedByGT: String
+	deletedByGTE: String
+	deletedByLT: String
+	deletedByLTE: String
+	deletedByContains: String
+	deletedByHasPrefix: String
+	deletedByHasSuffix: String
+	deletedByIsNil: Boolean
+	deletedByNotNil: Boolean
+	deletedByEqualFold: String
+	deletedByContainsFold: String
 	"""name field predicates"""
 	name: String
 	nameNEQ: String
