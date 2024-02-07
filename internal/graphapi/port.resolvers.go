@@ -11,6 +11,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"

@@ -548,7 +548,8 @@ func (c *OriginClient) QueryPool(o *Origin) *PoolQuery {
 
 // Hooks returns the client hooks.
 func (c *OriginClient) Hooks() []Hook {
-	return c.hooks.Origin
+	hooks := c.hooks.Origin
+	return append(hooks[:len(hooks):len(hooks)], origin.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -713,7 +714,8 @@ func (c *PoolClient) QueryOrigins(po *Pool) *OriginQuery {
 
 // Hooks returns the client hooks.
 func (c *PoolClient) Hooks() []Hook {
-	return c.hooks.Pool
+	hooks := c.hooks.Pool
+	return append(hooks[:len(hooks):len(hooks)], pool.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -878,7 +880,8 @@ func (c *PortClient) QueryLoadBalancer(po *Port) *LoadBalancerQuery {
 
 // Hooks returns the client hooks.
 func (c *PortClient) Hooks() []Hook {
-	return c.hooks.Port
+	hooks := c.hooks.Port
+	return append(hooks[:len(hooks):len(hooks)], port.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1027,7 +1030,8 @@ func (c *ProviderClient) QueryLoadBalancers(pr *Provider) *LoadBalancerQuery {
 
 // Hooks returns the client hooks.
 func (c *ProviderClient) Hooks() []Hook {
-	return c.hooks.Provider
+	hooks := c.hooks.Provider
+	return append(hooks[:len(hooks):len(hooks)], provider.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

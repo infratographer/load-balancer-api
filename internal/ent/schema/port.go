@@ -11,6 +11,7 @@ import (
 	"go.infratographer.com/x/entx"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/audit"
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
@@ -29,6 +30,7 @@ type Port struct {
 func (Port) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NewTimestampMixin(),
+		audit.AuditMixin{},
 	}
 }
 

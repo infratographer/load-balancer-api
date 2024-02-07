@@ -10,6 +10,8 @@ import (
 	metastatus "go.infratographer.com/load-balancer-api/pkg/metadata"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
+
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 )
 
 const metadataStatusSource = "load-balancer-api"

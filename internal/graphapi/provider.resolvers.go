@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/gidx"
 )

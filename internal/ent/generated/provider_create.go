@@ -64,6 +64,34 @@ func (pc *ProviderCreate) SetNillableUpdatedAt(t *time.Time) *ProviderCreate {
 	return pc
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (pc *ProviderCreate) SetCreatedBy(s string) *ProviderCreate {
+	pc.mutation.SetCreatedBy(s)
+	return pc
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (pc *ProviderCreate) SetNillableCreatedBy(s *string) *ProviderCreate {
+	if s != nil {
+		pc.SetCreatedBy(*s)
+	}
+	return pc
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (pc *ProviderCreate) SetUpdatedBy(s string) *ProviderCreate {
+	pc.mutation.SetUpdatedBy(s)
+	return pc
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (pc *ProviderCreate) SetNillableUpdatedBy(s *string) *ProviderCreate {
+	if s != nil {
+		pc.SetUpdatedBy(*s)
+	}
+	return pc
+}
+
 // SetName sets the "name" field.
 func (pc *ProviderCreate) SetName(s string) *ProviderCreate {
 	pc.mutation.SetName(s)
@@ -112,7 +140,9 @@ func (pc *ProviderCreate) Mutation() *ProviderMutation {
 
 // Save creates the Provider in the database.
 func (pc *ProviderCreate) Save(ctx context.Context) (*Provider, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -139,19 +169,29 @@ func (pc *ProviderCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *ProviderCreate) defaults() {
+func (pc *ProviderCreate) defaults() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
+		if provider.DefaultCreatedAt == nil {
+			return fmt.Errorf("generated: uninitialized provider.DefaultCreatedAt (forgotten import generated/runtime?)")
+		}
 		v := provider.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		if provider.DefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized provider.DefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := provider.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := pc.mutation.ID(); !ok {
+		if provider.DefaultID == nil {
+			return fmt.Errorf("generated: uninitialized provider.DefaultID (forgotten import generated/runtime?)")
+		}
 		v := provider.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -220,6 +260,14 @@ func (pc *ProviderCreate) createSpec() (*Provider, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := pc.mutation.CreatedBy(); ok {
+		_spec.SetField(provider.FieldCreatedBy, field.TypeString, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := pc.mutation.UpdatedBy(); ok {
+		_spec.SetField(provider.FieldUpdatedBy, field.TypeString, value)
+		_node.UpdatedBy = value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(provider.FieldName, field.TypeString, value)

@@ -948,6 +948,8 @@ type OriginMutation struct {
 	id             *gidx.PrefixedID
 	created_at     *time.Time
 	updated_at     *time.Time
+	created_by     *string
+	updated_by     *string
 	name           *string
 	weight         *int32
 	addweight      *int32
@@ -1137,6 +1139,104 @@ func (m *OriginMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err err
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *OriginMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OriginMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OriginMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OriginMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[origin.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OriginMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[origin.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OriginMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, origin.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OriginMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OriginMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OriginMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[origin.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OriginMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[origin.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OriginMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, origin.FieldUpdatedBy)
 }
 
 // SetName sets the "name" field.
@@ -1456,12 +1556,18 @@ func (m *OriginMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OriginMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, origin.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, origin.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, origin.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, origin.FieldUpdatedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, origin.FieldName)
@@ -1493,6 +1599,10 @@ func (m *OriginMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case origin.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case origin.FieldCreatedBy:
+		return m.CreatedBy()
+	case origin.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case origin.FieldName:
 		return m.Name()
 	case origin.FieldWeight:
@@ -1518,6 +1628,10 @@ func (m *OriginMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldCreatedAt(ctx)
 	case origin.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case origin.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case origin.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case origin.FieldName:
 		return m.OldName(ctx)
 	case origin.FieldWeight:
@@ -1552,6 +1666,20 @@ func (m *OriginMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case origin.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case origin.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case origin.FieldName:
 		v, ok := value.(string)
@@ -1651,7 +1779,14 @@ func (m *OriginMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *OriginMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(origin.FieldCreatedBy) {
+		fields = append(fields, origin.FieldCreatedBy)
+	}
+	if m.FieldCleared(origin.FieldUpdatedBy) {
+		fields = append(fields, origin.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1664,6 +1799,14 @@ func (m *OriginMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *OriginMutation) ClearField(name string) error {
+	switch name {
+	case origin.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case origin.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Origin nullable field %s", name)
 }
 
@@ -1676,6 +1819,12 @@ func (m *OriginMutation) ResetField(name string) error {
 		return nil
 	case origin.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case origin.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case origin.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case origin.FieldName:
 		m.ResetName()
@@ -1781,6 +1930,8 @@ type PoolMutation struct {
 	id             *gidx.PrefixedID
 	created_at     *time.Time
 	updated_at     *time.Time
+	created_by     *string
+	updated_by     *string
 	name           *string
 	protocol       *pool.Protocol
 	owner_id       *gidx.PrefixedID
@@ -1970,6 +2121,104 @@ func (m *PoolMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *PoolMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *PoolMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *PoolMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *PoolMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[pool.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *PoolMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[pool.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *PoolMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, pool.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *PoolMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *PoolMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *PoolMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[pool.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *PoolMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[pool.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *PoolMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, pool.FieldUpdatedBy)
 }
 
 // SetName sets the "name" field.
@@ -2222,12 +2471,18 @@ func (m *PoolMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PoolMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, pool.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, pool.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, pool.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, pool.FieldUpdatedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, pool.FieldName)
@@ -2250,6 +2505,10 @@ func (m *PoolMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case pool.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case pool.FieldCreatedBy:
+		return m.CreatedBy()
+	case pool.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case pool.FieldName:
 		return m.Name()
 	case pool.FieldProtocol:
@@ -2269,6 +2528,10 @@ func (m *PoolMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case pool.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case pool.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case pool.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case pool.FieldName:
 		return m.OldName(ctx)
 	case pool.FieldProtocol:
@@ -2297,6 +2560,20 @@ func (m *PoolMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case pool.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case pool.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case pool.FieldName:
 		v, ok := value.(string)
@@ -2348,7 +2625,14 @@ func (m *PoolMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PoolMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(pool.FieldCreatedBy) {
+		fields = append(fields, pool.FieldCreatedBy)
+	}
+	if m.FieldCleared(pool.FieldUpdatedBy) {
+		fields = append(fields, pool.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2361,6 +2645,14 @@ func (m *PoolMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PoolMutation) ClearField(name string) error {
+	switch name {
+	case pool.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case pool.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Pool nullable field %s", name)
 }
 
@@ -2373,6 +2665,12 @@ func (m *PoolMutation) ResetField(name string) error {
 		return nil
 	case pool.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case pool.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case pool.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case pool.FieldName:
 		m.ResetName()
@@ -2505,6 +2803,8 @@ type PortMutation struct {
 	id                   *gidx.PrefixedID
 	created_at           *time.Time
 	updated_at           *time.Time
+	created_by           *string
+	updated_by           *string
 	number               *int
 	addnumber            *int
 	name                 *string
@@ -2693,6 +2993,104 @@ func (m *PortMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *PortMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *PortMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *PortMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *PortMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[port.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *PortMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[port.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *PortMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, port.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *PortMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *PortMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *PortMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[port.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *PortMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[port.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *PortMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, port.FieldUpdatedBy)
 }
 
 // SetNumber sets the "number" field.
@@ -2938,12 +3336,18 @@ func (m *PortMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PortMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, port.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, port.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, port.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, port.FieldUpdatedBy)
 	}
 	if m.number != nil {
 		fields = append(fields, port.FieldNumber)
@@ -2966,6 +3370,10 @@ func (m *PortMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case port.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case port.FieldCreatedBy:
+		return m.CreatedBy()
+	case port.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case port.FieldNumber:
 		return m.Number()
 	case port.FieldName:
@@ -2985,6 +3393,10 @@ func (m *PortMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case port.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case port.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case port.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case port.FieldNumber:
 		return m.OldNumber(ctx)
 	case port.FieldName:
@@ -3013,6 +3425,20 @@ func (m *PortMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case port.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case port.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case port.FieldNumber:
 		v, ok := value.(int)
@@ -3079,7 +3505,14 @@ func (m *PortMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PortMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(port.FieldCreatedBy) {
+		fields = append(fields, port.FieldCreatedBy)
+	}
+	if m.FieldCleared(port.FieldUpdatedBy) {
+		fields = append(fields, port.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3092,6 +3525,14 @@ func (m *PortMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PortMutation) ClearField(name string) error {
+	switch name {
+	case port.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case port.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Port nullable field %s", name)
 }
 
@@ -3104,6 +3545,12 @@ func (m *PortMutation) ResetField(name string) error {
 		return nil
 	case port.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case port.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case port.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case port.FieldNumber:
 		m.ResetNumber()
@@ -3228,6 +3675,8 @@ type ProviderMutation struct {
 	id                    *gidx.PrefixedID
 	created_at            *time.Time
 	updated_at            *time.Time
+	created_by            *string
+	updated_by            *string
 	name                  *string
 	owner_id              *gidx.PrefixedID
 	clearedFields         map[string]struct{}
@@ -3415,6 +3864,104 @@ func (m *ProviderMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (m *ProviderMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *ProviderMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *ProviderMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[provider.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *ProviderMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[provider.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *ProviderMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, provider.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *ProviderMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *ProviderMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *ProviderMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[provider.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *ProviderMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[provider.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *ProviderMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, provider.FieldUpdatedBy)
+}
+
 // SetName sets the "name" field.
 func (m *ProviderMutation) SetName(s string) {
 	m.name = &s
@@ -3575,12 +4122,18 @@ func (m *ProviderMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProviderMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.created_at != nil {
 		fields = append(fields, provider.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, provider.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, provider.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, provider.FieldUpdatedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, provider.FieldName)
@@ -3600,6 +4153,10 @@ func (m *ProviderMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case provider.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case provider.FieldCreatedBy:
+		return m.CreatedBy()
+	case provider.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case provider.FieldName:
 		return m.Name()
 	case provider.FieldOwnerID:
@@ -3617,6 +4174,10 @@ func (m *ProviderMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCreatedAt(ctx)
 	case provider.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case provider.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case provider.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case provider.FieldName:
 		return m.OldName(ctx)
 	case provider.FieldOwnerID:
@@ -3643,6 +4204,20 @@ func (m *ProviderMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case provider.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case provider.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case provider.FieldName:
 		v, ok := value.(string)
@@ -3687,7 +4262,14 @@ func (m *ProviderMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProviderMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(provider.FieldCreatedBy) {
+		fields = append(fields, provider.FieldCreatedBy)
+	}
+	if m.FieldCleared(provider.FieldUpdatedBy) {
+		fields = append(fields, provider.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3700,6 +4282,14 @@ func (m *ProviderMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProviderMutation) ClearField(name string) error {
+	switch name {
+	case provider.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case provider.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Provider nullable field %s", name)
 }
 
@@ -3712,6 +4302,12 @@ func (m *ProviderMutation) ResetField(name string) error {
 		return nil
 	case provider.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case provider.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case provider.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case provider.FieldName:
 		m.ResetName()
