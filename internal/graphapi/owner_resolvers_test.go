@@ -96,6 +96,7 @@ func TestOwnerLoadBalancersResolver(t *testing.T) {
 			}
 
 			require.Len(t, resp.Entities[0].LoadBalancers.Edges, len(tt.ResponseOrder))
+
 			for i, lb := range tt.ResponseOrder {
 				respLB := resp.Entities[0].LoadBalancers.Edges[i].Node
 				require.Equal(t, lb.ID, respLB.ID)

@@ -134,6 +134,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().LoadBalancerPortCreate(ctx, tt.Input)
@@ -339,7 +340,9 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
+
 			resp, err := graphTestClient().LoadBalancerPortDelete(ctx, tt.Input)
 
 			if tt.errorMsg != "" {

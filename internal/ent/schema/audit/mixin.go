@@ -55,7 +55,9 @@ func Hook(next ent.Mutator) ent.Mutator {
 		if !ok {
 			return nil, errUnexpectedMutation
 		}
+
 		actor := "unknown-actor"
+
 		id, ok := ctx.Value(echojwtx.ActorCtxKey).(string)
 		if ok {
 			actor = id
