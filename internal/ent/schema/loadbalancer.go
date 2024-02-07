@@ -25,7 +25,7 @@ type LoadBalancer struct {
 func (LoadBalancer) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NewTimestampMixin(),
-		audit.AuditMixin{},
+		audit.Mixin{},
 		// softdelete.Mixin{},
 	}
 }

@@ -24,7 +24,7 @@ type Pool struct {
 func (Pool) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NewTimestampMixin(),
-		audit.AuditMixin{},
+		audit.Mixin{},
 	}
 }
 

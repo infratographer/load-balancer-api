@@ -10,13 +10,13 @@ import (
 	"go.infratographer.com/x/echojwtx"
 )
 
-// AuditMixin provides auditing for all records where enabled. The created_at, created_by, updated_at, and updated_by records are automatically populated when this mixin is enabled.
-type AuditMixin struct {
+// Mixin provides auditing for all records where enabled. The created_at, created_by, updated_at, and updated_by records are automatically populated when this mixin is enabled.
+type Mixin struct {
 	mixin.Schema
 }
 
-// Fields of the AuditMixin
-func (AuditMixin) Fields() []ent.Field {
+// Fields of the Mixin
+func (Mixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("created_by").
 			Immutable().
@@ -34,15 +34,15 @@ func (AuditMixin) Fields() []ent.Field {
 	}
 }
 
-// Hooks of the AuditMixin
-func (AuditMixin) Hooks() []ent.Hook {
+// Hooks of the Mixin
+func (Mixin) Hooks() []ent.Hook {
 	return []ent.Hook{
-		AuditHook,
+		Hook,
 	}
 }
 
-// AuditHook sets and returns the created_at, updated_at, etc., fields
-func AuditHook(next ent.Mutator) ent.Mutator {
+// Hook sets and returns the created_at, updated_at, etc., fields
+func Hook(next ent.Mutator) ent.Mutator {
 	type AuditLogger interface {
 		SetCreatedBy(string)
 		CreatedBy() (id string, exists bool)
@@ -53,7 +53,7 @@ func AuditHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		ml, ok := m.(AuditLogger)
 		if !ok {
-			return nil, newUnexpectedMutationError(m)
+			return nil, errUnexpectedMutation
 		}
 		actor := "unknown-actor"
 		id, ok := ctx.Value(echojwtx.ActorCtxKey).(string)

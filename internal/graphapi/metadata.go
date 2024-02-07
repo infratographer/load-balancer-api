@@ -11,7 +11,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/config"
 
-	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime" // imports the generated runtime package to instantiate the appropriate default values
 )
 
 const metadataStatusSource = "load-balancer-api"
