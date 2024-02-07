@@ -281,6 +281,7 @@ func mustNewGQLTestClient(respJSON string, respCode int) *graphql.Client {
 		w.WriteHeader(respCode)
 		w.Header().Set("Content-Type", "application/json")
 		_, err := io.WriteString(w, respJSON)
+
 		if err != nil {
 			panic(err)
 		}

@@ -37,6 +37,10 @@ type Provider struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy string `json:"created_by,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy string `json:"updated_by,omitempty"`
 	// The name of the load balancer provider.
 	Name string `json:"name,omitempty"`
 	// The ID for the owner for this load balancer.
@@ -76,7 +80,7 @@ func (*Provider) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case provider.FieldID, provider.FieldOwnerID:
 			values[i] = new(gidx.PrefixedID)
-		case provider.FieldName:
+		case provider.FieldCreatedBy, provider.FieldUpdatedBy, provider.FieldName:
 			values[i] = new(sql.NullString)
 		case provider.FieldCreatedAt, provider.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -112,6 +116,18 @@ func (pr *Provider) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				pr.UpdatedAt = value.Time
+			}
+		case provider.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				pr.CreatedBy = value.String
+			}
+		case provider.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				pr.UpdatedBy = value.String
 			}
 		case provider.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -171,6 +187,12 @@ func (pr *Provider) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(pr.CreatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(pr.UpdatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pr.Name)

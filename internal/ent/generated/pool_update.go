@@ -44,6 +44,26 @@ func (pu *PoolUpdate) Where(ps ...predicate.Pool) *PoolUpdate {
 	return pu
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (pu *PoolUpdate) SetUpdatedBy(s string) *PoolUpdate {
+	pu.mutation.SetUpdatedBy(s)
+	return pu
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (pu *PoolUpdate) SetNillableUpdatedBy(s *string) *PoolUpdate {
+	if s != nil {
+		pu.SetUpdatedBy(*s)
+	}
+	return pu
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (pu *PoolUpdate) ClearUpdatedBy() *PoolUpdate {
+	pu.mutation.ClearUpdatedBy()
+	return pu
+}
+
 // SetName sets the "name" field.
 func (pu *PoolUpdate) SetName(s string) *PoolUpdate {
 	pu.mutation.SetName(s)
@@ -135,7 +155,9 @@ func (pu *PoolUpdate) RemoveOrigins(o ...*Origin) *PoolUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PoolUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
+	if err := pu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -162,11 +184,15 @@ func (pu *PoolUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pu *PoolUpdate) defaults() {
+func (pu *PoolUpdate) defaults() error {
 	if _, ok := pu.mutation.UpdatedAt(); !ok {
+		if pool.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized pool.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := pool.UpdateDefaultUpdatedAt()
 		pu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -198,6 +224,15 @@ func (pu *PoolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(pool.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pu.mutation.CreatedByCleared() {
+		_spec.ClearField(pool.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := pu.mutation.UpdatedBy(); ok {
+		_spec.SetField(pool.FieldUpdatedBy, field.TypeString, value)
+	}
+	if pu.mutation.UpdatedByCleared() {
+		_spec.ClearField(pool.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)
@@ -315,6 +350,26 @@ type PoolUpdateOne struct {
 	mutation *PoolMutation
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (puo *PoolUpdateOne) SetUpdatedBy(s string) *PoolUpdateOne {
+	puo.mutation.SetUpdatedBy(s)
+	return puo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (puo *PoolUpdateOne) SetNillableUpdatedBy(s *string) *PoolUpdateOne {
+	if s != nil {
+		puo.SetUpdatedBy(*s)
+	}
+	return puo
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (puo *PoolUpdateOne) ClearUpdatedBy() *PoolUpdateOne {
+	puo.mutation.ClearUpdatedBy()
+	return puo
+}
+
 // SetName sets the "name" field.
 func (puo *PoolUpdateOne) SetName(s string) *PoolUpdateOne {
 	puo.mutation.SetName(s)
@@ -419,7 +474,9 @@ func (puo *PoolUpdateOne) Select(field string, fields ...string) *PoolUpdateOne 
 
 // Save executes the query and returns the updated Pool entity.
 func (puo *PoolUpdateOne) Save(ctx context.Context) (*Pool, error) {
-	puo.defaults()
+	if err := puo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -446,11 +503,15 @@ func (puo *PoolUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (puo *PoolUpdateOne) defaults() {
+func (puo *PoolUpdateOne) defaults() error {
 	if _, ok := puo.mutation.UpdatedAt(); !ok {
+		if pool.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized pool.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := pool.UpdateDefaultUpdatedAt()
 		puo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -499,6 +560,15 @@ func (puo *PoolUpdateOne) sqlSave(ctx context.Context) (_node *Pool, err error) 
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(pool.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if puo.mutation.CreatedByCleared() {
+		_spec.ClearField(pool.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := puo.mutation.UpdatedBy(); ok {
+		_spec.SetField(pool.FieldUpdatedBy, field.TypeString, value)
+	}
+	if puo.mutation.UpdatedByCleared() {
+		_spec.ClearField(pool.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)

@@ -43,6 +43,26 @@ func (pu *ProviderUpdate) Where(ps ...predicate.Provider) *ProviderUpdate {
 	return pu
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (pu *ProviderUpdate) SetUpdatedBy(s string) *ProviderUpdate {
+	pu.mutation.SetUpdatedBy(s)
+	return pu
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (pu *ProviderUpdate) SetNillableUpdatedBy(s *string) *ProviderUpdate {
+	if s != nil {
+		pu.SetUpdatedBy(*s)
+	}
+	return pu
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (pu *ProviderUpdate) ClearUpdatedBy() *ProviderUpdate {
+	pu.mutation.ClearUpdatedBy()
+	return pu
+}
+
 // SetName sets the "name" field.
 func (pu *ProviderUpdate) SetName(s string) *ProviderUpdate {
 	pu.mutation.SetName(s)
@@ -92,7 +112,9 @@ func (pu *ProviderUpdate) RemoveLoadBalancers(l ...*LoadBalancer) *ProviderUpdat
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *ProviderUpdate) Save(ctx context.Context) (int, error) {
-	pu.defaults()
+	if err := pu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -119,11 +141,15 @@ func (pu *ProviderUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pu *ProviderUpdate) defaults() {
+func (pu *ProviderUpdate) defaults() error {
 	if _, ok := pu.mutation.UpdatedAt(); !ok {
+		if provider.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized provider.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := provider.UpdateDefaultUpdatedAt()
 		pu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -150,6 +176,15 @@ func (pu *ProviderUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pu.mutation.CreatedByCleared() {
+		_spec.ClearField(provider.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := pu.mutation.UpdatedBy(); ok {
+		_spec.SetField(provider.FieldUpdatedBy, field.TypeString, value)
+	}
+	if pu.mutation.UpdatedByCleared() {
+		_spec.ClearField(provider.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(provider.FieldName, field.TypeString, value)
@@ -219,6 +254,26 @@ type ProviderUpdateOne struct {
 	mutation *ProviderMutation
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (puo *ProviderUpdateOne) SetUpdatedBy(s string) *ProviderUpdateOne {
+	puo.mutation.SetUpdatedBy(s)
+	return puo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (puo *ProviderUpdateOne) SetNillableUpdatedBy(s *string) *ProviderUpdateOne {
+	if s != nil {
+		puo.SetUpdatedBy(*s)
+	}
+	return puo
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (puo *ProviderUpdateOne) ClearUpdatedBy() *ProviderUpdateOne {
+	puo.mutation.ClearUpdatedBy()
+	return puo
+}
+
 // SetName sets the "name" field.
 func (puo *ProviderUpdateOne) SetName(s string) *ProviderUpdateOne {
 	puo.mutation.SetName(s)
@@ -281,7 +336,9 @@ func (puo *ProviderUpdateOne) Select(field string, fields ...string) *ProviderUp
 
 // Save executes the query and returns the updated Provider entity.
 func (puo *ProviderUpdateOne) Save(ctx context.Context) (*Provider, error) {
-	puo.defaults()
+	if err := puo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -308,11 +365,15 @@ func (puo *ProviderUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (puo *ProviderUpdateOne) defaults() {
+func (puo *ProviderUpdateOne) defaults() error {
 	if _, ok := puo.mutation.UpdatedAt(); !ok {
+		if provider.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized provider.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := provider.UpdateDefaultUpdatedAt()
 		puo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -356,6 +417,15 @@ func (puo *ProviderUpdateOne) sqlSave(ctx context.Context) (_node *Provider, err
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if puo.mutation.CreatedByCleared() {
+		_spec.ClearField(provider.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := puo.mutation.UpdatedBy(); ok {
+		_spec.SetField(provider.FieldUpdatedBy, field.TypeString, value)
+	}
+	if puo.mutation.UpdatedByCleared() {
+		_spec.ClearField(provider.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(provider.FieldName, field.TypeString, value)

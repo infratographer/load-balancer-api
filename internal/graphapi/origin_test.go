@@ -64,6 +64,7 @@ func TestQueryPoolOrigin(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, poolOriginResp)
+
 				return
 			}
 
@@ -213,6 +214,7 @@ func TestMutate_OriginCreate(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, createdOriginResp)
+
 				return
 			}
 
@@ -305,6 +307,7 @@ func TestMutate_OriginUpdate(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, updatedOriginResp)
+
 				return
 			}
 
@@ -368,6 +371,7 @@ func TestMutate_OriginDelete(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, deletedOriginResp)
+
 				return
 			}
 

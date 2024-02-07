@@ -88,6 +88,8 @@ type LoadBalancer struct {
 	ID        gidx.PrefixedID `json:"id"`
 	CreatedAt time.Time       `json:"createdAt"`
 	UpdatedAt time.Time       `json:"updatedAt"`
+	CreatedBy *string         `json:"createdBy,omitempty"`
+	UpdatedBy *string         `json:"updatedBy,omitempty"`
 	// The name of the load balancer.
 	Name  string                     `json:"name"`
 	Ports LoadBalancerPortConnection `json:"ports"`
@@ -152,6 +154,8 @@ type LoadBalancerOrigin struct {
 	ID         gidx.PrefixedID  `json:"id"`
 	CreatedAt  time.Time        `json:"createdAt"`
 	UpdatedAt  time.Time        `json:"updatedAt"`
+	CreatedBy  *string          `json:"createdBy,omitempty"`
+	UpdatedBy  *string          `json:"updatedBy,omitempty"`
 	Name       string           `json:"name"`
 	Weight     int64            `json:"weight"`
 	Target     string           `json:"target"`
@@ -245,6 +249,38 @@ type LoadBalancerOriginWhereInput struct {
 	UpdatedAtGte   *time.Time   `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLt    *time.Time   `json:"updatedAtLT,omitempty"`
 	UpdatedAtLte   *time.Time   `json:"updatedAtLTE,omitempty"`
+	// created_by field predicates
+	CreatedBy             *string  `json:"createdBy,omitempty"`
+	CreatedByNeq          *string  `json:"createdByNEQ,omitempty"`
+	CreatedByIn           []string `json:"createdByIn,omitempty"`
+	CreatedByNotIn        []string `json:"createdByNotIn,omitempty"`
+	CreatedByGt           *string  `json:"createdByGT,omitempty"`
+	CreatedByGte          *string  `json:"createdByGTE,omitempty"`
+	CreatedByLt           *string  `json:"createdByLT,omitempty"`
+	CreatedByLte          *string  `json:"createdByLTE,omitempty"`
+	CreatedByContains     *string  `json:"createdByContains,omitempty"`
+	CreatedByHasPrefix    *string  `json:"createdByHasPrefix,omitempty"`
+	CreatedByHasSuffix    *string  `json:"createdByHasSuffix,omitempty"`
+	CreatedByIsNil        *bool    `json:"createdByIsNil,omitempty"`
+	CreatedByNotNil       *bool    `json:"createdByNotNil,omitempty"`
+	CreatedByEqualFold    *string  `json:"createdByEqualFold,omitempty"`
+	CreatedByContainsFold *string  `json:"createdByContainsFold,omitempty"`
+	// updated_by field predicates
+	UpdatedBy             *string  `json:"updatedBy,omitempty"`
+	UpdatedByNeq          *string  `json:"updatedByNEQ,omitempty"`
+	UpdatedByIn           []string `json:"updatedByIn,omitempty"`
+	UpdatedByNotIn        []string `json:"updatedByNotIn,omitempty"`
+	UpdatedByGt           *string  `json:"updatedByGT,omitempty"`
+	UpdatedByGte          *string  `json:"updatedByGTE,omitempty"`
+	UpdatedByLt           *string  `json:"updatedByLT,omitempty"`
+	UpdatedByLte          *string  `json:"updatedByLTE,omitempty"`
+	UpdatedByContains     *string  `json:"updatedByContains,omitempty"`
+	UpdatedByHasPrefix    *string  `json:"updatedByHasPrefix,omitempty"`
+	UpdatedByHasSuffix    *string  `json:"updatedByHasSuffix,omitempty"`
+	UpdatedByIsNil        *bool    `json:"updatedByIsNil,omitempty"`
+	UpdatedByNotNil       *bool    `json:"updatedByNotNil,omitempty"`
+	UpdatedByEqualFold    *string  `json:"updatedByEqualFold,omitempty"`
+	UpdatedByContainsFold *string  `json:"updatedByContainsFold,omitempty"`
 	// name field predicates
 	Name             *string  `json:"name,omitempty"`
 	NameNeq          *string  `json:"nameNEQ,omitempty"`
@@ -303,6 +339,8 @@ type LoadBalancerPool struct {
 	ID        gidx.PrefixedID              `json:"id"`
 	CreatedAt time.Time                    `json:"createdAt"`
 	UpdatedAt time.Time                    `json:"updatedAt"`
+	CreatedBy *string                      `json:"createdBy,omitempty"`
+	UpdatedBy *string                      `json:"updatedBy,omitempty"`
 	Name      string                       `json:"name"`
 	Protocol  LoadBalancerPoolProtocol     `json:"protocol"`
 	OwnerID   gidx.PrefixedID              `json:"ownerID"`
@@ -396,6 +434,38 @@ type LoadBalancerPoolWhereInput struct {
 	UpdatedAtGte   *time.Time   `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLt    *time.Time   `json:"updatedAtLT,omitempty"`
 	UpdatedAtLte   *time.Time   `json:"updatedAtLTE,omitempty"`
+	// created_by field predicates
+	CreatedBy             *string  `json:"createdBy,omitempty"`
+	CreatedByNeq          *string  `json:"createdByNEQ,omitempty"`
+	CreatedByIn           []string `json:"createdByIn,omitempty"`
+	CreatedByNotIn        []string `json:"createdByNotIn,omitempty"`
+	CreatedByGt           *string  `json:"createdByGT,omitempty"`
+	CreatedByGte          *string  `json:"createdByGTE,omitempty"`
+	CreatedByLt           *string  `json:"createdByLT,omitempty"`
+	CreatedByLte          *string  `json:"createdByLTE,omitempty"`
+	CreatedByContains     *string  `json:"createdByContains,omitempty"`
+	CreatedByHasPrefix    *string  `json:"createdByHasPrefix,omitempty"`
+	CreatedByHasSuffix    *string  `json:"createdByHasSuffix,omitempty"`
+	CreatedByIsNil        *bool    `json:"createdByIsNil,omitempty"`
+	CreatedByNotNil       *bool    `json:"createdByNotNil,omitempty"`
+	CreatedByEqualFold    *string  `json:"createdByEqualFold,omitempty"`
+	CreatedByContainsFold *string  `json:"createdByContainsFold,omitempty"`
+	// updated_by field predicates
+	UpdatedBy             *string  `json:"updatedBy,omitempty"`
+	UpdatedByNeq          *string  `json:"updatedByNEQ,omitempty"`
+	UpdatedByIn           []string `json:"updatedByIn,omitempty"`
+	UpdatedByNotIn        []string `json:"updatedByNotIn,omitempty"`
+	UpdatedByGt           *string  `json:"updatedByGT,omitempty"`
+	UpdatedByGte          *string  `json:"updatedByGTE,omitempty"`
+	UpdatedByLt           *string  `json:"updatedByLT,omitempty"`
+	UpdatedByLte          *string  `json:"updatedByLTE,omitempty"`
+	UpdatedByContains     *string  `json:"updatedByContains,omitempty"`
+	UpdatedByHasPrefix    *string  `json:"updatedByHasPrefix,omitempty"`
+	UpdatedByHasSuffix    *string  `json:"updatedByHasSuffix,omitempty"`
+	UpdatedByIsNil        *bool    `json:"updatedByIsNil,omitempty"`
+	UpdatedByNotNil       *bool    `json:"updatedByNotNil,omitempty"`
+	UpdatedByEqualFold    *string  `json:"updatedByEqualFold,omitempty"`
+	UpdatedByContainsFold *string  `json:"updatedByContainsFold,omitempty"`
 	// name field predicates
 	Name             *string  `json:"name,omitempty"`
 	NameNeq          *string  `json:"nameNEQ,omitempty"`
@@ -427,6 +497,8 @@ type LoadBalancerPort struct {
 	ID             gidx.PrefixedID     `json:"id"`
 	CreatedAt      time.Time           `json:"createdAt"`
 	UpdatedAt      time.Time           `json:"updatedAt"`
+	CreatedBy      *string             `json:"createdBy,omitempty"`
+	UpdatedBy      *string             `json:"updatedBy,omitempty"`
 	Number         int64               `json:"number"`
 	Name           string              `json:"name"`
 	LoadBalancerID gidx.PrefixedID     `json:"loadBalancerID"`
@@ -518,6 +590,38 @@ type LoadBalancerPortWhereInput struct {
 	UpdatedAtGte   *time.Time   `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLt    *time.Time   `json:"updatedAtLT,omitempty"`
 	UpdatedAtLte   *time.Time   `json:"updatedAtLTE,omitempty"`
+	// created_by field predicates
+	CreatedBy             *string  `json:"createdBy,omitempty"`
+	CreatedByNeq          *string  `json:"createdByNEQ,omitempty"`
+	CreatedByIn           []string `json:"createdByIn,omitempty"`
+	CreatedByNotIn        []string `json:"createdByNotIn,omitempty"`
+	CreatedByGt           *string  `json:"createdByGT,omitempty"`
+	CreatedByGte          *string  `json:"createdByGTE,omitempty"`
+	CreatedByLt           *string  `json:"createdByLT,omitempty"`
+	CreatedByLte          *string  `json:"createdByLTE,omitempty"`
+	CreatedByContains     *string  `json:"createdByContains,omitempty"`
+	CreatedByHasPrefix    *string  `json:"createdByHasPrefix,omitempty"`
+	CreatedByHasSuffix    *string  `json:"createdByHasSuffix,omitempty"`
+	CreatedByIsNil        *bool    `json:"createdByIsNil,omitempty"`
+	CreatedByNotNil       *bool    `json:"createdByNotNil,omitempty"`
+	CreatedByEqualFold    *string  `json:"createdByEqualFold,omitempty"`
+	CreatedByContainsFold *string  `json:"createdByContainsFold,omitempty"`
+	// updated_by field predicates
+	UpdatedBy             *string  `json:"updatedBy,omitempty"`
+	UpdatedByNeq          *string  `json:"updatedByNEQ,omitempty"`
+	UpdatedByIn           []string `json:"updatedByIn,omitempty"`
+	UpdatedByNotIn        []string `json:"updatedByNotIn,omitempty"`
+	UpdatedByGt           *string  `json:"updatedByGT,omitempty"`
+	UpdatedByGte          *string  `json:"updatedByGTE,omitempty"`
+	UpdatedByLt           *string  `json:"updatedByLT,omitempty"`
+	UpdatedByLte          *string  `json:"updatedByLTE,omitempty"`
+	UpdatedByContains     *string  `json:"updatedByContains,omitempty"`
+	UpdatedByHasPrefix    *string  `json:"updatedByHasPrefix,omitempty"`
+	UpdatedByHasSuffix    *string  `json:"updatedByHasSuffix,omitempty"`
+	UpdatedByIsNil        *bool    `json:"updatedByIsNil,omitempty"`
+	UpdatedByNotNil       *bool    `json:"updatedByNotNil,omitempty"`
+	UpdatedByEqualFold    *string  `json:"updatedByEqualFold,omitempty"`
+	UpdatedByContainsFold *string  `json:"updatedByContainsFold,omitempty"`
 	// number field predicates
 	Number      *int64  `json:"number,omitempty"`
 	NumberNeq   *int64  `json:"numberNEQ,omitempty"`
@@ -554,6 +658,8 @@ type LoadBalancerProvider struct {
 	ID        gidx.PrefixedID `json:"id"`
 	CreatedAt time.Time       `json:"createdAt"`
 	UpdatedAt time.Time       `json:"updatedAt"`
+	CreatedBy *string         `json:"createdBy,omitempty"`
+	UpdatedBy *string         `json:"updatedBy,omitempty"`
 	// The name of the load balancer provider.
 	Name          string                 `json:"name"`
 	LoadBalancers LoadBalancerConnection `json:"loadBalancers"`
@@ -645,6 +751,38 @@ type LoadBalancerProviderWhereInput struct {
 	UpdatedAtGte   *time.Time   `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLt    *time.Time   `json:"updatedAtLT,omitempty"`
 	UpdatedAtLte   *time.Time   `json:"updatedAtLTE,omitempty"`
+	// created_by field predicates
+	CreatedBy             *string  `json:"createdBy,omitempty"`
+	CreatedByNeq          *string  `json:"createdByNEQ,omitempty"`
+	CreatedByIn           []string `json:"createdByIn,omitempty"`
+	CreatedByNotIn        []string `json:"createdByNotIn,omitempty"`
+	CreatedByGt           *string  `json:"createdByGT,omitempty"`
+	CreatedByGte          *string  `json:"createdByGTE,omitempty"`
+	CreatedByLt           *string  `json:"createdByLT,omitempty"`
+	CreatedByLte          *string  `json:"createdByLTE,omitempty"`
+	CreatedByContains     *string  `json:"createdByContains,omitempty"`
+	CreatedByHasPrefix    *string  `json:"createdByHasPrefix,omitempty"`
+	CreatedByHasSuffix    *string  `json:"createdByHasSuffix,omitempty"`
+	CreatedByIsNil        *bool    `json:"createdByIsNil,omitempty"`
+	CreatedByNotNil       *bool    `json:"createdByNotNil,omitempty"`
+	CreatedByEqualFold    *string  `json:"createdByEqualFold,omitempty"`
+	CreatedByContainsFold *string  `json:"createdByContainsFold,omitempty"`
+	// updated_by field predicates
+	UpdatedBy             *string  `json:"updatedBy,omitempty"`
+	UpdatedByNeq          *string  `json:"updatedByNEQ,omitempty"`
+	UpdatedByIn           []string `json:"updatedByIn,omitempty"`
+	UpdatedByNotIn        []string `json:"updatedByNotIn,omitempty"`
+	UpdatedByGt           *string  `json:"updatedByGT,omitempty"`
+	UpdatedByGte          *string  `json:"updatedByGTE,omitempty"`
+	UpdatedByLt           *string  `json:"updatedByLT,omitempty"`
+	UpdatedByLte          *string  `json:"updatedByLTE,omitempty"`
+	UpdatedByContains     *string  `json:"updatedByContains,omitempty"`
+	UpdatedByHasPrefix    *string  `json:"updatedByHasPrefix,omitempty"`
+	UpdatedByHasSuffix    *string  `json:"updatedByHasSuffix,omitempty"`
+	UpdatedByIsNil        *bool    `json:"updatedByIsNil,omitempty"`
+	UpdatedByNotNil       *bool    `json:"updatedByNotNil,omitempty"`
+	UpdatedByEqualFold    *string  `json:"updatedByEqualFold,omitempty"`
+	UpdatedByContainsFold *string  `json:"updatedByContainsFold,omitempty"`
 	// name field predicates
 	Name             *string  `json:"name,omitempty"`
 	NameNeq          *string  `json:"nameNEQ,omitempty"`
@@ -703,6 +841,38 @@ type LoadBalancerWhereInput struct {
 	UpdatedAtGte   *time.Time   `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLt    *time.Time   `json:"updatedAtLT,omitempty"`
 	UpdatedAtLte   *time.Time   `json:"updatedAtLTE,omitempty"`
+	// created_by field predicates
+	CreatedBy             *string  `json:"createdBy,omitempty"`
+	CreatedByNeq          *string  `json:"createdByNEQ,omitempty"`
+	CreatedByIn           []string `json:"createdByIn,omitempty"`
+	CreatedByNotIn        []string `json:"createdByNotIn,omitempty"`
+	CreatedByGt           *string  `json:"createdByGT,omitempty"`
+	CreatedByGte          *string  `json:"createdByGTE,omitempty"`
+	CreatedByLt           *string  `json:"createdByLT,omitempty"`
+	CreatedByLte          *string  `json:"createdByLTE,omitempty"`
+	CreatedByContains     *string  `json:"createdByContains,omitempty"`
+	CreatedByHasPrefix    *string  `json:"createdByHasPrefix,omitempty"`
+	CreatedByHasSuffix    *string  `json:"createdByHasSuffix,omitempty"`
+	CreatedByIsNil        *bool    `json:"createdByIsNil,omitempty"`
+	CreatedByNotNil       *bool    `json:"createdByNotNil,omitempty"`
+	CreatedByEqualFold    *string  `json:"createdByEqualFold,omitempty"`
+	CreatedByContainsFold *string  `json:"createdByContainsFold,omitempty"`
+	// updated_by field predicates
+	UpdatedBy             *string  `json:"updatedBy,omitempty"`
+	UpdatedByNeq          *string  `json:"updatedByNEQ,omitempty"`
+	UpdatedByIn           []string `json:"updatedByIn,omitempty"`
+	UpdatedByNotIn        []string `json:"updatedByNotIn,omitempty"`
+	UpdatedByGt           *string  `json:"updatedByGT,omitempty"`
+	UpdatedByGte          *string  `json:"updatedByGTE,omitempty"`
+	UpdatedByLt           *string  `json:"updatedByLT,omitempty"`
+	UpdatedByLte          *string  `json:"updatedByLTE,omitempty"`
+	UpdatedByContains     *string  `json:"updatedByContains,omitempty"`
+	UpdatedByHasPrefix    *string  `json:"updatedByHasPrefix,omitempty"`
+	UpdatedByHasSuffix    *string  `json:"updatedByHasSuffix,omitempty"`
+	UpdatedByIsNil        *bool    `json:"updatedByIsNil,omitempty"`
+	UpdatedByNotNil       *bool    `json:"updatedByNotNil,omitempty"`
+	UpdatedByEqualFold    *string  `json:"updatedByEqualFold,omitempty"`
+	UpdatedByContainsFold *string  `json:"updatedByContainsFold,omitempty"`
 	// name field predicates
 	Name             *string  `json:"name,omitempty"`
 	NameNeq          *string  `json:"nameNEQ,omitempty"`
@@ -813,6 +983,8 @@ const (
 	LoadBalancerOrderFieldID        LoadBalancerOrderField = "ID"
 	LoadBalancerOrderFieldCreatedAt LoadBalancerOrderField = "CREATED_AT"
 	LoadBalancerOrderFieldUpdatedAt LoadBalancerOrderField = "UPDATED_AT"
+	LoadBalancerOrderFieldCreatedBy LoadBalancerOrderField = "CREATED_BY"
+	LoadBalancerOrderFieldUpdatedBy LoadBalancerOrderField = "UPDATED_BY"
 	LoadBalancerOrderFieldName      LoadBalancerOrderField = "NAME"
 	LoadBalancerOrderFieldOwner     LoadBalancerOrderField = "OWNER"
 )
@@ -821,13 +993,15 @@ var AllLoadBalancerOrderField = []LoadBalancerOrderField{
 	LoadBalancerOrderFieldID,
 	LoadBalancerOrderFieldCreatedAt,
 	LoadBalancerOrderFieldUpdatedAt,
+	LoadBalancerOrderFieldCreatedBy,
+	LoadBalancerOrderFieldUpdatedBy,
 	LoadBalancerOrderFieldName,
 	LoadBalancerOrderFieldOwner,
 }
 
 func (e LoadBalancerOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerOrderFieldID, LoadBalancerOrderFieldCreatedAt, LoadBalancerOrderFieldUpdatedAt, LoadBalancerOrderFieldName, LoadBalancerOrderFieldOwner:
+	case LoadBalancerOrderFieldID, LoadBalancerOrderFieldCreatedAt, LoadBalancerOrderFieldUpdatedAt, LoadBalancerOrderFieldCreatedBy, LoadBalancerOrderFieldUpdatedBy, LoadBalancerOrderFieldName, LoadBalancerOrderFieldOwner:
 		return true
 	}
 	return false
@@ -860,6 +1034,8 @@ type LoadBalancerOriginOrderField string
 const (
 	LoadBalancerOriginOrderFieldCreatedAt LoadBalancerOriginOrderField = "CREATED_AT"
 	LoadBalancerOriginOrderFieldUpdatedAt LoadBalancerOriginOrderField = "UPDATED_AT"
+	LoadBalancerOriginOrderFieldCreatedBy LoadBalancerOriginOrderField = "CREATED_BY"
+	LoadBalancerOriginOrderFieldUpdatedBy LoadBalancerOriginOrderField = "UPDATED_BY"
 	LoadBalancerOriginOrderFieldName      LoadBalancerOriginOrderField = "name"
 	LoadBalancerOriginOrderFieldWeight    LoadBalancerOriginOrderField = "weight"
 	LoadBalancerOriginOrderFieldTarget    LoadBalancerOriginOrderField = "target"
@@ -870,6 +1046,8 @@ const (
 var AllLoadBalancerOriginOrderField = []LoadBalancerOriginOrderField{
 	LoadBalancerOriginOrderFieldCreatedAt,
 	LoadBalancerOriginOrderFieldUpdatedAt,
+	LoadBalancerOriginOrderFieldCreatedBy,
+	LoadBalancerOriginOrderFieldUpdatedBy,
 	LoadBalancerOriginOrderFieldName,
 	LoadBalancerOriginOrderFieldWeight,
 	LoadBalancerOriginOrderFieldTarget,
@@ -879,7 +1057,7 @@ var AllLoadBalancerOriginOrderField = []LoadBalancerOriginOrderField{
 
 func (e LoadBalancerOriginOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerOriginOrderFieldCreatedAt, LoadBalancerOriginOrderFieldUpdatedAt, LoadBalancerOriginOrderFieldName, LoadBalancerOriginOrderFieldWeight, LoadBalancerOriginOrderFieldTarget, LoadBalancerOriginOrderFieldNumber, LoadBalancerOriginOrderFieldActive:
+	case LoadBalancerOriginOrderFieldCreatedAt, LoadBalancerOriginOrderFieldUpdatedAt, LoadBalancerOriginOrderFieldCreatedBy, LoadBalancerOriginOrderFieldUpdatedBy, LoadBalancerOriginOrderFieldName, LoadBalancerOriginOrderFieldWeight, LoadBalancerOriginOrderFieldTarget, LoadBalancerOriginOrderFieldNumber, LoadBalancerOriginOrderFieldActive:
 		return true
 	}
 	return false
@@ -912,6 +1090,8 @@ type LoadBalancerPoolOrderField string
 const (
 	LoadBalancerPoolOrderFieldCreatedAt LoadBalancerPoolOrderField = "CREATED_AT"
 	LoadBalancerPoolOrderFieldUpdatedAt LoadBalancerPoolOrderField = "UPDATED_AT"
+	LoadBalancerPoolOrderFieldCreatedBy LoadBalancerPoolOrderField = "CREATED_BY"
+	LoadBalancerPoolOrderFieldUpdatedBy LoadBalancerPoolOrderField = "UPDATED_BY"
 	LoadBalancerPoolOrderFieldName      LoadBalancerPoolOrderField = "name"
 	LoadBalancerPoolOrderFieldProtocol  LoadBalancerPoolOrderField = "protocol"
 )
@@ -919,13 +1099,15 @@ const (
 var AllLoadBalancerPoolOrderField = []LoadBalancerPoolOrderField{
 	LoadBalancerPoolOrderFieldCreatedAt,
 	LoadBalancerPoolOrderFieldUpdatedAt,
+	LoadBalancerPoolOrderFieldCreatedBy,
+	LoadBalancerPoolOrderFieldUpdatedBy,
 	LoadBalancerPoolOrderFieldName,
 	LoadBalancerPoolOrderFieldProtocol,
 }
 
 func (e LoadBalancerPoolOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerPoolOrderFieldCreatedAt, LoadBalancerPoolOrderFieldUpdatedAt, LoadBalancerPoolOrderFieldName, LoadBalancerPoolOrderFieldProtocol:
+	case LoadBalancerPoolOrderFieldCreatedAt, LoadBalancerPoolOrderFieldUpdatedAt, LoadBalancerPoolOrderFieldCreatedBy, LoadBalancerPoolOrderFieldUpdatedBy, LoadBalancerPoolOrderFieldName, LoadBalancerPoolOrderFieldProtocol:
 		return true
 	}
 	return false
@@ -1000,6 +1182,8 @@ type LoadBalancerPortOrderField string
 const (
 	LoadBalancerPortOrderFieldCreatedAt LoadBalancerPortOrderField = "CREATED_AT"
 	LoadBalancerPortOrderFieldUpdatedAt LoadBalancerPortOrderField = "UPDATED_AT"
+	LoadBalancerPortOrderFieldCreatedBy LoadBalancerPortOrderField = "CREATED_BY"
+	LoadBalancerPortOrderFieldUpdatedBy LoadBalancerPortOrderField = "UPDATED_BY"
 	LoadBalancerPortOrderFieldNumber    LoadBalancerPortOrderField = "number"
 	LoadBalancerPortOrderFieldName      LoadBalancerPortOrderField = "name"
 )
@@ -1007,13 +1191,15 @@ const (
 var AllLoadBalancerPortOrderField = []LoadBalancerPortOrderField{
 	LoadBalancerPortOrderFieldCreatedAt,
 	LoadBalancerPortOrderFieldUpdatedAt,
+	LoadBalancerPortOrderFieldCreatedBy,
+	LoadBalancerPortOrderFieldUpdatedBy,
 	LoadBalancerPortOrderFieldNumber,
 	LoadBalancerPortOrderFieldName,
 }
 
 func (e LoadBalancerPortOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerPortOrderFieldCreatedAt, LoadBalancerPortOrderFieldUpdatedAt, LoadBalancerPortOrderFieldNumber, LoadBalancerPortOrderFieldName:
+	case LoadBalancerPortOrderFieldCreatedAt, LoadBalancerPortOrderFieldUpdatedAt, LoadBalancerPortOrderFieldCreatedBy, LoadBalancerPortOrderFieldUpdatedBy, LoadBalancerPortOrderFieldNumber, LoadBalancerPortOrderFieldName:
 		return true
 	}
 	return false
@@ -1047,6 +1233,8 @@ const (
 	LoadBalancerProviderOrderFieldID        LoadBalancerProviderOrderField = "ID"
 	LoadBalancerProviderOrderFieldCreatedAt LoadBalancerProviderOrderField = "CREATED_AT"
 	LoadBalancerProviderOrderFieldUpdatedAt LoadBalancerProviderOrderField = "UPDATED_AT"
+	LoadBalancerProviderOrderFieldCreatedBy LoadBalancerProviderOrderField = "CREATED_BY"
+	LoadBalancerProviderOrderFieldUpdatedBy LoadBalancerProviderOrderField = "UPDATED_BY"
 	LoadBalancerProviderOrderFieldName      LoadBalancerProviderOrderField = "NAME"
 	LoadBalancerProviderOrderFieldOwner     LoadBalancerProviderOrderField = "OWNER"
 )
@@ -1055,13 +1243,15 @@ var AllLoadBalancerProviderOrderField = []LoadBalancerProviderOrderField{
 	LoadBalancerProviderOrderFieldID,
 	LoadBalancerProviderOrderFieldCreatedAt,
 	LoadBalancerProviderOrderFieldUpdatedAt,
+	LoadBalancerProviderOrderFieldCreatedBy,
+	LoadBalancerProviderOrderFieldUpdatedBy,
 	LoadBalancerProviderOrderFieldName,
 	LoadBalancerProviderOrderFieldOwner,
 }
 
 func (e LoadBalancerProviderOrderField) IsValid() bool {
 	switch e {
-	case LoadBalancerProviderOrderFieldID, LoadBalancerProviderOrderFieldCreatedAt, LoadBalancerProviderOrderFieldUpdatedAt, LoadBalancerProviderOrderFieldName, LoadBalancerProviderOrderFieldOwner:
+	case LoadBalancerProviderOrderFieldID, LoadBalancerProviderOrderFieldCreatedAt, LoadBalancerProviderOrderFieldUpdatedAt, LoadBalancerProviderOrderFieldCreatedBy, LoadBalancerProviderOrderFieldUpdatedBy, LoadBalancerProviderOrderFieldName, LoadBalancerProviderOrderFieldOwner:
 		return true
 	}
 	return false

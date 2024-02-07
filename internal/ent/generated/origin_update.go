@@ -41,6 +41,26 @@ func (ou *OriginUpdate) Where(ps ...predicate.Origin) *OriginUpdate {
 	return ou
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (ou *OriginUpdate) SetUpdatedBy(s string) *OriginUpdate {
+	ou.mutation.SetUpdatedBy(s)
+	return ou
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableUpdatedBy(s *string) *OriginUpdate {
+	if s != nil {
+		ou.SetUpdatedBy(*s)
+	}
+	return ou
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (ou *OriginUpdate) ClearUpdatedBy() *OriginUpdate {
+	ou.mutation.ClearUpdatedBy()
+	return ou
+}
+
 // SetName sets the "name" field.
 func (ou *OriginUpdate) SetName(s string) *OriginUpdate {
 	ou.mutation.SetName(s)
@@ -108,7 +128,9 @@ func (ou *OriginUpdate) Mutation() *OriginMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ou *OriginUpdate) Save(ctx context.Context) (int, error) {
-	ou.defaults()
+	if err := ou.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
 }
 
@@ -135,11 +157,15 @@ func (ou *OriginUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ou *OriginUpdate) defaults() {
+func (ou *OriginUpdate) defaults() error {
 	if _, ok := ou.mutation.UpdatedAt(); !ok {
+		if origin.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized origin.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := origin.UpdateDefaultUpdatedAt()
 		ou.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -180,6 +206,15 @@ func (ou *OriginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if ou.mutation.CreatedByCleared() {
+		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := ou.mutation.UpdatedBy(); ok {
+		_spec.SetField(origin.FieldUpdatedBy, field.TypeString, value)
+	}
+	if ou.mutation.UpdatedByCleared() {
+		_spec.ClearField(origin.FieldUpdatedBy, field.TypeString)
+	}
 	if value, ok := ou.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)
 	}
@@ -219,6 +254,26 @@ type OriginUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *OriginMutation
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (ouo *OriginUpdateOne) SetUpdatedBy(s string) *OriginUpdateOne {
+	ouo.mutation.SetUpdatedBy(s)
+	return ouo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableUpdatedBy(s *string) *OriginUpdateOne {
+	if s != nil {
+		ouo.SetUpdatedBy(*s)
+	}
+	return ouo
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (ouo *OriginUpdateOne) ClearUpdatedBy() *OriginUpdateOne {
+	ouo.mutation.ClearUpdatedBy()
+	return ouo
 }
 
 // SetName sets the "name" field.
@@ -301,7 +356,9 @@ func (ouo *OriginUpdateOne) Select(field string, fields ...string) *OriginUpdate
 
 // Save executes the query and returns the updated Origin entity.
 func (ouo *OriginUpdateOne) Save(ctx context.Context) (*Origin, error) {
-	ouo.defaults()
+	if err := ouo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
 }
 
@@ -328,11 +385,15 @@ func (ouo *OriginUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ouo *OriginUpdateOne) defaults() {
+func (ouo *OriginUpdateOne) defaults() error {
 	if _, ok := ouo.mutation.UpdatedAt(); !ok {
+		if origin.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized origin.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := origin.UpdateDefaultUpdatedAt()
 		ouo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -389,6 +450,15 @@ func (ouo *OriginUpdateOne) sqlSave(ctx context.Context) (_node *Origin, err err
 	}
 	if value, ok := ouo.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if ouo.mutation.CreatedByCleared() {
+		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := ouo.mutation.UpdatedBy(); ok {
+		_spec.SetField(origin.FieldUpdatedBy, field.TypeString, value)
+	}
+	if ouo.mutation.UpdatedByCleared() {
+		_spec.ClearField(origin.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := ouo.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)

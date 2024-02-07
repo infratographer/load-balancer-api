@@ -63,6 +63,8 @@ type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "i
   id: ID!
   createdAt: Time!
   updatedAt: Time!
+  createdBy: String
+  updatedBy: String
   """The name of the load balancer."""
   name: String!
   ports(
@@ -115,6 +117,8 @@ enum LoadBalancerOrderField {
   ID
   CREATED_AT
   UPDATED_AT
+  CREATED_BY
+  UPDATED_BY
   NAME
   OWNER
 }
@@ -122,6 +126,8 @@ type LoadBalancerOrigin implements Node @key(fields: "id") @prefixedID(prefix: "
   id: ID!
   createdAt: Time!
   updatedAt: Time!
+  createdBy: String
+  updatedBy: String
   name: String!
   weight: Int!
   target: String!
@@ -157,6 +163,8 @@ input LoadBalancerOriginOrder {
 enum LoadBalancerOriginOrderField {
   CREATED_AT
   UPDATED_AT
+  CREATED_BY
+  UPDATED_BY
   name
   weight
   target
@@ -198,6 +206,38 @@ input LoadBalancerOriginWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
+  """created_by field predicates"""
+  createdBy: String
+  createdByNEQ: String
+  createdByIn: [String!]
+  createdByNotIn: [String!]
+  createdByGT: String
+  createdByGTE: String
+  createdByLT: String
+  createdByLTE: String
+  createdByContains: String
+  createdByHasPrefix: String
+  createdByHasSuffix: String
+  createdByIsNil: Boolean
+  createdByNotNil: Boolean
+  createdByEqualFold: String
+  createdByContainsFold: String
+  """updated_by field predicates"""
+  updatedBy: String
+  updatedByNEQ: String
+  updatedByIn: [String!]
+  updatedByNotIn: [String!]
+  updatedByGT: String
+  updatedByGTE: String
+  updatedByLT: String
+  updatedByLTE: String
+  updatedByContains: String
+  updatedByHasPrefix: String
+  updatedByHasSuffix: String
+  updatedByIsNil: Boolean
+  updatedByNotNil: Boolean
+  updatedByEqualFold: String
+  updatedByContainsFold: String
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -255,6 +295,8 @@ type LoadBalancerPool implements Node @key(fields: "id") @prefixedID(prefix: "lo
   id: ID!
   createdAt: Time!
   updatedAt: Time!
+  createdBy: String
+  updatedBy: String
   name: String!
   protocol: LoadBalancerPoolProtocol!
   ownerID: ID!
@@ -306,6 +348,8 @@ input LoadBalancerPoolOrder {
 enum LoadBalancerPoolOrderField {
   CREATED_AT
   UPDATED_AT
+  CREATED_BY
+  UPDATED_BY
   name
   protocol
 }
@@ -349,6 +393,38 @@ input LoadBalancerPoolWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
+  """created_by field predicates"""
+  createdBy: String
+  createdByNEQ: String
+  createdByIn: [String!]
+  createdByNotIn: [String!]
+  createdByGT: String
+  createdByGTE: String
+  createdByLT: String
+  createdByLTE: String
+  createdByContains: String
+  createdByHasPrefix: String
+  createdByHasSuffix: String
+  createdByIsNil: Boolean
+  createdByNotNil: Boolean
+  createdByEqualFold: String
+  createdByContainsFold: String
+  """updated_by field predicates"""
+  updatedBy: String
+  updatedByNEQ: String
+  updatedByIn: [String!]
+  updatedByNotIn: [String!]
+  updatedByGT: String
+  updatedByGTE: String
+  updatedByLT: String
+  updatedByLTE: String
+  updatedByContains: String
+  updatedByHasPrefix: String
+  updatedByHasSuffix: String
+  updatedByIsNil: Boolean
+  updatedByNotNil: Boolean
+  updatedByEqualFold: String
+  updatedByContainsFold: String
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -379,6 +455,8 @@ type LoadBalancerPort implements Node @key(fields: "id") @prefixedID(prefix: "lo
   id: ID!
   createdAt: Time!
   updatedAt: Time!
+  createdBy: String
+  updatedBy: String
   number: Int!
   name: String!
   loadBalancerID: ID!
@@ -412,6 +490,8 @@ input LoadBalancerPortOrder {
 enum LoadBalancerPortOrderField {
   CREATED_AT
   UPDATED_AT
+  CREATED_BY
+  UPDATED_BY
   number
   name
 }
@@ -450,6 +530,38 @@ input LoadBalancerPortWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
+  """created_by field predicates"""
+  createdBy: String
+  createdByNEQ: String
+  createdByIn: [String!]
+  createdByNotIn: [String!]
+  createdByGT: String
+  createdByGTE: String
+  createdByLT: String
+  createdByLTE: String
+  createdByContains: String
+  createdByHasPrefix: String
+  createdByHasSuffix: String
+  createdByIsNil: Boolean
+  createdByNotNil: Boolean
+  createdByEqualFold: String
+  createdByContainsFold: String
+  """updated_by field predicates"""
+  updatedBy: String
+  updatedByNEQ: String
+  updatedByIn: [String!]
+  updatedByNotIn: [String!]
+  updatedByGT: String
+  updatedByGTE: String
+  updatedByLT: String
+  updatedByLTE: String
+  updatedByContains: String
+  updatedByHasPrefix: String
+  updatedByHasSuffix: String
+  updatedByIsNil: Boolean
+  updatedByNotNil: Boolean
+  updatedByEqualFold: String
+  updatedByContainsFold: String
   """number field predicates"""
   number: Int
   numberNEQ: Int
@@ -485,6 +597,8 @@ type LoadBalancerProvider implements Node @key(fields: "id") @prefixedID(prefix:
   id: ID!
   createdAt: Time!
   updatedAt: Time!
+  createdBy: String
+  updatedBy: String
   """The name of the load balancer provider."""
   name: String!
   loadBalancers(
@@ -535,6 +649,8 @@ enum LoadBalancerProviderOrderField {
   ID
   CREATED_AT
   UPDATED_AT
+  CREATED_BY
+  UPDATED_BY
   NAME
   OWNER
 }
@@ -573,6 +689,38 @@ input LoadBalancerProviderWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
+  """created_by field predicates"""
+  createdBy: String
+  createdByNEQ: String
+  createdByIn: [String!]
+  createdByNotIn: [String!]
+  createdByGT: String
+  createdByGTE: String
+  createdByLT: String
+  createdByLTE: String
+  createdByContains: String
+  createdByHasPrefix: String
+  createdByHasSuffix: String
+  createdByIsNil: Boolean
+  createdByNotNil: Boolean
+  createdByEqualFold: String
+  createdByContainsFold: String
+  """updated_by field predicates"""
+  updatedBy: String
+  updatedByNEQ: String
+  updatedByIn: [String!]
+  updatedByNotIn: [String!]
+  updatedByGT: String
+  updatedByGTE: String
+  updatedByLT: String
+  updatedByLTE: String
+  updatedByContains: String
+  updatedByHasPrefix: String
+  updatedByHasSuffix: String
+  updatedByIsNil: Boolean
+  updatedByNotNil: Boolean
+  updatedByEqualFold: String
+  updatedByContainsFold: String
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -626,6 +774,38 @@ input LoadBalancerWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
+  """created_by field predicates"""
+  createdBy: String
+  createdByNEQ: String
+  createdByIn: [String!]
+  createdByNotIn: [String!]
+  createdByGT: String
+  createdByGTE: String
+  createdByLT: String
+  createdByLTE: String
+  createdByContains: String
+  createdByHasPrefix: String
+  createdByHasSuffix: String
+  createdByIsNil: Boolean
+  createdByNotNil: Boolean
+  createdByEqualFold: String
+  createdByContainsFold: String
+  """updated_by field predicates"""
+  updatedBy: String
+  updatedByNEQ: String
+  updatedByIn: [String!]
+  updatedByNotIn: [String!]
+  updatedByGT: String
+  updatedByGTE: String
+  updatedByLT: String
+  updatedByLTE: String
+  updatedByContains: String
+  updatedByHasPrefix: String
+  updatedByHasSuffix: String
+  updatedByIsNil: Boolean
+  updatedByNotNil: Boolean
+  updatedByEqualFold: String
+  updatedByContainsFold: String
   """name field predicates"""
   name: String
   nameNEQ: String
