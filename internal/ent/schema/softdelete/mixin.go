@@ -15,6 +15,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/intercept"
+
 	"go.infratographer.com/x/echojwtx"
 )
 
