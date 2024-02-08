@@ -1,7 +1,7 @@
-h1:B5D1P3uzbaqfW2iV++ujfqAO9YVdj7IOXFtH0Ll0jJ4=
+h1:0KtiTooJCnoUsSF1CYnlRKEVEQFmH2Fj55S/41WmJr8=
 20230503185445_initial-migration.sql h1:4pqNp2MDBBRdGxU/H5mmZui9oi1SyjIiMVGatajrBeY=
 20230615194819_drop_tenant_add_owner.sql h1:KGCsItU0NYhxYEkhZOaMQjfIrBMnek5rxC6D/LhnyCk=
 20230629085916_drop_status_and_annotations.sql h1:kvDMoaMEjyoj/aRi6rw4XvCLxGH09vGGLbL0/p5tpPo=
 20231017005257_add_origin_weight.sql h1:NuorUbcydDqcyPK8wgwlkQxaH+zGWfVtJW9UPL1Vn+E=
 20240207205734_audit-fields.sql h1:cplFCBB7laCP5Y+UAoxIfITMo56Hoc5XIVvgcfGL9o0=
-20240207222332_softdelete.sql h1:Wu0z4ZDIlcf6hZmapOIpxVsLUXZlR4qJalryKZihwC0=
+20240208121103_softdelete.sql h1:rt3nHn/1KzxSAbJZ33fQJZi5emLk7Q2PCRcfxWUeveY=
