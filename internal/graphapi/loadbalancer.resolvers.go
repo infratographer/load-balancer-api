@@ -209,14 +209,8 @@ func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*
 	return lb, nil
 }
 
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+// LoadBalancerHistory is the resolver for the loadBalancerHistory field.
 func (r *queryResolver) LoadBalancerHistory(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
-
 	ctx = softdelete.SkipSoftDelete(ctx)
 
 	logger := r.logger.With("loadbalancerID", id.String())

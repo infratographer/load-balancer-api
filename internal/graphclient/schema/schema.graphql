@@ -1191,6 +1191,11 @@ type Query {
 		"""The load balancer ID."""
 		id: ID!
 	): LoadBalancer!
+	"""Lookup a load balancer by ID."""
+	loadBalancerHistory(
+		"""The load balancer ID."""
+		id: ID!
+	): LoadBalancer!
 	"""Lookup a pool by ID."""
 	loadBalancerPool(
 		"""The pool ID."""
