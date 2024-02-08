@@ -266,7 +266,7 @@ func LoadBalancerHooks() []ent.Hook {
 				}
 
 				msg := events.ChangeMessage{
-					EventType:            eventType(m.Op()),
+					EventType:            string(events.DeleteChangeType),
 					SubjectID:            objID,
 					AdditionalSubjectIDs: additionalSubjects,
 					Timestamp:            time.Now().UTC(),
@@ -283,6 +283,7 @@ func LoadBalancerHooks() []ent.Hook {
 	)
 	// }
 
+	// only trigger create/update hook when the deleted_at field is not set
 	cuhook = hook.If(
 		cuhook,
 		hook.Not(
@@ -295,6 +296,9 @@ func LoadBalancerHooks() []ent.Hook {
 			),
 		),
 	)
+
+	// TODO: should we not trigger an event when something is permanently deleted?
+	//       should this be a different type of message?
 
 	return []ent.Hook{cuhook, dhook}
 }
