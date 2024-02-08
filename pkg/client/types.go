@@ -69,9 +69,25 @@ type LoadBalancer struct {
 	Ports       Ports        `graphql:"ports" json:"ports"`
 }
 
+// LoadBalancerHistory is a struct that represents the LoadBalancer GraphQL type
+type LoadBalancerHistory struct {
+	ID          string       `graphql:"id" json:"id"`
+	Name        string       `graphql:"name" json:"name"`
+	Owner       OwnerNode    `graphql:"owner" json:"owner"`
+	Location    LocationNode `graphql:"location" json:"location"`
+	IPAddresses []IPAddress  `graphql:"IPAddresses" json:"IPAddresses"`
+	Metadata    Metadata     `graphql:"metadata" json:"metadata"`
+	Ports       Ports        `graphql:"ports" json:"ports"`
+}
+
 // GetLoadBalancer is a struct that represents the GetLoadBalancer GraphQL query
 type GetLoadBalancer struct {
 	LoadBalancer LoadBalancer `graphql:"loadBalancer(id: $id)"`
+}
+
+// GetLoadBalancerHistory is a struct that represents the GetLoadBalancer GraphQL query
+type GetLoadBalancerHistory struct {
+	LoadBalancerHistory LoadBalancerHistory `graphql:"loadBalancerHistory(id: $id)"`
 }
 
 // IPAddress is a struct that represents the IPAddress GraphQL type

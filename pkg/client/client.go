@@ -64,6 +64,25 @@ func (c Client) GetLoadBalancer(ctx context.Context, id string) (*LoadBalancer, 
 	return &q.LoadBalancer, nil
 }
 
+// GetLoadBalancerHistory returns a load balancer by id
+func (c Client) GetLoadBalancerHistory(ctx context.Context, id string) (*LoadBalancerHistory, error) {
+	_, err := gidx.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	vars := map[string]interface{}{
+		"id": graphql.ID(id),
+	}
+
+	var q GetLoadBalancerHistory
+	if err := c.gqlCli.Query(ctx, &q, vars); err != nil {
+		return nil, translateGQLErr(err)
+	}
+
+	return &q.LoadBalancerHistory, nil
+}
+
 // NodeMetadata return the metadata-api subgraph node for a load balancer.
 // Once a load balancer is deleted, it is gone. There are no soft-deletes.
 // However, it's metadata remains to query via the node-resolver metadata-api subgraph.
