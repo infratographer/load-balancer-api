@@ -80,6 +80,16 @@ func UpdatedAt(v time.Time) predicate.Origin {
 	return predicate.Origin(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// DeletedAt applies equality check predicate on the "deleted_at" field. It's identical to DeletedAtEQ.
+func DeletedAt(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldEQ(FieldDeletedAt, v))
+}
+
+// DeletedBy applies equality check predicate on the "deleted_by" field. It's identical to DeletedByEQ.
+func DeletedBy(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldEQ(FieldDeletedBy, v))
+}
+
 // CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
 func CreatedBy(v string) predicate.Origin {
 	return predicate.Origin(sql.FieldEQ(FieldCreatedBy, v))
@@ -198,6 +208,131 @@ func UpdatedAtLT(v time.Time) predicate.Origin {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Origin {
 	return predicate.Origin(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// DeletedAtEQ applies the EQ predicate on the "deleted_at" field.
+func DeletedAtEQ(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldEQ(FieldDeletedAt, v))
+}
+
+// DeletedAtNEQ applies the NEQ predicate on the "deleted_at" field.
+func DeletedAtNEQ(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldNEQ(FieldDeletedAt, v))
+}
+
+// DeletedAtIn applies the In predicate on the "deleted_at" field.
+func DeletedAtIn(vs ...time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldIn(FieldDeletedAt, vs...))
+}
+
+// DeletedAtNotIn applies the NotIn predicate on the "deleted_at" field.
+func DeletedAtNotIn(vs ...time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldNotIn(FieldDeletedAt, vs...))
+}
+
+// DeletedAtGT applies the GT predicate on the "deleted_at" field.
+func DeletedAtGT(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldGT(FieldDeletedAt, v))
+}
+
+// DeletedAtGTE applies the GTE predicate on the "deleted_at" field.
+func DeletedAtGTE(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldGTE(FieldDeletedAt, v))
+}
+
+// DeletedAtLT applies the LT predicate on the "deleted_at" field.
+func DeletedAtLT(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldLT(FieldDeletedAt, v))
+}
+
+// DeletedAtLTE applies the LTE predicate on the "deleted_at" field.
+func DeletedAtLTE(v time.Time) predicate.Origin {
+	return predicate.Origin(sql.FieldLTE(FieldDeletedAt, v))
+}
+
+// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
+func DeletedAtIsNil() predicate.Origin {
+	return predicate.Origin(sql.FieldIsNull(FieldDeletedAt))
+}
+
+// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
+func DeletedAtNotNil() predicate.Origin {
+	return predicate.Origin(sql.FieldNotNull(FieldDeletedAt))
+}
+
+// DeletedByEQ applies the EQ predicate on the "deleted_by" field.
+func DeletedByEQ(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldEQ(FieldDeletedBy, v))
+}
+
+// DeletedByNEQ applies the NEQ predicate on the "deleted_by" field.
+func DeletedByNEQ(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldNEQ(FieldDeletedBy, v))
+}
+
+// DeletedByIn applies the In predicate on the "deleted_by" field.
+func DeletedByIn(vs ...string) predicate.Origin {
+	return predicate.Origin(sql.FieldIn(FieldDeletedBy, vs...))
+}
+
+// DeletedByNotIn applies the NotIn predicate on the "deleted_by" field.
+func DeletedByNotIn(vs ...string) predicate.Origin {
+	return predicate.Origin(sql.FieldNotIn(FieldDeletedBy, vs...))
+}
+
+// DeletedByGT applies the GT predicate on the "deleted_by" field.
+func DeletedByGT(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldGT(FieldDeletedBy, v))
+}
+
+// DeletedByGTE applies the GTE predicate on the "deleted_by" field.
+func DeletedByGTE(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldGTE(FieldDeletedBy, v))
+}
+
+// DeletedByLT applies the LT predicate on the "deleted_by" field.
+func DeletedByLT(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldLT(FieldDeletedBy, v))
+}
+
+// DeletedByLTE applies the LTE predicate on the "deleted_by" field.
+func DeletedByLTE(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldLTE(FieldDeletedBy, v))
+}
+
+// DeletedByContains applies the Contains predicate on the "deleted_by" field.
+func DeletedByContains(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldContains(FieldDeletedBy, v))
+}
+
+// DeletedByHasPrefix applies the HasPrefix predicate on the "deleted_by" field.
+func DeletedByHasPrefix(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldHasPrefix(FieldDeletedBy, v))
+}
+
+// DeletedByHasSuffix applies the HasSuffix predicate on the "deleted_by" field.
+func DeletedByHasSuffix(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldHasSuffix(FieldDeletedBy, v))
+}
+
+// DeletedByIsNil applies the IsNil predicate on the "deleted_by" field.
+func DeletedByIsNil() predicate.Origin {
+	return predicate.Origin(sql.FieldIsNull(FieldDeletedBy))
+}
+
+// DeletedByNotNil applies the NotNil predicate on the "deleted_by" field.
+func DeletedByNotNil() predicate.Origin {
+	return predicate.Origin(sql.FieldNotNull(FieldDeletedBy))
+}
+
+// DeletedByEqualFold applies the EqualFold predicate on the "deleted_by" field.
+func DeletedByEqualFold(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldEqualFold(FieldDeletedBy, v))
+}
+
+// DeletedByContainsFold applies the ContainsFold predicate on the "deleted_by" field.
+func DeletedByContainsFold(v string) predicate.Origin {
+	return predicate.Origin(sql.FieldContainsFold(FieldDeletedBy, v))
 }
 
 // CreatedByEQ applies the EQ predicate on the "created_by" field.

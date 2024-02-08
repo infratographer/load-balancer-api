@@ -65,6 +65,34 @@ func (pc *PortCreate) SetNillableUpdatedAt(t *time.Time) *PortCreate {
 	return pc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (pc *PortCreate) SetDeletedAt(t time.Time) *PortCreate {
+	pc.mutation.SetDeletedAt(t)
+	return pc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pc *PortCreate) SetNillableDeletedAt(t *time.Time) *PortCreate {
+	if t != nil {
+		pc.SetDeletedAt(*t)
+	}
+	return pc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pc *PortCreate) SetDeletedBy(s string) *PortCreate {
+	pc.mutation.SetDeletedBy(s)
+	return pc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pc *PortCreate) SetNillableDeletedBy(s *string) *PortCreate {
+	if s != nil {
+		pc.SetDeletedBy(*s)
+	}
+	return pc
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (pc *PortCreate) SetCreatedBy(s string) *PortCreate {
 	pc.mutation.SetCreatedBy(s)
@@ -278,6 +306,14 @@ func (pc *PortCreate) createSpec() (*Port, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(port.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := pc.mutation.DeletedAt(); ok {
+		_spec.SetField(port.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.DeletedBy(); ok {
+		_spec.SetField(port.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := pc.mutation.CreatedBy(); ok {
 		_spec.SetField(port.FieldCreatedBy, field.TypeString, value)

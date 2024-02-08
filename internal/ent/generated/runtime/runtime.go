@@ -75,7 +75,11 @@ func init() {
 	loadbalancer.DefaultID = loadbalancerDescID.Default.(func() gidx.PrefixedID)
 	originMixin := schema.Origin{}.Mixin()
 	originMixinHooks1 := originMixin[1].Hooks()
+	originMixinHooks2 := originMixin[2].Hooks()
 	origin.Hooks[0] = originMixinHooks1[0]
+	origin.Hooks[1] = originMixinHooks2[0]
+	originMixinInters1 := originMixin[1].Interceptors()
+	origin.Interceptors[0] = originMixinInters1[0]
 	originMixinFields0 := originMixin[0].Fields()
 	_ = originMixinFields0
 	originFields := schema.Origin{}.Fields()
@@ -148,7 +152,11 @@ func init() {
 	origin.DefaultID = originDescID.Default.(func() gidx.PrefixedID)
 	poolMixin := schema.Pool{}.Mixin()
 	poolMixinHooks1 := poolMixin[1].Hooks()
+	poolMixinHooks2 := poolMixin[2].Hooks()
 	pool.Hooks[0] = poolMixinHooks1[0]
+	pool.Hooks[1] = poolMixinHooks2[0]
+	poolMixinInters2 := poolMixin[2].Interceptors()
+	pool.Interceptors[0] = poolMixinInters2[0]
 	poolMixinFields0 := poolMixin[0].Fields()
 	_ = poolMixinFields0
 	poolFields := schema.Pool{}.Fields()
@@ -177,7 +185,11 @@ func init() {
 	pool.DefaultID = poolDescID.Default.(func() gidx.PrefixedID)
 	portMixin := schema.Port{}.Mixin()
 	portMixinHooks1 := portMixin[1].Hooks()
+	portMixinHooks2 := portMixin[2].Hooks()
 	port.Hooks[0] = portMixinHooks1[0]
+	port.Hooks[1] = portMixinHooks2[0]
+	portMixinInters1 := portMixin[1].Interceptors()
+	port.Interceptors[0] = portMixinInters1[0]
 	portMixinFields0 := portMixin[0].Fields()
 	_ = portMixinFields0
 	portFields := schema.Port{}.Fields()
@@ -221,7 +233,11 @@ func init() {
 	port.DefaultID = portDescID.Default.(func() gidx.PrefixedID)
 	providerMixin := schema.Provider{}.Mixin()
 	providerMixinHooks1 := providerMixin[1].Hooks()
+	providerMixinHooks2 := providerMixin[2].Hooks()
 	provider.Hooks[0] = providerMixinHooks1[0]
+	provider.Hooks[1] = providerMixinHooks2[0]
+	providerMixinInters1 := providerMixin[1].Interceptors()
+	provider.Interceptors[0] = providerMixinInters1[0]
 	providerMixinFields0 := providerMixin[0].Fields()
 	_ = providerMixinFields0
 	providerFields := schema.Provider{}.Fields()

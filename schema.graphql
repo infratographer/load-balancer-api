@@ -146,6 +146,8 @@ type LoadBalancerOrigin implements Node @key(fields: "id") @prefixedID(prefix: "
 	id: ID!
 	createdAt: Time!
 	updatedAt: Time!
+	deletedAt: Time
+	deletedBy: String
 	createdBy: String
 	updatedBy: String
 	name: String!
@@ -193,6 +195,8 @@ input LoadBalancerOriginOrder {
 enum LoadBalancerOriginOrderField {
 	CREATED_AT
 	UPDATED_AT
+	DELETED_AT
+	DELETED_BY
 	CREATED_BY
 	UPDATED_BY
 	name
@@ -241,6 +245,33 @@ input LoadBalancerOriginWhereInput {
 	updatedAtGTE: Time
 	updatedAtLT: Time
 	updatedAtLTE: Time
+	"""deleted_at field predicates"""
+	deletedAt: Time
+	deletedAtNEQ: Time
+	deletedAtIn: [Time!]
+	deletedAtNotIn: [Time!]
+	deletedAtGT: Time
+	deletedAtGTE: Time
+	deletedAtLT: Time
+	deletedAtLTE: Time
+	deletedAtIsNil: Boolean
+	deletedAtNotNil: Boolean
+	"""deleted_by field predicates"""
+	deletedBy: String
+	deletedByNEQ: String
+	deletedByIn: [String!]
+	deletedByNotIn: [String!]
+	deletedByGT: String
+	deletedByGTE: String
+	deletedByLT: String
+	deletedByLTE: String
+	deletedByContains: String
+	deletedByHasPrefix: String
+	deletedByHasSuffix: String
+	deletedByIsNil: Boolean
+	deletedByNotNil: Boolean
+	deletedByEqualFold: String
+	deletedByContainsFold: String
 	"""created_by field predicates"""
 	createdBy: String
 	createdByNEQ: String
@@ -332,6 +363,8 @@ type LoadBalancerPool implements Node @key(fields: "id") @prefixedID(prefix: "lo
 	updatedAt: Time!
 	createdBy: String
 	updatedBy: String
+	deletedAt: Time
+	deletedBy: String
 	name: String!
 	protocol: LoadBalancerPoolProtocol!
 	ownerID: ID!
@@ -397,6 +430,8 @@ enum LoadBalancerPoolOrderField {
 	UPDATED_AT
 	CREATED_BY
 	UPDATED_BY
+	DELETED_AT
+	DELETED_BY
 	name
 	protocol
 }
@@ -477,6 +512,33 @@ input LoadBalancerPoolWhereInput {
 	updatedByNotNil: Boolean
 	updatedByEqualFold: String
 	updatedByContainsFold: String
+	"""deleted_at field predicates"""
+	deletedAt: Time
+	deletedAtNEQ: Time
+	deletedAtIn: [Time!]
+	deletedAtNotIn: [Time!]
+	deletedAtGT: Time
+	deletedAtGTE: Time
+	deletedAtLT: Time
+	deletedAtLTE: Time
+	deletedAtIsNil: Boolean
+	deletedAtNotNil: Boolean
+	"""deleted_by field predicates"""
+	deletedBy: String
+	deletedByNEQ: String
+	deletedByIn: [String!]
+	deletedByNotIn: [String!]
+	deletedByGT: String
+	deletedByGTE: String
+	deletedByLT: String
+	deletedByLTE: String
+	deletedByContains: String
+	deletedByHasPrefix: String
+	deletedByHasSuffix: String
+	deletedByIsNil: Boolean
+	deletedByNotNil: Boolean
+	deletedByEqualFold: String
+	deletedByContainsFold: String
 	"""name field predicates"""
 	name: String
 	nameNEQ: String
@@ -507,6 +569,8 @@ type LoadBalancerPort implements Node @key(fields: "id") @prefixedID(prefix: "lo
 	id: ID!
 	createdAt: Time!
 	updatedAt: Time!
+	deletedAt: Time
+	deletedBy: String
 	createdBy: String
 	updatedBy: String
 	number: Int!
@@ -552,6 +616,8 @@ input LoadBalancerPortOrder {
 enum LoadBalancerPortOrderField {
 	CREATED_AT
 	UPDATED_AT
+	DELETED_AT
+	DELETED_BY
 	CREATED_BY
 	UPDATED_BY
 	number
@@ -597,6 +663,33 @@ input LoadBalancerPortWhereInput {
 	updatedAtGTE: Time
 	updatedAtLT: Time
 	updatedAtLTE: Time
+	"""deleted_at field predicates"""
+	deletedAt: Time
+	deletedAtNEQ: Time
+	deletedAtIn: [Time!]
+	deletedAtNotIn: [Time!]
+	deletedAtGT: Time
+	deletedAtGTE: Time
+	deletedAtLT: Time
+	deletedAtLTE: Time
+	deletedAtIsNil: Boolean
+	deletedAtNotNil: Boolean
+	"""deleted_by field predicates"""
+	deletedBy: String
+	deletedByNEQ: String
+	deletedByIn: [String!]
+	deletedByNotIn: [String!]
+	deletedByGT: String
+	deletedByGTE: String
+	deletedByLT: String
+	deletedByLTE: String
+	deletedByContains: String
+	deletedByHasPrefix: String
+	deletedByHasSuffix: String
+	deletedByIsNil: Boolean
+	deletedByNotNil: Boolean
+	deletedByEqualFold: String
+	deletedByContainsFold: String
 	"""created_by field predicates"""
 	createdBy: String
 	createdByNEQ: String
@@ -664,6 +757,8 @@ type LoadBalancerProvider implements Node @key(fields: "id") @prefixedID(prefix:
 	id: ID!
 	createdAt: Time!
 	updatedAt: Time!
+	deletedAt: Time
+	deletedBy: String
 	createdBy: String
 	updatedBy: String
 	"""The name of the load balancer provider."""
@@ -728,6 +823,8 @@ enum LoadBalancerProviderOrderField {
 	ID
 	CREATED_AT
 	UPDATED_AT
+	DELETED_AT
+	DELETED_BY
 	CREATED_BY
 	UPDATED_BY
 	NAME
@@ -773,6 +870,33 @@ input LoadBalancerProviderWhereInput {
 	updatedAtGTE: Time
 	updatedAtLT: Time
 	updatedAtLTE: Time
+	"""deleted_at field predicates"""
+	deletedAt: Time
+	deletedAtNEQ: Time
+	deletedAtIn: [Time!]
+	deletedAtNotIn: [Time!]
+	deletedAtGT: Time
+	deletedAtGTE: Time
+	deletedAtLT: Time
+	deletedAtLTE: Time
+	deletedAtIsNil: Boolean
+	deletedAtNotNil: Boolean
+	"""deleted_by field predicates"""
+	deletedBy: String
+	deletedByNEQ: String
+	deletedByIn: [String!]
+	deletedByNotIn: [String!]
+	deletedByGT: String
+	deletedByGTE: String
+	deletedByLT: String
+	deletedByLTE: String
+	deletedByContains: String
+	deletedByHasPrefix: String
+	deletedByHasSuffix: String
+	deletedByIsNil: Boolean
+	deletedByNotNil: Boolean
+	deletedByEqualFold: String
+	deletedByContainsFold: String
 	"""created_by field predicates"""
 	createdBy: String
 	createdByNEQ: String

@@ -791,6 +791,34 @@ var (
 			}
 		},
 	}
+	// OriginOrderFieldDeletedAt orders Origin by deleted_at.
+	OriginOrderFieldDeletedAt = &LoadBalancerOriginOrderField{
+		Value: func(o *LoadBalancerOrigin) (ent.Value, error) {
+			return o.DeletedAt, nil
+		},
+		column: origin.FieldDeletedAt,
+		toTerm: origin.ByDeletedAt,
+		toCursor: func(o *LoadBalancerOrigin) Cursor {
+			return Cursor{
+				ID:    o.ID,
+				Value: o.DeletedAt,
+			}
+		},
+	}
+	// OriginOrderFieldDeletedBy orders Origin by deleted_by.
+	OriginOrderFieldDeletedBy = &LoadBalancerOriginOrderField{
+		Value: func(o *LoadBalancerOrigin) (ent.Value, error) {
+			return o.DeletedBy, nil
+		},
+		column: origin.FieldDeletedBy,
+		toTerm: origin.ByDeletedBy,
+		toCursor: func(o *LoadBalancerOrigin) Cursor {
+			return Cursor{
+				ID:    o.ID,
+				Value: o.DeletedBy,
+			}
+		},
+	}
 	// OriginOrderFieldCreatedBy orders Origin by created_by.
 	OriginOrderFieldCreatedBy = &LoadBalancerOriginOrderField{
 		Value: func(o *LoadBalancerOrigin) (ent.Value, error) {
@@ -899,6 +927,10 @@ func (f LoadBalancerOriginOrderField) String() string {
 		str = "CREATED_AT"
 	case OriginOrderFieldUpdatedAt.column:
 		str = "UPDATED_AT"
+	case OriginOrderFieldDeletedAt.column:
+		str = "DELETED_AT"
+	case OriginOrderFieldDeletedBy.column:
+		str = "DELETED_BY"
 	case OriginOrderFieldCreatedBy.column:
 		str = "CREATED_BY"
 	case OriginOrderFieldUpdatedBy.column:
@@ -933,6 +965,10 @@ func (f *LoadBalancerOriginOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *OriginOrderFieldCreatedAt
 	case "UPDATED_AT":
 		*f = *OriginOrderFieldUpdatedAt
+	case "DELETED_AT":
+		*f = *OriginOrderFieldDeletedAt
+	case "DELETED_BY":
+		*f = *OriginOrderFieldDeletedBy
 	case "CREATED_BY":
 		*f = *OriginOrderFieldCreatedBy
 	case "UPDATED_BY":
@@ -1259,6 +1295,34 @@ var (
 			}
 		},
 	}
+	// PoolOrderFieldDeletedAt orders Pool by deleted_at.
+	PoolOrderFieldDeletedAt = &LoadBalancerPoolOrderField{
+		Value: func(po *LoadBalancerPool) (ent.Value, error) {
+			return po.DeletedAt, nil
+		},
+		column: pool.FieldDeletedAt,
+		toTerm: pool.ByDeletedAt,
+		toCursor: func(po *LoadBalancerPool) Cursor {
+			return Cursor{
+				ID:    po.ID,
+				Value: po.DeletedAt,
+			}
+		},
+	}
+	// PoolOrderFieldDeletedBy orders Pool by deleted_by.
+	PoolOrderFieldDeletedBy = &LoadBalancerPoolOrderField{
+		Value: func(po *LoadBalancerPool) (ent.Value, error) {
+			return po.DeletedBy, nil
+		},
+		column: pool.FieldDeletedBy,
+		toTerm: pool.ByDeletedBy,
+		toCursor: func(po *LoadBalancerPool) Cursor {
+			return Cursor{
+				ID:    po.ID,
+				Value: po.DeletedBy,
+			}
+		},
+	}
 	// PoolOrderFieldName orders Pool by name.
 	PoolOrderFieldName = &LoadBalancerPoolOrderField{
 		Value: func(po *LoadBalancerPool) (ent.Value, error) {
@@ -1301,6 +1365,10 @@ func (f LoadBalancerPoolOrderField) String() string {
 		str = "CREATED_BY"
 	case PoolOrderFieldUpdatedBy.column:
 		str = "UPDATED_BY"
+	case PoolOrderFieldDeletedAt.column:
+		str = "DELETED_AT"
+	case PoolOrderFieldDeletedBy.column:
+		str = "DELETED_BY"
 	case PoolOrderFieldName.column:
 		str = "name"
 	case PoolOrderFieldProtocol.column:
@@ -1329,6 +1397,10 @@ func (f *LoadBalancerPoolOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *PoolOrderFieldCreatedBy
 	case "UPDATED_BY":
 		*f = *PoolOrderFieldUpdatedBy
+	case "DELETED_AT":
+		*f = *PoolOrderFieldDeletedAt
+	case "DELETED_BY":
+		*f = *PoolOrderFieldDeletedBy
 	case "name":
 		*f = *PoolOrderFieldName
 	case "protocol":
@@ -1617,6 +1689,34 @@ var (
 			}
 		},
 	}
+	// PortOrderFieldDeletedAt orders Port by deleted_at.
+	PortOrderFieldDeletedAt = &LoadBalancerPortOrderField{
+		Value: func(po *LoadBalancerPort) (ent.Value, error) {
+			return po.DeletedAt, nil
+		},
+		column: port.FieldDeletedAt,
+		toTerm: port.ByDeletedAt,
+		toCursor: func(po *LoadBalancerPort) Cursor {
+			return Cursor{
+				ID:    po.ID,
+				Value: po.DeletedAt,
+			}
+		},
+	}
+	// PortOrderFieldDeletedBy orders Port by deleted_by.
+	PortOrderFieldDeletedBy = &LoadBalancerPortOrderField{
+		Value: func(po *LoadBalancerPort) (ent.Value, error) {
+			return po.DeletedBy, nil
+		},
+		column: port.FieldDeletedBy,
+		toTerm: port.ByDeletedBy,
+		toCursor: func(po *LoadBalancerPort) Cursor {
+			return Cursor{
+				ID:    po.ID,
+				Value: po.DeletedBy,
+			}
+		},
+	}
 	// PortOrderFieldCreatedBy orders Port by created_by.
 	PortOrderFieldCreatedBy = &LoadBalancerPortOrderField{
 		Value: func(po *LoadBalancerPort) (ent.Value, error) {
@@ -1683,6 +1783,10 @@ func (f LoadBalancerPortOrderField) String() string {
 		str = "CREATED_AT"
 	case PortOrderFieldUpdatedAt.column:
 		str = "UPDATED_AT"
+	case PortOrderFieldDeletedAt.column:
+		str = "DELETED_AT"
+	case PortOrderFieldDeletedBy.column:
+		str = "DELETED_BY"
 	case PortOrderFieldCreatedBy.column:
 		str = "CREATED_BY"
 	case PortOrderFieldUpdatedBy.column:
@@ -1711,6 +1815,10 @@ func (f *LoadBalancerPortOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *PortOrderFieldCreatedAt
 	case "UPDATED_AT":
 		*f = *PortOrderFieldUpdatedAt
+	case "DELETED_AT":
+		*f = *PortOrderFieldDeletedAt
+	case "DELETED_BY":
+		*f = *PortOrderFieldDeletedBy
 	case "CREATED_BY":
 		*f = *PortOrderFieldCreatedBy
 	case "UPDATED_BY":
@@ -2017,6 +2125,34 @@ var (
 			}
 		},
 	}
+	// ProviderOrderFieldDeletedAt orders Provider by deleted_at.
+	ProviderOrderFieldDeletedAt = &LoadBalancerProviderOrderField{
+		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
+			return pr.DeletedAt, nil
+		},
+		column: provider.FieldDeletedAt,
+		toTerm: provider.ByDeletedAt,
+		toCursor: func(pr *LoadBalancerProvider) Cursor {
+			return Cursor{
+				ID:    pr.ID,
+				Value: pr.DeletedAt,
+			}
+		},
+	}
+	// ProviderOrderFieldDeletedBy orders Provider by deleted_by.
+	ProviderOrderFieldDeletedBy = &LoadBalancerProviderOrderField{
+		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
+			return pr.DeletedBy, nil
+		},
+		column: provider.FieldDeletedBy,
+		toTerm: provider.ByDeletedBy,
+		toCursor: func(pr *LoadBalancerProvider) Cursor {
+			return Cursor{
+				ID:    pr.ID,
+				Value: pr.DeletedBy,
+			}
+		},
+	}
 	// ProviderOrderFieldCreatedBy orders Provider by created_by.
 	ProviderOrderFieldCreatedBy = &LoadBalancerProviderOrderField{
 		Value: func(pr *LoadBalancerProvider) (ent.Value, error) {
@@ -2085,6 +2221,10 @@ func (f LoadBalancerProviderOrderField) String() string {
 		str = "CREATED_AT"
 	case ProviderOrderFieldUpdatedAt.column:
 		str = "UPDATED_AT"
+	case ProviderOrderFieldDeletedAt.column:
+		str = "DELETED_AT"
+	case ProviderOrderFieldDeletedBy.column:
+		str = "DELETED_BY"
 	case ProviderOrderFieldCreatedBy.column:
 		str = "CREATED_BY"
 	case ProviderOrderFieldUpdatedBy.column:
@@ -2115,6 +2255,10 @@ func (f *LoadBalancerProviderOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *ProviderOrderFieldCreatedAt
 	case "UPDATED_AT":
 		*f = *ProviderOrderFieldUpdatedAt
+	case "DELETED_AT":
+		*f = *ProviderOrderFieldDeletedAt
+	case "DELETED_BY":
+		*f = *ProviderOrderFieldDeletedBy
 	case "CREATED_BY":
 		*f = *ProviderOrderFieldCreatedBy
 	case "UPDATED_BY":

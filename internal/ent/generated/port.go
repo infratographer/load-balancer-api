@@ -37,6 +37,10 @@ type Port struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// DeletedBy holds the value of the "deleted_by" field.
+	DeletedBy string `json:"deleted_by,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy string `json:"created_by,omitempty"`
 	// UpdatedBy holds the value of the "updated_by" field.
@@ -99,9 +103,9 @@ func (*Port) scanValues(columns []string) ([]any, error) {
 			values[i] = new(gidx.PrefixedID)
 		case port.FieldNumber:
 			values[i] = new(sql.NullInt64)
-		case port.FieldCreatedBy, port.FieldUpdatedBy, port.FieldName:
+		case port.FieldDeletedBy, port.FieldCreatedBy, port.FieldUpdatedBy, port.FieldName:
 			values[i] = new(sql.NullString)
-		case port.FieldCreatedAt, port.FieldUpdatedAt:
+		case port.FieldCreatedAt, port.FieldUpdatedAt, port.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -135,6 +139,18 @@ func (po *Port) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				po.UpdatedAt = value.Time
+			}
+		case port.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				po.DeletedAt = value.Time
+			}
+		case port.FieldDeletedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
+			} else if value.Valid {
+				po.DeletedBy = value.String
 			}
 		case port.FieldCreatedBy:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -217,6 +233,12 @@ func (po *Port) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(po.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_at=")
+	builder.WriteString(po.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_by=")
+	builder.WriteString(po.DeletedBy)
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
 	builder.WriteString(po.CreatedBy)

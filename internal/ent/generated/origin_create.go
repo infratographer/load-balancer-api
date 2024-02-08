@@ -64,6 +64,34 @@ func (oc *OriginCreate) SetNillableUpdatedAt(t *time.Time) *OriginCreate {
 	return oc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (oc *OriginCreate) SetDeletedAt(t time.Time) *OriginCreate {
+	oc.mutation.SetDeletedAt(t)
+	return oc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (oc *OriginCreate) SetNillableDeletedAt(t *time.Time) *OriginCreate {
+	if t != nil {
+		oc.SetDeletedAt(*t)
+	}
+	return oc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (oc *OriginCreate) SetDeletedBy(s string) *OriginCreate {
+	oc.mutation.SetDeletedBy(s)
+	return oc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (oc *OriginCreate) SetNillableDeletedBy(s *string) *OriginCreate {
+	if s != nil {
+		oc.SetDeletedBy(*s)
+	}
+	return oc
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (oc *OriginCreate) SetCreatedBy(s string) *OriginCreate {
 	oc.mutation.SetCreatedBy(s)
@@ -323,6 +351,14 @@ func (oc *OriginCreate) createSpec() (*Origin, *sqlgraph.CreateSpec) {
 	if value, ok := oc.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := oc.mutation.DeletedAt(); ok {
+		_spec.SetField(origin.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := oc.mutation.DeletedBy(); ok {
+		_spec.SetField(origin.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := oc.mutation.CreatedBy(); ok {
 		_spec.SetField(origin.FieldCreatedBy, field.TypeString, value)
