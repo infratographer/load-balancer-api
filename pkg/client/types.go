@@ -71,13 +71,13 @@ type LoadBalancer struct {
 
 // LoadBalancerHistory is a struct that represents the LoadBalancer GraphQL type
 type LoadBalancerHistory struct {
-	ID          string       `graphql:"id" json:"id"`
-	Name        string       `graphql:"name" json:"name"`
-	Owner       OwnerNode    `graphql:"owner" json:"owner"`
-	Location    LocationNode `graphql:"location" json:"location"`
-	IPAddresses []IPAddress  `graphql:"IPAddresses" json:"IPAddresses"`
-	Metadata    Metadata     `graphql:"metadata" json:"metadata"`
-	Ports       Ports        `graphql:"ports" json:"ports"`
+	ID       string       `graphql:"id" json:"id"`
+	Name     string       `graphql:"name" json:"name"`
+	Owner    OwnerNode    `graphql:"owner" json:"owner"`
+	Location LocationNode `graphql:"location" json:"location"`
+	// IPAddresses []IPAddress  `graphql:"IPAddresses" json:"IPAddresses"`
+	// Metadata    Metadata     `graphql:"metadata" json:"metadata"`
+	Ports Ports `graphql:"ports" json:"ports"`
 }
 
 // GetLoadBalancer is a struct that represents the GetLoadBalancer GraphQL query
