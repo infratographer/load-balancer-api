@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/audit"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/softdelete"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -25,6 +26,7 @@ func (Pool) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NewTimestampMixin(),
 		audit.Mixin{},
+		softdelete.Mixin{},
 	}
 }
 

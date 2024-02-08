@@ -93,6 +93,34 @@ func (pc *PoolCreate) SetNillableUpdatedBy(s *string) *PoolCreate {
 	return pc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (pc *PoolCreate) SetDeletedAt(t time.Time) *PoolCreate {
+	pc.mutation.SetDeletedAt(t)
+	return pc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableDeletedAt(t *time.Time) *PoolCreate {
+	if t != nil {
+		pc.SetDeletedAt(*t)
+	}
+	return pc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pc *PoolCreate) SetDeletedBy(s string) *PoolCreate {
+	pc.mutation.SetDeletedBy(s)
+	return pc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableDeletedBy(s *string) *PoolCreate {
+	if s != nil {
+		pc.SetDeletedBy(*s)
+	}
+	return pc
+}
+
 // SetName sets the "name" field.
 func (pc *PoolCreate) SetName(s string) *PoolCreate {
 	pc.mutation.SetName(s)
@@ -298,6 +326,14 @@ func (pc *PoolCreate) createSpec() (*Pool, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedBy(); ok {
 		_spec.SetField(pool.FieldUpdatedBy, field.TypeString, value)
 		_node.UpdatedBy = value
+	}
+	if value, ok := pc.mutation.DeletedAt(); ok {
+		_spec.SetField(pool.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.DeletedBy(); ok {
+		_spec.SetField(pool.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)

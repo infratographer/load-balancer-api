@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -40,6 +41,46 @@ type PortUpdate struct {
 // Where appends a list predicates to the PortUpdate builder.
 func (pu *PortUpdate) Where(ps ...predicate.Port) *PortUpdate {
 	pu.mutation.Where(ps...)
+	return pu
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (pu *PortUpdate) SetDeletedAt(t time.Time) *PortUpdate {
+	pu.mutation.SetDeletedAt(t)
+	return pu
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pu *PortUpdate) SetNillableDeletedAt(t *time.Time) *PortUpdate {
+	if t != nil {
+		pu.SetDeletedAt(*t)
+	}
+	return pu
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (pu *PortUpdate) ClearDeletedAt() *PortUpdate {
+	pu.mutation.ClearDeletedAt()
+	return pu
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pu *PortUpdate) SetDeletedBy(s string) *PortUpdate {
+	pu.mutation.SetDeletedBy(s)
+	return pu
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pu *PortUpdate) SetNillableDeletedBy(s *string) *PortUpdate {
+	if s != nil {
+		pu.SetDeletedBy(*s)
+	}
+	return pu
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (pu *PortUpdate) ClearDeletedBy() *PortUpdate {
+	pu.mutation.ClearDeletedBy()
 	return pu
 }
 
@@ -193,6 +234,18 @@ func (pu *PortUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(port.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := pu.mutation.DeletedAt(); ok {
+		_spec.SetField(port.FieldDeletedAt, field.TypeTime, value)
+	}
+	if pu.mutation.DeletedAtCleared() {
+		_spec.ClearField(port.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := pu.mutation.DeletedBy(); ok {
+		_spec.SetField(port.FieldDeletedBy, field.TypeString, value)
+	}
+	if pu.mutation.DeletedByCleared() {
+		_spec.ClearField(port.FieldDeletedBy, field.TypeString)
+	}
 	if pu.mutation.CreatedByCleared() {
 		_spec.ClearField(port.FieldCreatedBy, field.TypeString)
 	}
@@ -274,6 +327,46 @@ type PortUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PortMutation
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (puo *PortUpdateOne) SetDeletedAt(t time.Time) *PortUpdateOne {
+	puo.mutation.SetDeletedAt(t)
+	return puo
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (puo *PortUpdateOne) SetNillableDeletedAt(t *time.Time) *PortUpdateOne {
+	if t != nil {
+		puo.SetDeletedAt(*t)
+	}
+	return puo
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (puo *PortUpdateOne) ClearDeletedAt() *PortUpdateOne {
+	puo.mutation.ClearDeletedAt()
+	return puo
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (puo *PortUpdateOne) SetDeletedBy(s string) *PortUpdateOne {
+	puo.mutation.SetDeletedBy(s)
+	return puo
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (puo *PortUpdateOne) SetNillableDeletedBy(s *string) *PortUpdateOne {
+	if s != nil {
+		puo.SetDeletedBy(*s)
+	}
+	return puo
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (puo *PortUpdateOne) ClearDeletedBy() *PortUpdateOne {
+	puo.mutation.ClearDeletedBy()
+	return puo
 }
 
 // SetUpdatedBy sets the "updated_by" field.
@@ -455,6 +548,18 @@ func (puo *PortUpdateOne) sqlSave(ctx context.Context) (_node *Port, err error) 
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(port.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := puo.mutation.DeletedAt(); ok {
+		_spec.SetField(port.FieldDeletedAt, field.TypeTime, value)
+	}
+	if puo.mutation.DeletedAtCleared() {
+		_spec.ClearField(port.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := puo.mutation.DeletedBy(); ok {
+		_spec.SetField(port.FieldDeletedBy, field.TypeString, value)
+	}
+	if puo.mutation.DeletedByCleared() {
+		_spec.ClearField(port.FieldDeletedBy, field.TypeString)
 	}
 	if puo.mutation.CreatedByCleared() {
 		_spec.ClearField(port.FieldCreatedBy, field.TypeString)

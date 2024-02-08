@@ -14,6 +14,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/port"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/predicate"
 	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/softdelete"
 	"go.infratographer.com/load-balancer-api/pkg/metadata"
 	"go.infratographer.com/permissions-api/pkg/permissions"
 	"go.infratographer.com/x/events"
@@ -202,6 +203,34 @@ func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*
 	}
 
 	if err := permissions.CheckAccess(ctx, lb.OwnerID, actionLoadBalancerGet); err != nil {
+		return nil, err
+	}
+
+	return lb, nil
+}
+
+// LoadBalancerHistory is the resolver for the loadBalancerHistory field.
+func (r *queryResolver) LoadBalancerHistory(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
+	ctx = softdelete.SkipSoftDelete(ctx)
+
+	logger := r.logger.With("loadbalancerID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
+	lb, err := r.client.LoadBalancer.Get(ctx, id)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, lb.OwnerID, actionLoadBalancerGetHistory); err != nil {
 		return nil, err
 	}
 

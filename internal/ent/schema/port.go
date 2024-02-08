@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/audit"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/softdelete"
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
@@ -30,6 +31,7 @@ type Port struct {
 func (Port) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		entx.NewTimestampMixin(),
+		softdelete.Mixin{},
 		audit.Mixin{},
 	}
 }

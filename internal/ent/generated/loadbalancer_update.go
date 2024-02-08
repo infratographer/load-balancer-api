@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -60,6 +61,46 @@ func (lbu *LoadBalancerUpdate) SetNillableUpdatedBy(s *string) *LoadBalancerUpda
 // ClearUpdatedBy clears the value of the "updated_by" field.
 func (lbu *LoadBalancerUpdate) ClearUpdatedBy() *LoadBalancerUpdate {
 	lbu.mutation.ClearUpdatedBy()
+	return lbu
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (lbu *LoadBalancerUpdate) SetDeletedAt(t time.Time) *LoadBalancerUpdate {
+	lbu.mutation.SetDeletedAt(t)
+	return lbu
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (lbu *LoadBalancerUpdate) SetNillableDeletedAt(t *time.Time) *LoadBalancerUpdate {
+	if t != nil {
+		lbu.SetDeletedAt(*t)
+	}
+	return lbu
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (lbu *LoadBalancerUpdate) ClearDeletedAt() *LoadBalancerUpdate {
+	lbu.mutation.ClearDeletedAt()
+	return lbu
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (lbu *LoadBalancerUpdate) SetDeletedBy(s string) *LoadBalancerUpdate {
+	lbu.mutation.SetDeletedBy(s)
+	return lbu
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (lbu *LoadBalancerUpdate) SetNillableDeletedBy(s *string) *LoadBalancerUpdate {
+	if s != nil {
+		lbu.SetDeletedBy(*s)
+	}
+	return lbu
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (lbu *LoadBalancerUpdate) ClearDeletedBy() *LoadBalancerUpdate {
+	lbu.mutation.ClearDeletedBy()
 	return lbu
 }
 
@@ -189,6 +230,18 @@ func (lbu *LoadBalancerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if lbu.mutation.UpdatedByCleared() {
 		_spec.ClearField(loadbalancer.FieldUpdatedBy, field.TypeString)
 	}
+	if value, ok := lbu.mutation.DeletedAt(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedAt, field.TypeTime, value)
+	}
+	if lbu.mutation.DeletedAtCleared() {
+		_spec.ClearField(loadbalancer.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := lbu.mutation.DeletedBy(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedBy, field.TypeString, value)
+	}
+	if lbu.mutation.DeletedByCleared() {
+		_spec.ClearField(loadbalancer.FieldDeletedBy, field.TypeString)
+	}
 	if value, ok := lbu.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
 	}
@@ -274,6 +327,46 @@ func (lbuo *LoadBalancerUpdateOne) SetNillableUpdatedBy(s *string) *LoadBalancer
 // ClearUpdatedBy clears the value of the "updated_by" field.
 func (lbuo *LoadBalancerUpdateOne) ClearUpdatedBy() *LoadBalancerUpdateOne {
 	lbuo.mutation.ClearUpdatedBy()
+	return lbuo
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (lbuo *LoadBalancerUpdateOne) SetDeletedAt(t time.Time) *LoadBalancerUpdateOne {
+	lbuo.mutation.SetDeletedAt(t)
+	return lbuo
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (lbuo *LoadBalancerUpdateOne) SetNillableDeletedAt(t *time.Time) *LoadBalancerUpdateOne {
+	if t != nil {
+		lbuo.SetDeletedAt(*t)
+	}
+	return lbuo
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (lbuo *LoadBalancerUpdateOne) ClearDeletedAt() *LoadBalancerUpdateOne {
+	lbuo.mutation.ClearDeletedAt()
+	return lbuo
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (lbuo *LoadBalancerUpdateOne) SetDeletedBy(s string) *LoadBalancerUpdateOne {
+	lbuo.mutation.SetDeletedBy(s)
+	return lbuo
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (lbuo *LoadBalancerUpdateOne) SetNillableDeletedBy(s *string) *LoadBalancerUpdateOne {
+	if s != nil {
+		lbuo.SetDeletedBy(*s)
+	}
+	return lbuo
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (lbuo *LoadBalancerUpdateOne) ClearDeletedBy() *LoadBalancerUpdateOne {
+	lbuo.mutation.ClearDeletedBy()
 	return lbuo
 }
 
@@ -432,6 +525,18 @@ func (lbuo *LoadBalancerUpdateOne) sqlSave(ctx context.Context) (_node *LoadBala
 	}
 	if lbuo.mutation.UpdatedByCleared() {
 		_spec.ClearField(loadbalancer.FieldUpdatedBy, field.TypeString)
+	}
+	if value, ok := lbuo.mutation.DeletedAt(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedAt, field.TypeTime, value)
+	}
+	if lbuo.mutation.DeletedAtCleared() {
+		_spec.ClearField(loadbalancer.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := lbuo.mutation.DeletedBy(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedBy, field.TypeString, value)
+	}
+	if lbuo.mutation.DeletedByCleared() {
+		_spec.ClearField(loadbalancer.FieldDeletedBy, field.TypeString)
 	}
 	if value, ok := lbuo.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)

@@ -8,6 +8,15 @@ extend type Query {
     """
     id: ID!
   ): LoadBalancer!
+    """
+  Lookup a load balancer by ID.
+  """
+  loadBalancerHistory(
+    """
+    The load balancer ID.
+    """
+    id: ID!
+  ): LoadBalancer!
 }
 
 extend type Mutation {

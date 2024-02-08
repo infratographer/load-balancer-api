@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -38,6 +39,46 @@ type OriginUpdate struct {
 // Where appends a list predicates to the OriginUpdate builder.
 func (ou *OriginUpdate) Where(ps ...predicate.Origin) *OriginUpdate {
 	ou.mutation.Where(ps...)
+	return ou
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (ou *OriginUpdate) SetDeletedAt(t time.Time) *OriginUpdate {
+	ou.mutation.SetDeletedAt(t)
+	return ou
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableDeletedAt(t *time.Time) *OriginUpdate {
+	if t != nil {
+		ou.SetDeletedAt(*t)
+	}
+	return ou
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (ou *OriginUpdate) ClearDeletedAt() *OriginUpdate {
+	ou.mutation.ClearDeletedAt()
+	return ou
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (ou *OriginUpdate) SetDeletedBy(s string) *OriginUpdate {
+	ou.mutation.SetDeletedBy(s)
+	return ou
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableDeletedBy(s *string) *OriginUpdate {
+	if s != nil {
+		ou.SetDeletedBy(*s)
+	}
+	return ou
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (ou *OriginUpdate) ClearDeletedBy() *OriginUpdate {
+	ou.mutation.ClearDeletedBy()
 	return ou
 }
 
@@ -206,6 +247,18 @@ func (ou *OriginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := ou.mutation.DeletedAt(); ok {
+		_spec.SetField(origin.FieldDeletedAt, field.TypeTime, value)
+	}
+	if ou.mutation.DeletedAtCleared() {
+		_spec.ClearField(origin.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := ou.mutation.DeletedBy(); ok {
+		_spec.SetField(origin.FieldDeletedBy, field.TypeString, value)
+	}
+	if ou.mutation.DeletedByCleared() {
+		_spec.ClearField(origin.FieldDeletedBy, field.TypeString)
+	}
 	if ou.mutation.CreatedByCleared() {
 		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)
 	}
@@ -254,6 +307,46 @@ type OriginUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *OriginMutation
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (ouo *OriginUpdateOne) SetDeletedAt(t time.Time) *OriginUpdateOne {
+	ouo.mutation.SetDeletedAt(t)
+	return ouo
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableDeletedAt(t *time.Time) *OriginUpdateOne {
+	if t != nil {
+		ouo.SetDeletedAt(*t)
+	}
+	return ouo
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (ouo *OriginUpdateOne) ClearDeletedAt() *OriginUpdateOne {
+	ouo.mutation.ClearDeletedAt()
+	return ouo
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (ouo *OriginUpdateOne) SetDeletedBy(s string) *OriginUpdateOne {
+	ouo.mutation.SetDeletedBy(s)
+	return ouo
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableDeletedBy(s *string) *OriginUpdateOne {
+	if s != nil {
+		ouo.SetDeletedBy(*s)
+	}
+	return ouo
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (ouo *OriginUpdateOne) ClearDeletedBy() *OriginUpdateOne {
+	ouo.mutation.ClearDeletedBy()
+	return ouo
 }
 
 // SetUpdatedBy sets the "updated_by" field.
@@ -450,6 +543,18 @@ func (ouo *OriginUpdateOne) sqlSave(ctx context.Context) (_node *Origin, err err
 	}
 	if value, ok := ouo.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := ouo.mutation.DeletedAt(); ok {
+		_spec.SetField(origin.FieldDeletedAt, field.TypeTime, value)
+	}
+	if ouo.mutation.DeletedAtCleared() {
+		_spec.ClearField(origin.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := ouo.mutation.DeletedBy(); ok {
+		_spec.SetField(origin.FieldDeletedBy, field.TypeString, value)
+	}
+	if ouo.mutation.DeletedByCleared() {
+		_spec.ClearField(origin.FieldDeletedBy, field.TypeString)
 	}
 	if ouo.mutation.CreatedByCleared() {
 		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)

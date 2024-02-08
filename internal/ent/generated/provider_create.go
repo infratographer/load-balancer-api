@@ -64,6 +64,34 @@ func (pc *ProviderCreate) SetNillableUpdatedAt(t *time.Time) *ProviderCreate {
 	return pc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (pc *ProviderCreate) SetDeletedAt(t time.Time) *ProviderCreate {
+	pc.mutation.SetDeletedAt(t)
+	return pc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pc *ProviderCreate) SetNillableDeletedAt(t *time.Time) *ProviderCreate {
+	if t != nil {
+		pc.SetDeletedAt(*t)
+	}
+	return pc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pc *ProviderCreate) SetDeletedBy(s string) *ProviderCreate {
+	pc.mutation.SetDeletedBy(s)
+	return pc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pc *ProviderCreate) SetNillableDeletedBy(s *string) *ProviderCreate {
+	if s != nil {
+		pc.SetDeletedBy(*s)
+	}
+	return pc
+}
+
 // SetCreatedBy sets the "created_by" field.
 func (pc *ProviderCreate) SetCreatedBy(s string) *ProviderCreate {
 	pc.mutation.SetCreatedBy(s)
@@ -260,6 +288,14 @@ func (pc *ProviderCreate) createSpec() (*Provider, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(provider.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := pc.mutation.DeletedAt(); ok {
+		_spec.SetField(provider.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.DeletedBy(); ok {
+		_spec.SetField(provider.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := pc.mutation.CreatedBy(); ok {
 		_spec.SetField(provider.FieldCreatedBy, field.TypeString, value)

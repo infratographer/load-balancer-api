@@ -37,6 +37,10 @@ type Provider struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// DeletedBy holds the value of the "deleted_by" field.
+	DeletedBy string `json:"deleted_by,omitempty"`
 	// CreatedBy holds the value of the "created_by" field.
 	CreatedBy string `json:"created_by,omitempty"`
 	// UpdatedBy holds the value of the "updated_by" field.
@@ -80,9 +84,9 @@ func (*Provider) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case provider.FieldID, provider.FieldOwnerID:
 			values[i] = new(gidx.PrefixedID)
-		case provider.FieldCreatedBy, provider.FieldUpdatedBy, provider.FieldName:
+		case provider.FieldDeletedBy, provider.FieldCreatedBy, provider.FieldUpdatedBy, provider.FieldName:
 			values[i] = new(sql.NullString)
-		case provider.FieldCreatedAt, provider.FieldUpdatedAt:
+		case provider.FieldCreatedAt, provider.FieldUpdatedAt, provider.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -116,6 +120,18 @@ func (pr *Provider) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				pr.UpdatedAt = value.Time
+			}
+		case provider.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				pr.DeletedAt = value.Time
+			}
+		case provider.FieldDeletedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
+			} else if value.Valid {
+				pr.DeletedBy = value.String
 			}
 		case provider.FieldCreatedBy:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -187,6 +203,12 @@ func (pr *Provider) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_at=")
+	builder.WriteString(pr.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_by=")
+	builder.WriteString(pr.DeletedBy)
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
 	builder.WriteString(pr.CreatedBy)

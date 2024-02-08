@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -61,6 +62,46 @@ func (pu *PoolUpdate) SetNillableUpdatedBy(s *string) *PoolUpdate {
 // ClearUpdatedBy clears the value of the "updated_by" field.
 func (pu *PoolUpdate) ClearUpdatedBy() *PoolUpdate {
 	pu.mutation.ClearUpdatedBy()
+	return pu
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (pu *PoolUpdate) SetDeletedAt(t time.Time) *PoolUpdate {
+	pu.mutation.SetDeletedAt(t)
+	return pu
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pu *PoolUpdate) SetNillableDeletedAt(t *time.Time) *PoolUpdate {
+	if t != nil {
+		pu.SetDeletedAt(*t)
+	}
+	return pu
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (pu *PoolUpdate) ClearDeletedAt() *PoolUpdate {
+	pu.mutation.ClearDeletedAt()
+	return pu
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pu *PoolUpdate) SetDeletedBy(s string) *PoolUpdate {
+	pu.mutation.SetDeletedBy(s)
+	return pu
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pu *PoolUpdate) SetNillableDeletedBy(s *string) *PoolUpdate {
+	if s != nil {
+		pu.SetDeletedBy(*s)
+	}
+	return pu
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (pu *PoolUpdate) ClearDeletedBy() *PoolUpdate {
+	pu.mutation.ClearDeletedBy()
 	return pu
 }
 
@@ -234,6 +275,18 @@ func (pu *PoolUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.UpdatedByCleared() {
 		_spec.ClearField(pool.FieldUpdatedBy, field.TypeString)
 	}
+	if value, ok := pu.mutation.DeletedAt(); ok {
+		_spec.SetField(pool.FieldDeletedAt, field.TypeTime, value)
+	}
+	if pu.mutation.DeletedAtCleared() {
+		_spec.ClearField(pool.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := pu.mutation.DeletedBy(); ok {
+		_spec.SetField(pool.FieldDeletedBy, field.TypeString, value)
+	}
+	if pu.mutation.DeletedByCleared() {
+		_spec.ClearField(pool.FieldDeletedBy, field.TypeString)
+	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)
 	}
@@ -367,6 +420,46 @@ func (puo *PoolUpdateOne) SetNillableUpdatedBy(s *string) *PoolUpdateOne {
 // ClearUpdatedBy clears the value of the "updated_by" field.
 func (puo *PoolUpdateOne) ClearUpdatedBy() *PoolUpdateOne {
 	puo.mutation.ClearUpdatedBy()
+	return puo
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (puo *PoolUpdateOne) SetDeletedAt(t time.Time) *PoolUpdateOne {
+	puo.mutation.SetDeletedAt(t)
+	return puo
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (puo *PoolUpdateOne) SetNillableDeletedAt(t *time.Time) *PoolUpdateOne {
+	if t != nil {
+		puo.SetDeletedAt(*t)
+	}
+	return puo
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (puo *PoolUpdateOne) ClearDeletedAt() *PoolUpdateOne {
+	puo.mutation.ClearDeletedAt()
+	return puo
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (puo *PoolUpdateOne) SetDeletedBy(s string) *PoolUpdateOne {
+	puo.mutation.SetDeletedBy(s)
+	return puo
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (puo *PoolUpdateOne) SetNillableDeletedBy(s *string) *PoolUpdateOne {
+	if s != nil {
+		puo.SetDeletedBy(*s)
+	}
+	return puo
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (puo *PoolUpdateOne) ClearDeletedBy() *PoolUpdateOne {
+	puo.mutation.ClearDeletedBy()
 	return puo
 }
 
@@ -569,6 +662,18 @@ func (puo *PoolUpdateOne) sqlSave(ctx context.Context) (_node *Pool, err error) 
 	}
 	if puo.mutation.UpdatedByCleared() {
 		_spec.ClearField(pool.FieldUpdatedBy, field.TypeString)
+	}
+	if value, ok := puo.mutation.DeletedAt(); ok {
+		_spec.SetField(pool.FieldDeletedAt, field.TypeTime, value)
+	}
+	if puo.mutation.DeletedAtCleared() {
+		_spec.ClearField(pool.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := puo.mutation.DeletedBy(); ok {
+		_spec.SetField(pool.FieldDeletedBy, field.TypeString, value)
+	}
+	if puo.mutation.DeletedByCleared() {
+		_spec.ClearField(pool.FieldDeletedBy, field.TypeString)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)

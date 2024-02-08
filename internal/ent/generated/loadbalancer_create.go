@@ -93,6 +93,34 @@ func (lbc *LoadBalancerCreate) SetNillableUpdatedBy(s *string) *LoadBalancerCrea
 	return lbc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (lbc *LoadBalancerCreate) SetDeletedAt(t time.Time) *LoadBalancerCreate {
+	lbc.mutation.SetDeletedAt(t)
+	return lbc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (lbc *LoadBalancerCreate) SetNillableDeletedAt(t *time.Time) *LoadBalancerCreate {
+	if t != nil {
+		lbc.SetDeletedAt(*t)
+	}
+	return lbc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (lbc *LoadBalancerCreate) SetDeletedBy(s string) *LoadBalancerCreate {
+	lbc.mutation.SetDeletedBy(s)
+	return lbc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (lbc *LoadBalancerCreate) SetNillableDeletedBy(s *string) *LoadBalancerCreate {
+	if s != nil {
+		lbc.SetDeletedBy(*s)
+	}
+	return lbc
+}
+
 // SetName sets the "name" field.
 func (lbc *LoadBalancerCreate) SetName(s string) *LoadBalancerCreate {
 	lbc.mutation.SetName(s)
@@ -305,6 +333,14 @@ func (lbc *LoadBalancerCreate) createSpec() (*LoadBalancer, *sqlgraph.CreateSpec
 	if value, ok := lbc.mutation.UpdatedBy(); ok {
 		_spec.SetField(loadbalancer.FieldUpdatedBy, field.TypeString, value)
 		_node.UpdatedBy = value
+	}
+	if value, ok := lbc.mutation.DeletedAt(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := lbc.mutation.DeletedBy(); ok {
+		_spec.SetField(loadbalancer.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := lbc.mutation.Name(); ok {
 		_spec.SetField(loadbalancer.FieldName, field.TypeString, value)
