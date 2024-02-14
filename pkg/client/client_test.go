@@ -277,11 +277,11 @@ func TestNodeMetadata(t *testing.T) {
 
 func mustNewGQLTestClient(respJSON string, respCode int) *graphql.Client {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/query", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/query", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(respCode)
 		w.Header().Set("Content-Type", "application/json")
-		_, err := io.WriteString(w, respJSON)
 
+		_, err := io.WriteString(w, respJSON)
 		if err != nil {
 			panic(err)
 		}

@@ -50,7 +50,7 @@ var (
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the load balancer Graph API",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		if pidFileName != "" {
 			if err := writePidFile(pidFileName); err != nil {
 				logger.Error("failed to write pid file", zap.Error(err))
