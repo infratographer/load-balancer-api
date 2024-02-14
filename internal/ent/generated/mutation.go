@@ -4096,6 +4096,7 @@ func (m *PortMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(port.FieldUpdatedBy) {
 		fields = append(fields, port.FieldUpdatedBy)
+	}
 	if m.FieldCleared(port.FieldName) {
 		fields = append(fields, port.FieldName)
 	}
@@ -4124,6 +4125,7 @@ func (m *PortMutation) ClearField(name string) error {
 		return nil
 	case port.FieldUpdatedBy:
 		m.ClearUpdatedBy()
+		return nil
 	case port.FieldName:
 		m.ClearName()
 		return nil
