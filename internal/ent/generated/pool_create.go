@@ -65,6 +65,62 @@ func (pc *PoolCreate) SetNillableUpdatedAt(t *time.Time) *PoolCreate {
 	return pc
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (pc *PoolCreate) SetCreatedBy(s string) *PoolCreate {
+	pc.mutation.SetCreatedBy(s)
+	return pc
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableCreatedBy(s *string) *PoolCreate {
+	if s != nil {
+		pc.SetCreatedBy(*s)
+	}
+	return pc
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (pc *PoolCreate) SetUpdatedBy(s string) *PoolCreate {
+	pc.mutation.SetUpdatedBy(s)
+	return pc
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableUpdatedBy(s *string) *PoolCreate {
+	if s != nil {
+		pc.SetUpdatedBy(*s)
+	}
+	return pc
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (pc *PoolCreate) SetDeletedAt(t time.Time) *PoolCreate {
+	pc.mutation.SetDeletedAt(t)
+	return pc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableDeletedAt(t *time.Time) *PoolCreate {
+	if t != nil {
+		pc.SetDeletedAt(*t)
+	}
+	return pc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pc *PoolCreate) SetDeletedBy(s string) *PoolCreate {
+	pc.mutation.SetDeletedBy(s)
+	return pc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pc *PoolCreate) SetNillableDeletedBy(s *string) *PoolCreate {
+	if s != nil {
+		pc.SetDeletedBy(*s)
+	}
+	return pc
+}
+
 // SetName sets the "name" field.
 func (pc *PoolCreate) SetName(s string) *PoolCreate {
 	pc.mutation.SetName(s)
@@ -134,7 +190,9 @@ func (pc *PoolCreate) Mutation() *PoolMutation {
 
 // Save creates the Pool in the database.
 func (pc *PoolCreate) Save(ctx context.Context) (*Pool, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -161,19 +219,29 @@ func (pc *PoolCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PoolCreate) defaults() {
+func (pc *PoolCreate) defaults() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
+		if pool.DefaultCreatedAt == nil {
+			return fmt.Errorf("generated: uninitialized pool.DefaultCreatedAt (forgotten import generated/runtime?)")
+		}
 		v := pool.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		if pool.DefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized pool.DefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := pool.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := pc.mutation.ID(); !ok {
+		if pool.DefaultID == nil {
+			return fmt.Errorf("generated: uninitialized pool.DefaultID (forgotten import generated/runtime?)")
+		}
 		v := pool.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -250,6 +318,22 @@ func (pc *PoolCreate) createSpec() (*Pool, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(pool.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := pc.mutation.CreatedBy(); ok {
+		_spec.SetField(pool.FieldCreatedBy, field.TypeString, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := pc.mutation.UpdatedBy(); ok {
+		_spec.SetField(pool.FieldUpdatedBy, field.TypeString, value)
+		_node.UpdatedBy = value
+	}
+	if value, ok := pc.mutation.DeletedAt(); ok {
+		_spec.SetField(pool.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.DeletedBy(); ok {
+		_spec.SetField(pool.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(pool.FieldName, field.TypeString, value)

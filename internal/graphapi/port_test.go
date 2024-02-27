@@ -43,31 +43,43 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "creates loadbalancer port",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         22,
 			},
 			Expected: &graphclient.LoadBalancerPort{
-				Name:   "lb-port",
+				Name:   newString("lb-port"),
 				Number: 22,
 			},
 		},
 		{
 			TestName: "succeeds in creating loadbalancer port with empty name",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "",
+				Name:           newString(""),
 				LoadBalancerID: lb.ID,
 				Number:         23,
 			},
 			Expected: &graphclient.LoadBalancerPort{
-				Name:   "",
+				Name:   newString(""),
 				Number: 23,
+			},
+		},
+		{
+			TestName: "succeeds in creating loadbalancer port with nil name",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           nil,
+				LoadBalancerID: lb.ID,
+				Number:         24,
+			},
+			Expected: &graphclient.LoadBalancerPort{
+				Name:   newString(""),
+				Number: 24,
 			},
 		},
 		{
 			TestName: "fails to create loadbalancer port with empty loadbalancer id",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: "",
 				Number:         22,
 			},
@@ -76,7 +88,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with number < min",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         0,
 			},
@@ -85,7 +97,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with number > max",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         65536,
 			},
@@ -94,7 +106,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with duplicate port number",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         80,
 			},
@@ -103,7 +115,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with restricted port number",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         1234,
 			},
@@ -112,7 +124,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with invalid pool id",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         1234,
 				PoolIDs:        []gidx.PrefixedID{"not-a-valid-pool-id"},
@@ -122,7 +134,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer port with pool with conflicting OwnerID",
 			Input: graphclient.CreateLoadBalancerPortInput{
-				Name:           "lb-port",
+				Name:           newString("lb-port"),
 				LoadBalancerID: lb.ID,
 				Number:         1234,
 				PoolIDs:        []gidx.PrefixedID{poolBad.ID},
@@ -134,6 +146,7 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().LoadBalancerPortCreate(ctx, tt.Input)
@@ -207,7 +220,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 				Name: newString("lb-port"),
 			},
 			Expected: &graphclient.LoadBalancerPort{
-				Name:   "lb-port",
+				Name:   newString("lb-port"),
 				Number: 80,
 			},
 		},
@@ -218,7 +231,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 				Number: newInt64(22),
 			},
 			Expected: &graphclient.LoadBalancerPort{
-				Name:   "lb-port",
+				Name:   newString("lb-port"),
 				Number: 22,
 			},
 		},
@@ -229,7 +242,7 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 				Name: newString(""),
 			},
 			Expected: &graphclient.LoadBalancerPort{
-				Name:   "",
+				Name:   newString(""),
 				Number: 22,
 			},
 		},
@@ -339,7 +352,9 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
+
 			resp, err := graphTestClient().LoadBalancerPortDelete(ctx, tt.Input)
 
 			if tt.errorMsg != "" {
@@ -373,7 +388,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
 
 	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
-	name := gofakeit.DomainName()
+	name := newString(gofakeit.DomainName())
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
 		Name:           name,

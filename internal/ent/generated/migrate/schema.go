@@ -27,6 +27,10 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString, Size: 2147483647},
 		{Name: "owner_id", Type: field.TypeString},
 		{Name: "location_id", Type: field.TypeString},
@@ -40,7 +44,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "load_balancers_providers_provider",
-				Columns:    []*schema.Column{LoadBalancersColumns[6]},
+				Columns:    []*schema.Column{LoadBalancersColumns[10]},
 				RefColumns: []*schema.Column{ProvidersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -59,17 +63,17 @@ var (
 			{
 				Name:    "loadbalancer_provider_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancersColumns[6]},
+				Columns: []*schema.Column{LoadBalancersColumns[10]},
 			},
 			{
 				Name:    "loadbalancer_location_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancersColumns[5]},
+				Columns: []*schema.Column{LoadBalancersColumns[9]},
 			},
 			{
 				Name:    "loadbalancer_owner_id",
 				Unique:  false,
-				Columns: []*schema.Column{LoadBalancersColumns[4]},
+				Columns: []*schema.Column{LoadBalancersColumns[8]},
 			},
 		},
 	}
@@ -78,6 +82,10 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeString, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "weight", Type: field.TypeInt32, Default: 100},
 		{Name: "target", Type: field.TypeString},
@@ -93,7 +101,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "origins_pools_pool",
-				Columns:    []*schema.Column{OriginsColumns[8]},
+				Columns:    []*schema.Column{OriginsColumns[12]},
 				RefColumns: []*schema.Column{PoolsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -112,7 +120,7 @@ var (
 			{
 				Name:    "origin_pool_id",
 				Unique:  false,
-				Columns: []*schema.Column{OriginsColumns[8]},
+				Columns: []*schema.Column{OriginsColumns[12]},
 			},
 		},
 	}
@@ -121,6 +129,10 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "protocol", Type: field.TypeEnum, Enums: []string{"tcp", "udp"}},
 		{Name: "owner_id", Type: field.TypeString},
@@ -144,7 +156,7 @@ var (
 			{
 				Name:    "pool_owner_id",
 				Unique:  false,
-				Columns: []*schema.Column{PoolsColumns[5]},
+				Columns: []*schema.Column{PoolsColumns[9]},
 			},
 		},
 	}
@@ -153,8 +165,12 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeString, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
 		{Name: "number", Type: field.TypeInt},
-		{Name: "name", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "load_balancer_id", Type: field.TypeString},
 	}
 	// PortsTable holds the schema information for the "ports" table.
@@ -165,7 +181,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "ports_load_balancers_load_balancer",
-				Columns:    []*schema.Column{PortsColumns[5]},
+				Columns:    []*schema.Column{PortsColumns[9]},
 				RefColumns: []*schema.Column{LoadBalancersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -184,12 +200,12 @@ var (
 			{
 				Name:    "port_load_balancer_id",
 				Unique:  false,
-				Columns: []*schema.Column{PortsColumns[5]},
+				Columns: []*schema.Column{PortsColumns[9]},
 			},
 			{
 				Name:    "port_load_balancer_id_number",
 				Unique:  true,
-				Columns: []*schema.Column{PortsColumns[5], PortsColumns[3]},
+				Columns: []*schema.Column{PortsColumns[9], PortsColumns[7]},
 			},
 		},
 	}
@@ -198,6 +214,10 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeString, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "owner_id", Type: field.TypeString},
 	}
@@ -220,7 +240,7 @@ var (
 			{
 				Name:    "provider_owner_id",
 				Unique:  false,
-				Columns: []*schema.Column{ProvidersColumns[4]},
+				Columns: []*schema.Column{ProvidersColumns[8]},
 			},
 		},
 	}

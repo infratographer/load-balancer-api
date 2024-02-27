@@ -68,6 +68,7 @@ func TestQueryPool(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, resp)
+
 				return
 			}
 
@@ -161,6 +162,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, createdPoolResp)
+
 				return
 			}
 
@@ -265,6 +267,7 @@ func TestMutate_PoolUpdate(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
 				assert.Nil(t, updatedPoolResp)
+
 				return
 			}
 
@@ -335,6 +338,7 @@ func TestMutate_PoolDelete(t *testing.T) {
 				require.Error(t, err)
 				assert.Nil(t, poolDeleteResp)
 				assert.ErrorContains(t, err, tt.errorMsg)
+
 				return
 			}
 

@@ -10,6 +10,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 	"go.infratographer.com/x/gidx"
 )
 

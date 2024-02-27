@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -38,6 +39,66 @@ type OriginUpdate struct {
 // Where appends a list predicates to the OriginUpdate builder.
 func (ou *OriginUpdate) Where(ps ...predicate.Origin) *OriginUpdate {
 	ou.mutation.Where(ps...)
+	return ou
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (ou *OriginUpdate) SetDeletedAt(t time.Time) *OriginUpdate {
+	ou.mutation.SetDeletedAt(t)
+	return ou
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableDeletedAt(t *time.Time) *OriginUpdate {
+	if t != nil {
+		ou.SetDeletedAt(*t)
+	}
+	return ou
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (ou *OriginUpdate) ClearDeletedAt() *OriginUpdate {
+	ou.mutation.ClearDeletedAt()
+	return ou
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (ou *OriginUpdate) SetDeletedBy(s string) *OriginUpdate {
+	ou.mutation.SetDeletedBy(s)
+	return ou
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableDeletedBy(s *string) *OriginUpdate {
+	if s != nil {
+		ou.SetDeletedBy(*s)
+	}
+	return ou
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (ou *OriginUpdate) ClearDeletedBy() *OriginUpdate {
+	ou.mutation.ClearDeletedBy()
+	return ou
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (ou *OriginUpdate) SetUpdatedBy(s string) *OriginUpdate {
+	ou.mutation.SetUpdatedBy(s)
+	return ou
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (ou *OriginUpdate) SetNillableUpdatedBy(s *string) *OriginUpdate {
+	if s != nil {
+		ou.SetUpdatedBy(*s)
+	}
+	return ou
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (ou *OriginUpdate) ClearUpdatedBy() *OriginUpdate {
+	ou.mutation.ClearUpdatedBy()
 	return ou
 }
 
@@ -108,7 +169,9 @@ func (ou *OriginUpdate) Mutation() *OriginMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ou *OriginUpdate) Save(ctx context.Context) (int, error) {
-	ou.defaults()
+	if err := ou.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
 }
 
@@ -135,11 +198,15 @@ func (ou *OriginUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ou *OriginUpdate) defaults() {
+func (ou *OriginUpdate) defaults() error {
 	if _, ok := ou.mutation.UpdatedAt(); !ok {
+		if origin.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized origin.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := origin.UpdateDefaultUpdatedAt()
 		ou.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -180,6 +247,27 @@ func (ou *OriginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := ou.mutation.DeletedAt(); ok {
+		_spec.SetField(origin.FieldDeletedAt, field.TypeTime, value)
+	}
+	if ou.mutation.DeletedAtCleared() {
+		_spec.ClearField(origin.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := ou.mutation.DeletedBy(); ok {
+		_spec.SetField(origin.FieldDeletedBy, field.TypeString, value)
+	}
+	if ou.mutation.DeletedByCleared() {
+		_spec.ClearField(origin.FieldDeletedBy, field.TypeString)
+	}
+	if ou.mutation.CreatedByCleared() {
+		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := ou.mutation.UpdatedBy(); ok {
+		_spec.SetField(origin.FieldUpdatedBy, field.TypeString, value)
+	}
+	if ou.mutation.UpdatedByCleared() {
+		_spec.ClearField(origin.FieldUpdatedBy, field.TypeString)
+	}
 	if value, ok := ou.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)
 	}
@@ -219,6 +307,66 @@ type OriginUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *OriginMutation
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (ouo *OriginUpdateOne) SetDeletedAt(t time.Time) *OriginUpdateOne {
+	ouo.mutation.SetDeletedAt(t)
+	return ouo
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableDeletedAt(t *time.Time) *OriginUpdateOne {
+	if t != nil {
+		ouo.SetDeletedAt(*t)
+	}
+	return ouo
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (ouo *OriginUpdateOne) ClearDeletedAt() *OriginUpdateOne {
+	ouo.mutation.ClearDeletedAt()
+	return ouo
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (ouo *OriginUpdateOne) SetDeletedBy(s string) *OriginUpdateOne {
+	ouo.mutation.SetDeletedBy(s)
+	return ouo
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableDeletedBy(s *string) *OriginUpdateOne {
+	if s != nil {
+		ouo.SetDeletedBy(*s)
+	}
+	return ouo
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (ouo *OriginUpdateOne) ClearDeletedBy() *OriginUpdateOne {
+	ouo.mutation.ClearDeletedBy()
+	return ouo
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (ouo *OriginUpdateOne) SetUpdatedBy(s string) *OriginUpdateOne {
+	ouo.mutation.SetUpdatedBy(s)
+	return ouo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (ouo *OriginUpdateOne) SetNillableUpdatedBy(s *string) *OriginUpdateOne {
+	if s != nil {
+		ouo.SetUpdatedBy(*s)
+	}
+	return ouo
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (ouo *OriginUpdateOne) ClearUpdatedBy() *OriginUpdateOne {
+	ouo.mutation.ClearUpdatedBy()
+	return ouo
 }
 
 // SetName sets the "name" field.
@@ -301,7 +449,9 @@ func (ouo *OriginUpdateOne) Select(field string, fields ...string) *OriginUpdate
 
 // Save executes the query and returns the updated Origin entity.
 func (ouo *OriginUpdateOne) Save(ctx context.Context) (*Origin, error) {
-	ouo.defaults()
+	if err := ouo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
 }
 
@@ -328,11 +478,15 @@ func (ouo *OriginUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ouo *OriginUpdateOne) defaults() {
+func (ouo *OriginUpdateOne) defaults() error {
 	if _, ok := ouo.mutation.UpdatedAt(); !ok {
+		if origin.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized origin.UpdateDefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := origin.UpdateDefaultUpdatedAt()
 		ouo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -389,6 +543,27 @@ func (ouo *OriginUpdateOne) sqlSave(ctx context.Context) (_node *Origin, err err
 	}
 	if value, ok := ouo.mutation.UpdatedAt(); ok {
 		_spec.SetField(origin.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := ouo.mutation.DeletedAt(); ok {
+		_spec.SetField(origin.FieldDeletedAt, field.TypeTime, value)
+	}
+	if ouo.mutation.DeletedAtCleared() {
+		_spec.ClearField(origin.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := ouo.mutation.DeletedBy(); ok {
+		_spec.SetField(origin.FieldDeletedBy, field.TypeString, value)
+	}
+	if ouo.mutation.DeletedByCleared() {
+		_spec.ClearField(origin.FieldDeletedBy, field.TypeString)
+	}
+	if ouo.mutation.CreatedByCleared() {
+		_spec.ClearField(origin.FieldCreatedBy, field.TypeString)
+	}
+	if value, ok := ouo.mutation.UpdatedBy(); ok {
+		_spec.SetField(origin.FieldUpdatedBy, field.TypeString, value)
+	}
+	if ouo.mutation.UpdatedByCleared() {
+		_spec.ClearField(origin.FieldUpdatedBy, field.TypeString)
 	}
 	if value, ok := ouo.mutation.Name(); ok {
 		_spec.SetField(origin.FieldName, field.TypeString, value)

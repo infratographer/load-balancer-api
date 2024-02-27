@@ -398,12 +398,14 @@ func (c *LoadBalancerClient) QueryProvider(lb *LoadBalancer) *ProviderQuery {
 
 // Hooks returns the client hooks.
 func (c *LoadBalancerClient) Hooks() []Hook {
-	return c.hooks.LoadBalancer
+	hooks := c.hooks.LoadBalancer
+	return append(hooks[:len(hooks):len(hooks)], loadbalancer.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *LoadBalancerClient) Interceptors() []Interceptor {
-	return c.inters.LoadBalancer
+	inters := c.inters.LoadBalancer
+	return append(inters[:len(inters):len(inters)], loadbalancer.Interceptors[:]...)
 }
 
 func (c *LoadBalancerClient) mutate(ctx context.Context, m *LoadBalancerMutation) (Value, error) {
@@ -547,12 +549,14 @@ func (c *OriginClient) QueryPool(o *Origin) *PoolQuery {
 
 // Hooks returns the client hooks.
 func (c *OriginClient) Hooks() []Hook {
-	return c.hooks.Origin
+	hooks := c.hooks.Origin
+	return append(hooks[:len(hooks):len(hooks)], origin.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *OriginClient) Interceptors() []Interceptor {
-	return c.inters.Origin
+	inters := c.inters.Origin
+	return append(inters[:len(inters):len(inters)], origin.Interceptors[:]...)
 }
 
 func (c *OriginClient) mutate(ctx context.Context, m *OriginMutation) (Value, error) {
@@ -712,12 +716,14 @@ func (c *PoolClient) QueryOrigins(po *Pool) *OriginQuery {
 
 // Hooks returns the client hooks.
 func (c *PoolClient) Hooks() []Hook {
-	return c.hooks.Pool
+	hooks := c.hooks.Pool
+	return append(hooks[:len(hooks):len(hooks)], pool.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *PoolClient) Interceptors() []Interceptor {
-	return c.inters.Pool
+	inters := c.inters.Pool
+	return append(inters[:len(inters):len(inters)], pool.Interceptors[:]...)
 }
 
 func (c *PoolClient) mutate(ctx context.Context, m *PoolMutation) (Value, error) {
@@ -877,12 +883,14 @@ func (c *PortClient) QueryLoadBalancer(po *Port) *LoadBalancerQuery {
 
 // Hooks returns the client hooks.
 func (c *PortClient) Hooks() []Hook {
-	return c.hooks.Port
+	hooks := c.hooks.Port
+	return append(hooks[:len(hooks):len(hooks)], port.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *PortClient) Interceptors() []Interceptor {
-	return c.inters.Port
+	inters := c.inters.Port
+	return append(inters[:len(inters):len(inters)], port.Interceptors[:]...)
 }
 
 func (c *PortClient) mutate(ctx context.Context, m *PortMutation) (Value, error) {
@@ -1026,12 +1034,14 @@ func (c *ProviderClient) QueryLoadBalancers(pr *Provider) *LoadBalancerQuery {
 
 // Hooks returns the client hooks.
 func (c *ProviderClient) Hooks() []Hook {
-	return c.hooks.Provider
+	hooks := c.hooks.Provider
+	return append(hooks[:len(hooks):len(hooks)], provider.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *ProviderClient) Interceptors() []Interceptor {
-	return c.inters.Provider
+	inters := c.inters.Provider
+	return append(inters[:len(inters):len(inters)], provider.Interceptors[:]...)
 }
 
 func (c *ProviderClient) mutate(ctx context.Context, m *ProviderMutation) (Value, error) {

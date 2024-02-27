@@ -65,6 +65,62 @@ func (pc *PortCreate) SetNillableUpdatedAt(t *time.Time) *PortCreate {
 	return pc
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (pc *PortCreate) SetDeletedAt(t time.Time) *PortCreate {
+	pc.mutation.SetDeletedAt(t)
+	return pc
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (pc *PortCreate) SetNillableDeletedAt(t *time.Time) *PortCreate {
+	if t != nil {
+		pc.SetDeletedAt(*t)
+	}
+	return pc
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (pc *PortCreate) SetDeletedBy(s string) *PortCreate {
+	pc.mutation.SetDeletedBy(s)
+	return pc
+}
+
+// SetNillableDeletedBy sets the "deleted_by" field if the given value is not nil.
+func (pc *PortCreate) SetNillableDeletedBy(s *string) *PortCreate {
+	if s != nil {
+		pc.SetDeletedBy(*s)
+	}
+	return pc
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (pc *PortCreate) SetCreatedBy(s string) *PortCreate {
+	pc.mutation.SetCreatedBy(s)
+	return pc
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (pc *PortCreate) SetNillableCreatedBy(s *string) *PortCreate {
+	if s != nil {
+		pc.SetCreatedBy(*s)
+	}
+	return pc
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (pc *PortCreate) SetUpdatedBy(s string) *PortCreate {
+	pc.mutation.SetUpdatedBy(s)
+	return pc
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (pc *PortCreate) SetNillableUpdatedBy(s *string) *PortCreate {
+	if s != nil {
+		pc.SetUpdatedBy(*s)
+	}
+	return pc
+}
+
 // SetNumber sets the "number" field.
 func (pc *PortCreate) SetNumber(i int) *PortCreate {
 	pc.mutation.SetNumber(i)
@@ -74,6 +130,14 @@ func (pc *PortCreate) SetNumber(i int) *PortCreate {
 // SetName sets the "name" field.
 func (pc *PortCreate) SetName(s string) *PortCreate {
 	pc.mutation.SetName(s)
+	return pc
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (pc *PortCreate) SetNillableName(s *string) *PortCreate {
+	if s != nil {
+		pc.SetName(*s)
+	}
 	return pc
 }
 
@@ -124,7 +188,9 @@ func (pc *PortCreate) Mutation() *PortMutation {
 
 // Save creates the Port in the database.
 func (pc *PortCreate) Save(ctx context.Context) (*Port, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -151,19 +217,29 @@ func (pc *PortCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PortCreate) defaults() {
+func (pc *PortCreate) defaults() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
+		if port.DefaultCreatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultCreatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		if port.DefaultUpdatedAt == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultUpdatedAt (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := pc.mutation.ID(); !ok {
+		if port.DefaultID == nil {
+			return fmt.Errorf("generated: uninitialized port.DefaultID (forgotten import generated/runtime?)")
+		}
 		v := port.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -181,9 +257,6 @@ func (pc *PortCreate) check() error {
 		if err := port.NumberValidator(v); err != nil {
 			return &ValidationError{Name: "number", err: fmt.Errorf(`generated: validator failed for field "Port.number": %w`, err)}
 		}
-	}
-	if _, ok := pc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`generated: missing required field "Port.name"`)}
 	}
 	if _, ok := pc.mutation.LoadBalancerID(); !ok {
 		return &ValidationError{Name: "load_balancer_id", err: errors.New(`generated: missing required field "Port.load_balancer_id"`)}
@@ -238,6 +311,22 @@ func (pc *PortCreate) createSpec() (*Port, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(port.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := pc.mutation.DeletedAt(); ok {
+		_spec.SetField(port.FieldDeletedAt, field.TypeTime, value)
+		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.DeletedBy(); ok {
+		_spec.SetField(port.FieldDeletedBy, field.TypeString, value)
+		_node.DeletedBy = value
+	}
+	if value, ok := pc.mutation.CreatedBy(); ok {
+		_spec.SetField(port.FieldCreatedBy, field.TypeString, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := pc.mutation.UpdatedBy(); ok {
+		_spec.SetField(port.FieldUpdatedBy, field.TypeString, value)
+		_node.UpdatedBy = value
 	}
 	if value, ok := pc.mutation.Number(); ok {
 		_spec.SetField(port.FieldNumber, field.TypeInt, value)

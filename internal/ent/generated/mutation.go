@@ -58,6 +58,10 @@ type LoadBalancerMutation struct {
 	id              *gidx.PrefixedID
 	created_at      *time.Time
 	updated_at      *time.Time
+	created_by      *string
+	updated_by      *string
+	deleted_at      *time.Time
+	deleted_by      *string
 	name            *string
 	owner_id        *gidx.PrefixedID
 	location_id     *gidx.PrefixedID
@@ -246,6 +250,202 @@ func (m *LoadBalancerMutation) OldUpdatedAt(ctx context.Context) (v time.Time, e
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *LoadBalancerMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *LoadBalancerMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *LoadBalancerMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *LoadBalancerMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[loadbalancer.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *LoadBalancerMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *LoadBalancerMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, loadbalancer.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *LoadBalancerMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *LoadBalancerMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *LoadBalancerMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[loadbalancer.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *LoadBalancerMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *LoadBalancerMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, loadbalancer.FieldUpdatedBy)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *LoadBalancerMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *LoadBalancerMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *LoadBalancerMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[loadbalancer.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *LoadBalancerMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *LoadBalancerMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, loadbalancer.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *LoadBalancerMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *LoadBalancerMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the LoadBalancer entity.
+// If the LoadBalancer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LoadBalancerMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *LoadBalancerMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[loadbalancer.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *LoadBalancerMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[loadbalancer.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *LoadBalancerMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, loadbalancer.FieldDeletedBy)
 }
 
 // SetName sets the "name" field.
@@ -507,12 +707,24 @@ func (m *LoadBalancerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LoadBalancerMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, loadbalancer.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, loadbalancer.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, loadbalancer.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, loadbalancer.FieldUpdatedBy)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, loadbalancer.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, loadbalancer.FieldDeletedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, loadbalancer.FieldName)
@@ -538,6 +750,14 @@ func (m *LoadBalancerMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case loadbalancer.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case loadbalancer.FieldCreatedBy:
+		return m.CreatedBy()
+	case loadbalancer.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case loadbalancer.FieldDeletedAt:
+		return m.DeletedAt()
+	case loadbalancer.FieldDeletedBy:
+		return m.DeletedBy()
 	case loadbalancer.FieldName:
 		return m.Name()
 	case loadbalancer.FieldOwnerID:
@@ -559,6 +779,14 @@ func (m *LoadBalancerMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCreatedAt(ctx)
 	case loadbalancer.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case loadbalancer.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case loadbalancer.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case loadbalancer.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case loadbalancer.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
 	case loadbalancer.FieldName:
 		return m.OldName(ctx)
 	case loadbalancer.FieldOwnerID:
@@ -589,6 +817,34 @@ func (m *LoadBalancerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case loadbalancer.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case loadbalancer.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case loadbalancer.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
 		return nil
 	case loadbalancer.FieldName:
 		v, ok := value.(string)
@@ -647,7 +903,20 @@ func (m *LoadBalancerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *LoadBalancerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(loadbalancer.FieldCreatedBy) {
+		fields = append(fields, loadbalancer.FieldCreatedBy)
+	}
+	if m.FieldCleared(loadbalancer.FieldUpdatedBy) {
+		fields = append(fields, loadbalancer.FieldUpdatedBy)
+	}
+	if m.FieldCleared(loadbalancer.FieldDeletedAt) {
+		fields = append(fields, loadbalancer.FieldDeletedAt)
+	}
+	if m.FieldCleared(loadbalancer.FieldDeletedBy) {
+		fields = append(fields, loadbalancer.FieldDeletedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -660,6 +929,20 @@ func (m *LoadBalancerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *LoadBalancerMutation) ClearField(name string) error {
+	switch name {
+	case loadbalancer.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case loadbalancer.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case loadbalancer.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown LoadBalancer nullable field %s", name)
 }
 
@@ -672,6 +955,18 @@ func (m *LoadBalancerMutation) ResetField(name string) error {
 		return nil
 	case loadbalancer.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case loadbalancer.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case loadbalancer.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case loadbalancer.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case loadbalancer.FieldDeletedBy:
+		m.ResetDeletedBy()
 		return nil
 	case loadbalancer.FieldName:
 		m.ResetName()
@@ -799,6 +1094,10 @@ type OriginMutation struct {
 	id             *gidx.PrefixedID
 	created_at     *time.Time
 	updated_at     *time.Time
+	deleted_at     *time.Time
+	deleted_by     *string
+	created_by     *string
+	updated_by     *string
 	name           *string
 	weight         *int32
 	addweight      *int32
@@ -988,6 +1287,202 @@ func (m *OriginMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err err
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *OriginMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OriginMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OriginMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OriginMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[origin.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OriginMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[origin.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OriginMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, origin.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OriginMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OriginMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OriginMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[origin.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OriginMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[origin.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OriginMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, origin.FieldDeletedBy)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OriginMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OriginMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OriginMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[origin.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OriginMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[origin.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OriginMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, origin.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OriginMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OriginMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Origin entity.
+// If the Origin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OriginMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OriginMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[origin.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OriginMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[origin.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OriginMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, origin.FieldUpdatedBy)
 }
 
 // SetName sets the "name" field.
@@ -1307,12 +1802,24 @@ func (m *OriginMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OriginMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, origin.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, origin.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, origin.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, origin.FieldDeletedBy)
+	}
+	if m.created_by != nil {
+		fields = append(fields, origin.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, origin.FieldUpdatedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, origin.FieldName)
@@ -1344,6 +1851,14 @@ func (m *OriginMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case origin.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case origin.FieldDeletedAt:
+		return m.DeletedAt()
+	case origin.FieldDeletedBy:
+		return m.DeletedBy()
+	case origin.FieldCreatedBy:
+		return m.CreatedBy()
+	case origin.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case origin.FieldName:
 		return m.Name()
 	case origin.FieldWeight:
@@ -1369,6 +1884,14 @@ func (m *OriginMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldCreatedAt(ctx)
 	case origin.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case origin.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case origin.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case origin.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case origin.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case origin.FieldName:
 		return m.OldName(ctx)
 	case origin.FieldWeight:
@@ -1403,6 +1926,34 @@ func (m *OriginMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case origin.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case origin.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case origin.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case origin.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case origin.FieldName:
 		v, ok := value.(string)
@@ -1502,7 +2053,20 @@ func (m *OriginMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *OriginMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(origin.FieldDeletedAt) {
+		fields = append(fields, origin.FieldDeletedAt)
+	}
+	if m.FieldCleared(origin.FieldDeletedBy) {
+		fields = append(fields, origin.FieldDeletedBy)
+	}
+	if m.FieldCleared(origin.FieldCreatedBy) {
+		fields = append(fields, origin.FieldCreatedBy)
+	}
+	if m.FieldCleared(origin.FieldUpdatedBy) {
+		fields = append(fields, origin.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1515,6 +2079,20 @@ func (m *OriginMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *OriginMutation) ClearField(name string) error {
+	switch name {
+	case origin.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case origin.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case origin.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case origin.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Origin nullable field %s", name)
 }
 
@@ -1527,6 +2105,18 @@ func (m *OriginMutation) ResetField(name string) error {
 		return nil
 	case origin.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case origin.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case origin.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case origin.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case origin.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case origin.FieldName:
 		m.ResetName()
@@ -1632,6 +2222,10 @@ type PoolMutation struct {
 	id             *gidx.PrefixedID
 	created_at     *time.Time
 	updated_at     *time.Time
+	created_by     *string
+	updated_by     *string
+	deleted_at     *time.Time
+	deleted_by     *string
 	name           *string
 	protocol       *pool.Protocol
 	owner_id       *gidx.PrefixedID
@@ -1821,6 +2415,202 @@ func (m *PoolMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *PoolMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *PoolMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *PoolMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *PoolMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[pool.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *PoolMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[pool.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *PoolMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, pool.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *PoolMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *PoolMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *PoolMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[pool.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *PoolMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[pool.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *PoolMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, pool.FieldUpdatedBy)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *PoolMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *PoolMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *PoolMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[pool.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *PoolMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[pool.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *PoolMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, pool.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *PoolMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *PoolMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the Pool entity.
+// If the Pool object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PoolMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *PoolMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[pool.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *PoolMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[pool.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *PoolMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, pool.FieldDeletedBy)
 }
 
 // SetName sets the "name" field.
@@ -2073,12 +2863,24 @@ func (m *PoolMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PoolMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, pool.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, pool.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, pool.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, pool.FieldUpdatedBy)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, pool.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, pool.FieldDeletedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, pool.FieldName)
@@ -2101,6 +2903,14 @@ func (m *PoolMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case pool.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case pool.FieldCreatedBy:
+		return m.CreatedBy()
+	case pool.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case pool.FieldDeletedAt:
+		return m.DeletedAt()
+	case pool.FieldDeletedBy:
+		return m.DeletedBy()
 	case pool.FieldName:
 		return m.Name()
 	case pool.FieldProtocol:
@@ -2120,6 +2930,14 @@ func (m *PoolMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case pool.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case pool.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case pool.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case pool.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case pool.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
 	case pool.FieldName:
 		return m.OldName(ctx)
 	case pool.FieldProtocol:
@@ -2148,6 +2966,34 @@ func (m *PoolMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case pool.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case pool.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case pool.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case pool.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
 		return nil
 	case pool.FieldName:
 		v, ok := value.(string)
@@ -2199,7 +3045,20 @@ func (m *PoolMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PoolMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(pool.FieldCreatedBy) {
+		fields = append(fields, pool.FieldCreatedBy)
+	}
+	if m.FieldCleared(pool.FieldUpdatedBy) {
+		fields = append(fields, pool.FieldUpdatedBy)
+	}
+	if m.FieldCleared(pool.FieldDeletedAt) {
+		fields = append(fields, pool.FieldDeletedAt)
+	}
+	if m.FieldCleared(pool.FieldDeletedBy) {
+		fields = append(fields, pool.FieldDeletedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2212,6 +3071,20 @@ func (m *PoolMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PoolMutation) ClearField(name string) error {
+	switch name {
+	case pool.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case pool.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case pool.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case pool.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Pool nullable field %s", name)
 }
 
@@ -2224,6 +3097,18 @@ func (m *PoolMutation) ResetField(name string) error {
 		return nil
 	case pool.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case pool.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case pool.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case pool.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case pool.FieldDeletedBy:
+		m.ResetDeletedBy()
 		return nil
 	case pool.FieldName:
 		m.ResetName()
@@ -2356,6 +3241,10 @@ type PortMutation struct {
 	id                   *gidx.PrefixedID
 	created_at           *time.Time
 	updated_at           *time.Time
+	deleted_at           *time.Time
+	deleted_by           *string
+	created_by           *string
+	updated_by           *string
 	number               *int
 	addnumber            *int
 	name                 *string
@@ -2546,6 +3435,202 @@ func (m *PortMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (m *PortMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *PortMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *PortMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[port.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *PortMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[port.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *PortMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, port.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *PortMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *PortMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *PortMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[port.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *PortMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[port.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *PortMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, port.FieldDeletedBy)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *PortMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *PortMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *PortMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[port.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *PortMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[port.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *PortMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, port.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *PortMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *PortMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Port entity.
+// If the Port object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PortMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *PortMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[port.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *PortMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[port.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *PortMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, port.FieldUpdatedBy)
+}
+
 // SetNumber sets the "number" field.
 func (m *PortMutation) SetNumber(i int) {
 	m.number = &i
@@ -2633,9 +3718,22 @@ func (m *PortMutation) OldName(ctx context.Context) (v string, err error) {
 	return oldValue.Name, nil
 }
 
+// ClearName clears the value of the "name" field.
+func (m *PortMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[port.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *PortMutation) NameCleared() bool {
+	_, ok := m.clearedFields[port.FieldName]
+	return ok
+}
+
 // ResetName resets all changes to the "name" field.
 func (m *PortMutation) ResetName() {
 	m.name = nil
+	delete(m.clearedFields, port.FieldName)
 }
 
 // SetLoadBalancerID sets the "load_balancer_id" field.
@@ -2789,12 +3887,24 @@ func (m *PortMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PortMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, port.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, port.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, port.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, port.FieldDeletedBy)
+	}
+	if m.created_by != nil {
+		fields = append(fields, port.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, port.FieldUpdatedBy)
 	}
 	if m.number != nil {
 		fields = append(fields, port.FieldNumber)
@@ -2817,6 +3927,14 @@ func (m *PortMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case port.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case port.FieldDeletedAt:
+		return m.DeletedAt()
+	case port.FieldDeletedBy:
+		return m.DeletedBy()
+	case port.FieldCreatedBy:
+		return m.CreatedBy()
+	case port.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case port.FieldNumber:
 		return m.Number()
 	case port.FieldName:
@@ -2836,6 +3954,14 @@ func (m *PortMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case port.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case port.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case port.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case port.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case port.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case port.FieldNumber:
 		return m.OldNumber(ctx)
 	case port.FieldName:
@@ -2864,6 +3990,34 @@ func (m *PortMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case port.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case port.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case port.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case port.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case port.FieldNumber:
 		v, ok := value.(int)
@@ -2930,7 +4084,23 @@ func (m *PortMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PortMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(port.FieldDeletedAt) {
+		fields = append(fields, port.FieldDeletedAt)
+	}
+	if m.FieldCleared(port.FieldDeletedBy) {
+		fields = append(fields, port.FieldDeletedBy)
+	}
+	if m.FieldCleared(port.FieldCreatedBy) {
+		fields = append(fields, port.FieldCreatedBy)
+	}
+	if m.FieldCleared(port.FieldUpdatedBy) {
+		fields = append(fields, port.FieldUpdatedBy)
+	}
+	if m.FieldCleared(port.FieldName) {
+		fields = append(fields, port.FieldName)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2943,6 +4113,23 @@ func (m *PortMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PortMutation) ClearField(name string) error {
+	switch name {
+	case port.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case port.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case port.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case port.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case port.FieldName:
+		m.ClearName()
+		return nil
+	}
 	return fmt.Errorf("unknown Port nullable field %s", name)
 }
 
@@ -2955,6 +4142,18 @@ func (m *PortMutation) ResetField(name string) error {
 		return nil
 	case port.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case port.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case port.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case port.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case port.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case port.FieldNumber:
 		m.ResetNumber()
@@ -3079,6 +4278,10 @@ type ProviderMutation struct {
 	id                    *gidx.PrefixedID
 	created_at            *time.Time
 	updated_at            *time.Time
+	deleted_at            *time.Time
+	deleted_by            *string
+	created_by            *string
+	updated_by            *string
 	name                  *string
 	owner_id              *gidx.PrefixedID
 	clearedFields         map[string]struct{}
@@ -3266,6 +4469,202 @@ func (m *ProviderMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (m *ProviderMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *ProviderMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ProviderMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[provider.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ProviderMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[provider.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *ProviderMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, provider.FieldDeletedAt)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *ProviderMutation) SetDeletedBy(s string) {
+	m.deleted_by = &s
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *ProviderMutation) DeletedBy() (r string, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldDeletedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *ProviderMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.clearedFields[provider.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *ProviderMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[provider.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *ProviderMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	delete(m.clearedFields, provider.FieldDeletedBy)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *ProviderMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *ProviderMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *ProviderMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[provider.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *ProviderMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[provider.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *ProviderMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, provider.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *ProviderMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *ProviderMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Provider entity.
+// If the Provider object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *ProviderMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[provider.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *ProviderMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[provider.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *ProviderMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, provider.FieldUpdatedBy)
+}
+
 // SetName sets the "name" field.
 func (m *ProviderMutation) SetName(s string) {
 	m.name = &s
@@ -3426,12 +4825,24 @@ func (m *ProviderMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProviderMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, provider.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, provider.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, provider.FieldDeletedAt)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, provider.FieldDeletedBy)
+	}
+	if m.created_by != nil {
+		fields = append(fields, provider.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, provider.FieldUpdatedBy)
 	}
 	if m.name != nil {
 		fields = append(fields, provider.FieldName)
@@ -3451,6 +4862,14 @@ func (m *ProviderMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case provider.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case provider.FieldDeletedAt:
+		return m.DeletedAt()
+	case provider.FieldDeletedBy:
+		return m.DeletedBy()
+	case provider.FieldCreatedBy:
+		return m.CreatedBy()
+	case provider.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case provider.FieldName:
 		return m.Name()
 	case provider.FieldOwnerID:
@@ -3468,6 +4887,14 @@ func (m *ProviderMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCreatedAt(ctx)
 	case provider.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case provider.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case provider.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case provider.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case provider.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case provider.FieldName:
 		return m.OldName(ctx)
 	case provider.FieldOwnerID:
@@ -3494,6 +4921,34 @@ func (m *ProviderMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case provider.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case provider.FieldDeletedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case provider.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case provider.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
 		return nil
 	case provider.FieldName:
 		v, ok := value.(string)
@@ -3538,7 +4993,20 @@ func (m *ProviderMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProviderMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(provider.FieldDeletedAt) {
+		fields = append(fields, provider.FieldDeletedAt)
+	}
+	if m.FieldCleared(provider.FieldDeletedBy) {
+		fields = append(fields, provider.FieldDeletedBy)
+	}
+	if m.FieldCleared(provider.FieldCreatedBy) {
+		fields = append(fields, provider.FieldCreatedBy)
+	}
+	if m.FieldCleared(provider.FieldUpdatedBy) {
+		fields = append(fields, provider.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3551,6 +5019,20 @@ func (m *ProviderMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProviderMutation) ClearField(name string) error {
+	switch name {
+	case provider.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case provider.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case provider.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case provider.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown Provider nullable field %s", name)
 }
 
@@ -3563,6 +5045,18 @@ func (m *ProviderMutation) ResetField(name string) error {
 		return nil
 	case provider.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case provider.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case provider.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case provider.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case provider.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case provider.FieldName:
 		m.ResetName()

@@ -236,7 +236,7 @@ func (c *PoolUpdateOne) SetInput(i UpdateLoadBalancerPoolInput) *PoolUpdateOne {
 // CreateLoadBalancerPortInput represents a mutation input for creating loadbalancerports.
 type CreateLoadBalancerPortInput struct {
 	Number         int
-	Name           string
+	Name           *string
 	PoolIDs        []gidx.PrefixedID
 	LoadBalancerID gidx.PrefixedID
 }
@@ -244,7 +244,9 @@ type CreateLoadBalancerPortInput struct {
 // Mutate applies the CreateLoadBalancerPortInput on the PortMutation builder.
 func (i *CreateLoadBalancerPortInput) Mutate(m *PortMutation) {
 	m.SetNumber(i.Number)
-	m.SetName(i.Name)
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
 	if v := i.PoolIDs; len(v) > 0 {
 		m.AddPoolIDs(v...)
 	}
@@ -260,6 +262,7 @@ func (c *PortCreate) SetInput(i CreateLoadBalancerPortInput) *PortCreate {
 // UpdateLoadBalancerPortInput represents a mutation input for updating loadbalancerports.
 type UpdateLoadBalancerPortInput struct {
 	Number        *int
+	ClearName     bool
 	Name          *string
 	ClearPools    bool
 	AddPoolIDs    []gidx.PrefixedID
@@ -270,6 +273,9 @@ type UpdateLoadBalancerPortInput struct {
 func (i *UpdateLoadBalancerPortInput) Mutate(m *PortMutation) {
 	if v := i.Number; v != nil {
 		m.SetNumber(*v)
+	}
+	if i.ClearName {
+		m.ClearName()
 	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)

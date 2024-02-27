@@ -161,6 +161,26 @@ func (lb *LoadBalancerQuery) collectField(ctx context.Context, opCtx *graphql.Op
 				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedAt)
 				fieldSeen[loadbalancer.FieldUpdatedAt] = struct{}{}
 			}
+		case "createdBy":
+			if _, ok := fieldSeen[loadbalancer.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldCreatedBy)
+				fieldSeen[loadbalancer.FieldCreatedBy] = struct{}{}
+			}
+		case "updatedBy":
+			if _, ok := fieldSeen[loadbalancer.FieldUpdatedBy]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldUpdatedBy)
+				fieldSeen[loadbalancer.FieldUpdatedBy] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[loadbalancer.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldDeletedAt)
+				fieldSeen[loadbalancer.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[loadbalancer.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, loadbalancer.FieldDeletedBy)
+				fieldSeen[loadbalancer.FieldDeletedBy] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[loadbalancer.FieldName]; !ok {
 				selectedFields = append(selectedFields, loadbalancer.FieldName)
@@ -273,6 +293,26 @@ func (o *OriginQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			if _, ok := fieldSeen[origin.FieldUpdatedAt]; !ok {
 				selectedFields = append(selectedFields, origin.FieldUpdatedAt)
 				fieldSeen[origin.FieldUpdatedAt] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[origin.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, origin.FieldDeletedAt)
+				fieldSeen[origin.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[origin.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, origin.FieldDeletedBy)
+				fieldSeen[origin.FieldDeletedBy] = struct{}{}
+			}
+		case "createdBy":
+			if _, ok := fieldSeen[origin.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, origin.FieldCreatedBy)
+				fieldSeen[origin.FieldCreatedBy] = struct{}{}
+			}
+		case "updatedBy":
+			if _, ok := fieldSeen[origin.FieldUpdatedBy]; !ok {
+				selectedFields = append(selectedFields, origin.FieldUpdatedBy)
+				fieldSeen[origin.FieldUpdatedBy] = struct{}{}
 			}
 		case "name":
 			if _, ok := fieldSeen[origin.FieldName]; !ok {
@@ -494,6 +534,26 @@ func (po *PoolQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 				selectedFields = append(selectedFields, pool.FieldUpdatedAt)
 				fieldSeen[pool.FieldUpdatedAt] = struct{}{}
 			}
+		case "createdBy":
+			if _, ok := fieldSeen[pool.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, pool.FieldCreatedBy)
+				fieldSeen[pool.FieldCreatedBy] = struct{}{}
+			}
+		case "updatedBy":
+			if _, ok := fieldSeen[pool.FieldUpdatedBy]; !ok {
+				selectedFields = append(selectedFields, pool.FieldUpdatedBy)
+				fieldSeen[pool.FieldUpdatedBy] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[pool.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, pool.FieldDeletedAt)
+				fieldSeen[pool.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[pool.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, pool.FieldDeletedBy)
+				fieldSeen[pool.FieldDeletedBy] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[pool.FieldName]; !ok {
 				selectedFields = append(selectedFields, pool.FieldName)
@@ -628,6 +688,26 @@ func (po *PortQuery) collectField(ctx context.Context, opCtx *graphql.OperationC
 			if _, ok := fieldSeen[port.FieldUpdatedAt]; !ok {
 				selectedFields = append(selectedFields, port.FieldUpdatedAt)
 				fieldSeen[port.FieldUpdatedAt] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[port.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, port.FieldDeletedAt)
+				fieldSeen[port.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[port.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, port.FieldDeletedBy)
+				fieldSeen[port.FieldDeletedBy] = struct{}{}
+			}
+		case "createdBy":
+			if _, ok := fieldSeen[port.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, port.FieldCreatedBy)
+				fieldSeen[port.FieldCreatedBy] = struct{}{}
+			}
+		case "updatedBy":
+			if _, ok := fieldSeen[port.FieldUpdatedBy]; !ok {
+				selectedFields = append(selectedFields, port.FieldUpdatedBy)
+				fieldSeen[port.FieldUpdatedBy] = struct{}{}
 			}
 		case "number":
 			if _, ok := fieldSeen[port.FieldNumber]; !ok {
@@ -821,6 +901,26 @@ func (pr *ProviderQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 			if _, ok := fieldSeen[provider.FieldUpdatedAt]; !ok {
 				selectedFields = append(selectedFields, provider.FieldUpdatedAt)
 				fieldSeen[provider.FieldUpdatedAt] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[provider.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, provider.FieldDeletedAt)
+				fieldSeen[provider.FieldDeletedAt] = struct{}{}
+			}
+		case "deletedBy":
+			if _, ok := fieldSeen[provider.FieldDeletedBy]; !ok {
+				selectedFields = append(selectedFields, provider.FieldDeletedBy)
+				fieldSeen[provider.FieldDeletedBy] = struct{}{}
+			}
+		case "createdBy":
+			if _, ok := fieldSeen[provider.FieldCreatedBy]; !ok {
+				selectedFields = append(selectedFields, provider.FieldCreatedBy)
+				fieldSeen[provider.FieldCreatedBy] = struct{}{}
+			}
+		case "updatedBy":
+			if _, ok := fieldSeen[provider.FieldUpdatedBy]; !ok {
+				selectedFields = append(selectedFields, provider.FieldUpdatedBy)
+				fieldSeen[provider.FieldUpdatedBy] = struct{}{}
 			}
 		case "name":
 			if _, ok := fieldSeen[provider.FieldName]; !ok {

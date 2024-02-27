@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/field"
@@ -14,6 +15,8 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/intercept"
+
+	"go.infratographer.com/x/echojwtx"
 )
 
 // Mixin implements the soft delete pattern for schemas.
@@ -25,7 +28,17 @@ type Mixin struct {
 func (Mixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("deleted_at").
-			Optional(),
+			Optional().
+			Annotations(
+				entgql.OrderField("DELETED_AT"),
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+			),
+		field.String("deleted_by").
+			Optional().
+			Annotations(
+				entgql.OrderField("DELETED_BY"),
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+			),
 	}
 }
 
@@ -60,10 +73,19 @@ func (d Mixin) Hooks() []ent.Hook {
 					if skip, _ := ctx.Value(softDeleteKey{}).(bool); skip {
 						return next.Mutate(ctx, m)
 					}
+
+					actor := "unknown-actor"
+
+					id, ok := ctx.Value(echojwtx.ActorCtxKey).(string)
+					if ok {
+						actor = id
+					}
+
 					mx, ok := m.(interface {
 						SetOp(ent.Op)
 						Client() *generated.Client
 						SetDeletedAt(time.Time)
+						SetDeletedBy(string)
 						WhereP(...func(*sql.Selector))
 					})
 					if !ok {
@@ -72,6 +94,7 @@ func (d Mixin) Hooks() []ent.Hook {
 					d.P(mx)
 					mx.SetOp(ent.OpUpdate)
 					mx.SetDeletedAt(time.Now())
+					mx.SetDeletedBy(actor)
 					return mx.Client().Mutate(ctx, m)
 				})
 			},

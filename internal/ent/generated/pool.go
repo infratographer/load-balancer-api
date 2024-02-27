@@ -36,6 +36,14 @@ type Pool struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy string `json:"created_by,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy string `json:"updated_by,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// DeletedBy holds the value of the "deleted_by" field.
+	DeletedBy string `json:"deleted_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Protocol holds the value of the "protocol" field.
@@ -89,9 +97,9 @@ func (*Pool) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case pool.FieldID, pool.FieldOwnerID:
 			values[i] = new(gidx.PrefixedID)
-		case pool.FieldName, pool.FieldProtocol:
+		case pool.FieldCreatedBy, pool.FieldUpdatedBy, pool.FieldDeletedBy, pool.FieldName, pool.FieldProtocol:
 			values[i] = new(sql.NullString)
-		case pool.FieldCreatedAt, pool.FieldUpdatedAt:
+		case pool.FieldCreatedAt, pool.FieldUpdatedAt, pool.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -125,6 +133,30 @@ func (po *Pool) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				po.UpdatedAt = value.Time
+			}
+		case pool.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				po.CreatedBy = value.String
+			}
+		case pool.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				po.UpdatedBy = value.String
+			}
+		case pool.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				po.DeletedAt = value.Time
+			}
+		case pool.FieldDeletedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
+			} else if value.Valid {
+				po.DeletedBy = value.String
 			}
 		case pool.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -195,6 +227,18 @@ func (po *Pool) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(po.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(po.CreatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(po.UpdatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("deleted_at=")
+	builder.WriteString(po.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_by=")
+	builder.WriteString(po.DeletedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(po.Name)

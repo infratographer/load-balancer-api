@@ -12,6 +12,7 @@ import (
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
+	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
 	"go.infratographer.com/x/gidx"
 )
 

@@ -55,6 +55,7 @@ func TestQuery_loadBalancerProvider(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().GetLoadBalancerProvider(ctx, tt.QueryID)
@@ -118,6 +119,7 @@ func TestCreate_Provider(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().LoadBalancerProviderCreate(ctx, tt.Input)

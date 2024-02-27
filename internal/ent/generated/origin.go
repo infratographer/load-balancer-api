@@ -37,6 +37,14 @@ type Origin struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// DeletedBy holds the value of the "deleted_by" field.
+	DeletedBy string `json:"deleted_by,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy string `json:"created_by,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy string `json:"updated_by,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Weight holds the value of the "weight" field.
@@ -90,9 +98,9 @@ func (*Origin) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case origin.FieldWeight, origin.FieldPortNumber:
 			values[i] = new(sql.NullInt64)
-		case origin.FieldName, origin.FieldTarget:
+		case origin.FieldDeletedBy, origin.FieldCreatedBy, origin.FieldUpdatedBy, origin.FieldName, origin.FieldTarget:
 			values[i] = new(sql.NullString)
-		case origin.FieldCreatedAt, origin.FieldUpdatedAt:
+		case origin.FieldCreatedAt, origin.FieldUpdatedAt, origin.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,6 +134,30 @@ func (o *Origin) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				o.UpdatedAt = value.Time
+			}
+		case origin.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				o.DeletedAt = value.Time
+			}
+		case origin.FieldDeletedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
+			} else if value.Valid {
+				o.DeletedBy = value.String
+			}
+		case origin.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				o.CreatedBy = value.String
+			}
+		case origin.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				o.UpdatedBy = value.String
 			}
 		case origin.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -209,6 +241,18 @@ func (o *Origin) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(o.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_at=")
+	builder.WriteString(o.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_by=")
+	builder.WriteString(o.DeletedBy)
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(o.CreatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(o.UpdatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(o.Name)

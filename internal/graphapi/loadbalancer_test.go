@@ -62,6 +62,7 @@ func TestQuery_loadBalancer(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().GetLoadBalancer(ctx, tt.QueryID)
@@ -133,6 +134,7 @@ func TestCreate_loadBalancer(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
 
 			resp, err := graphTestClient().LoadBalancerCreate(ctx, tt.Input)
@@ -197,7 +199,9 @@ func TestCreate_loadBalancer_limit(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.TestName, func(t *testing.T) {
 			tt := tt
+
 			t.Parallel()
+
 			var err error
 
 			for i := 1; i < tt.lbCount; i++ {
@@ -210,6 +214,7 @@ func TestCreate_loadBalancer_limit(t *testing.T) {
 			if tt.errorMsg != "" {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.errorMsg)
+
 				return
 			}
 
@@ -392,7 +397,7 @@ func TestFullLoadBalancerLifecycle(t *testing.T) {
 	assert.Equal(t, ownerID, createdLB.Owner.ID)
 
 	createdPortResp, err := graphTestClient().LoadBalancerPortCreate(ctx, graphclient.CreateLoadBalancerPortInput{
-		Name:           gofakeit.DomainName(),
+		Name:           newString(gofakeit.DomainName()),
 		Number:         8080,
 		LoadBalancerID: createdLB.ID,
 	})

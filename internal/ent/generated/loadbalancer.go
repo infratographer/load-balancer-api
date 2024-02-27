@@ -38,6 +38,14 @@ type LoadBalancer struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy string `json:"created_by,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy string `json:"updated_by,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// DeletedBy holds the value of the "deleted_by" field.
+	DeletedBy string `json:"deleted_by,omitempty"`
 	// The name of the load balancer.
 	Name string `json:"name,omitempty"`
 	// The ID for the owner for this load balancer.
@@ -96,9 +104,9 @@ func (*LoadBalancer) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case loadbalancer.FieldID, loadbalancer.FieldOwnerID, loadbalancer.FieldLocationID, loadbalancer.FieldProviderID:
 			values[i] = new(gidx.PrefixedID)
-		case loadbalancer.FieldName:
+		case loadbalancer.FieldCreatedBy, loadbalancer.FieldUpdatedBy, loadbalancer.FieldDeletedBy, loadbalancer.FieldName:
 			values[i] = new(sql.NullString)
-		case loadbalancer.FieldCreatedAt, loadbalancer.FieldUpdatedAt:
+		case loadbalancer.FieldCreatedAt, loadbalancer.FieldUpdatedAt, loadbalancer.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -132,6 +140,30 @@ func (lb *LoadBalancer) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				lb.UpdatedAt = value.Time
+			}
+		case loadbalancer.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				lb.CreatedBy = value.String
+			}
+		case loadbalancer.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				lb.UpdatedBy = value.String
+			}
+		case loadbalancer.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				lb.DeletedAt = value.Time
+			}
+		case loadbalancer.FieldDeletedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
+			} else if value.Valid {
+				lb.DeletedBy = value.String
 			}
 		case loadbalancer.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -208,6 +240,18 @@ func (lb *LoadBalancer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(lb.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(lb.CreatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(lb.UpdatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("deleted_at=")
+	builder.WriteString(lb.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_by=")
+	builder.WriteString(lb.DeletedBy)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(lb.Name)
