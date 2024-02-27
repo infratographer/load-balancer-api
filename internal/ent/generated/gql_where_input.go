@@ -1834,6 +1834,8 @@ type LoadBalancerPortWhereInput struct {
 	NameContains     *string  `json:"nameContains,omitempty"`
 	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
 	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
+	NameIsNil        bool     `json:"nameIsNil,omitempty"`
+	NameNotNil       bool     `json:"nameNotNil,omitempty"`
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
@@ -2210,6 +2212,12 @@ func (i *LoadBalancerPortWhereInput) P() (predicate.Port, error) {
 	}
 	if i.NameHasSuffix != nil {
 		predicates = append(predicates, port.NameHasSuffix(*i.NameHasSuffix))
+	}
+	if i.NameIsNil {
+		predicates = append(predicates, port.NameIsNil())
+	}
+	if i.NameNotNil {
+		predicates = append(predicates, port.NameNotNil())
 	}
 	if i.NameEqualFold != nil {
 		predicates = append(predicates, port.NameEqualFold(*i.NameEqualFold))

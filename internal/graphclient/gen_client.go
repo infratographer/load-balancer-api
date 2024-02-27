@@ -247,7 +247,7 @@ type LoadBalancerPortCreate struct {
 	LoadBalancerPortCreate struct {
 		LoadBalancerPort struct {
 			ID           gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			Name         string          "json:\"name\" graphql:\"name\""
+			Name         *string         "json:\"name\" graphql:\"name\""
 			Number       int64           "json:\"number\" graphql:\"number\""
 			LoadBalancer struct {
 				ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
@@ -266,7 +266,7 @@ type LoadBalancerPortUpdate struct {
 	LoadBalancerPortUpdate struct {
 		LoadBalancerPort struct {
 			ID        gidx.PrefixedID "json:\"id\" graphql:\"id\""
-			Name      string          "json:\"name\" graphql:\"name\""
+			Name      *string         "json:\"name\" graphql:\"name\""
 			Number    int64           "json:\"number\" graphql:\"number\""
 			CreatedAt time.Time       "json:\"createdAt\" graphql:\"createdAt\""
 			UpdatedAt time.Time       "json:\"updatedAt\" graphql:\"updatedAt\""

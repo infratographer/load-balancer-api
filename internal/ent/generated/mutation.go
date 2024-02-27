@@ -3718,9 +3718,22 @@ func (m *PortMutation) OldName(ctx context.Context) (v string, err error) {
 	return oldValue.Name, nil
 }
 
+// ClearName clears the value of the "name" field.
+func (m *PortMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[port.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *PortMutation) NameCleared() bool {
+	_, ok := m.clearedFields[port.FieldName]
+	return ok
+}
+
 // ResetName resets all changes to the "name" field.
 func (m *PortMutation) ResetName() {
 	m.name = nil
+	delete(m.clearedFields, port.FieldName)
 }
 
 // SetLoadBalancerID sets the "load_balancer_id" field.
@@ -4084,6 +4097,9 @@ func (m *PortMutation) ClearedFields() []string {
 	if m.FieldCleared(port.FieldUpdatedBy) {
 		fields = append(fields, port.FieldUpdatedBy)
 	}
+	if m.FieldCleared(port.FieldName) {
+		fields = append(fields, port.FieldName)
+	}
 	return fields
 }
 
@@ -4109,6 +4125,9 @@ func (m *PortMutation) ClearField(name string) error {
 		return nil
 	case port.FieldUpdatedBy:
 		m.ClearUpdatedBy()
+		return nil
+	case port.FieldName:
+		m.ClearName()
 		return nil
 	}
 	return fmt.Errorf("unknown Port nullable field %s", name)

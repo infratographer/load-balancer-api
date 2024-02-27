@@ -565,6 +565,16 @@ func NameHasSuffix(v string) predicate.Port {
 	return predicate.Port(sql.FieldHasSuffix(FieldName, v))
 }
 
+// NameIsNil applies the IsNil predicate on the "name" field.
+func NameIsNil() predicate.Port {
+	return predicate.Port(sql.FieldIsNull(FieldName))
+}
+
+// NameNotNil applies the NotNil predicate on the "name" field.
+func NameNotNil() predicate.Port {
+	return predicate.Port(sql.FieldNotNull(FieldName))
+}
+
 // NameEqualFold applies the EqualFold predicate on the "name" field.
 func NameEqualFold(v string) predicate.Port {
 	return predicate.Port(sql.FieldEqualFold(FieldName, v))

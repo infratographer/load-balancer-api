@@ -54,7 +54,8 @@ func (Port) Fields() []ent.Field {
 		field.String("name").
 			Annotations(
 				entgql.OrderField("name"),
-			),
+			).
+			Optional(),
 		field.String("load_balancer_id").
 			GoType(gidx.PrefixedID("")).
 			Immutable().
