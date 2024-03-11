@@ -1,4 +1,4 @@
-query GetLoadBalancerPort($id: ID!, $portid: ID!) {
+query GetPortByLoadBalancer($id: ID!, $portid: ID!) {
   loadBalancer(id: $id) {
     ports(where: { id: $portid }) {
       edges {
@@ -13,6 +13,20 @@ query GetLoadBalancerPort($id: ID!, $portid: ID!) {
         }
       }
     }
+  }
+}
+
+query GetLoadBalancerPort($id: ID!) {
+  loadBalancerPort(id: $id) {
+    id
+    number
+    name
+    loadBalancerID
+    loadBalancer {
+      id
+    }
+    createdAt
+    updatedAt
   }
 }
 

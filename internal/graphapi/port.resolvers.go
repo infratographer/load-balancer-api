@@ -191,3 +191,29 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 
 	return &LoadBalancerPortDeletePayload{DeletedID: id}, nil
 }
+
+// LoadBalancerPort is the resolver for the loadBalancerPort field.
+func (r *queryResolver) LoadBalancerPort(ctx context.Context, id gidx.PrefixedID) (*generated.Port, error) {
+	logger := r.logger.With("loadbalancerPortID", id.String())
+
+	// check gidx format
+	if _, err := gidx.Parse(id.String()); err != nil {
+		return nil, err
+	}
+
+	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)
+	if err != nil {
+		if generated.IsNotFound(err) {
+			return nil, err
+		}
+
+		logger.Errorw("failed to get loadbalancer port", "error", err)
+		return nil, ErrInternalServerError
+	}
+
+	if err := permissions.CheckAccess(ctx, p.Edges.LoadBalancer.OwnerID, actionLoadBalancerGet); err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}

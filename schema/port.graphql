@@ -1,3 +1,13 @@
+extend type Query {
+  """
+  Lookup a port by ID.
+  """
+  loadBalancerPort(
+    """The port ID."""
+    id: ID!
+  ): LoadBalancerPort!
+}
+
 extend type Mutation {
   """
   Create a load balancer port.
