@@ -1190,6 +1190,11 @@ type Query {
 		"""The pool ID."""
 		id: ID!
 	): LoadBalancerPool!
+	"""Lookup a port by ID."""
+	loadBalancerPort(
+		"""The port ID."""
+		id: ID!
+	): LoadBalancerPort!
 	"""Lookup a load balancer provider by ID."""
 	loadBalancerProvider(
 		"""The load balancer provider ID."""

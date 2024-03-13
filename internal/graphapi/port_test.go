@@ -14,6 +14,7 @@ import (
 	"go.infratographer.com/x/gidx"
 
 	"go.infratographer.com/load-balancer-api/internal/config"
+	ent "go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/graphclient"
 	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
@@ -376,6 +377,66 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 	}
 }
 
+func TestGet_LoadbalancerPort(t *testing.T) {
+	ctx := context.Background()
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx = perms.ContextWithHandler(ctx)
+
+	// Permit request
+	ctx = context.WithValue(ctx, permissions.CheckerCtxKey, permissions.DefaultAllowChecker)
+
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+	port := (&testutils.PortBuilder{Name: "", LoadBalancerID: lb.ID, Number: 80}).MustNew(ctx)
+
+	testCases := []struct {
+		TestName     string
+		QueryID      gidx.PrefixedID
+		ExpectedPort *ent.Port
+		errorMsg     string
+	}{
+		{
+			TestName:     "get port",
+			QueryID:      port.ID,
+			ExpectedPort: port,
+		},
+		{
+			TestName: "port not found",
+			QueryID:  gidx.MustNewID("loadprt"),
+			errorMsg: "not found",
+		},
+		{
+			TestName: "invalid port ID",
+			QueryID:  "an invalid port id",
+			errorMsg: "invalid id",
+		},
+	}
+
+	for _, tt := range testCases {
+		// lint
+		tt := tt
+
+		t.Run(tt.TestName, func(t *testing.T) {
+			resp, err := graphTestClient().GetLoadBalancerPort(ctx, tt.QueryID)
+			if tt.errorMsg != "" {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tt.errorMsg)
+				assert.Nil(t, resp)
+
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+
+			assert.Equal(t, port.ID, resp.LoadBalancerPort.ID)
+			assert.EqualValues(t, port.Number, resp.LoadBalancerPort.Number)
+			assert.Equal(t, "loadprt", resp.LoadBalancerPort.ID.Prefix())
+		})
+	}
+}
+
 func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	ctx := context.Background()
 	perms := new(mockpermissions.MockPermissions)
@@ -417,7 +478,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	require.Equal(t, newPort, updatedPort.LoadBalancerPortUpdate.LoadBalancerPort.Number)
 
 	// Query the Port
-	queryPort, err := graphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
+	queryPort, err := graphTestClient().GetPortByLoadBalancer(ctx, lb.ID, createdPort.ID)
 	require.NoError(t, err)
 	require.NotNil(t, queryPort)
 	require.Len(t, queryPort.LoadBalancer.Ports.Edges, 1)
@@ -430,7 +491,7 @@ func TestFullLoadBalancerPortLifecycle(t *testing.T) {
 	require.EqualValues(t, createdPort.ID, deletedResp.LoadBalancerPortDelete.DeletedID.String())
 
 	// Query the Port
-	queryPort, err = graphTestClient().GetLoadBalancerPort(ctx, lb.ID, createdPort.ID)
+	queryPort, err = graphTestClient().GetPortByLoadBalancer(ctx, lb.ID, createdPort.ID)
 	// The Load balancer still exists so this doesn't cause a failure
 	require.NoError(t, err)
 	require.Len(t, queryPort.LoadBalancer.Ports.Edges, 0)

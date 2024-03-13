@@ -15,9 +15,10 @@ type GraphClient interface {
 	GetLoadBalancer(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancer, error)
 	GetLoadBalancerPool(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPool, error)
 	GetLoadBalancerPoolOrigin(ctx context.Context, id gidx.PrefixedID, originid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPoolOrigin, error)
-	GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error)
+	GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error)
 	GetLoadBalancerProvider(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerProvider, error)
 	GetOwnerLoadBalancers(ctx context.Context, id gidx.PrefixedID, orderBy *LoadBalancerOrder, httpRequestOptions ...client.HTTPRequestOption) (*GetOwnerLoadBalancers, error)
+	GetPortByLoadBalancer(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetPortByLoadBalancer, error)
 	LoadBalancerCreate(ctx context.Context, input CreateLoadBalancerInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerCreate, error)
 	LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerDelete, error)
 	LoadBalancerOriginCreate(ctx context.Context, input CreateLoadBalancerOriginInput, httpRequestOptions ...client.HTTPRequestOption) (*LoadBalancerOriginCreate, error)
@@ -48,6 +49,7 @@ type Query struct {
 	LoadBalancer         LoadBalancer               "json:\"loadBalancer\" graphql:\"loadBalancer\""
 	LoadBalancerHistory  LoadBalancer               "json:\"loadBalancerHistory\" graphql:\"loadBalancerHistory\""
 	LoadBalancerPool     LoadBalancerPool           "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	LoadBalancerPort     LoadBalancerPort           "json:\"loadBalancerPort\" graphql:\"loadBalancerPort\""
 	LoadBalancerProvider LoadBalancerProvider       "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
 	Entities             []Entity                   "json:\"_entities\" graphql:\"_entities\""
 	Service              Service                    "json:\"_service\" graphql:\"_service\""
@@ -116,21 +118,17 @@ type GetLoadBalancerPoolOrigin struct {
 	} "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
 }
 type GetLoadBalancerPort struct {
-	LoadBalancer struct {
-		Ports struct {
-			Edges []*struct {
-				Node *struct {
-					ID           gidx.PrefixedID "json:\"id\" graphql:\"id\""
-					Number       int64           "json:\"number\" graphql:\"number\""
-					LoadBalancer struct {
-						ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
-					} "json:\"loadBalancer\" graphql:\"loadBalancer\""
-					CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
-					UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
-				} "json:\"node\" graphql:\"node\""
-			} "json:\"edges\" graphql:\"edges\""
-		} "json:\"ports\" graphql:\"ports\""
-	} "json:\"loadBalancer\" graphql:\"loadBalancer\""
+	LoadBalancerPort struct {
+		ID             gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		Number         int64           "json:\"number\" graphql:\"number\""
+		Name           *string         "json:\"name\" graphql:\"name\""
+		LoadBalancerID gidx.PrefixedID "json:\"loadBalancerID\" graphql:\"loadBalancerID\""
+		LoadBalancer   struct {
+			ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
+		} "json:\"loadBalancer\" graphql:\"loadBalancer\""
+		CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
+		UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
+	} "json:\"loadBalancerPort\" graphql:\"loadBalancerPort\""
 }
 type GetLoadBalancerProvider struct {
 	LoadBalancerProvider struct {
@@ -154,6 +152,23 @@ type GetOwnerLoadBalancers struct {
 			} "json:\"edges\" graphql:\"edges\""
 		} "json:\"loadBalancers\" graphql:\"loadBalancers\""
 	} "json:\"_entities\" graphql:\"_entities\""
+}
+type GetPortByLoadBalancer struct {
+	LoadBalancer struct {
+		Ports struct {
+			Edges []*struct {
+				Node *struct {
+					ID           gidx.PrefixedID "json:\"id\" graphql:\"id\""
+					Number       int64           "json:\"number\" graphql:\"number\""
+					LoadBalancer struct {
+						ID gidx.PrefixedID "json:\"id\" graphql:\"id\""
+					} "json:\"loadBalancer\" graphql:\"loadBalancer\""
+					CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
+					UpdatedAt time.Time "json:\"updatedAt\" graphql:\"updatedAt\""
+				} "json:\"node\" graphql:\"node\""
+			} "json:\"edges\" graphql:\"edges\""
+		} "json:\"ports\" graphql:\"ports\""
+	} "json:\"loadBalancer\" graphql:\"loadBalancer\""
 }
 type LoadBalancerCreate struct {
 	LoadBalancerCreate struct {
@@ -404,29 +419,24 @@ func (c *Client) GetLoadBalancerPoolOrigin(ctx context.Context, id gidx.Prefixed
 	return &res, nil
 }
 
-const GetLoadBalancerPortDocument = `query GetLoadBalancerPort ($id: ID!, $portid: ID!) {
-	loadBalancer(id: $id) {
-		ports(where: {id:$portid}) {
-			edges {
-				node {
-					id
-					number
-					loadBalancer {
-						id
-					}
-					createdAt
-					updatedAt
-				}
-			}
+const GetLoadBalancerPortDocument = `query GetLoadBalancerPort ($id: ID!) {
+	loadBalancerPort(id: $id) {
+		id
+		number
+		name
+		loadBalancerID
+		loadBalancer {
+			id
 		}
+		createdAt
+		updatedAt
 	}
 }
 `
 
-func (c *Client) GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error) {
+func (c *Client) GetLoadBalancerPort(ctx context.Context, id gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetLoadBalancerPort, error) {
 	vars := map[string]interface{}{
-		"id":     id,
-		"portid": portid,
+		"id": id,
 	}
 
 	var res GetLoadBalancerPort
@@ -487,6 +497,39 @@ func (c *Client) GetOwnerLoadBalancers(ctx context.Context, id gidx.PrefixedID, 
 
 	var res GetOwnerLoadBalancers
 	if err := c.Client.Post(ctx, "GetOwnerLoadBalancers", GetOwnerLoadBalancersDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetPortByLoadBalancerDocument = `query GetPortByLoadBalancer ($id: ID!, $portid: ID!) {
+	loadBalancer(id: $id) {
+		ports(where: {id:$portid}) {
+			edges {
+				node {
+					id
+					number
+					loadBalancer {
+						id
+					}
+					createdAt
+					updatedAt
+				}
+			}
+		}
+	}
+}
+`
+
+func (c *Client) GetPortByLoadBalancer(ctx context.Context, id gidx.PrefixedID, portid gidx.PrefixedID, httpRequestOptions ...client.HTTPRequestOption) (*GetPortByLoadBalancer, error) {
+	vars := map[string]interface{}{
+		"id":     id,
+		"portid": portid,
+	}
+
+	var res GetPortByLoadBalancer
+	if err := c.Client.Post(ctx, "GetPortByLoadBalancer", GetPortByLoadBalancerDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
