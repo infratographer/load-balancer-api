@@ -1,13 +1,16 @@
 module go.infratographer.com/load-balancer-api
 
-go 1.21
+go 1.22
+
+toolchain go1.22.1
 
 require (
 	entgo.io/contrib v0.4.5
 	entgo.io/ent v0.12.4
 	github.com/99designs/gqlgen v0.17.38
 	github.com/Yamashou/gqlgenc v0.15.1
-	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/brianvoe/gofakeit/v6 v6.26.3
+	github.com/brianvoe/gofakeit/v7 v7.0.2
 	github.com/docker/go-connections v0.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hasura/go-graphql-client v0.12.1
