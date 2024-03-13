@@ -21,7 +21,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.29.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.29.1
 	github.com/vektah/gqlparser/v2 v2.5.11
-	github.com/wundergraph/graphql-go-tools v1.67.0
+	github.com/wundergraph/graphql-go-tools v1.67.1
 	go.infratographer.com/metadata-api v0.0.4
 	go.infratographer.com/permissions-api v0.3.2
 	go.infratographer.com/x v0.3.9
