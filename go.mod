@@ -25,7 +25,7 @@ require (
 	go.infratographer.com/metadata-api v0.0.4
 	go.infratographer.com/permissions-api v0.2.7
 	go.infratographer.com/x v0.3.9
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
 )
 
