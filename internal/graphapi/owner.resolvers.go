@@ -9,11 +9,13 @@ import (
 	"fmt"
 
 	"entgo.io/contrib/entgql"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
-	"go.infratographer.com/x/gidx"
 )
 
 // Owner is the resolver for the owner field.
@@ -33,11 +35,19 @@ func (r *loadBalancerProviderResolver) Owner(ctx context.Context, obj *generated
 
 // LoadBalancers is the resolver for the loadBalancers field.
 func (r *resourceOwnerResolver) LoadBalancers(ctx context.Context, obj *ResourceOwner, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
+	if err := permissions.CheckAccess(ctx, obj.ID, actionLoadBalancerGet); err != nil {
+		return nil, err
+	}
+
 	return r.client.LoadBalancer.Query().Where(loadbalancer.OwnerID(obj.ID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
 }
 
 // LoadBalancerPools is the resolver for the loadBalancerPools field.
 func (r *resourceOwnerResolver) LoadBalancerPools(ctx context.Context, obj *ResourceOwner, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error) {
+	if err := permissions.CheckAccess(ctx, obj.ID, actionLoadBalancerPoolGet); err != nil {
+		return nil, err
+	}
+
 	return r.client.Pool.Query().Where(pool.OwnerID(obj.ID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerPoolOrder(orderBy), generated.WithLoadBalancerPoolFilter(where.Filter))
 }
 
