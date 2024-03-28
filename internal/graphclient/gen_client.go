@@ -45,14 +45,13 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	LoadBalancerPools    LoadBalancerPoolConnection "json:\"loadBalancerPools\" graphql:\"loadBalancerPools\""
-	LoadBalancer         LoadBalancer               "json:\"loadBalancer\" graphql:\"loadBalancer\""
-	LoadBalancerHistory  LoadBalancer               "json:\"loadBalancerHistory\" graphql:\"loadBalancerHistory\""
-	LoadBalancerPool     LoadBalancerPool           "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
-	LoadBalancerPort     LoadBalancerPort           "json:\"loadBalancerPort\" graphql:\"loadBalancerPort\""
-	LoadBalancerProvider LoadBalancerProvider       "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
-	Entities             []Entity                   "json:\"_entities\" graphql:\"_entities\""
-	Service              Service                    "json:\"_service\" graphql:\"_service\""
+	LoadBalancer         LoadBalancer         "json:\"loadBalancer\" graphql:\"loadBalancer\""
+	LoadBalancerHistory  LoadBalancer         "json:\"loadBalancerHistory\" graphql:\"loadBalancerHistory\""
+	LoadBalancerPool     LoadBalancerPool     "json:\"loadBalancerPool\" graphql:\"loadBalancerPool\""
+	LoadBalancerPort     LoadBalancerPort     "json:\"loadBalancerPort\" graphql:\"loadBalancerPort\""
+	LoadBalancerProvider LoadBalancerProvider "json:\"loadBalancerProvider\" graphql:\"loadBalancerProvider\""
+	Entities             []Entity             "json:\"_entities\" graphql:\"_entities\""
+	Service              Service              "json:\"_service\" graphql:\"_service\""
 }
 type Mutation struct {
 	LoadBalancerOriginCreate   LoadBalancerOriginCreatePayload   "json:\"loadBalancerOriginCreate\" graphql:\"loadBalancerOriginCreate\""

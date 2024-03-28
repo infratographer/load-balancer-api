@@ -9,13 +9,12 @@ import (
 	"fmt"
 
 	"entgo.io/contrib/entgql"
-	"go.infratographer.com/permissions-api/pkg/permissions"
-	"go.infratographer.com/x/gidx"
-
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/pool"
 	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
 )
 
 // Owner is the resolver for the owner field.

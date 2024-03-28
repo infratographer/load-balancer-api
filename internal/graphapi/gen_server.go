@@ -291,7 +291,6 @@ type ComplexityRoot struct {
 		LoadBalancer         func(childComplexity int, id gidx.PrefixedID) int
 		LoadBalancerHistory  func(childComplexity int, id gidx.PrefixedID) int
 		LoadBalancerPool     func(childComplexity int, id gidx.PrefixedID) int
-		LoadBalancerPools    func(childComplexity int, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) int
 		LoadBalancerPort     func(childComplexity int, id gidx.PrefixedID) int
 		LoadBalancerProvider func(childComplexity int, id gidx.PrefixedID) int
 		__resolve__service   func(childComplexity int) int
@@ -350,7 +349,6 @@ type MutationResolver interface {
 	LoadBalancerProviderDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerProviderDeletePayload, error)
 }
 type QueryResolver interface {
-	LoadBalancerPools(ctx context.Context, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerPoolOrder, where *generated.LoadBalancerPoolWhereInput) (*generated.LoadBalancerPoolConnection, error)
 	LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error)
 	LoadBalancerHistory(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error)
 	LoadBalancerPool(ctx context.Context, id gidx.PrefixedID) (*generated.Pool, error)
@@ -1447,18 +1445,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.LoadBalancerPool(childComplexity, args["id"].(gidx.PrefixedID)), true
 
-	case "Query.loadBalancerPools":
-		if e.complexity.Query.LoadBalancerPools == nil {
-			break
-		}
-
-		args, err := ec.field_Query_loadBalancerPools_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LoadBalancerPools(childComplexity, args["after"].(*entgql.Cursor[gidx.PrefixedID]), args["first"].(*int), args["before"].(*entgql.Cursor[gidx.PrefixedID]), args["last"].(*int), args["orderBy"].(*generated.LoadBalancerPoolOrder), args["where"].(*generated.LoadBalancerPoolWhereInput)), true
-
 	case "Query.loadBalancerPort":
 		if e.complexity.Query.LoadBalancerPort == nil {
 			break
@@ -1679,13 +1665,21 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../../schema/ent.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-"""Input information to create a load balancer."""
+"""
+Input information to create a load balancer.
+"""
 input CreateLoadBalancerInput {
-  """The name of the load balancer."""
+  """
+  The name of the load balancer.
+  """
   name: String!
-  """The ID for the owner for this load balancer."""
+  """
+  The ID for the owner for this load balancer.
+  """
   ownerID: ID!
-  """The ID for the location of this load balancer."""
+  """
+  The ID for the location of this load balancer.
+  """
   locationID: ID!
   portIDs: [ID!]
   providerID: ID!
@@ -1723,11 +1717,17 @@ input CreateLoadBalancerPortInput {
   poolIDs: [ID!]
   loadBalancerID: ID!
 }
-"""Input information to create a load balancer provider."""
+"""
+Input information to create a load balancer provider.
+"""
 input CreateLoadBalancerProviderInput {
-  """The name of the load balancer provider."""
+  """
+  The name of the load balancer provider.
+  """
   name: String!
-  """The ID for the owner for this load balancer."""
+  """
+  The ID for the owner for this load balancer.
+  """
   ownerID: ID!
 }
 """
@@ -1735,10 +1735,14 @@ Define a Relay Cursor type:
 https://relay.dev/graphql/connections.htm#sec-Cursor
 """
 scalar Cursor
-"""A valid JSON string."""
+"""
+A valid JSON string.
+"""
 scalar JSON
 type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "id") @prefixedID(prefix: "loadbal") {
-  """The ID for the load balancer."""
+  """
+  The ID for the load balancer.
+  """
   id: ID!
   createdAt: Time!
   updatedAt: Time!
@@ -1746,54 +1750,92 @@ type LoadBalancer implements Node & IPAddressable & MetadataNode @key(fields: "i
   updatedBy: String
   deletedAt: Time
   deletedBy: String
-  """The name of the load balancer."""
+  """
+  The name of the load balancer.
+  """
   name: String!
   ports(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for LoadBalancerPorts returned from the connection."""
+    """
+    Ordering options for LoadBalancerPorts returned from the connection.
+    """
     orderBy: LoadBalancerPortOrder
 
-    """Filtering options for LoadBalancerPorts returned from the connection."""
+    """
+    Filtering options for LoadBalancerPorts returned from the connection.
+    """
     where: LoadBalancerPortWhereInput
   ): LoadBalancerPortConnection!
-  """The load balancer provider for the load balancer."""
+  """
+  The load balancer provider for the load balancer.
+  """
   loadBalancerProvider: LoadBalancerProvider! @goField(name: "Provider", forceResolver: false)
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LoadBalancerConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LoadBalancerEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LoadBalancerEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: LoadBalancer
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for LoadBalancer connections"""
+"""
+Ordering options for LoadBalancer connections
+"""
 input LoadBalancerOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order LoadBalancers."""
+  """
+  The field by which to order LoadBalancers.
+  """
   field: LoadBalancerOrderField!
 }
-"""Properties by which LoadBalancer connections can be ordered."""
+"""
+Properties by which LoadBalancer connections can be ordered.
+"""
 enum LoadBalancerOrderField {
   ID
   CREATED_AT
@@ -1821,30 +1863,52 @@ type LoadBalancerOrigin implements Node @key(fields: "id") @prefixedID(prefix: "
   poolID: ID!
   pool: LoadBalancerPool!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LoadBalancerOriginConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LoadBalancerOriginEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LoadBalancerOriginEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: LoadBalancerOrigin
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for LoadBalancerOrigin connections"""
+"""
+Ordering options for LoadBalancerOrigin connections
+"""
 input LoadBalancerOriginOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order LoadBalancerOrigins."""
+  """
+  The field by which to order LoadBalancerOrigins.
+  """
   field: LoadBalancerOriginOrderField!
 }
-"""Properties by which LoadBalancerOrigin connections can be ordered."""
+"""
+Properties by which LoadBalancerOrigin connections can be ordered.
+"""
 enum LoadBalancerOriginOrderField {
   CREATED_AT
   UPDATED_AT
@@ -1866,7 +1930,9 @@ input LoadBalancerOriginWhereInput {
   not: LoadBalancerOriginWhereInput
   and: [LoadBalancerOriginWhereInput!]
   or: [LoadBalancerOriginWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -1875,7 +1941,9 @@ input LoadBalancerOriginWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -1884,7 +1952,9 @@ input LoadBalancerOriginWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """updated_at field predicates"""
+  """
+  updated_at field predicates
+  """
   updatedAt: Time
   updatedAtNEQ: Time
   updatedAtIn: [Time!]
@@ -1893,7 +1963,9 @@ input LoadBalancerOriginWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """deleted_at field predicates"""
+  """
+  deleted_at field predicates
+  """
   deletedAt: Time
   deletedAtNEQ: Time
   deletedAtIn: [Time!]
@@ -1904,7 +1976,9 @@ input LoadBalancerOriginWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """deleted_by field predicates"""
+  """
+  deleted_by field predicates
+  """
   deletedBy: String
   deletedByNEQ: String
   deletedByIn: [String!]
@@ -1920,7 +1994,9 @@ input LoadBalancerOriginWhereInput {
   deletedByNotNil: Boolean
   deletedByEqualFold: String
   deletedByContainsFold: String
-  """created_by field predicates"""
+  """
+  created_by field predicates
+  """
   createdBy: String
   createdByNEQ: String
   createdByIn: [String!]
@@ -1936,7 +2012,9 @@ input LoadBalancerOriginWhereInput {
   createdByNotNil: Boolean
   createdByEqualFold: String
   createdByContainsFold: String
-  """updated_by field predicates"""
+  """
+  updated_by field predicates
+  """
   updatedBy: String
   updatedByNEQ: String
   updatedByIn: [String!]
@@ -1952,7 +2030,9 @@ input LoadBalancerOriginWhereInput {
   updatedByNotNil: Boolean
   updatedByEqualFold: String
   updatedByContainsFold: String
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -1966,7 +2046,9 @@ input LoadBalancerOriginWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """weight field predicates"""
+  """
+  weight field predicates
+  """
   weight: Int
   weightNEQ: Int
   weightIn: [Int!]
@@ -1975,7 +2057,9 @@ input LoadBalancerOriginWhereInput {
   weightGTE: Int
   weightLT: Int
   weightLTE: Int
-  """target field predicates"""
+  """
+  target field predicates
+  """
   target: String
   targetNEQ: String
   targetIn: [String!]
@@ -1989,7 +2073,9 @@ input LoadBalancerOriginWhereInput {
   targetHasSuffix: String
   targetEqualFold: String
   targetContainsFold: String
-  """port_number field predicates"""
+  """
+  port_number field predicates
+  """
   portNumber: Int
   portNumberNEQ: Int
   portNumberIn: [Int!]
@@ -1998,10 +2084,14 @@ input LoadBalancerOriginWhereInput {
   portNumberGTE: Int
   portNumberLT: Int
   portNumberLTE: Int
-  """active field predicates"""
+  """
+  active field predicates
+  """
   active: Boolean
   activeNEQ: Boolean
-  """pool edge predicates"""
+  """
+  pool edge predicates
+  """
   hasPool: Boolean
   hasPoolWith: [LoadBalancerPoolWhereInput!]
 }
@@ -2018,49 +2108,83 @@ type LoadBalancerPool implements Node @key(fields: "id") @prefixedID(prefix: "lo
   ownerID: ID!
   ports: [LoadBalancerPort!]
   origins(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for LoadBalancerOrigins returned from the connection."""
+    """
+    Ordering options for LoadBalancerOrigins returned from the connection.
+    """
     orderBy: LoadBalancerOriginOrder
 
-    """Filtering options for LoadBalancerOrigins returned from the connection."""
+    """
+    Filtering options for LoadBalancerOrigins returned from the connection.
+    """
     where: LoadBalancerOriginWhereInput
   ): LoadBalancerOriginConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LoadBalancerPoolConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LoadBalancerPoolEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LoadBalancerPoolEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: LoadBalancerPool
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for LoadBalancerPool connections"""
+"""
+Ordering options for LoadBalancerPool connections
+"""
 input LoadBalancerPoolOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order LoadBalancerPools."""
+  """
+  The field by which to order LoadBalancerPools.
+  """
   field: LoadBalancerPoolOrderField!
 }
-"""Properties by which LoadBalancerPool connections can be ordered."""
+"""
+Properties by which LoadBalancerPool connections can be ordered.
+"""
 enum LoadBalancerPoolOrderField {
   CREATED_AT
   UPDATED_AT
@@ -2071,7 +2195,9 @@ enum LoadBalancerPoolOrderField {
   name
   protocol
 }
-"""LoadBalancerPoolProtocol is enum for the field protocol"""
+"""
+LoadBalancerPoolProtocol is enum for the field protocol
+"""
 enum LoadBalancerPoolProtocol @goModel(model: "go.infratographer.com/load-balancer-api/internal/ent/generated/pool.Protocol") {
   tcp
   udp
@@ -2084,7 +2210,9 @@ input LoadBalancerPoolWhereInput {
   not: LoadBalancerPoolWhereInput
   and: [LoadBalancerPoolWhereInput!]
   or: [LoadBalancerPoolWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2093,7 +2221,9 @@ input LoadBalancerPoolWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -2102,7 +2232,9 @@ input LoadBalancerPoolWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """updated_at field predicates"""
+  """
+  updated_at field predicates
+  """
   updatedAt: Time
   updatedAtNEQ: Time
   updatedAtIn: [Time!]
@@ -2111,7 +2243,9 @@ input LoadBalancerPoolWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """created_by field predicates"""
+  """
+  created_by field predicates
+  """
   createdBy: String
   createdByNEQ: String
   createdByIn: [String!]
@@ -2127,7 +2261,9 @@ input LoadBalancerPoolWhereInput {
   createdByNotNil: Boolean
   createdByEqualFold: String
   createdByContainsFold: String
-  """updated_by field predicates"""
+  """
+  updated_by field predicates
+  """
   updatedBy: String
   updatedByNEQ: String
   updatedByIn: [String!]
@@ -2143,7 +2279,9 @@ input LoadBalancerPoolWhereInput {
   updatedByNotNil: Boolean
   updatedByEqualFold: String
   updatedByContainsFold: String
-  """deleted_at field predicates"""
+  """
+  deleted_at field predicates
+  """
   deletedAt: Time
   deletedAtNEQ: Time
   deletedAtIn: [Time!]
@@ -2154,7 +2292,9 @@ input LoadBalancerPoolWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """deleted_by field predicates"""
+  """
+  deleted_by field predicates
+  """
   deletedBy: String
   deletedByNEQ: String
   deletedByIn: [String!]
@@ -2170,7 +2310,9 @@ input LoadBalancerPoolWhereInput {
   deletedByNotNil: Boolean
   deletedByEqualFold: String
   deletedByContainsFold: String
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2184,15 +2326,21 @@ input LoadBalancerPoolWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """protocol field predicates"""
+  """
+  protocol field predicates
+  """
   protocol: LoadBalancerPoolProtocol
   protocolNEQ: LoadBalancerPoolProtocol
   protocolIn: [LoadBalancerPoolProtocol!]
   protocolNotIn: [LoadBalancerPoolProtocol!]
-  """ports edge predicates"""
+  """
+  ports edge predicates
+  """
   hasPorts: Boolean
   hasPortsWith: [LoadBalancerPortWhereInput!]
-  """origins edge predicates"""
+  """
+  origins edge predicates
+  """
   hasOrigins: Boolean
   hasOriginsWith: [LoadBalancerOriginWhereInput!]
 }
@@ -2210,30 +2358,52 @@ type LoadBalancerPort implements Node @key(fields: "id") @prefixedID(prefix: "lo
   pools: [LoadBalancerPool!]
   loadBalancer: LoadBalancer!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LoadBalancerPortConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LoadBalancerPortEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LoadBalancerPortEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: LoadBalancerPort
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for LoadBalancerPort connections"""
+"""
+Ordering options for LoadBalancerPort connections
+"""
 input LoadBalancerPortOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order LoadBalancerPorts."""
+  """
+  The field by which to order LoadBalancerPorts.
+  """
   field: LoadBalancerPortOrderField!
 }
-"""Properties by which LoadBalancerPort connections can be ordered."""
+"""
+Properties by which LoadBalancerPort connections can be ordered.
+"""
 enum LoadBalancerPortOrderField {
   CREATED_AT
   UPDATED_AT
@@ -2252,7 +2422,9 @@ input LoadBalancerPortWhereInput {
   not: LoadBalancerPortWhereInput
   and: [LoadBalancerPortWhereInput!]
   or: [LoadBalancerPortWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2261,7 +2433,9 @@ input LoadBalancerPortWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -2270,7 +2444,9 @@ input LoadBalancerPortWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """updated_at field predicates"""
+  """
+  updated_at field predicates
+  """
   updatedAt: Time
   updatedAtNEQ: Time
   updatedAtIn: [Time!]
@@ -2279,7 +2455,9 @@ input LoadBalancerPortWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """deleted_at field predicates"""
+  """
+  deleted_at field predicates
+  """
   deletedAt: Time
   deletedAtNEQ: Time
   deletedAtIn: [Time!]
@@ -2290,7 +2468,9 @@ input LoadBalancerPortWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """deleted_by field predicates"""
+  """
+  deleted_by field predicates
+  """
   deletedBy: String
   deletedByNEQ: String
   deletedByIn: [String!]
@@ -2306,7 +2486,9 @@ input LoadBalancerPortWhereInput {
   deletedByNotNil: Boolean
   deletedByEqualFold: String
   deletedByContainsFold: String
-  """created_by field predicates"""
+  """
+  created_by field predicates
+  """
   createdBy: String
   createdByNEQ: String
   createdByIn: [String!]
@@ -2322,7 +2504,9 @@ input LoadBalancerPortWhereInput {
   createdByNotNil: Boolean
   createdByEqualFold: String
   createdByContainsFold: String
-  """updated_by field predicates"""
+  """
+  updated_by field predicates
+  """
   updatedBy: String
   updatedByNEQ: String
   updatedByIn: [String!]
@@ -2338,7 +2522,9 @@ input LoadBalancerPortWhereInput {
   updatedByNotNil: Boolean
   updatedByEqualFold: String
   updatedByContainsFold: String
-  """number field predicates"""
+  """
+  number field predicates
+  """
   number: Int
   numberNEQ: Int
   numberIn: [Int!]
@@ -2347,7 +2533,9 @@ input LoadBalancerPortWhereInput {
   numberGTE: Int
   numberLT: Int
   numberLTE: Int
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2363,15 +2551,21 @@ input LoadBalancerPortWhereInput {
   nameNotNil: Boolean
   nameEqualFold: String
   nameContainsFold: String
-  """pools edge predicates"""
+  """
+  pools edge predicates
+  """
   hasPools: Boolean
   hasPoolsWith: [LoadBalancerPoolWhereInput!]
-  """load_balancer edge predicates"""
+  """
+  load_balancer edge predicates
+  """
   hasLoadBalancer: Boolean
   hasLoadBalancerWith: [LoadBalancerWhereInput!]
 }
 type LoadBalancerProvider implements Node @key(fields: "id") @prefixedID(prefix: "loadpvd") @goModel(model: "go.infratographer.com/load-balancer-api/internal/ent/generated.Provider") {
-  """The ID for the load balancer provider."""
+  """
+  The ID for the load balancer provider.
+  """
   id: ID!
   createdAt: Time!
   updatedAt: Time!
@@ -2379,52 +2573,88 @@ type LoadBalancerProvider implements Node @key(fields: "id") @prefixedID(prefix:
   deletedBy: String
   createdBy: String
   updatedBy: String
-  """The name of the load balancer provider."""
+  """
+  The name of the load balancer provider.
+  """
   name: String!
   loadBalancers(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for LoadBalancers returned from the connection."""
+    """
+    Ordering options for LoadBalancers returned from the connection.
+    """
     orderBy: LoadBalancerOrder
 
-    """Filtering options for LoadBalancers returned from the connection."""
+    """
+    Filtering options for LoadBalancers returned from the connection.
+    """
     where: LoadBalancerWhereInput
   ): LoadBalancerConnection!
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type LoadBalancerProviderConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [LoadBalancerProviderEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type LoadBalancerProviderEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: LoadBalancerProvider
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for LoadBalancerProvider connections"""
+"""
+Ordering options for LoadBalancerProvider connections
+"""
 input LoadBalancerProviderOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order LoadBalancerProviders."""
+  """
+  The field by which to order LoadBalancerProviders.
+  """
   field: LoadBalancerProviderOrderField!
 }
-"""Properties by which LoadBalancerProvider connections can be ordered."""
+"""
+Properties by which LoadBalancerProvider connections can be ordered.
+"""
 enum LoadBalancerProviderOrderField {
   ID
   CREATED_AT
@@ -2444,7 +2674,9 @@ input LoadBalancerProviderWhereInput {
   not: LoadBalancerProviderWhereInput
   and: [LoadBalancerProviderWhereInput!]
   or: [LoadBalancerProviderWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2453,7 +2685,9 @@ input LoadBalancerProviderWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -2462,7 +2696,9 @@ input LoadBalancerProviderWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """updated_at field predicates"""
+  """
+  updated_at field predicates
+  """
   updatedAt: Time
   updatedAtNEQ: Time
   updatedAtIn: [Time!]
@@ -2471,7 +2707,9 @@ input LoadBalancerProviderWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """deleted_at field predicates"""
+  """
+  deleted_at field predicates
+  """
   deletedAt: Time
   deletedAtNEQ: Time
   deletedAtIn: [Time!]
@@ -2482,7 +2720,9 @@ input LoadBalancerProviderWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """deleted_by field predicates"""
+  """
+  deleted_by field predicates
+  """
   deletedBy: String
   deletedByNEQ: String
   deletedByIn: [String!]
@@ -2498,7 +2738,9 @@ input LoadBalancerProviderWhereInput {
   deletedByNotNil: Boolean
   deletedByEqualFold: String
   deletedByContainsFold: String
-  """created_by field predicates"""
+  """
+  created_by field predicates
+  """
   createdBy: String
   createdByNEQ: String
   createdByIn: [String!]
@@ -2514,7 +2756,9 @@ input LoadBalancerProviderWhereInput {
   createdByNotNil: Boolean
   createdByEqualFold: String
   createdByContainsFold: String
-  """updated_by field predicates"""
+  """
+  updated_by field predicates
+  """
   updatedBy: String
   updatedByNEQ: String
   updatedByIn: [String!]
@@ -2530,7 +2774,9 @@ input LoadBalancerProviderWhereInput {
   updatedByNotNil: Boolean
   updatedByEqualFold: String
   updatedByContainsFold: String
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2544,7 +2790,9 @@ input LoadBalancerProviderWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """load_balancers edge predicates"""
+  """
+  load_balancers edge predicates
+  """
   hasLoadBalancers: Boolean
   hasLoadBalancersWith: [LoadBalancerWhereInput!]
 }
@@ -2556,7 +2804,9 @@ input LoadBalancerWhereInput {
   not: LoadBalancerWhereInput
   and: [LoadBalancerWhereInput!]
   or: [LoadBalancerWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -2565,7 +2815,9 @@ input LoadBalancerWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -2574,7 +2826,9 @@ input LoadBalancerWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """updated_at field predicates"""
+  """
+  updated_at field predicates
+  """
   updatedAt: Time
   updatedAtNEQ: Time
   updatedAtIn: [Time!]
@@ -2583,7 +2837,9 @@ input LoadBalancerWhereInput {
   updatedAtGTE: Time
   updatedAtLT: Time
   updatedAtLTE: Time
-  """created_by field predicates"""
+  """
+  created_by field predicates
+  """
   createdBy: String
   createdByNEQ: String
   createdByIn: [String!]
@@ -2599,7 +2855,9 @@ input LoadBalancerWhereInput {
   createdByNotNil: Boolean
   createdByEqualFold: String
   createdByContainsFold: String
-  """updated_by field predicates"""
+  """
+  updated_by field predicates
+  """
   updatedBy: String
   updatedByNEQ: String
   updatedByIn: [String!]
@@ -2615,7 +2873,9 @@ input LoadBalancerWhereInput {
   updatedByNotNil: Boolean
   updatedByEqualFold: String
   updatedByContainsFold: String
-  """deleted_at field predicates"""
+  """
+  deleted_at field predicates
+  """
   deletedAt: Time
   deletedAtNEQ: Time
   deletedAtIn: [Time!]
@@ -2626,7 +2886,9 @@ input LoadBalancerWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """deleted_by field predicates"""
+  """
+  deleted_by field predicates
+  """
   deletedBy: String
   deletedByNEQ: String
   deletedByIn: [String!]
@@ -2642,7 +2904,9 @@ input LoadBalancerWhereInput {
   deletedByNotNil: Boolean
   deletedByEqualFold: String
   deletedByContainsFold: String
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -2656,10 +2920,14 @@ input LoadBalancerWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """ports edge predicates"""
+  """
+  ports edge predicates
+  """
   hasPorts: Boolean
   hasPortsWith: [LoadBalancerPortWhereInput!]
-  """provider edge predicates"""
+  """
+  provider edge predicates
+  """
   hasProvider: Boolean
   hasProviderWith: [LoadBalancerProviderWhereInput!]
 }
@@ -2668,14 +2936,22 @@ An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
 interface Node {
-  """The id of the object."""
+  """
+  The id of the object.
+  """
   id: ID!
 }
-"""Possible directions in which to order a list of items when provided an ` + "`" + `orderBy` + "`" + ` argument."""
+"""
+Possible directions in which to order a list of items when provided an ` + "`" + `orderBy` + "`" + ` argument.
+"""
 enum OrderDirection {
-  """Specifies an ascending order for a given ` + "`" + `orderBy` + "`" + ` argument."""
+  """
+  Specifies an ascending order for a given ` + "`" + `orderBy` + "`" + ` argument.
+  """
   ASC
-  """Specifies a descending order for a given ` + "`" + `orderBy` + "`" + ` argument."""
+  """
+  Specifies a descending order for a given ` + "`" + `orderBy` + "`" + ` argument.
+  """
   DESC
 }
 """
@@ -2683,41 +2959,35 @@ Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
 type PageInfo @shareable {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: Cursor
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: Cursor
 }
-type Query {
-  loadBalancerPools(
-    """Returns the elements in the list that come after the specified cursor."""
-    after: Cursor
-
-    """Returns the first _n_ elements from the list."""
-    first: Int
-
-    """Returns the elements in the list that come before the specified cursor."""
-    before: Cursor
-
-    """Returns the last _n_ elements from the list."""
-    last: Int
-
-    """Ordering options for LoadBalancerPools returned from the connection."""
-    orderBy: LoadBalancerPoolOrder
-
-    """Filtering options for LoadBalancerPools returned from the connection."""
-    where: LoadBalancerPoolWhereInput
-  ): LoadBalancerPoolConnection!
-}
-"""The builtin Time type"""
+type Query
+"""
+The builtin Time type
+"""
 scalar Time
-"""Input information to update a load balancer."""
+"""
+Input information to update a load balancer.
+"""
 input UpdateLoadBalancerInput {
-  """The name of the load balancer."""
+  """
+  The name of the load balancer.
+  """
   name: String
   addPortIDs: [ID!]
   removePortIDs: [ID!]
@@ -2760,9 +3030,13 @@ input UpdateLoadBalancerPortInput {
   removePoolIDs: [ID!]
   clearPools: Boolean
 }
-"""Input information to update a load balancer provider."""
+"""
+Input information to update a load balancer provider.
+"""
 input UpdateLoadBalancerProviderInput {
-  """The name of the load balancer provider."""
+  """
+  The name of the load balancer provider.
+  """
   name: String
 }
 `, BuiltIn: false},
@@ -3993,66 +4267,6 @@ func (ec *executionContext) field_Query_loadBalancerPool_args(ctx context.Contex
 		}
 	}
 	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_loadBalancerPools_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[gidx.PrefixedID]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *generated.LoadBalancerPoolOrder
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOLoadBalancerPoolOrder2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolOrder(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg4
-	var arg5 *generated.LoadBalancerPoolWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOLoadBalancerPoolWhereInput2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg5
 	return args, nil
 }
 
@@ -11051,69 +11265,6 @@ func (ec *executionContext) fieldContext_PageInfo_endCursor(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_loadBalancerPools(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_loadBalancerPools(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LoadBalancerPools(rctx, fc.Args["after"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[gidx.PrefixedID]), fc.Args["last"].(*int), fc.Args["orderBy"].(*generated.LoadBalancerPoolOrder), fc.Args["where"].(*generated.LoadBalancerPoolWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*generated.LoadBalancerPoolConnection)
-	fc.Result = res
-	return ec.marshalNLoadBalancerPoolConnection2ᚖgoᚗinfratographerᚗcomᚋloadᚑbalancerᚑapiᚋinternalᚋentᚋgeneratedᚐLoadBalancerPoolConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_loadBalancerPools(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_LoadBalancerPoolConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_LoadBalancerPoolConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_LoadBalancerPoolConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type LoadBalancerPoolConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_loadBalancerPools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -21960,28 +22111,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "loadBalancerPools":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_loadBalancerPools(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "loadBalancer":
 			field := field
 
