@@ -1,6 +1,8 @@
 module go.infratographer.com/load-balancer-api
 
-go 1.21
+go 1.22
+
+toolchain go1.22.1
 
 require (
 	entgo.io/contrib v0.4.5
@@ -23,7 +25,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.11
 	github.com/wundergraph/graphql-go-tools v1.67.1
 	go.infratographer.com/metadata-api v0.0.4
-	go.infratographer.com/permissions-api v0.3.2
+	go.infratographer.com/permissions-api v0.3.4
 	go.infratographer.com/x v0.3.9
 	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
