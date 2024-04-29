@@ -57,6 +57,16 @@ func TestQuery_loadBalancer(t *testing.T) {
 			QueryID:  "test-invalid-id",
 			errorMsg: "invalid id",
 		},
+		{
+			TestName: "empty loadbalancer id",
+			QueryID:  "test-invalid-id",
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "whitespace loadbalancer id",
+			QueryID:  "test-invalid-id",
+			errorMsg: "invalid id",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -117,17 +127,17 @@ func TestCreate_loadBalancer(t *testing.T) {
 		{
 			TestName: "fails to create loadbalancer with empty name",
 			Input:    graphclient.CreateLoadBalancerInput{Name: "", ProviderID: prov.ID, OwnerID: ownerID, LocationID: locationID},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails to create loadbalancer with empty ownerID",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: "", LocationID: locationID},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails to create loadbalancer with empty locationID",
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: ""},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
 		},
 	}
 
@@ -258,7 +268,13 @@ func TestUpdate_loadBalancer(t *testing.T) {
 			TestName: "fails to update name to empty",
 			ID:       lb.ID,
 			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("")},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
+		},
+		{
+			TestName: "fails to update name to whitespace",
+			ID:       lb.ID,
+			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("   ")},
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails to update loadbalancer that does not exist",
@@ -329,12 +345,17 @@ func TestDelete_loadBalancer(t *testing.T) {
 		{
 			TestName: "fails to delete empty loadbalancer ID",
 			Input:    gidx.PrefixedID(""),
-			errorMsg: "load_balancer not found",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails with invalid gidx",
 			Input:    "test-invalid-id",
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid characters",
+			Input:    gidx.PrefixedID("loadbal-!@#$%^&*()"),
+			errorMsg: "valid characters are A-Z a-z 0-9 _ -",
 		},
 	}
 

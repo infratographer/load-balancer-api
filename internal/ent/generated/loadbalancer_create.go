@@ -280,6 +280,11 @@ func (lbc *LoadBalancerCreate) check() error {
 			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`generated: validator failed for field "LoadBalancer.provider_id": %w`, err)}
 		}
 	}
+	if v, ok := lbc.mutation.ID(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`generated: validator failed for field "LoadBalancer.id": %w`, err)}
+		}
+	}
 	if _, ok := lbc.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`generated: missing required edge "LoadBalancer.provider"`)}
 	}

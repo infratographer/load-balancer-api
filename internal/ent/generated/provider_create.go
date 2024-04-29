@@ -246,6 +246,11 @@ func (pc *ProviderCreate) check() error {
 			return &ValidationError{Name: "owner_id", err: fmt.Errorf(`generated: validator failed for field "Provider.owner_id": %w`, err)}
 		}
 	}
+	if v, ok := pc.mutation.ID(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`generated: validator failed for field "Provider.id": %w`, err)}
+		}
+	}
 	return nil
 }
 

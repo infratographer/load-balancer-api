@@ -306,6 +306,11 @@ func (oc *OriginCreate) check() error {
 			return &ValidationError{Name: "pool_id", err: fmt.Errorf(`generated: validator failed for field "Origin.pool_id": %w`, err)}
 		}
 	}
+	if v, ok := oc.mutation.ID(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`generated: validator failed for field "Origin.id": %w`, err)}
+		}
+	}
 	if _, ok := oc.mutation.PoolID(); !ok {
 		return &ValidationError{Name: "pool", err: errors.New(`generated: missing required edge "Origin.pool"`)}
 	}

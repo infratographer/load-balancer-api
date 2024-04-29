@@ -14,6 +14,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/audit"
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/softdelete"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -44,7 +45,8 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.OrderField("ID"),
 			),
 		field.Text("name").
-			NotEmpty().
+			// NotEmpty().
+			Validate(validations.NameField).
 			Comment("The name of the load balancer.").
 			Annotations(
 				entgql.OrderField("NAME"),

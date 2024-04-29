@@ -27,6 +27,20 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 		return nil, err
 	}
 
+	input.Name = sanitizeField(input.Name)
+
+	if err := validateGidx(input.OwnerID); err != nil {
+		return nil, newInvalidFieldError("ownerID", err)
+	}
+
+	if err := validateGidx(input.ProviderID); err != nil {
+		return nil, newInvalidFieldError("providerID", err)
+	}
+
+	if err := validateGidx(input.LocationID); err != nil {
+		return nil, newInvalidFieldError("locationID", err)
+	}
+
 	if config.AppConfig.LoadBalancerLimit > 0 {
 		count, err := r.client.LoadBalancer.Query().Where(loadbalancer.OwnerIDEQ(input.OwnerID)).Count(ctx)
 		if err != nil {
@@ -60,9 +74,24 @@ func (r *mutationResolver) LoadBalancerCreate(ctx context.Context, input generat
 func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerInput) (*LoadBalancerUpdatePayload, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
+	}
+
+	if input.Name != nil {
+		*input.Name = sanitizeField(*input.Name)
+	}
+
+	for _, p := range input.AddPortIDs {
+		if err := validateGidx(p); err != nil {
+			return nil, newInvalidFieldError("addPortIDs", err)
+		}
+	}
+
+	for _, p := range input.RemovePortIDs {
+		if err := validateGidx(p); err != nil {
+			return nil, newInvalidFieldError("removePortIDs", err)
+		}
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
@@ -101,9 +130,8 @@ func (r *mutationResolver) LoadBalancerUpdate(ctx context.Context, id gidx.Prefi
 func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerDeletePayload, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, id)
@@ -187,9 +215,8 @@ func (r *mutationResolver) LoadBalancerDelete(ctx context.Context, id gidx.Prefi
 func (r *queryResolver) LoadBalancer(ctx context.Context, id gidx.PrefixedID) (*generated.LoadBalancer, error) {
 	logger := r.logger.With("loadbalancerID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, id)

@@ -276,6 +276,11 @@ func (pc *PoolCreate) check() error {
 			return &ValidationError{Name: "owner_id", err: fmt.Errorf(`generated: validator failed for field "Pool.owner_id": %w`, err)}
 		}
 	}
+	if v, ok := pc.mutation.ID(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`generated: validator failed for field "Pool.id": %w`, err)}
+		}
+	}
 	return nil
 }
 
