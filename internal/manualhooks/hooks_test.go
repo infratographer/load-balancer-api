@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"go.infratographer.com/permissions-api/pkg/permissions/mockpermissions"
 	"go.infratographer.com/x/events"
 	"go.infratographer.com/x/gidx"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/manualhooks"
 	"go.infratographer.com/load-balancer-api/internal/testutils"
 )
@@ -62,6 +65,57 @@ func Test_LoadbalancerCreateHook(t *testing.T) {
 	assert.ElementsMatch(t, expectedAdditionalSubjectIDs, actualAdditionalSubjectIDs)
 	assert.Equal(t, lb.ID, msg.Message().SubjectID)
 	assert.Equal(t, createEventType, msg.Message().EventType)
+}
+
+func Test_LoadbalancerCreateHook_Permissions(t *testing.T) {
+	// Arrange
+	const ownerString = "owner"
+	const parentString = "parent"
+	const subj1 = "subjct-1234567"
+	const subj2 = "subjct-7654321"
+
+	// Mock Permissions
+	perms := new(mockpermissions.MockPermissions)
+	perms.On("CreateAuthRelationships", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	perms.On("DeleteAuthRelationships", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+	ctx := perms.ContextWithHandler(context.Background())
+
+	// Populate actual config
+	config.AppConfig.ExtraPermissionRelations = map[string][]config.PermissionRelation{
+		"loadbalancer": {
+			config.PermissionRelation{
+				Relation: parentString, SubjectID: subj1,
+			},
+			config.PermissionRelation{
+				Relation: ownerString, SubjectID: subj2,
+			},
+		},
+	}
+
+	// Mock Events
+	testutils.EntClient.LoadBalancer.Use(manualhooks.LoadBalancerHooks()...)
+
+	// Act
+	lb := (&testutils.LoadBalancerBuilder{}).MustNew(ctx)
+
+	expectedRelation1 := events.AuthRelationshipRelation{
+		Relation: ownerString, SubjectID: lb.OwnerID,
+	}
+
+	expectedRelation2 := events.AuthRelationshipRelation{
+		Relation: parentString, SubjectID: subj1,
+	}
+
+	expectedRelation3 := events.AuthRelationshipRelation{
+		Relation: ownerString, SubjectID: subj2,
+	}
+
+	// Assert
+	perms.AssertCalled(t, "CreateAuthRelationships", mock.Anything, lb.ID, expectedRelation1, expectedRelation2, expectedRelation3)
+
+	// Cleanup
+	config.AppConfig.ExtraPermissionRelations = map[string][]config.PermissionRelation{}
 }
 
 func Test_LoadbalancerUpdateHook(t *testing.T) {

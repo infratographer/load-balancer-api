@@ -91,6 +91,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - serve
+            - "--config=/config/loadbalancerapi.yaml"
           ports:
             - name: http
               containerPort: {{ .Values.api.listenPort | default "8080" }}
@@ -113,6 +114,9 @@ spec:
               mountPath: "/dbcerts"
               readOnly: true
             {{- end }}
+            - name: config-volume
+              mountPath: "/config"
+              readOnly: true
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
       {{- with .Values.api.nodeSelector }}
@@ -138,3 +142,7 @@ spec:
           secret:
             secretName: "{{ .Values.api.db.certSecret }}"
         {{- end }}
+        - name: config-volume
+          configMap:
+            name: {{ include "common.names.fullname" . }}-additional-config
+

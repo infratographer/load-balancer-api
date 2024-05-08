@@ -117,6 +117,9 @@ func serve(ctx context.Context) error {
 	var resolverOpts []graphapi.Option
 
 	config.AppConfig.LoadBalancerLimit = viper.GetInt("load-balancer-limit")
+	if err := viper.UnmarshalKey("extraRelations", &config.AppConfig.ExtraPermissionRelations); err != nil {
+		logger.Fatalw("error unmarshaling extraRelations from config", "error", err)
+	}
 
 	if serveDevMode {
 		enablePlayground = true

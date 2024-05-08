@@ -17,18 +17,19 @@ import (
 
 // AppConfig stores all the config values for our application
 var AppConfig struct {
-	OIDC              echojwtx.AuthConfig `mapstructure:"oidc"`
-	OIDCClient        OIDCClientConfig    `mapstructure:"oidc"`
-	CRDB              crdbx.Config
-	Logging           loggingx.Config
-	Server            echox.Config
-	Tracing           otelx.Config
-	Events            events.Config
-	Permissions       permissions.Config
-	LoadBalancerLimit int
-	Metadata          MetadataConfig
-	RestrictedPorts   []int
-	Supergraph        SupergraphConfig
+	OIDC                     echojwtx.AuthConfig `mapstructure:"oidc"`
+	OIDCClient               OIDCClientConfig    `mapstructure:"oidc"`
+	CRDB                     crdbx.Config
+	Logging                  loggingx.Config
+	Server                   echox.Config
+	Tracing                  otelx.Config
+	Events                   events.Config
+	Permissions              permissions.Config
+	LoadBalancerLimit        int
+	Metadata                 MetadataConfig
+	RestrictedPorts          []int
+	Supergraph               SupergraphConfig
+	ExtraPermissionRelations map[string][]PermissionRelation
 }
 
 // MetadataConfig stores the configuration for metadata
@@ -45,4 +46,10 @@ type SupergraphConfig struct {
 // OIDCClientConfig stores the configuration for an OIDC client
 type OIDCClientConfig struct {
 	Config oauth2x.Config `mapstructure:"client"`
+}
+
+// PermissionRelation stores the permission relation metadata needed to create AuthRelationshipRelation
+type PermissionRelation struct {
+	Relation  string
+	SubjectID string
 }
