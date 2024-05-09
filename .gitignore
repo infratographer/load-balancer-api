@@ -38,4 +38,4 @@ coverage.txt
 .vscode
 
 # binary
-load-balancer-api
+/load-balancer-api

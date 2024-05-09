@@ -11,6 +11,7 @@ import (
 	"go.infratographer.com/x/gidx"
 	"golang.org/x/exp/slices"
 
+	"go.infratographer.com/load-balancer-api/internal/config"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/hook"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
@@ -120,6 +121,16 @@ func LoadBalancerHooks() []ent.Hook {
 					Relation:  "owner",
 					SubjectID: owner_id,
 				})
+
+				// Add extra relationships based on config
+				if permissions, ok := config.AppConfig.ExtraPermissionRelations["loadbalancer"]; ok {
+					for _, p := range permissions {
+						relationships = append(relationships, events.AuthRelationshipRelation{
+							Relation:  p.Relation,
+							SubjectID: gidx.PrefixedID(p.SubjectID),
+						})
+					}
+				}
 
 				if ok {
 					cv_owner_id = fmt.Sprintf("%s", fmt.Sprint(owner_id))

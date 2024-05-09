@@ -36,6 +36,10 @@ api:
   extraAnnotations: {}
   extraEnvFrom: {}
   extraEnvVars: []
+  extraRelations: {}
+    # loadbalancer:
+    #   - relation: relationship
+    #     subjectID: subjct-1234567
   #- value: "postgresql://user@my-db-server:26257/load_balancer_api"
   #  name: LOADBALANCERAPI_CRDB_URI
   resources: {}

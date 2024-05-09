@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" . }}-extra-config
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+data:
+  loadbalancerapi.yaml: |
+    {{- with .Values.api.extraRelations  }}
+    extraRelations:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
