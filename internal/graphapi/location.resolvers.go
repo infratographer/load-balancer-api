@@ -8,10 +8,12 @@ import (
 	"context"
 
 	"entgo.io/contrib/entgql"
+	"go.infratographer.com/permissions-api/pkg/permissions"
+	"go.infratographer.com/x/gidx"
+
 	"go.infratographer.com/load-balancer-api/internal/ent/generated"
 	"go.infratographer.com/load-balancer-api/internal/ent/generated/loadbalancer"
 	_ "go.infratographer.com/load-balancer-api/internal/ent/generated/runtime"
-	"go.infratographer.com/x/gidx"
 )
 
 // Location is the resolver for the location field.
@@ -21,7 +23,11 @@ func (r *loadBalancerResolver) Location(ctx context.Context, obj *generated.Load
 
 // LoadBalancers is the resolver for the loadBalancers field.
 func (r *locationResolver) LoadBalancers(ctx context.Context, obj *Location, after *entgql.Cursor[gidx.PrefixedID], first *int, before *entgql.Cursor[gidx.PrefixedID], last *int, orderBy *generated.LoadBalancerOrder, where *generated.LoadBalancerWhereInput) (*generated.LoadBalancerConnection, error) {
-	return r.client.LoadBalancer.Query().Where(loadbalancer.OwnerID(obj.scopedToOwnerID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
+	if err := permissions.CheckAccess(ctx, obj.ID, actionLocationGet); err != nil {
+		return nil, err
+	}
+
+	return r.client.LoadBalancer.Query().Where(loadbalancer.LocationID(obj.ID)).Paginate(ctx, after, first, before, last, generated.WithLoadBalancerOrder(orderBy), generated.WithLoadBalancerFilter(where.Filter))
 }
 
 // Location returns LocationResolver implementation.
