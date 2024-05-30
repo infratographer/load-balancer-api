@@ -18,4 +18,6 @@ const (
 	actionLoadBalancerProviderDelete     = "loadbalancerprovider_delete"
 	actionLoadBalancerProviderGet        = "loadbalancerprovider_get"
 	actionLoadBalancerProviderGetHistory = "loadbalancerprovider_get_history"
+
+	actionLocationGet = "location_get"
 )

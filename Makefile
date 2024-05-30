@@ -18,12 +18,12 @@ tests: | unit-tests
 
 unit-tests: ## Runs unit tests
 	@echo --- Running unit tests...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go test -race -cover -failfast -tags testtools -p 1 -v ./...
 
 coverage: ## Generates coverage report
 	@echo --- Generating coverage report...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go test -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1 ./...
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
@@ -32,24 +32,24 @@ lint: golint ## Runs linting
 
 golint:
 	@echo --- Running golint...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@golangci-lint run
 
 clean: ## Clean up all the things
 	@echo --- Cleaning...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@rm -rf ./bin/
 	@rm -rf coverage.out
 	@go clean -testcache
 
 binary: | vendor generate ## Builds the binary
 	@echo --- Building binary...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go build -o bin/${APP_NAME} main.go
 
 vendor: ## Vendors dependencies
 	@echo --- Downloading dependencies...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go mod tidy
 	@go mod download
 
@@ -57,28 +57,28 @@ testclient:| background-run .testclient kill-running ## Regenerates the test cli
 
 .testclient:
 	@echo --- Generating test graph client...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go generate ./internal/graphclient
 
 dev-nats: ## Initializes nats
 	@echo --- Initializing nats
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@.devcontainer/scripts/nats_account.sh
 
 generate: background-run .generate kill-running ## Generates code
 
 .generate:
 	@echo --- Generating code...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go generate ./...
 
 go-run: ## Runs the app
 	@echo --- Running binary...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@go run main.go serve --dev --oidc=false
 
 background-run:  ## Runs in the app in the background
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@if [ ! -f "${PID_FILE}" ]; then \
 		echo --- Running binary in the background...; \
 		go run main.go serve --pid-file=${PID_FILE} --dev --oidc=false & \
@@ -88,5 +88,5 @@ background-run:  ## Runs in the app in the background
 
 kill-running: ## Kills the running binary from pid file
 	@echo --- Killing background binary...
-	@date --rfc-3339=seconds
+	@date -Iseconds
 	@kill $$(cat ${PID_FILE})
