@@ -275,6 +275,51 @@ func TestNodeMetadata(t *testing.T) {
 	})
 }
 
+func TestGetLoadBalancerByLocation(t *testing.T) {
+	cli := Client{}
+
+	t.Run("bad prefix", func(t *testing.T) {
+		md, err := cli.GetLoadBalancersByLocation(context.Background(), "badprefix-test")
+		require.Error(t, err)
+		require.Nil(t, md)
+		assert.ErrorContains(t, err, "invalid id")
+	})
+
+	t.Run("successful query", func(t *testing.T) {
+		respJSON := `{
+	"data": {
+		"location": {
+			"loadBalancers": {
+				"edges": [
+					{
+						"node": {
+							"id": "loadbal-testing"
+						}
+					}
+				]
+			}
+		}
+	}
+}`
+		cli.gqlCli = mustNewGQLTestClient(respJSON, http.StatusOK)
+		lbs, err := cli.GetLoadBalancersByLocation(context.Background(), "lctnloc-testing")
+		require.NoError(t, err)
+		require.Equal(t, len(lbs), 1)
+		require.Equal(t, lbs[0].ID, "loadbal-testing")
+	})
+
+	t.Run("location not found", func(t *testing.T) {
+		respJSON := `{
+	"data": null
+}`
+		cli.gqlCli = mustNewGQLTestClient(respJSON, http.StatusOK)
+		md, err := cli.GetLoadBalancersByLocation(context.Background(), "loadbal-testing")
+		require.Error(t, err)
+		require.Nil(t, md)
+		assert.ErrorIs(t, err, ErrLocationNotFound)
+	})
+}
+
 func mustNewGQLTestClient(respJSON string, respCode int) *graphql.Client {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/query", func(w http.ResponseWriter, _ *http.Request) {

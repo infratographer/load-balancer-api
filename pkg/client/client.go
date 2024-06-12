@@ -106,6 +106,34 @@ func (c Client) NodeMetadata(ctx context.Context, id string) (*Metadata, error) 
 	return &q.MetadataNode.Metadata, nil
 }
 
+// GetLoadBalancersByLocation returns all load balancers associated with a particular location
+func (c Client) GetLoadBalancersByLocation(ctx context.Context, locID string) ([]LoadBalancer, error) {
+	_, err := gidx.Parse(locID)
+	if err != nil {
+		return nil, err
+	}
+
+	vars := map[string]interface{}{
+		"id": graphql.ID(locID),
+	}
+
+	var q GetLoadBalancersByLocation
+	if err := c.gqlCli.Query(ctx, &q, vars); err != nil {
+		return nil, translateGQLErr(err)
+	}
+
+	if len(q.Location.LoadBalancers.Edges) == 0 {
+		return nil, ErrLocationNotFound
+	}
+
+	var loadbalancers []LoadBalancer
+	for _, edge := range q.Location.LoadBalancers.Edges {
+		loadbalancers = append(loadbalancers, LoadBalancer{ID: edge.Node.ID})
+	}
+
+	return loadbalancers, nil
+}
+
 func translateGQLErr(err error) error {
 	switch {
 	case strings.Contains(err.Error(), "load_balancer not found"):
