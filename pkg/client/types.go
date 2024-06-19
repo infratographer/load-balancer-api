@@ -170,3 +170,16 @@ type GetMetadataNode struct {
 // 		}
 // 	} `graphql:"loadBalancer(id: $id)"`
 // }
+
+// GetLoadBalancersByLocation is a struct that represents the GetLoadBalancer GraphQL query
+type GetLoadBalancersByLocation struct {
+	Location struct {
+		LoadBalancers struct {
+			Edges []struct {
+				Node struct {
+					ID string `graphql:"id"`
+				} `graphql:"node"`
+			} `graphql:"edges"`
+		} `graphql:"loadBalancers"`
+	} `graphql:"location(id: $id)"`
+}
