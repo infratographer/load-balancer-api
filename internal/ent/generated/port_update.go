@@ -227,6 +227,11 @@ func (pu *PortUpdate) check() error {
 			return &ValidationError{Name: "number", err: fmt.Errorf(`generated: validator failed for field "Port.number": %w`, err)}
 		}
 	}
+	if v, ok := pu.mutation.Name(); ok {
+		if err := port.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Port.name": %w`, err)}
+		}
+	}
 	if _, ok := pu.mutation.LoadBalancerID(); pu.mutation.LoadBalancerCleared() && !ok {
 		return errors.New(`generated: clearing a required unique edge "Port.load_balancer"`)
 	}
@@ -540,6 +545,11 @@ func (puo *PortUpdateOne) check() error {
 	if v, ok := puo.mutation.Number(); ok {
 		if err := port.NumberValidator(v); err != nil {
 			return &ValidationError{Name: "number", err: fmt.Errorf(`generated: validator failed for field "Port.number": %w`, err)}
+		}
+	}
+	if v, ok := puo.mutation.Name(); ok {
+		if err := port.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Port.name": %w`, err)}
 		}
 	}
 	if _, ok := puo.mutation.LoadBalancerID(); puo.mutation.LoadBalancerCleared() && !ok {
