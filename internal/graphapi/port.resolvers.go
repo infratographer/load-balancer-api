@@ -90,8 +90,8 @@ func (r *mutationResolver) LoadBalancerPortUpdate(ctx context.Context, id gidx.P
 	logger := r.logger.With("loadbalancerPortID", id)
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)
@@ -161,8 +161,8 @@ func (r *mutationResolver) LoadBalancerPortDelete(ctx context.Context, id gidx.P
 	logger := r.logger.With("loadbalancerPortID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)
@@ -197,8 +197,8 @@ func (r *queryResolver) LoadBalancerPort(ctx context.Context, id gidx.PrefixedID
 	logger := r.logger.With("loadbalancerPortID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	p, err := r.client.Port.Query().WithLoadBalancer().Where(port.IDEQ(id)).Only(ctx)

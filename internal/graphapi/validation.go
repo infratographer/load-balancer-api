@@ -3,7 +3,6 @@ package graphapi
 import (
 	"regexp"
 	"strings"
-	"text/template"
 
 	"go.infratographer.com/x/gidx"
 )
@@ -29,7 +28,7 @@ func validateGidx(gid gidx.PrefixedID) error {
 // sanitizeField sanitizes a field string
 func sanitizeField(field string) string {
 	s := strings.TrimSpace(field)
-	s = template.HTMLEscapeString(s)
+	// s = template.HTMLEscapeString(s)
 
 	re := regexp.MustCompile(`\r\n|[\r\n\v\f\x{0085}\x{2028}\x{2029}]`)
 

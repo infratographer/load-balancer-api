@@ -45,7 +45,6 @@ func (LoadBalancer) Fields() []ent.Field {
 				entgql.OrderField("ID"),
 			),
 		field.Text("name").
-			// NotEmpty().
 			Validate(validations.NameField).
 			Comment("The name of the load balancer.").
 			Annotations(

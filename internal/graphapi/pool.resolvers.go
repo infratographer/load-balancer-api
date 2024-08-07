@@ -82,8 +82,8 @@ func (r *mutationResolver) LoadBalancerPoolUpdate(ctx context.Context, id gidx.P
 	logger := r.logger.With("loadbalancerPoolID", id)
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	pool, err := r.client.Pool.Get(ctx, id)
@@ -148,8 +148,8 @@ func (r *mutationResolver) LoadBalancerPoolDelete(ctx context.Context, id gidx.P
 	logger := r.logger.With("loadbalancerPoolID", id)
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	p, err := r.client.Pool.Get(ctx, id)
@@ -219,8 +219,8 @@ func (r *queryResolver) LoadBalancerPool(ctx context.Context, id gidx.PrefixedID
 	logger := r.logger.With("loadbalancerPoolID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	pool, err := r.client.Pool.Get(ctx, id)

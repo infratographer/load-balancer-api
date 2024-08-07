@@ -69,9 +69,8 @@ func (r *mutationResolver) LoadBalancerOriginCreate(ctx context.Context, input g
 func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx.PrefixedID, input generated.UpdateLoadBalancerOriginInput) (*LoadBalancerOriginUpdatePayload, error) {
 	logger := r.logger.With("originID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	ogn, err := r.client.Origin.Query().WithPool().Where(origin.IDEQ(id)).Only(ctx)
@@ -116,11 +115,9 @@ func (r *mutationResolver) LoadBalancerOriginUpdate(ctx context.Context, id gidx
 func (r *mutationResolver) LoadBalancerOriginDelete(ctx context.Context, id gidx.PrefixedID) (*LoadBalancerOriginDeletePayload, error) {
 	logger := r.logger.With("originID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
-
 	ogn, err := r.client.Origin.Query().WithPool().Where(origin.IDEQ(id)).Only(ctx)
 	if err != nil {
 		if generated.IsNotFound(err) {

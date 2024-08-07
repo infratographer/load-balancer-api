@@ -242,9 +242,8 @@ func (r *queryResolver) LoadBalancerHistory(ctx context.Context, id gidx.Prefixe
 
 	logger := r.logger.With("loadbalancerID", id.String())
 
-	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	lb, err := r.client.LoadBalancer.Get(ctx, id)

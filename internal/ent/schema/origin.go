@@ -42,7 +42,7 @@ func (Origin) Fields() []ent.Field {
 			Unique().
 			Immutable(),
 		field.String("name").
-			NotEmpty().
+			Validate(validations.NameField).
 			Annotations(
 				entgql.OrderField("name"),
 			),

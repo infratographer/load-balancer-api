@@ -42,8 +42,8 @@ func (r *mutationResolver) LoadBalancerProviderUpdate(ctx context.Context, id gi
 	logger := r.logger.With("loadbalancerProviderID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderUpdate); err != nil {
@@ -78,8 +78,8 @@ func (r *mutationResolver) LoadBalancerProviderDelete(ctx context.Context, id gi
 	logger := r.logger.With("loadbalancerProviderID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderDelete); err != nil {
@@ -103,8 +103,8 @@ func (r *queryResolver) LoadBalancerProvider(ctx context.Context, id gidx.Prefix
 	logger := r.logger.With("loadbalancerProviderID", id.String())
 
 	// check gidx format
-	if _, err := gidx.Parse(id.String()); err != nil {
-		return nil, err
+	if err := validateGidx(id); err != nil {
+		return nil, newInvalidFieldError("id", err)
 	}
 
 	if err := permissions.CheckAccess(ctx, id, actionLoadBalancerProviderGet); err != nil {
