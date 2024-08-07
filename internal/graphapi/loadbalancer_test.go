@@ -139,6 +139,11 @@ func TestCreate_loadBalancer(t *testing.T) {
 			Input:    graphclient.CreateLoadBalancerInput{Name: name, ProviderID: prov.ID, OwnerID: ownerID, LocationID: ""},
 			errorMsg: "must not be empty",
 		},
+		{
+			TestName: "fails to create loadbalancer with long name",
+			Input:    graphclient.CreateLoadBalancerInput{Name: longName, ProviderID: prov.ID, OwnerID: ownerID, LocationID: locationID},
+			errorMsg: "must not be longer than",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -287,6 +292,12 @@ func TestUpdate_loadBalancer(t *testing.T) {
 			ID:       "test-invalid-id",
 			Input:    graphclient.UpdateLoadBalancerInput{Name: newString("loadbal-dne")},
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails to update loadbalancer with long name",
+			ID:       lb.ID,
+			Input:    graphclient.UpdateLoadBalancerInput{Name: &longName},
+			errorMsg: "must not be longer than",
 		},
 	}
 

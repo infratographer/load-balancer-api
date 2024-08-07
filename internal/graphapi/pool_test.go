@@ -141,7 +141,7 @@ func TestMutate_PoolCreate(t *testing.T) {
 			errorMsg: "validator failed",
 		},
 		{
-			TestName: "port with conflicting OwnerID",
+			TestName: "pool with conflicting OwnerID",
 			Input: graphclient.CreateLoadBalancerPoolInput{
 				Name:     "",
 				Protocol: graphclient.LoadBalancerPoolProtocolUDP,
@@ -149,6 +149,15 @@ func TestMutate_PoolCreate(t *testing.T) {
 				PortIDs:  []gidx.PrefixedID{port.ID},
 			},
 			errorMsg: "one or more ports not found",
+		},
+		{
+			TestName: "fails to create pool with long name",
+			Input: graphclient.CreateLoadBalancerPoolInput{
+				Name:     longName,
+				Protocol: graphclient.LoadBalancerPoolProtocolTCP,
+				OwnerID:  ownerID,
+			},
+			errorMsg: "must not be longer than",
 		},
 	}
 
@@ -255,6 +264,12 @@ func TestMutate_PoolUpdate(t *testing.T) {
 			},
 			errorMsg: "one or more ports not found",
 		},
+		{
+			TestName: "fails to update pool with long name",
+			ID:       pool1.ID,
+			Input:    graphclient.UpdateLoadBalancerPoolInput{Name: &longName},
+			errorMsg: "must not be longer than",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -320,11 +335,21 @@ func TestMutate_PoolDelete(t *testing.T) {
 		{
 			TestName: "fails to delete empty pool id",
 			DeleteID: gidx.PrefixedID(""),
-			errorMsg: "not found",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "deletes pool with associated origins",
 			DeleteID: pool2.ID,
+		},
+		{
+			TestName: "fails with invalid gidx",
+			DeleteID: "test-invalid-id",
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid characters",
+			DeleteID: gidx.PrefixedID("loadpol-!@#$%^&*()"),
+			errorMsg: "valid characters are A-Z a-z 0-9 _ -",
 		},
 	}
 

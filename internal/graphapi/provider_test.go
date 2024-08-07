@@ -102,7 +102,12 @@ func TestCreate_Provider(t *testing.T) {
 		{
 			TestName: "fails to create provider with empty name",
 			Input:    graphclient.CreateLoadBalancerProviderInput{Name: "", OwnerID: ownerID},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
+		},
+		{
+			TestName: "fails to create provider with long name",
+			Input:    graphclient.CreateLoadBalancerProviderInput{Name: longName, OwnerID: ownerID},
+			errorMsg: "must not be longer than",
 		},
 		{
 			TestName: "fails to create provider with empty ownerID",
@@ -174,7 +179,13 @@ func TestUpdate_Provider(t *testing.T) {
 			TestName: "fails to update name to empty",
 			ID:       prov.ID,
 			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: newString("")},
-			errorMsg: "value is less than the required length",
+			errorMsg: "must not be empty",
+		},
+		{
+			TestName: "fails to update provider with long name",
+			ID:       prov.ID,
+			Input:    graphclient.UpdateLoadBalancerProviderInput{Name: &longName},
+			errorMsg: "must not be longer than",
 		},
 		{
 			TestName: "fails to update provider that does not exist",
@@ -187,6 +198,12 @@ func TestUpdate_Provider(t *testing.T) {
 			ID:       gidx.PrefixedID("invalid"),
 			Input:    graphclient.UpdateLoadBalancerProviderInput{},
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid characters",
+			Input:    graphclient.UpdateLoadBalancerProviderInput{},
+			ID:       gidx.PrefixedID("loadpvd-!@#$%^&*()"),
+			errorMsg: "valid characters are A-Z a-z 0-9 _ -",
 		},
 	}
 
@@ -240,12 +257,22 @@ func TestDelete_Provider(t *testing.T) {
 		{
 			TestName: "fails to delete empty provider ID",
 			Input:    gidx.PrefixedID(""),
-			errorMsg: "provider not found",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails to delete invalid gidx id",
 			Input:    gidx.PrefixedID("not-a-valid-gidx-id"),
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid gidx",
+			Input:    "test-invalid-id",
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid characters",
+			Input:    gidx.PrefixedID("loadpvd-!@#$%^&*()"),
+			errorMsg: "valid characters are A-Z a-z 0-9 _ -",
 		},
 	}
 
