@@ -258,6 +258,11 @@ func (pc *PortCreate) check() error {
 			return &ValidationError{Name: "number", err: fmt.Errorf(`generated: validator failed for field "Port.number": %w`, err)}
 		}
 	}
+	if v, ok := pc.mutation.Name(); ok {
+		if err := port.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`generated: validator failed for field "Port.name": %w`, err)}
+		}
+	}
 	if _, ok := pc.mutation.LoadBalancerID(); !ok {
 		return &ValidationError{Name: "load_balancer_id", err: errors.New(`generated: missing required field "Port.load_balancer_id"`)}
 	}

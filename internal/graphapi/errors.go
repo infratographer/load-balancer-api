@@ -1,6 +1,9 @@
 package graphapi
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	// ErrPortNumberInUse is returned when a port number is already in use.
@@ -20,4 +23,25 @@ var (
 
 	// ErrLoadBalancerLimitReached is returned when the load balancer limit has been reached for an owner.
 	ErrLoadBalancerLimitReached = errors.New("load balancer limit reached")
+
+	// ErrFieldEmpty is returned when a required field is empty.
+	ErrFieldEmpty = errors.New("must not be empty")
+
+	// ErrInvalidCharacters is returned when an invalid input is provided
+	ErrInvalidCharacters = errors.New("valid characters are A-Z a-z 0-9 _ -")
 )
+
+// ErrInvalidField is returned when an invalid input is provided.
+type ErrInvalidField struct {
+	field string
+	err   error
+}
+
+// Error implements the error interface.
+func (e *ErrInvalidField) Error() string {
+	return fmt.Sprintf("%s: %v", e.field, e.err)
+}
+
+func newInvalidFieldError(field string, err error) *ErrInvalidField {
+	return &ErrInvalidField{field: field, err: err}
+}

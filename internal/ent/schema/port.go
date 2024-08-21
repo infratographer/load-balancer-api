@@ -52,6 +52,7 @@ func (Port) Fields() []ent.Field {
 				entgql.OrderField("number"),
 			),
 		field.String("name").
+			Validate(validations.OptionalNameField).
 			Annotations(
 				entgql.OrderField("name"),
 			).

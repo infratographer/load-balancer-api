@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -32,6 +33,8 @@ const (
 	locationPrefix = "testloc"
 	lbPrefix       = "loadbal"
 )
+
+var longName = strings.Repeat("a", 65)
 
 var EntClient *ent.Client
 

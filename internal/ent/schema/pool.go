@@ -13,6 +13,7 @@ import (
 
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/audit"
 	"go.infratographer.com/load-balancer-api/internal/ent/schema/softdelete"
+	"go.infratographer.com/load-balancer-api/internal/ent/schema/validations"
 	"go.infratographer.com/load-balancer-api/x/pubsubinfo"
 )
 
@@ -39,7 +40,7 @@ func (Pool) Fields() []ent.Field {
 			Unique().
 			Immutable(),
 		field.String("name").
-			NotEmpty().
+			Validate(validations.NameField).
 			Annotations(
 				entgql.OrderField("name"),
 			),

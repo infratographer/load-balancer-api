@@ -142,6 +142,15 @@ func TestCreate_LoadbalancerPort(t *testing.T) {
 			},
 			errorMsg: "one or more pools not found",
 		},
+		{
+			TestName: "fails to create port with long name",
+			Input: graphclient.CreateLoadBalancerPortInput{
+				Name:           &longName,
+				LoadBalancerID: lb.ID,
+				Number:         22,
+			},
+			errorMsg: "must not be longer than",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -283,6 +292,12 @@ func TestUpdate_LoadbalancerPort(t *testing.T) {
 			},
 			errorMsg: "one or more pools not found",
 		},
+		{
+			TestName: "fails to update port with long name",
+			ID:       port.ID,
+			Input:    graphclient.UpdateLoadBalancerPortInput{Name: &longName},
+			errorMsg: "must not be longer than",
+		},
 	}
 
 	for _, tt := range testCases {
@@ -341,7 +356,7 @@ func TestDelete_LoadbalancerPort(t *testing.T) {
 		{
 			TestName: "fails to delete empty loadbalancer port ID",
 			Input:    gidx.PrefixedID(""),
-			errorMsg: "port not found",
+			errorMsg: "must not be empty",
 		},
 		{
 			TestName: "fails to delete with invalid gidx port ID",
@@ -410,6 +425,16 @@ func TestGet_LoadbalancerPort(t *testing.T) {
 			TestName: "invalid port ID",
 			QueryID:  "an invalid port id",
 			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid gidx",
+			QueryID:  "test-invalid-id",
+			errorMsg: "invalid id",
+		},
+		{
+			TestName: "fails with invalid characters",
+			QueryID:  gidx.PrefixedID("loadprt-!@#$%^&*()"),
+			errorMsg: "valid characters are A-Z a-z 0-9 _ -",
 		},
 	}
 
