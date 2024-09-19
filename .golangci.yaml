@@ -1,14 +1,6 @@
 run:
   build-tags:
     - testtools
-  skip-files:
-    - internal/pubsub/*
-    - internal/ent/generated/*
-    - internal/graphql/gen_*
-    - internal/manualhooks/*
-  skip-dirs:
-    # Exclude generated ent code
-    - internal/ent/generated
 
 linters-settings:
   goimports:
@@ -34,10 +26,10 @@ linters:
     # additional linters
     - gocritic
     - gocyclo
-    - goerr113
+    - err113
     - gofmt
     - goimports
-    - gomnd
+    - mnd
     - govet
     - misspell
     - revive
@@ -68,3 +60,11 @@ issues:
     # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
     - Potential file inclusion via variable
   exclude-use-default: false
+  exclude-files:
+    - internal/pubsub/*
+    - internal/ent/generated/*
+    - internal/graphql/gen_*
+    - internal/manualhooks/*
+  exclude-dirs:
+    # Exclude generated ent code
+    - internal/ent/generated
