@@ -22,4 +22,7 @@ var (
 
 	// ErrMetadataStatusNotFound returned when the status data is invalid
 	ErrMetadataStatusNotFound = errors.New("metadata status not found")
+
+	// ErrLocationNotFound returned when the status data is invalid
+	ErrLocationNotFound = errors.New("location not found")
 )
