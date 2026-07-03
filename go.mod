@@ -1,6 +1,6 @@
 module go.infratographer.com/load-balancer-api
 
-go 1.21
+go 1.22
 
 require (
 	entgo.io/contrib v0.4.5
@@ -17,10 +17,10 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.29.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.29.1
-	github.com/vektah/gqlparser/v2 v2.5.16
+	github.com/vektah/gqlparser/v2 v2.5.36
 	github.com/wundergraph/graphql-go-tools v1.67.1
 	go.infratographer.com/metadata-api v0.0.4
 	go.infratographer.com/permissions-api v0.3.2
@@ -39,7 +39,7 @@ require (
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/XSAM/otelsql v0.26.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
